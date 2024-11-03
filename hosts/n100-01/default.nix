@@ -1,7 +1,6 @@
 { config, pkgs, lib, secretsPath, ... }:
 
 {
-  # 1. Imports and basic system configuration
   imports = [
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
@@ -23,7 +22,6 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  # 2. Boot and hardware settings
   boot = {
     kernel.sysctl."kernel.dmesg_restrict" = 0;
     loader = {
@@ -39,7 +37,6 @@
     size = 32768;
   }];
 
-  # Disable sleep states
   systemd.sleep.extraConfig = ''
     AllowSuspend=no
     AllowHibernation=no
@@ -47,7 +44,6 @@
     AllowSuspendThenHibernate=no
   '';
 
-  # 3. Networking
   networking = {
     hostName = "n100-01";
     networkmanager.enable = true;
@@ -57,7 +53,6 @@
     firewall.enable = false;
   };
 
-  # 4. System Services
   services = {
     rpcbind.enable = true;
     printing.enable = true;
@@ -72,7 +67,6 @@
     };
   };
 
-  # NFS mounts
   systemd.mounts = [{
     type = "nfs";
     mountConfig.Options = "noatime";
@@ -86,7 +80,6 @@
     where = "/mnt/storage";
   }];
 
-  # 5. Security and System Access
   security.rtkit.enable = true;
 
   age = {
@@ -103,7 +96,6 @@
     };
   };
 
-  # 6. Virtualization
   virtualisation = {
     docker = {
       enable = true;
@@ -115,7 +107,6 @@
     libvirtd.enable = true;
   };
 
-  # 7. Environment and Program Configurations
   time.timeZone = "America/Phoenix";
 
   i18n = {
@@ -188,6 +179,5 @@
 
   users.defaultUserShell = pkgs.zsh;
 
-  # 8. System State Version (always last)
   system.stateVersion = "24.05";
 }

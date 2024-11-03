@@ -1,7 +1,6 @@
 { config, pkgs, ... }:
 
 {
-  # 1. User Account Configuration
   users.users.jamesbrink = {
     isNormalUser = true;
     description = "James Brink";
@@ -18,16 +17,12 @@
     packages = with pkgs; [ ];
   };
 
-  # 2. Home Manager Configuration
   home-manager.users.jamesbrink = { pkgs, ... }: {
-    # Shell and Terminal
     programs = {
-      # Starship Prompt
       starship = {
         enable = true;
       };
 
-      # ZSH Configuration
       zsh = {
         enable = true;
         enableCompletion = true;
@@ -49,11 +44,9 @@
       };
     };
 
-    # Home Manager State Version
     home.stateVersion = "24.05";
   };
 
-  # 3. Security Configuration
   security.sudo.extraRules = [
     {
       users = [ "jamesbrink" ];
@@ -66,12 +59,10 @@
     }
   ];
 
-  # 4. Age Secrets Configuration
   age.identityPaths = [
     "/home/jamesbrink/.ssh/id_ed25519"
   ];
 
-  # 5. Services Configuration
   services.syncthing = {
     enable = true;
     user = "jamesbrink";
@@ -82,13 +73,11 @@
     guiAddress = "0.0.0.0:8384";
 
     settings = {
-      # GUI Settings
       gui = {
         user = "jamesbrink";
         password = "password";
       };
 
-      # Device Configuration
       devices = {
         "DarkStarMk6Mod1" = {
           autoAcceptFolders = true;
@@ -112,7 +101,6 @@
         };
       };
 
-      # Folder Configuration
       folders = {
         "Projects" = {
           path = "/home/jamesbrink/Projects";
