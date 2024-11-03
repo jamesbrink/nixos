@@ -37,9 +37,6 @@ secrets/
 .secrets/
 .env
 
-# Hardware configuration (might contain sensitive system info)
-hardware-configuration.nix
-
 # Backup files
 *.bak
 *.backup

@@ -35,6 +35,21 @@
           ./hosts/n100-01/default.nix
         ];
       };
+
+      n100-03 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+
+        specialArgs = {
+          inherit inputs agenix;
+          secretsPath = "${inputs.secrets}";
+        };
+
+        modules = [
+          home-manager.nixosModules.home-manager
+          agenix.nixosModules.default
+          ./hosts/n100-03/default.nix
+        ];
+      };
     };
   };
 }
