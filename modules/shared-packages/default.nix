@@ -2,43 +2,55 @@
 
 {
   environment.systemPackages = with pkgs; [
+    # 1. System Utilities
     at
     bzip2
-    cachix
-    dig
     direnv
-    dnsutils
-    docker
     fd
-    git
     hdparm
-    home-manager
     htop
+    neofetch
+    parted
+    rsync
+    screen
+    tmux
+    unzip
+
+    # 2. Network Tools
+    dig
+    dnsutils
     httpie
     iperf2
     ipmitool
-    jq
-    lf
-    neofetch
-    neovim
     netcat
     nfs-utils
+    speedtest-cli
+    wget
+    wireguard-tools
+
+    # 3. Development Tools
+    git
+    jq
     nixpkgs-fmt
-    openssh
-    parted
     python3
     python311Packages.boto3
     python311Packages.pip
     python312Packages.pynvim
-    rsync
-    screen
-    speedtest-cli
-    thefuck
-    tmux
-    unzip
+
+    # 4. Package Management
+    cachix
+    home-manager
+
+    # 5. Text Editors
+    neovim
     vim
-    wget
-    wireguard-tools
+
+    # 6. Shell Tools
+    lf
+    thefuck
     zsh
+
+    # 7. Security
+    openssh
   ];
 }
