@@ -24,9 +24,12 @@
   nixpkgs.config.allowUnfree = true;
 
   # 2. Boot and hardware settings
-  boot.loader = {
-    systemd-boot.enable = true;
-    efi.canTouchEfiVariables = true;
+  boot = {
+    kernel.sysctl."kernel.dmesg_restrict" = 0;
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
   };
 
   hardware.pulseaudio.enable = false;

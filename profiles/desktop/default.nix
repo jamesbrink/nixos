@@ -24,6 +24,9 @@
     gnome-remote-desktop
     gnome-session
 
+    # Security
+    bitwarden
+
     # Fonts
     fira-code-nerdfont
     nerdfonts

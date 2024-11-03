@@ -51,6 +51,7 @@
     zsh
 
     # 7. Security
+    bitwarden-cli
     openssh
   ];
 }
