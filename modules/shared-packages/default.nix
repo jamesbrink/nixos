@@ -1,0 +1,44 @@
+{ pkgs, ... }:
+
+{
+  environment.systemPackages = with pkgs; [
+    at
+    bzip2
+    cachix
+    dig
+    direnv
+    dnsutils
+    docker
+    fd
+    git
+    hdparm
+    home-manager
+    htop
+    httpie
+    iperf2
+    ipmitool
+    jq
+    lf
+    neofetch
+    neovim
+    netcat
+    nfs-utils
+    nixpkgs-fmt
+    openssh
+    parted
+    python3
+    python311Packages.boto3
+    python311Packages.pip
+    python312Packages.pynvim
+    rsync
+    screen
+    speedtest-cli
+    thefuck
+    tmux
+    unzip
+    vim
+    wget
+    wireguard-tools
+    zsh
+  ];
+}

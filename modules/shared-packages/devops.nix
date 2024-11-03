@@ -1,0 +1,46 @@
+{ pkgs, ... }:
+
+{
+  environment.systemPackages = with pkgs; [
+    atool
+    awscli2
+    certbot
+    cmake
+    cw
+    devbox
+    git-crypt
+    git-secrets
+    gnumake
+    incus
+    jdk
+    kind
+    kops
+    kubectl
+    kubectx
+    lego
+    libxisf
+    mtr
+    nerdfonts
+    ollama
+    open-vm-tools
+    opentofu
+    openvswitch
+    packer
+    pre-commit
+    restic
+    restique
+    ripgrep
+    rng-tools
+    rustfmt
+    rustup
+    shellcheck
+    sshpass
+    starship
+    tailscale
+    terraform-docs
+    terraform-lsp
+    tflint
+    zellij
+    zfs
+  ];
+}

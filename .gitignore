@@ -1,0 +1,50 @@
+# Nix build outputs
+result
+result-*
+
+# Directory for build outputs
+/build/
+
+# Nix store paths
+.nixpkgs
+
+# System specific
+.direnv/
+.envrc
+
+# Editor/IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.log
+*.tmp
+.DS_Store
+
+# Python virtual environments (if using any Python tools)
+venv/
+__pycache__/
+*.pyc
+
+# Secrets and sensitive data
+*.key
+*.pem
+*.cert
+secrets/
+.secrets/
+.env
+
+# Hardware configuration (might contain sensitive system info)
+hardware-configuration.nix
+
+# Backup files
+*.bak
+*.backup
+*#
+.#*
+
+# Local development files
+/local/ 
