@@ -4,6 +4,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
+    ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
     ../../profiles/desktop
   ];
