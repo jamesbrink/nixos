@@ -3,42 +3,43 @@
 {
   environment.systemPackages = with pkgs; [
     at
+    bitwarden-cli
     bzip2
-    direnv
-    fd
-    hdparm
-    htop
-    neofetch
-    parted
-    rsync
-    screen
-    tmux
-    unzip
+    cachix
     dig
+    direnv
     dnsutils
+    fd
+    git
+    hdparm
+    home-manager
+    htop
     httpie
     iperf2
     ipmitool
+    jq
+    lf
+    neofetch
+    neovim
     netcat
     nfs-utils
-    speedtest-cli
-    wget
-    wireguard-tools
-    git
-    jq
     nixpkgs-fmt
+    openssh
+    parted
+    pciutils
     python3
     python311Packages.boto3
     python311Packages.pip
     python312Packages.pynvim
-    cachix
-    home-manager
-    neovim
-    vim
-    lf
+    rsync
+    screen
+    speedtest-cli
     thefuck
+    tmux
+    unzip
+    vim
+    wget
+    wireguard-tools
     zsh
-    bitwarden-cli
-    openssh
   ];
 }

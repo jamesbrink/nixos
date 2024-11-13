@@ -126,11 +126,46 @@
     };
   };
 
+  hardware.opengl = {
+    enable = true;
+    driSupport = true;
+    driSupport32Bit = true;
+    extraPackages = with pkgs; [
+      vaapiVdpau
+      libvdpau-va-gl
+    ];
+  };
+
+  services.xserver = {
+    videoDrivers = [ "nvidia" ];
+    screenSection = ''
+      Option "metamodes" "nvidia-auto-select +0+0 {ForceFullCompositionPipeline=On}"
+      Option "AllowIndirectGLXProtocol" "off"
+      Option "TripleBuffer" "on"
+    '';
+  };
+
+  hardware.nvidia = {
+    modesetting.enable = true;
+    powerManagement = {
+      enable = true;
+      finegrained = false;
+    };
+    open = false;
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    prime.sync.enable = false;
+  };
+
   environment = {
     shells = with pkgs; [ zsh ];
     variables = {
       EDITOR = "vim";
       OLLAMA_HOST = "hal9000";
+      GBM_BACKEND = "nvidia-drm";
+      LIBVA_DRIVER_NAME = "nvidia";
+      __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+      WLR_NO_HARDWARE_CURSORS = "1";
     };
   };
 
@@ -180,6 +215,46 @@
   };
 
   users.defaultUserShell = pkgs.zsh;
+
+
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    autoconf
+    binutils
+    cudatoolkit
+    curl
+    freeglut
+    git
+    gitRepo
+    gnumake
+    gnupg
+    gperf
+    libGL
+    libGLU
+    linuxPackages.nvidia_x11
+    m4
+    ncurses5
+    openssl
+    procps
+    stdenv.cc
+    stdenv.cc.cc
+    unzip
+    util-linux
+    xorg.libX11
+    xorg.libXext
+    xorg.libXi
+    xorg.libXmu
+    xorg.libXrandr
+    xorg.libXv
+    zlib
+  ];
+
+  environment.systemPackages = with pkgs; [
+    nvtopPackages.nvidia
+    nvidia-vaapi-driver
+    glxinfo
+    vulkan-tools
+  ];
 
   system.stateVersion = "24.05";
 }

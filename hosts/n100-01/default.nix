@@ -102,7 +102,7 @@
     docker = {
       enable = true;
       enableOnBoot = true;
-      enableNvidia = false;
+      enableNvidia = true;
     };
     incus.enable = true;
     vswitch.enable = true;
