@@ -74,7 +74,7 @@
   };
 
   services.ollama = {
-    enable = true;
+    enable = false;
     host = "0.0.0.0";
     port = 11434;
     acceleration = "cuda";
@@ -115,7 +115,50 @@
     docker = {
       enable = true;
       enableOnBoot = true;
-      enableNvidia = false;
+      enableNvidia = true;
+    };
+    oci-containers = {
+      backend = "docker";
+      containers = {
+        ollama = {
+          image = "ollama/ollama";
+          volumes = [
+            "/var/lib/private/ollama:/root/.ollama"
+          ];
+          ports = [
+            "11434:11434"
+          ];
+          autoStart = true;
+          extraOptions = [
+            "--gpus=all"
+            "--name=ollama"
+          ];
+        };
+
+        comfyui = {
+          image = "jamesbrink/comfyui";
+          volumes = [
+            "/home/jamesbrink/AI/ComfyUI:/comfyui"
+            "/home/jamesbrink/AI/Models/StableDiffusion:/comfyui/models"
+            "/home/jamesbrink/AI/Output:/comfyui/output"
+            "/home/jamesbrink/AI/Input:/comfyui/input"
+          ];
+          extraOptions = [
+            "--gpus=all"
+            "--network=host"
+            "--name=comfyui"
+            "--user=${toString config.users.users.jamesbrink.uid}:${toString config.users.users.jamesbrink.group}"
+          ];
+          cmd = [
+            "--listen"
+            "--port"
+            "8190"
+            "--preview-method"
+            "auto"
+          ];
+          autoStart = true;
+        };
+      };
     };
     incus.enable = true;
     vswitch.enable = true;
@@ -266,6 +309,7 @@
     glxinfo
     nvidia-vaapi-driver
     nvtopPackages.nvidia
+    python311Packages.huggingface-hub
     unstablePkgs.ollama-cuda
     vulkan-tools
   ];
