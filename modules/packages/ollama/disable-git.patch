@@ -1,0 +1,14 @@
+diff --git a/scripts/generate.go b/scripts/generate.go
+index 0000000..0000000 100644
+--- a/scripts/generate.go
++++ b/scripts/generate.go
+@@ -1,7 +1,7 @@
+ package scripts
+ 
+-//go:generate git submodule update --init --recursive
+-//go:generate cmake -S llama.cpp -B build/llama.cpp
++//go:generate echo "Skipping git submodule update"
++//go:generate cmake -S llama.cpp -B build/llama.cpp -DLLAMA_CUBLAS=ON
+ //go:generate cmake --build build/llama.cpp --config Release
+ 
+ // #cgo CFLAGS: -I${SRCDIR}/build/llama.cpp

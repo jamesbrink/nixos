@@ -29,65 +29,77 @@
     };
   };
 
-  outputs = { self, nixpkgs, nixos-unstable, home-manager, home-manager-stable, agenix, secrets, ... }@inputs: {
-    nixosConfigurations = {
-      n100-01 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+  outputs = { self, nixpkgs, nixos-unstable, home-manager, home-manager-stable, agenix, secrets, ... }@inputs: 
+    let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+    in
+    {
+      nixosConfigurations = {
+        n100-01 = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
 
-        specialArgs = {
-          inherit inputs agenix;
-          secretsPath = "${inputs.secrets}";
+          specialArgs = {
+            inherit inputs agenix;
+            secretsPath = "${inputs.secrets}";
+          };
+
+          modules = [
+            home-manager.nixosModules.home-manager
+            agenix.nixosModules.default
+            ./hosts/n100-01/default.nix
+          ];
         };
 
-        modules = [
-          home-manager.nixosModules.home-manager
-          agenix.nixosModules.default
-          ./hosts/n100-01/default.nix
-        ];
-      };
+        n100-03 = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
 
-      n100-03 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+          specialArgs = {
+            inherit inputs agenix;
+            secretsPath = "${inputs.secrets}";
+          };
 
-        specialArgs = {
-          inherit inputs agenix;
-          secretsPath = "${inputs.secrets}";
+          modules = [
+            home-manager.nixosModules.home-manager
+            agenix.nixosModules.default
+            ./hosts/n100-03/default.nix
+          ];
         };
 
-        modules = [
-          home-manager.nixosModules.home-manager
-          agenix.nixosModules.default
-          ./hosts/n100-03/default.nix
-        ];
-      };
+        # New HAL9000 configuration using stable branch
+        HAL9000 = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
 
-      # New HAL9000 configuration using stable branch
-      HAL9000 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+          specialArgs = {
+            inherit inputs agenix self;
+            secretsPath = "${inputs.secrets}";
+          };
 
-        specialArgs = {
-          inherit inputs agenix;
-          secretsPath = "${inputs.secrets}";
+          modules = [
+            home-manager-stable.nixosModules.home-manager
+            agenix.nixosModules.default
+            ./hosts/HAL9000/default.nix
+
+            # Use unstable packages
+            {
+              nixpkgs.overlays = [
+                (final: prev: {
+                  unstablePkgs = import nixos-unstable {
+                    system = "x86_64-linux";
+                    config.allowUnfree = true;
+                  };
+                })
+              ];
+            }
+          ];
         };
-
-        modules = [
-          home-manager-stable.nixosModules.home-manager
-          agenix.nixosModules.default
-          ./hosts/HAL9000/default.nix
-
-          # Use unstable packages
-          {
-            nixpkgs.overlays = [
-              (final: prev: {
-                unstablePkgs = import nixos-unstable {
-                  system = "x86_64-linux";
-                  config.allowUnfree = true;
-                };
-              })
-            ];
-          }
-        ];
       };
+
+      # packages.${system} = {
+      #   ollama-cuda = pkgs.callPackage ./modules/packages/ollama {};
+      # };
     };
-  };
 }

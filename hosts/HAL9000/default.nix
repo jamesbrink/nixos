@@ -1,4 +1,4 @@
-{ config, pkgs, lib, secretsPath, inputs, ... } @args:
+{ config, pkgs, lib, secretsPath, inputs, self, ... } @args:
 
 {
   disabledModules = [
@@ -79,6 +79,7 @@
     port = 11434;
     acceleration = "cuda";
     package = pkgs.unstablePkgs.ollama-cuda;
+    # package = self.packages.x86_64-linux.ollama-cuda;
   };
 
   systemd.mounts = [{

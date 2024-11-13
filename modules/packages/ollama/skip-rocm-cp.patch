@@ -1,0 +1,9 @@
+diff --git a/llm/generate.go b/llm/generate.go
+index xxxxxxx..xxxxxxx 100644
+--- a/llm/generate.go
++++ b/llm/generate.go
+@@ -1,6 +1,6 @@
+ package llm
+ 
+-//go:generate cp -r /opt/rocm/include/* llama.cpp/
++//go:generate echo "Skipping ROCm include copy"
