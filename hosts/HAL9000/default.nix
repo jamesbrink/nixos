@@ -1,12 +1,16 @@
-{ config, pkgs, lib, secretsPath, ... }:
+{ config, pkgs, lib, secretsPath, inputs, ... } @args:
 
 {
+  disabledModules = [
+    "services/misc/ollama.nix"
+  ];
   imports = [
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
     ../../profiles/desktop/default-stable.nix
+    (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
 
   nix = {
@@ -67,6 +71,14 @@
         AuthorizedKeysCommandUser = "root";
       };
     };
+  };
+
+  services.ollama = {
+    enable = true;
+    host = "0.0.0.0";
+    port = 11434;
+    acceleration = "cuda";
+    package = pkgs.unstablePkgs.ollama-cuda;
   };
 
   systemd.mounts = [{
@@ -250,9 +262,10 @@
   ];
 
   environment.systemPackages = with pkgs; [
-    nvtopPackages.nvidia
-    nvidia-vaapi-driver
     glxinfo
+    nvidia-vaapi-driver
+    nvtopPackages.nvidia
+    unstablePkgs.ollama-cuda
     vulkan-tools
   ];
 

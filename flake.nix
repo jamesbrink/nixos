@@ -2,24 +2,26 @@
   description = "NixOS System Configurations";
 
   inputs = {
-    # Use nixos-24.05 for HAL9000
-    nixos-stable.url = "github:nixos/nixpkgs/nixos-24.05";
-    # Keep existing unstable for other hosts
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs = {
+      url = "github:nixos/nixpkgs/nixos-24.05";
+    };
+    nixos-unstable = {
+      url = "github:nixos/nixpkgs/nixos-unstable";
+    };
 
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixos-unstable";
     };
 
     home-manager-stable = {
       url = "github:nix-community/home-manager/release-24.05";
-      inputs.nixpkgs.follows = "nixos-stable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     agenix = {
       url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixos-unstable";
     };
     secrets = {
       url = "git+ssh://git@github.com/jamesbrink/nix-secrets.git";
@@ -27,7 +29,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, nixos-stable, home-manager, home-manager-stable, agenix, secrets, ... }@inputs: {
+  outputs = { self, nixpkgs, nixos-unstable, home-manager, home-manager-stable, agenix, secrets, ... }@inputs: {
     nixosConfigurations = {
       n100-01 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -60,7 +62,7 @@
       };
 
       # New HAL9000 configuration using stable branch
-      HAL9000 = nixos-stable.lib.nixosSystem {
+      HAL9000 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
 
         specialArgs = {
@@ -72,6 +74,18 @@
           home-manager-stable.nixosModules.home-manager
           agenix.nixosModules.default
           ./hosts/HAL9000/default.nix
+
+          # Use unstable packages
+          {
+            nixpkgs.overlays = [
+              (final: prev: {
+                unstablePkgs = import nixos-unstable {
+                  system = "x86_64-linux";
+                  config.allowUnfree = true;
+                };
+              })
+            ];
+          }
         ];
       };
     };
