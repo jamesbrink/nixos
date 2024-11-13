@@ -6,7 +6,7 @@
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
-    ../../profiles/desktop
+    ../../profiles/desktop/default-stable.nix
   ];
 
   nix = {
@@ -46,7 +46,7 @@
   '';
 
   networking = {
-    hostName = "n100-01";
+    hostName = "hal9000";
     domain = "home.urandom.io";
     networkmanager.enable = true;
     hosts = {
@@ -130,7 +130,7 @@
     shells = with pkgs; [ zsh ];
     variables = {
       EDITOR = "vim";
-      OLLAMA_HOST = "desktop2";
+      OLLAMA_HOST = "hal9000";
     };
   };
 

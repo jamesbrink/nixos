@@ -46,6 +46,7 @@
 
   networking = {
     hostName = "n100-03";
+    domain = "home.urandom.io";
     networkmanager.enable = true;
     hosts = {
       "127.0.0.1" = [ "localhost" "${config.networking.hostName}" ];
