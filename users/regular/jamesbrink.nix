@@ -79,38 +79,42 @@
       };
 
       devices = {
-        "DarkStarMk6Mod1" = {
+        "darkstarmk6mod1" = {
           autoAcceptFolders = true;
-          id = toString config.age.secrets."secrets/global/syncthing/DarkStarMk6Mod1-id.age".file;
+          id = config.age.secrets."secrets/global/syncthing/darkstarmk6mod1-id.age".path;
         };
-        "Alienware15R4" = {
+        "alienware15r4" = {
           autoAcceptFolders = true;
-          id = toString config.age.secrets."secrets/global/syncthing/Alienware15R4-id.age".file;
+          id = config.age.secrets."secrets/global/syncthing/alienware15r4-id.age".path;
         };
-        "N100-01" = {
+        "n100-01" = {
           autoAcceptFolders = true;
-          id = toString config.age.secrets."secrets/global/syncthing/N100-01-id.age".file;
+          id = config.age.secrets."secrets/global/syncthing/n100-01-id.age".path;
         };
-        "N100-02" = {
+        "n100-02" = {
           autoAcceptFolders = true;
-          id = toString config.age.secrets."secrets/global/syncthing/N100-02-id.age".file;
+          id = config.age.secrets."secrets/global/syncthing/n100-02-id.age".path;
         };
-        "N100-03" = {
+        "n100-03" = {
           autoAcceptFolders = true;
-          id = toString config.age.secrets."secrets/global/syncthing/N100-03-id.age".file;
+          id = config.age.secrets."secrets/global/syncthing/n100-03-id.age".path;
+        };
+        "hal9000" = {
+          autoAcceptFolders = true;
+          id = config.age.secrets."secrets/global/syncthing/hal9000-id.age".path;
         };
       };
 
       folders = {
         "Projects" = {
           path = "/home/jamesbrink/Projects";
-          devices = [ "DarkStarMk6Mod1" "Alienware15R4" "N100-01" "N100-02" "N100-03" ];
+          devices = [ "darkstarmk6mod1" "alienware15r4" "n100-01" "n100-02" "n100-03" "hal9000" ];
           label = "Projects";
           enable = false;
         };
         "Documents" = {
           path = "/home/jamesbrink/Documents";
-          devices = [ "DarkStarMk6Mod1" "Alienware15R4" "N100-01" "N100-02" "N100-03" ];
+          devices = [ "darkstarmk6mod1" "alienware15r4" "n100-01" "n100-02" "n100-03" "hal9000" ];
           label = "Documents";
           enable = false;
         };

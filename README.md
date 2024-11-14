@@ -17,3 +17,10 @@ Deploy to n100-01:
 ```shell
 nixos-rebuild switch --fast --flake .#n100-01 --target-host n100-01 --build-host n100-01 --use-remote-sudo
 ```
+
+
+Updating secrets:
+
+```shell
+nix flake update --update-input secrets
+```

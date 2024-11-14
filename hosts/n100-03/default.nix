@@ -5,7 +5,7 @@
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
     ../../users/regular/jamesbrink.nix
-    ../../profiles/desktop
+    ../../profiles/desktop/default-stable.nix
   ];
 
   nix = {
@@ -88,12 +88,13 @@
       "/etc/ssh/ssh_host_ed25519_key"
     ];
     secrets = {
-      "secrets/global/syncthing/DarkStarMk6Mod1-id.age".file = "${secretsPath}/secrets/global/syncthing/DarkStarMk6Mod1-id.age";
-      "secrets/global/syncthing/Alienware15R4-id.age".file = "${secretsPath}/secrets/global/syncthing/Alienware15R4-id.age";
-      "secrets/global/syncthing/N100-01-id.age".file = "${secretsPath}/secrets/global/syncthing/N100-01-id.age";
-      "secrets/global/syncthing/N100-02-id.age".file = "${secretsPath}/secrets/global/syncthing/N100-02-id.age";
-      "secrets/global/syncthing/N100-03-id.age".file = "${secretsPath}/secrets/global/syncthing/N100-03-id.age";
+      "secrets/global/syncthing/darkstarmk6mod1-id.age".file = "${secretsPath}/secrets/global/syncthing/darkstarmk6mod1-id.age";
+      "secrets/global/syncthing/alienware15r4-id.age".file = "${secretsPath}/secrets/global/syncthing/alienware15r4-id.age";
+      "secrets/global/syncthing/n100-01-id.age".file = "${secretsPath}/secrets/global/syncthing/n100-01-id.age";
+      "secrets/global/syncthing/n100-02-id.age".file = "${secretsPath}/secrets/global/syncthing/n100-02-id.age";
+      "secrets/global/syncthing/n100-03-id.age".file = "${secretsPath}/secrets/global/syncthing/n100-03-id.age";
       "secrets/global/ssh/authorized_keys.age".file = "${secretsPath}/secrets/global/ssh/authorized_keys.age";
+      "secrets/global/syncthing/hal9000-id.age".file = "${secretsPath}/secrets/global/syncthing/hal9000-id.age";
     };
   };
 
