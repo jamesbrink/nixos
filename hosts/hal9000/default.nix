@@ -102,11 +102,6 @@
       "/etc/ssh/ssh_host_ed25519_key"
     ];
     secrets = {
-      "secrets/global/syncthing/DarkStarMk6Mod1-id.age".file = "${secretsPath}/secrets/global/syncthing/DarkStarMk6Mod1-id.age";
-      "secrets/global/syncthing/Alienware15R4-id.age".file = "${secretsPath}/secrets/global/syncthing/Alienware15R4-id.age";
-      "secrets/global/syncthing/N100-01-id.age".file = "${secretsPath}/secrets/global/syncthing/N100-01-id.age";
-      "secrets/global/syncthing/N100-02-id.age".file = "${secretsPath}/secrets/global/syncthing/N100-02-id.age";
-      "secrets/global/syncthing/N100-03-id.age".file = "${secretsPath}/secrets/global/syncthing/N100-03-id.age";
       "secrets/global/ssh/authorized_keys.age".file = "${secretsPath}/secrets/global/ssh/authorized_keys.age";
     };
   };
@@ -316,3 +311,4 @@
 
   system.stateVersion = "24.05";
 }
+

@@ -81,27 +81,27 @@
       devices = {
         "darkstarmk6mod1" = {
           autoAcceptFolders = true;
-          id = config.age.secrets."secrets/global/syncthing/darkstarmk6mod1-id.age".path;
+          id = "A46R3HQ-AW3ODFH-RVOAW4C-P6VFHO5-KHIBRP2-PQLRKIE-YAZTGQO-7QGPCAF";
         };
         "alienware15r4" = {
+          id = "LQKOQMG-AIDPDJU-AICPMA4-UPLKWUP-PTWHUNL-IRNJIWD-GY2VU3Q-JLMG6QB";
           autoAcceptFolders = true;
-          id = config.age.secrets."secrets/global/syncthing/alienware15r4-id.age".path;
         };
         "n100-01" = {
           autoAcceptFolders = true;
-          id = config.age.secrets."secrets/global/syncthing/n100-01-id.age".path;
+          id = "HCRYHXP-QXLM4FW-SIPYBNL-IOLODXZ-PM5FX7W-3DOQ4ED-GJ5YNSK-LVUJQAA";
         };
         "n100-02" = {
           autoAcceptFolders = true;
-          id = config.age.secrets."secrets/global/syncthing/n100-02-id.age".path;
+          id = "KICZH4D-WJIVHZM-EW2CN5A-WEF44ZA-VAXR7MY-AWTQOXC-APLRSQP-TQCOBQX";
         };
         "n100-03" = {
           autoAcceptFolders = true;
-          id = config.age.secrets."secrets/global/syncthing/n100-03-id.age".path;
+          id = "WYTVEJT-WTMRX73-N3ASBH2-AAHMD5R-N3FUI3M-XXYQAVH-O6GDDU4-LUQVHAT";
         };
         "hal9000" = {
           autoAcceptFolders = true;
-          id = config.age.secrets."secrets/global/syncthing/hal9000-id.age".path;
+          id = "PRCPMWC-H6VGK4G-6X2QQDH-P6UOLJJ-JTLDNYW-LIKBC5X-6WM4T2R-Q5TZEAR";
         };
       };
 
