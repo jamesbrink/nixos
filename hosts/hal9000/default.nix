@@ -42,6 +42,12 @@
     size = 32768;
   }];
 
+  fileSystems."/mnt/storage-fast" = {
+    device = "/dev/disk/by-uuid/7f4b7db5-b6e3-4874-a4e9-52ca0f48576f";
+    fsType = "ext4";
+    options = [ "users" "nofail" ];
+  };
+
   systemd.sleep.extraConfig = ''
     AllowSuspend=no
     AllowHibernation=no
