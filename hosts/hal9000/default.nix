@@ -42,10 +42,36 @@
     size = 32768;
   }];
 
+  # Create mount points with appropriate permissions
+  systemd.tmpfiles.rules = [
+    "d /mnt 0775 root users"
+    "d /mnt/storage-fast 0775 root users"
+    "d /mnt/storage 0775 root users"
+  ];
+
   fileSystems."/mnt/storage-fast" = {
     device = "/dev/disk/by-uuid/7f4b7db5-b6e3-4874-a4e9-52ca0f48576f";
     fsType = "ext4";
-    options = [ "users" "nofail" ];
+    options = [
+      "defaults"
+      "nofail"        # Continue boot if device is missing
+      "noauto"        # Don't mount at boot time
+      "x-systemd.automount"  # Automount when accessed
+      "gid=100"      # GID for users group
+      "dmask=002"    # Directory permissions
+      "fmask=113"    # File permissions
+    ];
+  };
+
+  fileSystems."/mnt/storage" = {
+    device = "alienware.home.urandom.io:/storage";
+    fsType = "nfs";
+    options = [
+      "rw"
+      "noatime"
+      "nofail"
+      "x-systemd.automount"
+    ];
   };
 
   systemd.sleep.extraConfig = ''
