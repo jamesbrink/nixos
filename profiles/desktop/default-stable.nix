@@ -3,16 +3,17 @@
 {
   environment.systemPackages = with pkgs; [
     alacritty
-    chromium
-    vscode
-    gimp
+    bitwarden
     blender
-    slack
+    chromium
+    fira-code-nerdfont
+    gimp
     gnome3.gnome-remote-desktop
     gnome3.gnome-session
-    bitwarden
-    fira-code-nerdfont
     nerdfonts
+    rustdesk
+    slack
+    vscode
   ];
 
   services = {
