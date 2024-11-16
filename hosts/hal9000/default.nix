@@ -33,6 +33,11 @@
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
+    kernelModules = [ "kvm-intel" "kvm-amd" ];
+    extraModprobeConfig = ''
+      options kvm_intel nested=1
+      options kvm_amd nested=1
+    '';
   };
 
   hardware.pulseaudio.enable = false;
@@ -47,6 +52,7 @@
     "d /mnt 0775 root users"
     "d /mnt/storage-fast 0775 root users"
     "d /mnt/storage 0775 root users"
+    "d /var/lib/libvirt/images 0775 root libvirtd"
   ];
 
   fileSystems."/mnt/storage-fast" = {
@@ -54,12 +60,12 @@
     fsType = "ext4";
     options = [
       "defaults"
-      "nofail"        # Continue boot if device is missing
-      "noauto"        # Don't mount at boot time
-      "x-systemd.automount"  # Automount when accessed
-      "gid=100"      # GID for users group
-      "dmask=002"    # Directory permissions
-      "fmask=113"    # File permissions
+      "nofail" # Continue boot if device is missing
+      "noauto" # Don't mount at boot time
+      "x-systemd.automount" # Automount when accessed
+      "gid=100" # GID for users group
+      "dmask=002" # Directory permissions
+      "fmask=113" # File permissions
     ];
   };
 
@@ -84,11 +90,51 @@
   networking = {
     hostName = "hal9000";
     domain = "home.urandom.io";
-    networkmanager.enable = true;
-    hosts = {
-      "127.0.0.1" = [ "localhost" "${config.networking.hostName}" ];
+    useNetworkd = true;
+    useDHCP = false;
+    nftables.enable = true;
+
+    # Configure the bridge
+    bridges = {
+      br0 = {
+        interfaces = [ "enp6s0" ];
+      };
     };
-    firewall.enable = false;
+    # Configure interfaces
+    interfaces = {
+      br0.useDHCP = true;
+      enp6s0.useDHCP = false;
+    };
+  };
+
+  # systemd-networkd configuration
+  systemd.network = {
+    enable = true;
+    networks = {
+      "10-br0" = {
+        matchConfig = {
+          Name = "br0";
+        };
+        networkConfig = {
+          DHCP = "ipv4";
+        };
+        linkConfig = {
+          Promiscuous = "yes";
+          MACAddress = "a0:36:bc:e7:65:b8";
+        };
+      };
+      "20-enp6s0" = {
+        matchConfig = {
+          Name = "enp6s0";
+        };
+        networkConfig = {
+          Bridge = "br0";
+        };
+        linkConfig = {
+          Promiscuous = "yes";
+        };
+      };
+    };
   };
 
   services = {
@@ -103,6 +149,30 @@
         AuthorizedKeysCommandUser = "root";
       };
     };
+  };
+
+  services.rustdesk-server = {
+    enable = true;
+    openFirewall = true;
+    relayIP = "home.urandom.io";
+  };
+
+  systemd.user.services.sunshine = {
+    description = "Sunshine self-hosted game stream host for Moonlight";
+    startLimitBurst = 5;
+    startLimitIntervalSec = 500;
+    serviceConfig = {
+      ExecStart = "${config.security.wrapperDir}/sunshine";
+      Restart = "on-failure";
+      RestartSec = "5s";
+    };
+  };
+
+  security.wrappers.sunshine = {
+    owner = "root";
+    group = "root";
+    capabilities = "cap_sys_admin+p";
+    source = "${pkgs.sunshine}/bin/sunshine";
   };
 
   services.ollama = {
@@ -189,7 +259,58 @@
     };
     incus.enable = true;
     vswitch.enable = true;
-    libvirtd.enable = true;
+
+    libvirtd = {
+      enable = true;
+      qemu = {
+        package = pkgs.qemu_kvm;
+        runAsRoot = false;
+        swtpm.enable = true;
+        ovmf = {
+          enable = true;
+          packages = [ pkgs.OVMFFull.fd ];
+        };
+      };
+      onBoot = "ignore";
+      onShutdown = "shutdown";
+      allowedBridges = [
+        "virbr0"
+        "br0"
+      ];
+    };
+  };
+
+  # Create the default network configuration for libvirt
+  systemd.services.libvirtd-network-bridge = {
+    enable = true;
+    description = "Libvirt Bridge Network Setup";
+    wantedBy = [ "multi-user.target" ];
+    requires = [ "libvirtd.service" ];
+    after = [ "libvirtd.service" ];
+    path = [ pkgs.libvirt ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = "yes";
+    };
+    script = ''
+      # Define the network if it doesn't exist
+      virsh net-list --all | grep -q bridge-network || virsh net-define ${pkgs.writeText "bridge-network.xml" ''
+        <network>
+          <name>bridge-network</name>
+          <forward mode="bridge"/>
+          <bridge name="br0"/>
+        </network>
+      ''}
+      # Set as default network
+      virsh net-list --all | grep -q bridge-network || virsh net-autostart bridge-network
+      virsh net-list --all | grep -q bridge-network || virsh net-start bridge-network
+      # Set as default network if not already set
+      current_default=$(virsh net-info default 2>/dev/null | grep -q "Active.*yes" && echo "yes" || echo "no")
+      if [ "$current_default" = "yes" ]; then
+        virsh net-destroy default || true
+        virsh net-undefine default || true
+      fi
+    '';
   };
 
   time.timeZone = "America/Phoenix";
@@ -299,7 +420,7 @@
 
   users.defaultUserShell = pkgs.zsh;
 
-
+  programs.virt-manager.enable = true;
   programs.nix-ld.enable = true;
   programs.nix-ld.libraries = with pkgs; [
     autoconf
@@ -333,14 +454,24 @@
   ];
 
   environment.systemPackages = with pkgs; [
+    bridge-utils
     glxinfo
     nvidia-vaapi-driver
     nvtopPackages.nvidia
+    OVMF
     python311Packages.huggingface-hub
+    sunshine
     unstablePkgs.ollama-cuda
     vulkan-tools
+    xorriso
   ];
 
   system.stateVersion = "24.05";
+
+  systemd.services.systemd-networkd-wait-online = {
+    serviceConfig = {
+      ExecStart = [ "" "${config.systemd.package}/lib/systemd/systemd-networkd-wait-online --any" ];
+    };
+  };
 }
 

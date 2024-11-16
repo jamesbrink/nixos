@@ -5,12 +5,13 @@
     isNormalUser = true;
     description = "James Brink";
     extraGroups = [
-      "networkmanager"
-      "wheel"
       "docker"
-      "qemu-libvirtd"
-      "libvirtd"
       "incus-admin"
+      "kvm"
+      "libvirtd"
+      "networkmanager"
+      "qemu-libvirtd"
+      "wheel"
     ];
     shell = pkgs.zsh;
     useDefaultShell = true;
