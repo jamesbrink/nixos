@@ -257,7 +257,49 @@
         };
       };
     };
-    incus.enable = true;
+    incus = {
+      enable = true;
+      preseed = {
+        networks = [
+          {
+            config = {
+              "ipv4.address" = "10.0.100.1/24";
+              "ipv4.nat" = "true";
+            };
+            name = "incusbr0";
+            type = "bridge";
+          }
+        ];
+        profiles = [
+          {
+            devices = {
+              eth0 = {
+                name = "eth0";
+                network = "incusbr0";
+                type = "nic";
+              };
+              root = {
+                path = "/";
+                pool = "default";
+                size = "100GiB";
+                type = "disk";
+              };
+            };
+            name = "default";
+          }
+        ];
+        storage_pools = [
+          {
+            config = {
+              source = "/var/lib/incus/storage-pools/default";
+            };
+            driver = "dir";
+            name = "default";
+          }
+        ];
+      };
+    };
+
     vswitch.enable = true;
 
     libvirtd = {
@@ -456,12 +498,17 @@
   environment.systemPackages = with pkgs; [
     bridge-utils
     glxinfo
+    incus
     nvidia-vaapi-driver
     nvtopPackages.nvidia
     OVMF
     python311Packages.huggingface-hub
+    spice
+    spice-gtk
+    spice-protocol
     sunshine
     unstablePkgs.ollama-cuda
+    virt-viewer
     vulkan-tools
     xorriso
   ];
@@ -473,5 +520,8 @@
       ExecStart = [ "" "${config.systemd.package}/lib/systemd/systemd-networkd-wait-online --any" ];
     };
   };
+
+  # Add this section for SPICE configuration
+  services.spice-vdagentd.enable = true;
 }
 
