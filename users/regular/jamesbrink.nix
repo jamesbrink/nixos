@@ -12,6 +12,7 @@
       "networkmanager"
       "qemu-libvirtd"
       "wheel"
+      "input"
     ];
     shell = pkgs.zsh;
     useDefaultShell = true;

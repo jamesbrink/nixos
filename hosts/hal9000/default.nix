@@ -13,6 +13,17 @@
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
 
+  security.audit.enable = true;
+  security.auditd.enable = true;
+  security.audit.failureMode = "printk";
+  security.audit.rules = [
+    "-a exit,always -F arch=b64 -S execve"
+    "-w /etc/passwd -p wa -k passwd_changes"
+    "-w /etc/shadow -p wa -k shadow_changes"
+    "-w /var/log/audit/ -p wa -k audit_logs"
+  ];
+
+
   nix = {
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
@@ -28,6 +39,7 @@
   nixpkgs.config.allowUnfree = true;
 
   boot = {
+    kernelParams = [ "audit=1" ];
     kernel.sysctl."kernel.dmesg_restrict" = 0;
     loader = {
       systemd-boot.enable = true;
@@ -59,13 +71,9 @@
     device = "/dev/disk/by-uuid/7f4b7db5-b6e3-4874-a4e9-52ca0f48576f";
     fsType = "ext4";
     options = [
-      "defaults"
-      "nofail" # Continue boot if device is missing
-      "noauto" # Don't mount at boot time
-      "x-systemd.automount" # Automount when accessed
-      "gid=100" # GID for users group
-      "dmask=002" # Directory permissions
-      "fmask=113" # File permissions
+      "rw"
+      "noatime"
+      "nofail"
     ];
   };
 
@@ -260,41 +268,25 @@
     incus = {
       enable = true;
       preseed = {
-        networks = [
-          {
-            config = {
-              "ipv4.address" = "10.0.100.1/24";
-              "ipv4.nat" = "true";
-            };
-            name = "incusbr0";
-            type = "bridge";
-          }
-        ];
         profiles = [
           {
+            name = "nfs-kvm";
+            config = {
+              "security.nesting" = "true"; # Required for NFS
+              "security.privileged" = "true"; # Required for KVM
+            };
             devices = {
               eth0 = {
                 name = "eth0";
-                network = "incusbr0";
+                nictype = "bridged";
+                parent = "br0";
                 type = "nic";
               };
-              root = {
-                path = "/";
-                pool = "default";
-                size = "100GiB";
-                type = "disk";
+              kvm = {
+                type = "unix-char";
+                path = "/dev/kvm";
               };
             };
-            name = "default";
-          }
-        ];
-        storage_pools = [
-          {
-            config = {
-              source = "/var/lib/incus/storage-pools/default";
-            };
-            driver = "dir";
-            name = "default";
           }
         ];
       };
@@ -496,6 +488,7 @@
   ];
 
   environment.systemPackages = with pkgs; [
+    audit
     bridge-utils
     glxinfo
     incus
