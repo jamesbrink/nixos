@@ -165,23 +165,37 @@
     relayIP = "home.urandom.io";
   };
 
-  systemd.user.services.sunshine = {
-    description = "Sunshine self-hosted game stream host for Moonlight";
-    startLimitBurst = 5;
-    startLimitIntervalSec = 500;
-    serviceConfig = {
-      ExecStart = "${config.security.wrapperDir}/sunshine";
-      Restart = "on-failure";
-      RestartSec = "5s";
-    };
+
+  services.sunshine = {
+    enable = true;
+    autoStart = true;
+    capSysAdmin = true;
+    openFirewall = true;
   };
 
-  security.wrappers.sunshine = {
-    owner = "root";
-    group = "root";
-    capabilities = "cap_sys_admin+p";
-    source = "${pkgs.sunshine}/bin/sunshine";
-  };
+  systemd.services."getty@tty1".enable = false;
+  systemd.services."autovt@tty1".enable = false;
+
+  # services.displayManager.autoLogin.enable = true;
+  # services.displayManager.autoLogin.user = "jamesbrink";
+
+  # systemd.user.services.sunshine = {
+  #   description = "Sunshine self-hosted game stream host for Moonlight";
+  #   startLimitBurst = 5;
+  #   startLimitIntervalSec = 500;
+  #   serviceConfig = {
+  #     ExecStart = "${config.security.wrapperDir}/sunshine";
+  #     Restart = "on-failure";
+  #     RestartSec = "5s";
+  #   };
+  # };
+
+  # security.wrappers.sunshine = {
+  #   owner = "root";
+  #   group = "root";
+  #   capabilities = "cap_sys_admin+p";
+  #   source = "${pkgs.sunshine}/bin/sunshine";
+  # };
 
   services.ollama = {
     enable = false;
@@ -272,8 +286,8 @@
           {
             name = "nfs-kvm";
             config = {
-              "security.nesting" = "true"; # Required for NFS
-              "security.privileged" = "true"; # Required for KVM
+              "security.nesting" = "true";
+              "security.privileged" = "true";
             };
             devices = {
               eth0 = {
