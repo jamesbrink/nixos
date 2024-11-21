@@ -27,9 +27,13 @@
       url = "git+ssh://git@github.com/jamesbrink/nix-secrets.git";
       flake = false;
     };
+    vscode-server = {
+      url = "github:nix-community/nixos-vscode-server";
+      inputs.nixpkgs.follows = "nixos-unstable";
+    };
   };
 
-  outputs = { self, nixpkgs, nixos-unstable, home-manager, home-manager-unstable, agenix, secrets, ... }@inputs:
+  outputs = { self, nixpkgs, nixos-unstable, home-manager, home-manager-unstable, agenix, secrets, vscode-server, ... }@inputs:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
@@ -80,6 +84,10 @@
           modules = [
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
+            vscode-server.nixosModules.default
+            ({ config, pkgs, ... }: {
+              services.vscode-server.enable = true;
+            })
             ./hosts/hal9000/default.nix
 
             # Use unstable packages

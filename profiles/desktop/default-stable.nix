@@ -11,7 +11,8 @@
     gnome3.gnome-remote-desktop
     gnome3.gnome-session
     nerdfonts
-    rustdesk
+    # rustdesk
+    rustdesk-flutter
     slack
     vscode
   ];
@@ -20,6 +21,7 @@
     xrdp = {
       enable = true;
       defaultWindowManager = "${pkgs.gnome3.gnome-session}/bin/gnome-session";
+      openFirewall = true;
     };
 
     xserver = {

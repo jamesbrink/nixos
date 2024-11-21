@@ -45,7 +45,7 @@
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
-    kernelModules = [ "kvm-intel" "kvm-amd" ];
+    kernelModules = [ "kvm-intel" "kvm-amd" "audit" ];
     extraModprobeConfig = ''
       options kvm_intel nested=1
       options kvm_amd nested=1
@@ -100,7 +100,47 @@
     domain = "home.urandom.io";
     useNetworkd = true;
     useDHCP = false;
-    nftables.enable = true;
+    nftables = {
+      enable = true;
+      # ruleset = ''
+      #   table inet filter {
+      #     chain input {
+      #       type filter hook input priority 0; policy drop;
+
+      #       # Allow established/related connections
+      #       ct state established,related accept
+
+      #       # Allow loopback
+      #       iifname lo accept
+
+      #       # Allow all traffic on bridge interface and log before accepting
+      #       iifname br0 counter log prefix "br0-accepted: " accept
+
+      #       # Allow ICMP and ICMPv6
+      #       ip protocol icmp accept
+      #       ip6 nexthdr icmpv6 accept
+
+      #       # Allow SSH (optional since br0 is already accepted, but explicit)
+      #       tcp dport 22 accept
+
+      #       # Allow RDP
+      #       tcp dport 3389 accept
+
+      #       # Log dropped packets to help debug
+      #       counter log prefix "nftables-dropped: " drop
+      #     }
+
+      #     chain forward {
+      #       type filter hook forward priority 0; policy accept;
+
+      #       # Allow all forwarding on bridge
+      #       iifname br0 accept
+      #       oifname br0 accept
+      #     }
+      #   }
+      # '';
+    };
+    search = [ "home.urandom.io" "urandom.io" ];
 
     # Configure the bridge
     bridges = {
@@ -113,9 +153,21 @@
       br0.useDHCP = true;
       enp6s0.useDHCP = false;
     };
+
+    # Add explicit firewall rules
+    firewall = {
+      enable = false;
+      allowedTCPPorts = [ 22 3389 ];
+      interfaces = {
+        br0 = {
+          allowedTCPPorts = [ 22 3389 ];
+        };
+      };
+    };
   };
 
   # systemd-networkd configuration
+  # services.resolved.enable = false;
   systemd.network = {
     enable = true;
     networks = {
@@ -130,6 +182,10 @@
           Promiscuous = "yes";
           MACAddress = "a0:36:bc:e7:65:b8";
         };
+        domains = [
+          "home.urandom.io"
+          "urandom.io"
+        ];
       };
       "20-enp6s0" = {
         matchConfig = {
@@ -159,22 +215,21 @@
     };
   };
 
-  services.rustdesk-server = {
-    enable = true;
-    openFirewall = true;
-    relayIP = "home.urandom.io";
-  };
+  # services.rustdesk-server = {
+  #   enable = true;
+  #   openFirewall = true;
+  #   relayIP = "home.urandom.io";
+  # };
 
+  # services.sunshine = {
+  #   enable = true;
+  #   autoStart = true;
+  #   capSysAdmin = true;
+  #   openFirewall = true;
+  # };
 
-  services.sunshine = {
-    enable = true;
-    autoStart = true;
-    capSysAdmin = true;
-    openFirewall = true;
-  };
-
-  systemd.services."getty@tty1".enable = false;
-  systemd.services."autovt@tty1".enable = false;
+  # systemd.services."getty@tty1".enable = false;
+  # systemd.services."autovt@tty1".enable = false;
 
   # services.displayManager.autoLogin.enable = true;
   # services.displayManager.autoLogin.user = "jamesbrink";
@@ -227,6 +282,7 @@
     ];
     secrets = {
       "secrets/global/ssh/authorized_keys.age".file = "${secretsPath}/secrets/global/ssh/authorized_keys.age";
+      "secrets/hal9000/tailscale.age".file = "${secretsPath}/secrets/hal9000/tailscale.age";
     };
   };
 
@@ -512,6 +568,7 @@
     python311Packages.huggingface-hub
     spice
     spice-gtk
+    steam
     spice-protocol
     sunshine
     unstablePkgs.ollama-cuda
@@ -530,5 +587,22 @@
 
   # Add this section for SPICE configuration
   services.spice-vdagentd.enable = true;
+
+  # programs.steam = {
+  #   enable = true;
+  #   remotePlay.openFirewall = true;
+  #   dedicatedServer.openFirewall = true;
+  # };
+
+  services.resolved = {
+    enable = true;
+    fallbackDns = [ ]; # This disables all fallback DNS servers
+  };
+
+  services.tailscale = {
+    enable = true;
+    openFirewall = true;
+    authKeyFile = "${config.age.secrets."secrets/hal9000/tailscale.age".path}";
+  };
 }
 
