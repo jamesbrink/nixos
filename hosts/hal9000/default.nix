@@ -52,6 +52,7 @@
     '';
   };
 
+  hardware.nvidia-container-toolkit.enable = true;
   hardware.pulseaudio.enable = false;
 
   swapDevices = [{
@@ -167,7 +168,6 @@
   };
 
   # systemd-networkd configuration
-  # services.resolved.enable = false;
   systemd.network = {
     enable = true;
     networks = {
@@ -287,13 +287,13 @@
   };
 
   virtualisation = {
-    docker = {
+    podman = {
       enable = true;
-      enableOnBoot = true;
+      dockerCompat = true;
+      defaultNetwork.settings.dns_enabled = true;
       enableNvidia = true;
     };
     oci-containers = {
-      backend = "docker";
       containers = {
         ollama = {
           image = "ollama/ollama";
@@ -387,7 +387,7 @@
   # Create the default network configuration for libvirt
   systemd.services.libvirtd-network-bridge = {
     enable = true;
-    description = "Libvirt Bridge Network Setup";
+    description = "Libvirt Network Setup";
     wantedBy = [ "multi-user.target" ];
     requires = [ "libvirtd.service" ];
     after = [ "libvirtd.service" ];
@@ -397,7 +397,7 @@
       RemainAfterExit = "yes";
     };
     script = ''
-      # Define the network if it doesn't exist
+      # Define the bridge network if it doesn't exist
       virsh net-list --all | grep -q bridge-network || virsh net-define ${pkgs.writeText "bridge-network.xml" ''
         <network>
           <name>bridge-network</name>
@@ -405,15 +405,28 @@
           <bridge name="br0"/>
         </network>
       ''}
-      # Set as default network
-      virsh net-list --all | grep -q bridge-network || virsh net-autostart bridge-network
-      virsh net-list --all | grep -q bridge-network || virsh net-start bridge-network
-      # Set as default network if not already set
-      current_default=$(virsh net-info default 2>/dev/null | grep -q "Active.*yes" && echo "yes" || echo "no")
-      if [ "$current_default" = "yes" ]; then
-        virsh net-destroy default || true
-        virsh net-undefine default || true
-      fi
+
+      # Enable bridge network
+      virsh net-list --all | grep -q "bridge-network.*inactive" && virsh net-start bridge-network
+      virsh net-autostart bridge-network
+
+      # Ensure default network is defined and running
+      virsh net-list --all | grep -q default || virsh net-define ${pkgs.writeText "default-network.xml" ''
+        <network>
+          <name>default</name>
+          <forward mode="nat"/>
+          <bridge name="virbr0" stp="on" delay="0"/>
+          <ip address="192.168.122.1" netmask="255.255.255.0">
+            <dhcp>
+              <range start="192.168.122.2" end="192.168.122.254"/>
+            </dhcp>
+          </ip>
+        </network>
+      ''}
+
+      # Enable default network
+      virsh net-list --all | grep -q "default.*inactive" && virsh net-start default
+      virsh net-autostart default
     '';
   };
 
@@ -560,16 +573,18 @@
   environment.systemPackages = with pkgs; [
     audit
     bridge-utils
+    distrobox
     glxinfo
     incus
     nvidia-vaapi-driver
     nvtopPackages.nvidia
     OVMF
+    podman
     python311Packages.huggingface-hub
     spice
     spice-gtk
-    steam
     spice-protocol
+    steam
     sunshine
     unstablePkgs.ollama-cuda
     virt-viewer
