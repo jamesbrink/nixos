@@ -4,6 +4,7 @@
   environment.systemPackages = with pkgs; [
     at
     bitwarden-cli
+    btop
     bzip2
     cachix
     dig
