@@ -333,6 +333,36 @@
           ];
           autoStart = true;
         };
+
+        open-webui = {
+          image = "ghcr.io/open-webui/open-webui:main";
+          volumes = [
+            "open-webui:/app/backend/data"
+          ];
+          ports = [
+            "3000:8080"
+          ];
+          extraOptions = [
+            "--add-host=host.docker.internal:host-gateway"
+            "--name=open-webui"
+          ];
+          autoStart = true;
+        };
+
+        pipelines = {
+          image = "ghcr.io/open-webui/pipelines:main";
+          volumes = [
+            "pipelines:/app/pipelines"
+          ];
+          ports = [
+            "9099:9099"
+          ];
+          extraOptions = [
+            "--add-host=host.docker.internal:host-gateway"
+            "--name=pipelines"
+          ];
+          autoStart = true;
+        };
       };
     };
     incus = {
