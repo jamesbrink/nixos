@@ -1,0 +1,56 @@
+{
+  "rules": [
+    {
+      "match": "*.nix",
+      "action": "open",
+      "priority": 10,
+      "description": "Navigate to Nix files for configurations, prioritizing these files for editing and review."
+    },
+    {
+      "match": "*.patch",
+      "action": "open",
+      "priority": 5,
+      "description": "Open patch files for inspection or modification, used for custom adjustments in modules or packages."
+    },
+    {
+      "match": "flake.nix",
+      "action": "open",
+      "description": "Always open the flake.nix file for reviewing or editing the core NixOS configuration entry point."
+    },
+    {
+      "match": "flake.lock",
+      "action": "open",
+      "description": "Open the flake.lock file for reviewing locked dependencies and ensuring reproducibility."
+    },
+    {
+      "match": "hosts/*/default.nix",
+      "action": "open",
+      "priority": 15,
+      "description": "Focus on host-specific default.nix files to configure and customize machine-level settings."
+    },
+    {
+      "match": "modules/**/*.nix",
+      "action": "open",
+      "priority": 8,
+      "description": "Dive into module configurations for shared services, packages, and system-specific setups."
+    },
+    {
+      "match": "profiles/**/*.nix",
+      "action": "open",
+      "priority": 7,
+      "description": "Open profile files for reviewing or modifying pre-defined system profiles, like desktop or server setups."
+    },
+    {
+      "match": "users/**/*.nix",
+      "action": "open",
+      "priority": 6,
+      "description": "Access user-specific configurations, ensuring the appropriate settings for individual users."
+    },
+    {
+      "match": "README.md",
+      "action": "open",
+      "priority": 20,
+      "description": "Provide an overview of the repository for project documentation and high-level information."
+    }
+  ]
+}

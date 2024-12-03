@@ -103,43 +103,6 @@
     useDHCP = false;
     nftables = {
       enable = true;
-      # ruleset = ''
-      #   table inet filter {
-      #     chain input {
-      #       type filter hook input priority 0; policy drop;
-
-      #       # Allow established/related connections
-      #       ct state established,related accept
-
-      #       # Allow loopback
-      #       iifname lo accept
-
-      #       # Allow all traffic on bridge interface and log before accepting
-      #       iifname br0 counter log prefix "br0-accepted: " accept
-
-      #       # Allow ICMP and ICMPv6
-      #       ip protocol icmp accept
-      #       ip6 nexthdr icmpv6 accept
-
-      #       # Allow SSH (optional since br0 is already accepted, but explicit)
-      #       tcp dport 22 accept
-
-      #       # Allow RDP
-      #       tcp dport 3389 accept
-
-      #       # Log dropped packets to help debug
-      #       counter log prefix "nftables-dropped: " drop
-      #     }
-
-      #     chain forward {
-      #       type filter hook forward priority 0; policy accept;
-
-      #       # Allow all forwarding on bridge
-      #       iifname br0 accept
-      #       oifname br0 accept
-      #     }
-      #   }
-      # '';
     };
     search = [ "home.urandom.io" "urandom.io" ];
 

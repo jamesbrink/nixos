@@ -37,6 +37,7 @@
     speedtest-cli
     thefuck
     tmux
+    tree
     unzip
     vim
     wget
