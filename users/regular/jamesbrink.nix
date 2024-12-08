@@ -20,11 +20,13 @@
   };
 
   home-manager.users.jamesbrink = { pkgs, config, lib, ... }: {
+    home.file."/home/jamesbrink/.ssh/config_external" = {
+      source = .ssh/config_external;
+    };
     programs = {
       starship = {
         enable = true;
       };
-
       zsh = {
         enable = true;
         enableCompletion = true;
@@ -47,80 +49,9 @@
       ssh = {
         enable = true;
         controlMaster = "auto";
-        extraConfig = ''
-          Host 192.168.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 10.*.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.16.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.17.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.18.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.19.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.20.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.21.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.22.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.23.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.24.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.25.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.26.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.27.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.28.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.29.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.30.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-          Host 172.31.*.*
-            StrictHostKeyChecking no
-            CheckHostIP no
-            UserKnownHostsFile=/dev/null
-        '';
+        includes = [
+          "/home/jamesbrink/.ssh/config_external"
+        ];
       };
     };
 
