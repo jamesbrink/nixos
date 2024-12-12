@@ -254,7 +254,7 @@
       enable = true;
       dockerCompat = true;
       defaultNetwork.settings.dns_enabled = true;
-      enableNvidia = true;
+      # enableNvidia = true;
     };
     oci-containers = {
       containers = {
@@ -440,15 +440,15 @@
     };
   };
 
-  hardware.opengl = {
-    enable = true;
-    driSupport = true;
-    driSupport32Bit = true;
-    extraPackages = with pkgs; [
-      vaapiVdpau
-      libvdpau-va-gl
-    ];
-  };
+  # hardware.opengl = {
+  #   enable = true;
+  #   driSupport = true;
+  #   driSupport32Bit = true;
+  #   extraPackages = with pkgs; [
+  #     vaapiVdpau
+  #     libvdpau-va-gl
+  #   ];
+  # };
 
   services.xserver = {
     videoDrivers = [ "nvidia" ];
@@ -585,7 +585,7 @@
     xorriso
   ];
 
-  system.stateVersion = "24.05";
+  system.stateVersion = "24.11";
 
   systemd.services.systemd-networkd-wait-online = {
     serviceConfig = {
