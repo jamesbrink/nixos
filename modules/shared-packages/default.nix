@@ -16,6 +16,7 @@
     home-manager
     htop
     httpie
+    inxi
     iperf2
     ipmitool
     jq
