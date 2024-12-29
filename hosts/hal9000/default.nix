@@ -274,9 +274,10 @@
         };
 
         comfyui = {
-          image = "jamesbrink/comfyui";
+          image = "jamesbrink/comfyui:v0.3.9";
           volumes = [
             "/home/jamesbrink/AI/ComfyUI:/comfyui"
+            "/home/jamesbrink/AI/ComfyUI-User-Data:/comfyui/user"
             "/home/jamesbrink/AI/Models/StableDiffusion:/comfyui/models"
             "/home/jamesbrink/AI/Output:/comfyui/output"
             "/home/jamesbrink/AI/Input:/comfyui/input"
@@ -293,6 +294,21 @@
             "8190"
             "--preview-method"
             "auto"
+          ];
+          autoStart = true;
+        };
+
+        fooocus = {
+          image = "jamesbrink/fooocus:latest";
+          volumes = [
+            "/home/jamesbrink/AI/Models/StableDiffusion:/fooocus/models"
+            "/home/jamesbrink/AI/Output:/fooocus/output"
+          ];
+          extraOptions = [
+            "--gpus=all"
+            "--network=host"
+            "--name=fooocus"
+            "--user=${toString config.users.users.jamesbrink.uid}:${toString config.users.users.jamesbrink.group}"
           ];
           autoStart = true;
         };
