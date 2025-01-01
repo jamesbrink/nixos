@@ -21,6 +21,7 @@
     ipmitool
     jq
     lf
+    lsof
     neofetch
     neovim
     netcat

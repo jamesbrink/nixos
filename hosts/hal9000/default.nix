@@ -78,6 +78,11 @@
     ];
   };
 
+  fileSystems."/home/jamesbrink/AI" = {
+    device = "/mnt/storage-fast/AI";
+    options = [ "bind" ];
+  };
+
   fileSystems."/mnt/storage" = {
     device = "alienware.home.urandom.io:/storage";
     fsType = "nfs";
@@ -88,6 +93,17 @@
       "x-systemd.automount"
     ];
   };
+
+  fileSystems."/export/storage-fast" = {
+    device = "/mnt/storage-fast";
+    options = [ "bind" ];
+  };
+
+  services.nfs.server.enable = true;
+  services.nfs.server.exports = ''
+    /export                 10.70.100.0/24(rw,fsid=0,no_subtree_check) 100.64.0.0/10(rw,fsid=0,no_subtree_check)
+    /export/storage-fast    10.70.100.0/24(rw,nohide,insecure,no_subtree_check) 100.64.0.0/10(rw,nohide,insecure,no_subtree_check)
+  '';
 
   systemd.sleep.extraConfig = ''
     AllowSuspend=no
@@ -633,4 +649,3 @@
     authKeyFile = "${config.age.secrets."secrets/hal9000/tailscale.age".path}";
   };
 }
-
