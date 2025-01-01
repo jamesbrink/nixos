@@ -16,7 +16,9 @@
     ];
     shell = pkgs.zsh;
     useDefaultShell = true;
-    packages = with pkgs; [ ];
+    packages = with pkgs; [
+      google-chrome
+    ];
   };
 
   home-manager.users.jamesbrink = { pkgs, config, lib, ... }: {
