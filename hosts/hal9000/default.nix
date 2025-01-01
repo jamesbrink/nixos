@@ -616,11 +616,11 @@
   # Add this section for SPICE configuration
   services.spice-vdagentd.enable = true;
 
-  # programs.steam = {
-  #   enable = true;
-  #   remotePlay.openFirewall = true;
-  #   dedicatedServer.openFirewall = true;
-  # };
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
+  };
 
   services.resolved = {
     enable = true;
