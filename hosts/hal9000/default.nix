@@ -274,7 +274,7 @@
         };
 
         comfyui = {
-          image = "jamesbrink/comfyui:v0.3.9";
+          image = "jamesbrink/comfyui:testing";
           volumes = [
             "/home/jamesbrink/AI/ComfyUI:/comfyui"
             "/home/jamesbrink/AI/ComfyUI-User-Data:/comfyui/user"
@@ -295,6 +295,10 @@
             "--preview-method"
             "auto"
           ];
+          environment = {
+            PUID = "${toString config.users.users.jamesbrink.uid}";
+            PGID = "${toString config.users.users.jamesbrink.group}";
+          };
           autoStart = true;
         };
 
