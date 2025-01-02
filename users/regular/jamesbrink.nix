@@ -17,6 +17,7 @@
     shell = pkgs.zsh;
     useDefaultShell = true;
     packages = with pkgs; [
+      code-cursor
       google-chrome
     ];
   };
