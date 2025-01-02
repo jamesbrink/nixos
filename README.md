@@ -6,47 +6,53 @@ This repository contains my personal NixOS configurations managed through the Ni
 
 This project uses:
 - Nix Flakes for reproducible builds and dependency management
+- Multi-host configuration with a mix of stable (24.11) and unstable channels
 - Home Manager for user environment management
 - Agenix for secrets management
 - VSCode Server support for remote development
+- Modular configuration structure for better maintainability
 
 ## Project Structure
 
 ```
 .
-├── flake.nix         # Main flake configuration and input sources
-├── hosts/            # Host-specific configurations
+├── README.md
+├── flake.lock
+├── flake.nix        # Main flake configuration and input sources
+├── hosts/           # Host-specific configurations
 │   ├── hal9000/     # Configuration for hal9000 machine
+│   │   ├── default.nix
+│   │   └── hardware-configuration.nix
 │   ├── n100-01/     # Configuration for n100-01 machine
+│   │   ├── default.nix
+│   │   └── hardware-configuration.nix
 │   └── n100-03/     # Configuration for n100-03 machine
-├── modules/          # Shared NixOS modules
+│       ├── default.nix
+│       └── hardware-configuration.nix
+├── modules/         # Shared NixOS modules
 │   ├── desktop/     # Desktop environment configurations
 │   ├── packages/    # Custom package definitions
+│   │   └── ollama
+│   │       ├── default.nix
+│   │       ├── disable-git.patch
+│   │       └── skip-rocm-cp.patch
 │   ├── services/    # System service configurations
 │   ├── shared-packages/ # Common package sets
+│   │   ├── default.nix
+│   │   └── devops.nix
 │   └── system/      # Core system configurations
 ├── profiles/        # Reusable system profiles
+│   ├── desktop
+│   │   ├── default-stable.nix
+│   │   └── default.nix
+│   ├── minimal
+│   └── server
+│       └── default.nix
 └── users/          # User-specific configurations
+    ├── regular
+    │   └── jamesbrink.nix
+    └── root
 ```
-
-## Features
-
-- Multi-host configuration management
-- Mix of stable (24.05) and unstable channels
-- Integrated Home Manager for user environment management
-- Secure secrets management with Agenix
-- Remote development support with VSCode Server
-- Modular configuration structure
-
-## Dependencies
-
-This configuration relies on several external inputs:
-- nixpkgs (nixos-24.05)
-- nixos-unstable
-- home-manager (release-24.05)
-- home-manager-unstable
-- agenix
-- vscode-server
 
 ## Quick Start
 
@@ -81,15 +87,9 @@ User configurations are managed through Home Manager and stored in the `users/` 
 
 Secrets are managed using Agenix and stored in a separate private repository. The secrets repository is referenced as an input in the flake configuration.
 
-## Contributing
-
-1. Fork the repository
-2. Create a new branch for your changes
-3. Submit a pull request with a clear description of your changes
-
 ## License
 
-This project is open source and available under the terms of your chosen license.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
