@@ -73,6 +73,21 @@
           ];
         };
 
+        alienware = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+
+          specialArgs = {
+            inherit inputs agenix;
+            secretsPath = "${inputs.secrets}";
+          };
+
+          modules = [
+            home-manager.nixosModules.home-manager
+            agenix.nixosModules.default
+            ./hosts/alienware/default.nix
+          ];
+        };
+
         hal9000 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
 
