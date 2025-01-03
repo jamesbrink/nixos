@@ -1,5 +1,4 @@
 { config, pkgs, lib, secretsPath, inputs, self, ... } @args:
-
 {
   disabledModules = [
     "services/misc/ollama.nix"
@@ -36,7 +35,9 @@
     };
   };
 
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+  };
 
   boot = {
     kernelParams = [ "audit=1" ];
@@ -601,8 +602,10 @@
 
   environment.systemPackages = with pkgs; [
     audit
+    bottles
     bridge-utils
     distrobox
+    dotnetPackages.Nuget
     glxinfo
     incus
     nvidia-vaapi-driver
@@ -610,6 +613,7 @@
     OVMF
     podman
     python311Packages.huggingface-hub
+    samba4Full
     spice
     spice-gtk
     spice-protocol
@@ -618,6 +622,8 @@
     unstablePkgs.ollama-cuda
     virt-viewer
     vulkan-tools
+    winetricks
+    wineWowPackages.waylandFull
     xorriso
   ];
 
@@ -636,6 +642,7 @@
     enable = true;
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;
+    protontricks.enable = true;
   };
 
   services.resolved = {

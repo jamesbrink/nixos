@@ -2,20 +2,20 @@
 
 {
   environment.systemPackages = with pkgs; [
+    # rustdesk
     alacritty
     bitwarden
     blender
     chromium
     fira-code-nerdfont
+    fusuma
     gimp
-    libinput
     gnome-remote-desktop
     gnome-session
+    libinput
     libinput-gestures
     nerdfonts
-    # rustdesk
     rustdesk-flutter
-    fusuma
     slack
     vscode
   ];

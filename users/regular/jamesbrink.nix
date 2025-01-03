@@ -19,6 +19,7 @@
     packages = with pkgs; [
       code-cursor
       google-chrome
+      mailspring
     ];
   };
 

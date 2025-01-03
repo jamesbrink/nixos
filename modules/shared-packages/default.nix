@@ -28,6 +28,7 @@
     nfs-utils
     nixpkgs-fmt
     openssh
+    p7zip
     parted
     pciutils
     python3
