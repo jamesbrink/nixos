@@ -21,7 +21,10 @@
       code-cursor
       discord
       google-chrome
+      jetbrains.datagrip
       mailspring
+      signal-desktop
+      ferdium
     ];
   };
 
