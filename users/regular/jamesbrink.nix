@@ -17,10 +17,11 @@
     shell = pkgs.zsh;
     useDefaultShell = true;
     packages = with pkgs; [
+      claude-desktop.packages.${pkgs.system}.default
       code-cursor
+      discord
       google-chrome
       mailspring
-      claude-desktop.packages.${pkgs.system}.default
     ];
   };
 
