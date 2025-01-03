@@ -31,14 +31,21 @@
       url = "github:nix-community/nixos-vscode-server";
       inputs.nixpkgs.follows = "nixos-unstable";
     };
+    claude-desktop = {
+      url = "github:k3d3/claude-desktop-linux-flake";
+      inputs.nixpkgs.follows = "nixos-unstable";
+    };
   };
 
-  outputs = { self, nixpkgs, nixos-unstable, home-manager, home-manager-unstable, agenix, secrets, vscode-server, ... }@inputs:
+  outputs = { self, nixpkgs, nixos-unstable, home-manager, home-manager-unstable, agenix, secrets, vscode-server, claude-desktop, ... }@inputs:
     let
       system = "x86_64-linux";
+      lib = nixpkgs.lib;
       pkgs = import nixpkgs {
         inherit system;
-        config.allowUnfree = true;
+        config = {
+          allowUnfree = true;
+        };
       };
     in
     {
@@ -92,7 +99,7 @@
           system = "x86_64-linux";
 
           specialArgs = {
-            inherit inputs agenix self;
+            inherit inputs agenix self claude-desktop;
             secretsPath = "${inputs.secrets}";
           };
 

@@ -64,6 +64,12 @@ To deploy to a specific host (e.g., n100-01):
 nixos-rebuild switch --fast --flake .#n100-01 --target-host n100-01 --build-host n100-01 --use-remote-sudo
 ```
 
+Currently hosts need to be built like this do to some additions to the flake.nix:  
+
+```shell
+sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#hal9000 --verbose --impure
+```
+
 ### Adding a New Host
 
 1. Create a new directory under `hosts/` with your hostname

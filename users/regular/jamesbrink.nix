@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, claude-desktop, ... }:
 
 {
   users.users.jamesbrink = {
@@ -20,6 +20,7 @@
       code-cursor
       google-chrome
       mailspring
+      claude-desktop.packages.${pkgs.system}.default
     ];
   };
 
