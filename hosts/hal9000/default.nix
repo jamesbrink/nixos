@@ -414,6 +414,39 @@
     };
   };
 
+  # Keep OpenWebUI, Pipelines, Fooocus, ComfyUI and Ollama up to date
+  systemd.services.update-ai-containers = {
+    description = "Update AI container images";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = pkgs.writeScript "update-ai-containers" ''
+        #!${pkgs.bash}/bin/bash
+        ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/open-webui:main
+        ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/pipelines:main
+        ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
+        ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:testing
+        ${pkgs.podman}/bin/podman pull ollama/ollama
+        
+        # Restart containers to use new images
+        ${pkgs.systemd}/bin/systemctl restart pod@open-webui
+        ${pkgs.systemd}/bin/systemctl restart pod@pipelines
+        ${pkgs.systemd}/bin/systemctl restart pod@fooocus
+        ${pkgs.systemd}/bin/systemctl restart pod@comfyui
+        ${pkgs.systemd}/bin/systemctl restart pod@ollama
+      '';
+    };
+  };
+
+  # Add a timer to run it daily
+  systemd.timers.update-ai-containers = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+      RandomizedDelaySec = "1h";
+    };
+  };
+
   # Create the default network configuration for libvirt
   systemd.services.libvirtd-network-bridge = {
     enable = true;

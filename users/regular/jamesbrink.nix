@@ -17,14 +17,33 @@
     shell = pkgs.zsh;
     useDefaultShell = true;
     packages = with pkgs; [
+      atuin
+      barrier
       claude-desktop.packages.${pkgs.system}.default
       code-cursor
+      dbeaver-bin
       discord
-      google-chrome
-      jetbrains.datagrip
-      mailspring
-      signal-desktop
+      drawio
       ferdium
+      ffmpeg-full
+      filezilla
+      flameshot
+      google-chrome
+      imagemagick
+      insomnia
+      jetbrains.datagrip
+      lens
+      mailspring
+      meld
+      obsidian
+      openai-whisper-cpp
+      postman
+      signal-desktop
+      termius
+      wezterm
+      winbox4
+      wireshark
+      yt-dlp
     ];
   };
 

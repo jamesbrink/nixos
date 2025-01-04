@@ -39,6 +39,7 @@
     terraform-docs
     terraform-lsp
     tflint
+    yq-go
     zellij
     zfs
   ];

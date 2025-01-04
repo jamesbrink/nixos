@@ -17,6 +17,7 @@
     nerdfonts
     rustdesk-flutter
     slack
+    vlc
     vscode
   ];
 
