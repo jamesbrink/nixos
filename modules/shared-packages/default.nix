@@ -10,6 +10,7 @@
     dig
     direnv
     dnsutils
+    fastfetch
     fd
     git
     hdparm

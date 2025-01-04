@@ -424,12 +424,12 @@
         ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/open-webui:main
         ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/pipelines:main
         ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
-        ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:testing
+        # ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:testing
         ${pkgs.podman}/bin/podman pull ollama/ollama
         
         # Restart containers to use new images
         ${pkgs.systemd}/bin/systemctl restart podman-ollama
-        ${pkgs.systemd}/bin/systemctl restart podman-comfyui
+        # ${pkgs.systemd}/bin/systemctl restart podman-comfyui
         ${pkgs.systemd}/bin/systemctl restart podman-fooocus
         ${pkgs.systemd}/bin/systemctl restart podman-open-webui
         ${pkgs.systemd}/bin/systemctl restart podman-pipelines

@@ -22,6 +22,7 @@
     nerdfonts
     open-vm-tools
     opentofu
+    openvpn3
     openvswitch
     packer
     pre-commit

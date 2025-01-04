@@ -28,6 +28,7 @@
       ffmpeg-full
       filezilla
       flameshot
+      ghostty
       google-chrome
       imagemagick
       insomnia
@@ -35,14 +36,17 @@
       lens
       mailspring
       meld
+      nushell
       obsidian
       openai-whisper-cpp
       postman
       signal-desktop
       termius
-      wezterm
+      warp-terminal
+      waveterm
       winbox4
       wireshark
+      xonsh
       yt-dlp
     ];
   };

@@ -2,7 +2,6 @@
 
 {
   environment.systemPackages = with pkgs; [
-    # rustdesk
     alacritty
     bitwarden
     blender
@@ -12,9 +11,11 @@
     gimp
     gnome-remote-desktop
     gnome-session
+    gnome-tweaks
     libinput
     libinput-gestures
     nerdfonts
+    rustdesk
     rustdesk-flutter
     slack
     vlc
