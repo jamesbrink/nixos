@@ -428,11 +428,11 @@
         ${pkgs.podman}/bin/podman pull ollama/ollama
         
         # Restart containers to use new images
-        ${pkgs.systemd}/bin/systemctl restart pod@open-webui
-        ${pkgs.systemd}/bin/systemctl restart pod@pipelines
-        ${pkgs.systemd}/bin/systemctl restart pod@fooocus
-        ${pkgs.systemd}/bin/systemctl restart pod@comfyui
-        ${pkgs.systemd}/bin/systemctl restart pod@ollama
+        ${pkgs.systemd}/bin/systemctl restart podman-ollama
+        ${pkgs.systemd}/bin/systemctl restart podman-comfyui
+        ${pkgs.systemd}/bin/systemctl restart podman-fooocus
+        ${pkgs.systemd}/bin/systemctl restart podman-open-webui
+        ${pkgs.systemd}/bin/systemctl restart podman-pipelines
       '';
     };
   };
@@ -557,6 +557,12 @@
     zsh = {
       enable = true;
       autosuggestions.enable = true;
+    };
+    ssh = {
+      startAgent = true;
+      extraConfig = ''
+        AddKeysToAgent yes
+      '';
     };
     mosh.enable = true;
     firefox.enable = true;

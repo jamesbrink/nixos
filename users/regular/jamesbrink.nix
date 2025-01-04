@@ -51,6 +51,9 @@
     home.file."/home/jamesbrink/.ssh/config_external" = {
       source = .ssh/config_external;
     };
+    home.sessionVariables = {
+      SSH_AUTH_SOCK = lib.mkForce "/run/user/$(getent passwd ${config.home.username} | cut -d: -f3)/ssh-agent";
+    };
     programs = {
       starship = {
         enable = true;
