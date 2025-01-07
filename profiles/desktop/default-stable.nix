@@ -12,6 +12,7 @@
     gnome-remote-desktop
     gnome-session
     gnome-tweaks
+    inkscape-with-extensions
     libinput
     libinput-gestures
     nerdfonts

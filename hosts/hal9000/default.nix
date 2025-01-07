@@ -9,8 +9,14 @@
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
     ../../profiles/desktop/default-stable.nix
+    ../../profiles/keychron/default.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
+
+  # services.keychron-keyboard = {
+  #   enable = true;
+  #   user = "jamesbrink";
+  # };
 
   security.audit.enable = true;
   security.auditd.enable = true;
