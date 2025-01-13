@@ -297,7 +297,7 @@
         };
 
         comfyui = {
-          image = "jamesbrink/comfyui:testing";
+          image = "jamesbrink/comfyui:v0.3.10";
           volumes = [
             "/home/jamesbrink/AI/ComfyUI:/comfyui"
             "/home/jamesbrink/AI/ComfyUI-User-Data:/comfyui/user"
@@ -337,7 +337,7 @@
             "--name=fooocus"
             "--user=${toString config.users.users.jamesbrink.uid}:${toString config.users.users.jamesbrink.group}"
           ];
-          autoStart = true;
+          autoStart = false;
         };
 
         open-webui = {
@@ -429,14 +429,14 @@
         #!${pkgs.bash}/bin/bash
         ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/open-webui:main
         ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/pipelines:main
-        ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
+        # ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
         # ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:testing
         ${pkgs.podman}/bin/podman pull ollama/ollama
         
         # Restart containers to use new images
         ${pkgs.systemd}/bin/systemctl restart podman-ollama
         # ${pkgs.systemd}/bin/systemctl restart podman-comfyui
-        ${pkgs.systemd}/bin/systemctl restart podman-fooocus
+        # ${pkgs.systemd}/bin/systemctl restart podman-fooocus
         ${pkgs.systemd}/bin/systemctl restart podman-open-webui
         ${pkgs.systemd}/bin/systemctl restart podman-pipelines
       '';
