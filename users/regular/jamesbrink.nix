@@ -1,5 +1,8 @@
-{ config, pkgs, claude-desktop, ... }:
+{ config, pkgs, inputs, claude-desktop, ... }:
 
+let
+  unstable = pkgs.unstablePkgs;
+in
 {
   users.users.jamesbrink = {
     isNormalUser = true;
@@ -34,6 +37,7 @@
       insomnia
       jetbrains.datagrip
       lens
+      unstable.llama-cpp
       mailspring
       meld
       nushell
