@@ -297,7 +297,7 @@
         };
 
         comfyui = {
-          image = "jamesbrink/comfyui:v0.3.10";
+          image = "jamesbrink/comfyui:v0.3.12";
           volumes = [
             "/home/jamesbrink/AI/ComfyUI:/comfyui"
             "/home/jamesbrink/AI/ComfyUI-User-Data:/comfyui/user"
@@ -430,7 +430,7 @@
         ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/open-webui:main
         ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/pipelines:main
         # ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
-        # ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:testing
+        # ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:latest
         ${pkgs.podman}/bin/podman pull ollama/ollama
         
         # Restart containers to use new images
