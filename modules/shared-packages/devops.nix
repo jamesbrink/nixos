@@ -8,6 +8,7 @@
     cmake
     cw
     devbox
+    gcc
     git-crypt
     git-secrets
     gnumake
