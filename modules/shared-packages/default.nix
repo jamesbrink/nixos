@@ -1,10 +1,12 @@
-{ pkgs, ... }:
+{ pkgs, config, lib, ... }:
 
 {
   environment.systemPackages = with pkgs; [
     at
     bitwarden-cli
-    btop
+    (btop.override {
+      cudaSupport = config.hardware.nvidia.package != null;
+    })
     bzip2
     cachix
     dig
