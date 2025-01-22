@@ -37,7 +37,10 @@ in
       insomnia
       jetbrains.datagrip
       lens
-      (unstable.llama-cpp.override { cudaSupport = true; })
+      (pkgs.callPackage ../../pkgs/llama-cpp {
+        cudaSupport = true;
+        cudaPackages = pkgs.cudaPackages_12_3;
+      })
       mailspring
       meld
       nushell

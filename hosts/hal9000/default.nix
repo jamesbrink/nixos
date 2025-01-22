@@ -13,6 +13,10 @@
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
 
+  nixpkgs.config = {
+    allowUnfree = true;
+  };
+
   # services.keychron-keyboard = {
   #   enable = true;
   #   user = "jamesbrink";
@@ -39,10 +43,6 @@
       dates = "weekly";
       options = "--delete-older-than 30d";
     };
-  };
-
-  nixpkgs.config = {
-    allowUnfree = true;
   };
 
   boot = {
