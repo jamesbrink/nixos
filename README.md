@@ -32,7 +32,7 @@ This project uses:
 ## Features
 
 - Multi-host configuration management
-- Mix of stable (24.05) and unstable channels
+- Mix of stable (24.11) and unstable channels
 - Integrated Home Manager for user environment management
 - Secure secrets management with Agenix
 - Remote development support with VSCode Server
@@ -41,9 +41,9 @@ This project uses:
 ## Dependencies
 
 This configuration relies on several external inputs:
-- nixpkgs (nixos-24.05)
+- nixpkgs (nixos-24.11)
 - nixos-unstable
-- home-manager (release-24.05)
+- home-manager (release-24.11)
 - home-manager-unstable
 - agenix
 - vscode-server
@@ -52,40 +52,89 @@ This configuration relies on several external inputs:
 
 ### Deploy to a Host
 
-To deploy to a specific host (e.g., n100-01):
+To deploy to a specific host (e.g., hal9000):
 
 ```shell
-nixos-rebuild switch --fast --flake .#n100-01 --target-host n100-01 --build-host n100-01 --use-remote-sudo
+nixos-rebuild switch --fast --flake .#hal9000 --target-host hal9000 --build-host hal9000 --use-remote-sudo
 ```
 
-### Adding a New Host
+This command will:
+- Build the configuration on the target host
+- Deploy it directly to the target system
+- Use sudo on the remote system for installation
 
-1. Create a new directory under `hosts/` with your hostname
-2. Add your host-specific configuration in `hosts/your-hostname/default.nix`
-3. Add your host to the `nixosConfigurations` in `flake.nix`
+### Development Workflow
 
-## Module System
+1. **Local Testing**
+   ```shell
+   # Test configuration build without applying
+   nixos-rebuild build --flake .#<hostname>
+   
+   # Test with fast compilation (development)
+   nixos-rebuild build --flake .#<hostname> --fast
+   ```
 
-The configuration is organized into several module categories:
-- `desktop`: Desktop environment configurations
-- `packages`: Custom package definitions and overlays
-- `services`: System service configurations
-- `shared-packages`: Common package sets used across hosts
-- `system`: Core system configurations
+2. **Updating Dependencies**
+   ```shell
+   # Update all flake inputs
+   nix flake update
+   
+   # Update specific input
+   nix flake lock --update-input nixpkgs
+   ```
 
-## User Management
-
-User configurations are managed through Home Manager and stored in the `users/` directory. This provides a way to maintain consistent user environments across different hosts.
-
-## Secrets Management
-
-Secrets are managed using Agenix and stored in a separate private repository. The secrets repository is referenced as an input in the flake configuration.
+3. **Working with Home Manager**
+   ```shell
+   # Apply home-manager configuration
+   home-manager switch --flake .#<username>@<hostname>
+   ```
 
 ## Contributing
 
-1. Fork the repository
-2. Create a new branch for your changes
-3. Submit a pull request with a clear description of your changes
+1. **Fork and Clone**
+   ```shell
+   git clone https://github.com/jamesbrink/nixos.git
+   cd nixos
+   ```
+
+2. **Branch Naming**
+   - Use descriptive branch names: `feature/new-service`, `fix/broken-config`
+   - Keep changes focused and atomic
+
+3. **Commit Guidelines**
+   - Write clear commit messages
+   - Reference issues when applicable
+   - Sign your commits
+
+4. **Testing**
+   - Test configurations locally before pushing
+   - Ensure secrets are properly managed
+   - Verify on all affected hosts
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Build Failures**
+   - Check for dirty git working tree
+   - Verify flake inputs are up-to-date
+   - Ensure correct system architecture is targeted
+
+2. **Remote Deployment Issues**
+   - Verify SSH access to target host
+   - Check sudo permissions
+   - Ensure target host has sufficient resources
+
+3. **Home Manager Conflicts**
+   - Backup existing configurations
+   - Remove conflicting dotfiles
+   - Check for path conflicts
+
+### Debug Tips
+
+- Use `--show-trace` for detailed error information
+- Enable verbose output with `-v` or `-vv`
+- Check system journal for errors: `journalctl -xe`
 
 ## License
 

@@ -1,0 +1,20 @@
+# NixOS Multi-Host Configuration Repository
+
+This is a NixOS configuration repository managing multiple hosts using the Nix Flakes system.
+
+## Available Hosts
+- hal9000
+- n100-01
+- n100-03
+- alienware
+
+## Important Directories
+- `hosts/` - Host-specific configurations for each machine
+- `modules/` - Shared NixOS modules and configurations
+- `profiles/` - Reusable system profiles
+- `users/` - User-specific configurations
+
+## Remote Build Instructions
+When deploying from a different architecture (e.g., macOS to Linux), use:
+```shell
+nixos-rebuild switch --fast --flake .#<hostname> --target-host <hostname> --build-host <hostname> --use-remote-sudo
