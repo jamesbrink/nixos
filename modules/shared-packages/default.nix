@@ -1,15 +1,18 @@
-{ pkgs, ... }:
+{ pkgs, config, lib, ... }:
 
 {
   environment.systemPackages = with pkgs; [
     at
     bitwarden-cli
-    btop
+    (btop.override {
+      cudaSupport = config.hardware.nvidia.package != null;
+    })
     bzip2
     cachix
     dig
     direnv
     dnsutils
+    fastfetch
     fd
     git
     hdparm
@@ -28,6 +31,7 @@
     nfs-utils
     nixpkgs-fmt
     openssh
+    p7zip
     parted
     pciutils
     python3

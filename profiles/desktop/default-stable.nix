@@ -7,16 +7,19 @@
     blender
     chromium
     fira-code-nerdfont
+    fusuma
     gimp
-    libinput
     gnome-remote-desktop
     gnome-session
+    gnome-tweaks
+    inkscape-with-extensions
+    libinput
     libinput-gestures
     nerdfonts
-    # rustdesk
+    rustdesk
     rustdesk-flutter
-    fusuma
     slack
+    vlc
     vscode
   ];
 

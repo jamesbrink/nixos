@@ -1,5 +1,4 @@
 { config, pkgs, lib, secretsPath, inputs, self, ... } @args:
-
 {
   disabledModules = [
     "services/misc/ollama.nix"
@@ -10,8 +9,18 @@
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
     ../../profiles/desktop/default-stable.nix
+    ../../profiles/keychron/default.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
+
+  nixpkgs.config = {
+    allowUnfree = true;
+  };
+
+  # services.keychron-keyboard = {
+  #   enable = true;
+  #   user = "jamesbrink";
+  # };
 
   security.audit.enable = true;
   security.auditd.enable = true;
@@ -35,8 +44,6 @@
       options = "--delete-older-than 30d";
     };
   };
-
-  nixpkgs.config.allowUnfree = true;
 
   boot = {
     kernelParams = [ "audit=1" ];
@@ -290,7 +297,7 @@
         };
 
         comfyui = {
-          image = "jamesbrink/comfyui:testing";
+          image = "jamesbrink/comfyui:v0.3.12";
           volumes = [
             "/home/jamesbrink/AI/ComfyUI:/comfyui"
             "/home/jamesbrink/AI/ComfyUI-User-Data:/comfyui/user"
@@ -330,7 +337,7 @@
             "--name=fooocus"
             "--user=${toString config.users.users.jamesbrink.uid}:${toString config.users.users.jamesbrink.group}"
           ];
-          autoStart = true;
+          autoStart = false;
         };
 
         open-webui = {
@@ -410,6 +417,39 @@
         "virbr0"
         "br0"
       ];
+    };
+  };
+
+  # Keep OpenWebUI, Pipelines, Fooocus, ComfyUI and Ollama up to date
+  systemd.services.update-ai-containers = {
+    description = "Update AI container images";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = pkgs.writeScript "update-ai-containers" ''
+        #!${pkgs.bash}/bin/bash
+        ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/open-webui:main
+        ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/pipelines:main
+        # ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
+        # ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:latest
+        ${pkgs.podman}/bin/podman pull ollama/ollama
+        
+        # Restart containers to use new images
+        ${pkgs.systemd}/bin/systemctl restart podman-ollama
+        # ${pkgs.systemd}/bin/systemctl restart podman-comfyui
+        # ${pkgs.systemd}/bin/systemctl restart podman-fooocus
+        ${pkgs.systemd}/bin/systemctl restart podman-open-webui
+        ${pkgs.systemd}/bin/systemctl restart podman-pipelines
+      '';
+    };
+  };
+
+  # Add a timer to run it daily
+  systemd.timers.update-ai-containers = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+      RandomizedDelaySec = "1h";
     };
   };
 
@@ -524,6 +564,12 @@
       enable = true;
       autosuggestions.enable = true;
     };
+    ssh = {
+      startAgent = true;
+      extraConfig = ''
+        AddKeysToAgent yes
+      '';
+    };
     mosh.enable = true;
     firefox.enable = true;
     appimage = {
@@ -601,8 +647,10 @@
 
   environment.systemPackages = with pkgs; [
     audit
+    bottles
     bridge-utils
     distrobox
+    dotnetPackages.Nuget
     glxinfo
     incus
     nvidia-vaapi-driver
@@ -610,6 +658,7 @@
     OVMF
     podman
     python311Packages.huggingface-hub
+    samba4Full
     spice
     spice-gtk
     spice-protocol
@@ -618,6 +667,8 @@
     unstablePkgs.ollama-cuda
     virt-viewer
     vulkan-tools
+    winetricks
+    wineWowPackages.waylandFull
     xorriso
   ];
 
@@ -636,6 +687,7 @@
     enable = true;
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;
+    protontricks.enable = true;
   };
 
   services.resolved = {

@@ -6,27 +6,52 @@ This repository contains my personal NixOS configurations managed through the Ni
 
 This project uses:
 - Nix Flakes for reproducible builds and dependency management
+- Multi-host configuration with a mix of stable (24.11) and unstable channels
 - Home Manager for user environment management
 - Agenix for secrets management
 - VSCode Server support for remote development
+- Modular configuration structure for better maintainability
 
 ## Project Structure
 
 ```
 .
-├── flake.nix         # Main flake configuration and input sources
-├── hosts/            # Host-specific configurations
+├── README.md
+├── flake.lock
+├── flake.nix        # Main flake configuration and input sources
+├── hosts/           # Host-specific configurations
 │   ├── hal9000/     # Configuration for hal9000 machine
+│   │   ├── default.nix
+│   │   └── hardware-configuration.nix
 │   ├── n100-01/     # Configuration for n100-01 machine
+│   │   ├── default.nix
+│   │   └── hardware-configuration.nix
 │   └── n100-03/     # Configuration for n100-03 machine
-├── modules/          # Shared NixOS modules
+│       ├── default.nix
+│       └── hardware-configuration.nix
+├── modules/         # Shared NixOS modules
 │   ├── desktop/     # Desktop environment configurations
 │   ├── packages/    # Custom package definitions
+│   │   └── ollama
+│   │       ├── default.nix
+│   │       ├── disable-git.patch
+│   │       └── skip-rocm-cp.patch
 │   ├── services/    # System service configurations
 │   ├── shared-packages/ # Common package sets
+│   │   ├── default.nix
+│   │   └── devops.nix
 │   └── system/      # Core system configurations
 ├── profiles/        # Reusable system profiles
+│   ├── desktop
+│   │   ├── default-stable.nix
+│   │   └── default.nix
+│   ├── minimal
+│   └── server
+│       └── default.nix
 └── users/          # User-specific configurations
+    ├── regular
+    │   └── jamesbrink.nix
+    └── root
 ```
 
 ## Features
@@ -58,10 +83,11 @@ To deploy to a specific host (e.g., hal9000):
 nixos-rebuild switch --fast --flake .#hal9000 --target-host hal9000 --build-host hal9000 --use-remote-sudo
 ```
 
-This command will:
-- Build the configuration on the target host
-- Deploy it directly to the target system
-- Use sudo on the remote system for installation
+For hosts requiring unfree packages:
+
+```shell
+sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#hal9000 --verbose --impure
+```
 
 ### Development Workflow
 
@@ -138,7 +164,7 @@ This command will:
 
 ## License
 
-This project is open source and available under the terms of your chosen license.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 

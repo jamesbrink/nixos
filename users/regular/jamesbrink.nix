@@ -1,5 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, claude-desktop, ... }:
 
+let
+  unstable = pkgs.unstablePkgs;
+in
 {
   users.users.jamesbrink = {
     isNormalUser = true;
@@ -17,14 +20,50 @@
     shell = pkgs.zsh;
     useDefaultShell = true;
     packages = with pkgs; [
+      atuin
+      barrier
+      claude-desktop.packages.${pkgs.system}.default
       code-cursor
+      dbeaver-bin
+      discord
+      drawio
+      ferdium
+      ffmpeg-full
+      filezilla
+      flameshot
+      ghostty
       google-chrome
+      imagemagick
+      insomnia
+      jetbrains.datagrip
+      lens
+      (pkgs.callPackage ../../pkgs/llama-cpp {
+        cudaSupport = true;
+        cudaPackages = pkgs.cudaPackages_12_3;
+      })
+      mailspring
+      meld
+      nushell
+      obsidian
+      openai-whisper-cpp
+      postman
+      signal-desktop
+      termius
+      warp-terminal
+      waveterm
+      winbox4
+      wireshark
+      xonsh
+      yt-dlp
     ];
   };
 
   home-manager.users.jamesbrink = { pkgs, config, lib, ... }: {
     home.file."/home/jamesbrink/.ssh/config_external" = {
       source = .ssh/config_external;
+    };
+    home.sessionVariables = {
+      SSH_AUTH_SOCK = lib.mkForce "/run/user/$(getent passwd ${config.home.username} | cut -d: -f3)/ssh-agent";
     };
     programs = {
       starship = {

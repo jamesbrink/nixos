@@ -8,6 +8,7 @@
     cmake
     cw
     devbox
+    gcc
     gh
     git-crypt
     git-secrets
@@ -23,6 +24,7 @@
     nerdfonts
     open-vm-tools
     opentofu
+    openvpn3
     openvswitch
     packer
     pre-commit
@@ -40,6 +42,8 @@
     terraform-docs
     terraform-lsp
     tflint
+    tig
+    yq-go
     zellij
     zfs
   ];
