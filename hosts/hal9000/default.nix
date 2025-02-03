@@ -281,6 +281,19 @@
     };
     oci-containers = {
       containers = {
+        postgis = {
+          image = "postgis/postgis:13-3.5";
+          environment = {
+            POSTGRES_USER = "postgres";
+            POSTGRES_PASSWORD = "postgres";
+          };
+          volumes = [
+            "/mnt/storage-fast/quantierra:/var/lib/postgresql/data"
+          ];
+          ports = [
+            "5432:5432"
+          ];
+        };
         ollama = {
           image = "ollama/ollama";
           volumes = [
