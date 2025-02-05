@@ -48,7 +48,7 @@
   boot = {
     kernelParams = [ "audit=1" ];
     kernel.sysctl."kernel.dmesg_restrict" = 0;
-    supportedFilesystems = [ "xfs" "ext4" ];
+    supportedFilesystems = [ "zfs" ];
     zfs.forceImportRoot = false;
     loader = {
       systemd-boot.enable = true;
