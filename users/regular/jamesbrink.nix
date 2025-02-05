@@ -20,6 +20,7 @@ in
     shell = pkgs.zsh;
     useDefaultShell = true;
     packages = with pkgs; [
+      (pkgs.callPackage ../../pkgs/llama-cpp { cudaSupport = true; cudaPackages = pkgs.cudaPackages_12_3; })
       atuin
       barrier
       claude-desktop.packages.${pkgs.system}.default
@@ -36,11 +37,8 @@ in
       imagemagick
       insomnia
       jetbrains.datagrip
+      legendary-gl
       lens
-      (pkgs.callPackage ../../pkgs/llama-cpp {
-        cudaSupport = true;
-        cudaPackages = pkgs.cudaPackages_12_3;
-      })
       mailspring
       meld
       nushell

@@ -50,6 +50,7 @@
     kernel.sysctl."kernel.dmesg_restrict" = 0;
     supportedFilesystems = [ "zfs" ];
     zfs.forceImportRoot = false;
+
     loader = {
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
@@ -79,12 +80,11 @@
   ];
 
   fileSystems."/mnt/storage-fast" = {
-    device = "/dev/disk/by-uuid/7f4b7db5-b6e3-4874-a4e9-52ca0f48576f";
-    fsType = "ext4";
+    device = "storage-fast";
+    fsType = "zfs";
     options = [
-      "rw"
-      "noatime"
-      "nofail"
+      "zfsutil"
+      "X-mount.mkdir"
     ];
   };
 
