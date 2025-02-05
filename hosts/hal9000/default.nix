@@ -82,6 +82,25 @@
   fileSystems."/mnt/storage-fast" = {
     device = "storage-fast";
     fsType = "zfs";
+    neededForBoot = true;
+    options = [
+      "zfsutil"
+      "X-mount.mkdir"
+    ];
+  };
+
+  fileSystems."/mnt/storage-fast/AI" = {
+    device = "storage-fast/AI";
+    fsType = "zfs";
+    options = [
+      "zfsutil"
+      "X-mount.mkdir"
+    ];
+  };
+
+  fileSystems."/mnt/storage-fast/quantierra" = {
+    device = "storage-fast/quantierra";
+    fsType = "zfs";
     options = [
       "zfsutil"
       "X-mount.mkdir"
