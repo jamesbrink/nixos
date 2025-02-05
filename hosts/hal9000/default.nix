@@ -107,6 +107,21 @@
     ];
   };
 
+  systemd.services.zfs-quantierra-setup = {
+    description = "Configure ZFS properties for quantierra dataset";
+    after = [ "zfs.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      /run/current-system/sw/bin/zfs set recordsize=8K storage-fast/quantierra
+      /run/current-system/sw/bin/zfs set logbias=throughput storage-fast/quantierra
+      /run/current-system/sw/bin/zfs set primarycache=all storage-fast/quantierra
+    '';
+  };
+
   fileSystems."/home/jamesbrink/AI" = {
     device = "/mnt/storage-fast/AI";
     options = [ "bind" ];
