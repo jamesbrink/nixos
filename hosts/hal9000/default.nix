@@ -75,6 +75,7 @@
     "d /mnt/storage-fast 0775 root users"
     "d /mnt/storage 0775 root users"
     "d /var/lib/libvirt/images 0775 root libvirtd"
+    "d /mnt/storage-fast/quantierra 0755 root root"
   ];
 
   fileSystems."/mnt/storage-fast" = {
