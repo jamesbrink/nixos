@@ -16,13 +16,13 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "llama-cpp";
-  version = "b5441";  # Latest release as of 2025-01-21
+  version = "b4677";  # Latest release as of 2025-02-09
 
   src = fetchFromGitHub {
     owner = "ggerganov";
     repo = "llama.cpp";
-    rev = "e11a7f5d1d7f7e99c0b7c92c0d7f4a31c1c1d1f";  # b5441 release with MOE support
-    hash = "sha256-sfoq0d5Wf+zLRTj+IiH2Wo/Qx80P2KHGMtCD5DirXbw=";
+    rev = "19d3c8293b1f61acbe2dab1d49a17950fd788a4a";  # Latest master commit
+    hash = "sha256-s6f6bZxXmbN9YF4MzHGhxz9ynsM6M2e6Jkc5POegdDc=";
     fetchSubmodules = true;
   };
 

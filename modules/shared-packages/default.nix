@@ -30,6 +30,7 @@
     neovim
     netcat
     nfs-utils
+    nixfmt-rfc-style
     nixpkgs-fmt
     nvme-cli
     openssh

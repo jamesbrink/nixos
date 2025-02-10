@@ -1,4 +1,12 @@
-{ config, pkgs, lib, secretsPath, inputs, self, ... } @args:
+{
+  config,
+  pkgs,
+  lib,
+  secretsPath,
+  inputs,
+  self,
+  ...
+}@args:
 {
   disabledModules = [
     "services/misc/ollama.nix"
@@ -32,10 +40,12 @@
     "-w /var/log/audit/ -p wa -k audit_logs"
   ];
 
-
   nix = {
     settings = {
-      experimental-features = [ "nix-command" "flakes" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
       auto-optimise-store = true;
     };
     gc = {
@@ -59,7 +69,11 @@
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
-    kernelModules = [ "kvm-intel" "kvm-amd" "audit" ];
+    kernelModules = [
+      "kvm-intel"
+      "kvm-amd"
+      "audit"
+    ];
     extraModprobeConfig = ''
       options kvm_intel nested=1
       options kvm_amd nested=1
@@ -69,10 +83,12 @@
   hardware.nvidia-container-toolkit.enable = true;
   hardware.pulseaudio.enable = false;
 
-  swapDevices = [{
-    device = "/var/swapfile";
-    size = 32768;
-  }];
+  swapDevices = [
+    {
+      device = "/var/swapfile";
+      size = 32768;
+    }
+  ];
 
   # Create mount points with appropriate permissions
   systemd.tmpfiles.rules = [
@@ -81,6 +97,7 @@
     "d /mnt/storage 0775 root users"
     "d /var/lib/libvirt/images 0775 root libvirtd"
     "d /mnt/storage-fast/quantierra 0755 root root"
+    "d /mnt/storage-fast/Steam 0755 jamesbrink users"
   ];
 
   fileSystems."/mnt/storage-fast" = {
@@ -95,7 +112,7 @@
 
   services.zfs = {
     autoScrub.enable = true;
-    trim.enable = false; # You mentioned performance issues with trim
+    trim.enable = true;
     zed = {
       enableMail = false;
       settings = {
@@ -136,6 +153,15 @@
       /run/current-system/sw/bin/zfs set logbias=throughput storage-fast/quantierra
       /run/current-system/sw/bin/zfs set primarycache=all storage-fast/quantierra
     '';
+  };
+
+  fileSystems."/mnt/storage-fast/Steam" = {
+    device = "storage-fast/Steam";
+    fsType = "zfs";
+    options = [
+      "zfsutil"
+      "X-mount.mkdir"
+    ];
   };
 
   fileSystems."/home/jamesbrink/AI" = {
@@ -181,7 +207,10 @@
     nftables = {
       enable = true;
     };
-    search = [ "home.urandom.io" "urandom.io" ];
+    search = [
+      "home.urandom.io"
+      "urandom.io"
+    ];
 
     # Configure the bridge
     bridges = {
@@ -198,10 +227,16 @@
     # Add explicit firewall rules
     firewall = {
       enable = false;
-      allowedTCPPorts = [ 22 3389 ];
+      allowedTCPPorts = [
+        22
+        3389
+      ];
       interfaces = {
         br0 = {
-          allowedTCPPorts = [ 22 3389 ];
+          allowedTCPPorts = [
+            22
+            3389
+          ];
         };
       };
     };
@@ -249,17 +284,28 @@
       settings = {
         PasswordAuthentication = true;
         LoginGraceTime = 0;
-        AuthorizedKeysCommand = "${pkgs.bash}/bin/bash -c 'cat ${config.age.secrets."secrets/global/ssh/authorized_keys.age".path}'";
+        AuthorizedKeysCommand = "${pkgs.bash}/bin/bash -c 'cat ${
+          config.age.secrets."secrets/global/ssh/authorized_keys.age".path
+        }'";
         AuthorizedKeysCommandUser = "root";
       };
     };
   };
 
-  # services.rustdesk-server = {
-  #   enable = true;
-  #   openFirewall = true;
-  #   relayIP = "home.urandom.io";
-  # };
+  services.rustdesk-server = {
+    enable = true;
+    openFirewall = true;
+    signal.relayHosts = [ "home.urandom.io" ];
+  };
+
+  services.timesyncd = {
+    enable = true;
+    servers = [
+      "time.cloudflare.com"
+      "time.google.com"
+      "pool.ntp.org"
+    ];
+  };
 
   # services.sunshine = {
   #   enable = true;
@@ -301,18 +347,22 @@
     # package = self.packages.x86_64-linux.ollama-cuda;
   };
 
-  systemd.mounts = [{
-    type = "nfs";
-    mountConfig.Options = "noatime";
-    what = "alienware.home.urandom.io:/storage";
-    where = "/mnt/storage";
-  }];
+  systemd.mounts = [
+    {
+      type = "nfs";
+      mountConfig.Options = "noatime";
+      what = "alienware.home.urandom.io:/storage";
+      where = "/mnt/storage";
+    }
+  ];
 
-  systemd.automounts = [{
-    wantedBy = [ "multi-user.target" ];
-    automountConfig.TimeoutIdleSec = "600";
-    where = "/mnt/storage";
-  }];
+  systemd.automounts = [
+    {
+      wantedBy = [ "multi-user.target" ];
+      automountConfig.TimeoutIdleSec = "600";
+      where = "/mnt/storage";
+    }
+  ];
 
   security.rtkit.enable = true;
 
@@ -321,7 +371,8 @@
       "/etc/ssh/ssh_host_ed25519_key"
     ];
     secrets = {
-      "secrets/global/ssh/authorized_keys.age".file = "${secretsPath}/secrets/global/ssh/authorized_keys.age";
+      "secrets/global/ssh/authorized_keys.age".file =
+        "${secretsPath}/secrets/global/ssh/authorized_keys.age";
       "secrets/hal9000/tailscale.age".file = "${secretsPath}/secrets/hal9000/tailscale.age";
     };
   };
@@ -499,7 +550,7 @@
         # ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
         # ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:latest
         ${pkgs.podman}/bin/podman pull ollama/ollama
-        
+
         # Restart containers to use new images
         ${pkgs.systemd}/bin/systemctl restart podman-ollama
         # ${pkgs.systemd}/bin/systemctl restart podman-comfyui
@@ -726,6 +777,7 @@
     spice-protocol
     steam
     sunshine
+    unstablePkgs.goose-cli
     unstablePkgs.ollama-cuda
     virt-viewer
     vulkan-tools
@@ -738,7 +790,10 @@
 
   systemd.services.systemd-networkd-wait-online = {
     serviceConfig = {
-      ExecStart = [ "" "${config.systemd.package}/lib/systemd/systemd-networkd-wait-online --any" ];
+      ExecStart = [
+        ""
+        "${config.systemd.package}/lib/systemd/systemd-networkd-wait-online --any"
+      ];
     };
   };
 
