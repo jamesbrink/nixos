@@ -105,6 +105,76 @@ in
           };
 
           history.size = 100000;
+          initExtraFirst = ''
+            if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+              . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+              . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
+            fi
+
+            # Ripgrep alias
+            alias search=rg -p --glob '!node_modules/*'  $@
+
+            # e() {
+            #     vim "$@"
+            # }
+
+            # nix shortcuts
+            shell() {
+                nix-shell '<nixpkgs>' -A "$1"
+            }
+
+            # Use difftastic, syntax-aware diffing
+            alias diff=difft
+
+            # Always color ls and group directories
+            alias ls='ls --color=auto'
+
+            # GitHub Token
+            export GITHUB_TOKEN="<TBD>"
+
+            ##############
+            # AWS Settings
+            ##############
+            export AWS_PAGER=""
+            aws-profile() {
+                unset AWS_PROFILE AWS_EB_PROFILE AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+                local profile_name="$1"
+                local token_code="$2"
+                export AWS_PROFILE="$profile_name"
+                export SOURCE_AWS_PROFILE="$AWS_PROFILE"
+                export AWS_EB_PROFILE="$profile_name"
+                export SOURCE_AWS_EB_PROFIL=E"$AWS_EB_PROFILE"
+                caller_identity="$(aws sts get-caller-identity)"
+                account_number="$(echo $caller_identity | jq -r '.Account')"
+                arn="$(echo $caller_identity | jq -r '.Arn')"
+                mfa="$(echo $arn | sed 's|\:user/|\:mfa/|g')"
+                export SOURCE_AWS_PROFILE SOURCE_AWS_EB_PROFILE AWS_PROFILE AWS_EB_PROFILE
+                if [ -n "$token_code" ]; then
+                    AWS_CREDENTIALS="$(aws sts get-session-token --serial-number "$mfa" --token-code "$token_code")"
+                    export AWS_ACCESS_KEY_ID="$(echo "$AWS_CREDENTIALS" | jq -r '.Credentials.AccessKeyId')"
+                    export SOURCE_AWS_ACCESS_KEY="$AWS_ACCESS_KEY_ID"
+                    export AWS_SECRET_ACCESS_KEY="$(echo "$AWS_CREDENTIALS" | jq -r '.Credentials.SecretAccessKey')"
+                    export SOURCE_AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
+                    export AWS_SESSION_TOKEN="$(echo "$AWS_CREDENTIALS" | jq -r '.Credentials.SessionToken')"
+                    export SOURCE_AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN"
+                fi
+                echo "Using AWS Account: $account_number ($profile_name) - ARN: $arn"
+            }
+
+            aws-role() {
+                local role_arn="$1"
+                eval $(aws sts assume-role --role-arn "$role_arn" --role-session-name "$USER@$HOST" | jq -r '.Credentials | @sh "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)", @sh "export AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)", @sh "export AWS_SESSION_TOKEN=\(.SessionToken)"')
+                aws sts get-caller-identity
+            }
+
+            aws-no-role() {
+                export AWS_PROFILE="$SOURCE_AWS_PROFILE"
+                export AWS_EB_PROFILE="$SOURCE_AWS_EB_PROFILE"
+                export AWS_ACCESS_KEY_ID="$SOURCE_AWS_ACCESS_KEY_ID"
+                export AWS_SECRET_ACCESS_KEY="$SOURCE_AWS_SECRET_ACCESS_KEY"
+                export AWS_SESSION_TOKEN="$SOURCE_AWS_SESSION_TOKEN"
+            }
+          '';
         };
         ssh = {
           enable = true;
