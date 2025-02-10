@@ -1,4 +1,10 @@
-{ config, pkgs, inputs, claude-desktop, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  claude-desktop,
+  ...
+}:
 
 let
   unstable = pkgs.unstablePkgs;
@@ -20,11 +26,13 @@ in
     shell = pkgs.zsh;
     useDefaultShell = true;
     packages = with pkgs; [
-      (pkgs.callPackage ../../pkgs/llama-cpp { cudaSupport = true; cudaPackages = pkgs.cudaPackages_12_3; })
+      (pkgs.callPackage ../../pkgs/llama-cpp {
+        cudaSupport = true;
+        cudaPackages = pkgs.cudaPackages_12_3;
+      })
       atuin
       barrier
       claude-desktop.packages.${pkgs.system}.default
-      code-cursor
       dbeaver-bin
       discord
       drawio
@@ -47,6 +55,8 @@ in
       postman
       signal-desktop
       termius
+      unstable.code-cursor
+      unstable.windsurf
       warp-terminal
       waveterm
       winbox4
@@ -56,47 +66,57 @@ in
     ];
   };
 
-  home-manager.users.jamesbrink = { pkgs, config, lib, ... }: {
-    home.file."/home/jamesbrink/.ssh/config_external" = {
-      source = .ssh/config_external;
-    };
-    home.sessionVariables = {
-      SSH_AUTH_SOCK = lib.mkForce "/run/user/$(getent passwd ${config.home.username} | cut -d: -f3)/ssh-agent";
-    };
-    programs = {
-      starship = {
-        enable = true;
+  home-manager.users.jamesbrink =
+    {
+      pkgs,
+      config,
+      lib,
+      ...
+    }:
+    {
+      home.file."/home/jamesbrink/.ssh/config_external" = {
+        source = .ssh/config_external;
       };
-      zsh = {
-        enable = true;
-        enableCompletion = true;
-        syntaxHighlighting.enable = true;
-
-        oh-my-zsh = {
+      home.sessionVariables = {
+        SSH_AUTH_SOCK = lib.mkForce "/run/user/$(getent passwd ${config.home.username} | cut -d: -f3)/ssh-agent";
+      };
+      programs = {
+        starship = {
           enable = true;
-          plugins = [ "git" "thefuck" ];
-          theme = "robbyrussell";
         };
+        zsh = {
+          enable = true;
+          enableCompletion = true;
+          syntaxHighlighting.enable = true;
 
-        shellAliases = {
-          ll = "ls -l";
-          update = "sudo nixos-rebuild switch --flake /etc/nixos/#default";
-          cleanup = "sudo nix-collect-garbage -d";
+          oh-my-zsh = {
+            enable = true;
+            plugins = [
+              "git"
+              "thefuck"
+            ];
+            theme = "robbyrussell";
+          };
+
+          shellAliases = {
+            ll = "ls -l";
+            update = "sudo nixos-rebuild switch --flake /etc/nixos/#default";
+            cleanup = "sudo nix-collect-garbage -d";
+          };
+
+          history.size = 100000;
         };
+        ssh = {
+          enable = true;
+          controlMaster = "auto";
+          includes = [
+            "/home/jamesbrink/.ssh/config_external"
+          ];
+        };
+      };
 
-        history.size = 100000;
-      };
-      ssh = {
-        enable = true;
-        controlMaster = "auto";
-        includes = [
-          "/home/jamesbrink/.ssh/config_external"
-        ];
-      };
+      home.stateVersion = "24.11";
     };
-
-    home.stateVersion = "24.11";
-  };
 
   security.sudo.extraRules = [
     {
@@ -159,13 +179,27 @@ in
       folders = {
         "Projects" = {
           path = "/home/jamesbrink/Projects";
-          devices = [ "darkstarmk6mod1" "alienware15r4" "n100-01" "n100-02" "n100-03" "hal9000" ];
+          devices = [
+            "darkstarmk6mod1"
+            "alienware15r4"
+            "n100-01"
+            "n100-02"
+            "n100-03"
+            "hal9000"
+          ];
           label = "Projects";
           enable = false;
         };
         "Documents" = {
           path = "/home/jamesbrink/Documents";
-          devices = [ "darkstarmk6mod1" "alienware15r4" "n100-01" "n100-02" "n100-03" "hal9000" ];
+          devices = [
+            "darkstarmk6mod1"
+            "alienware15r4"
+            "n100-01"
+            "n100-02"
+            "n100-03"
+            "hal9000"
+          ];
           label = "Documents";
           enable = false;
         };
