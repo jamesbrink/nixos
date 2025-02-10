@@ -1,11 +1,17 @@
 # keychron-keyboard.nix
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.services.keychron-keyboard;
-in {
+in
+{
   options.services.keychron-keyboard = {
     enable = mkEnableOption "macOS-like keyboard configuration";
     user = mkOption {
@@ -30,7 +36,7 @@ in {
     services.xserver = {
       enable = true;
       xkbOptions = "apple:alupckeys";
-      
+
       # For Keychron K2 function key behavior
       extraConfig = ''
         options hid_apple fnmode=2
@@ -50,24 +56,24 @@ in {
 
     home-manager.users.${cfg.user}.dconf.settings = {
       "org/gnome/desktop/input-sources" = {
-        xkb-options = ["apple:alupckeys"];
+        xkb-options = [ "apple:alupckeys" ];
       };
 
       "org/gnome/desktop/wm/keybindings" = {
-        "close" = ["<Super>w"];
-        "minimize" = ["<Super>m"];
-        "maximize" = ["<Super>f"];
-        "switch-to-workspace-left" = ["<Super>Left"];
-        "switch-to-workspace-right" = ["<Super>Right"];
+        "close" = [ "<Super>w" ];
+        "minimize" = [ "<Super>m" ];
+        "maximize" = [ "<Super>f" ];
+        "switch-to-workspace-left" = [ "<Super>Left" ];
+        "switch-to-workspace-right" = [ "<Super>Right" ];
       };
 
       "org/gnome/settings-daemon/plugins/media-keys" = {
-        "screenshot" = ["<Shift><Super>3"];
-        "screenshot-window" = ["<Shift><Super>5"];
-        "area-screenshot" = ["<Shift><Super>4"];
-        "screenshot-clip" = ["<Shift><Super><Control>3"];
-        "window-screenshot-clip" = ["<Shift><Super><Control>5"];
-        "area-screenshot-clip" = ["<Shift><Super><Control>4"];
+        "screenshot" = [ "<Shift><Super>3" ];
+        "screenshot-window" = [ "<Shift><Super>5" ];
+        "area-screenshot" = [ "<Shift><Super>4" ];
+        "screenshot-clip" = [ "<Shift><Super><Control>3" ];
+        "window-screenshot-clip" = [ "<Shift><Super><Control>5" ];
+        "area-screenshot-clip" = [ "<Shift><Super><Control>4" ];
       };
 
       # GNOME Shell custom keybindings
@@ -121,7 +127,7 @@ in {
 
       # GNOME Shell settings
       "org/gnome/shell/keybindings" = {
-        "toggle-overview" = ["<Super>Space"]; # Prevent conflict with copy/paste
+        "toggle-overview" = [ "<Super>Space" ]; # Prevent conflict with copy/paste
       };
     };
 

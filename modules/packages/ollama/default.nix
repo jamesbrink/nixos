@@ -1,10 +1,11 @@
-{ lib
-, buildGoModule
-, fetchFromGitHub
-, makeWrapper
-, cmake
-, cudaPackages
-, acceleration ? "cuda"
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
+  makeWrapper,
+  cmake,
+  cudaPackages,
+  acceleration ? "cuda",
 }:
 
 let
@@ -27,7 +28,12 @@ let
 
 in
 buildGoModule {
-  inherit pname version src vendorHash;
+  inherit
+    pname
+    version
+    src
+    vendorHash
+    ;
 
   nativeBuildInputs = [
     cmake
@@ -70,7 +76,8 @@ buildGoModule {
   '';
 
   meta = with lib; {
-    description = "Get up and running with large language models locally"
+    description =
+      "Get up and running with large language models locally"
       + (lib.optionalString useCuda " (with CUDA support)");
     homepage = "https://github.com/ollama/ollama";
     changelog = "https://github.com/ollama/ollama/releases/tag/v${version}";
@@ -78,4 +85,4 @@ buildGoModule {
     platforms = platforms.linux;
     mainProgram = "ollama";
   };
-} 
+}

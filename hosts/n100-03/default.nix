@@ -1,4 +1,10 @@
-{ config, pkgs, lib, secretsPath, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  secretsPath,
+  ...
+}:
 
 {
   imports = [
@@ -10,7 +16,10 @@
 
   nix = {
     settings = {
-      experimental-features = [ "nix-command" "flakes" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
       auto-optimise-store = true;
     };
     gc = {
@@ -32,10 +41,12 @@
 
   hardware.pulseaudio.enable = false;
 
-  swapDevices = [{
-    device = "/var/swapfile";
-    size = 32768;
-  }];
+  swapDevices = [
+    {
+      device = "/var/swapfile";
+      size = 32768;
+    }
+  ];
 
   systemd.sleep.extraConfig = ''
     AllowSuspend=no
@@ -49,7 +60,10 @@
     domain = "home.urandom.io";
     networkmanager.enable = true;
     hosts = {
-      "127.0.0.1" = [ "localhost" "${config.networking.hostName}" ];
+      "127.0.0.1" = [
+        "localhost"
+        "${config.networking.hostName}"
+      ];
     };
     firewall.enable = false;
   };
@@ -62,24 +76,30 @@
       settings = {
         PasswordAuthentication = true;
         LoginGraceTime = 0;
-        AuthorizedKeysCommand = "${pkgs.bash}/bin/bash -c 'cat ${config.age.secrets."secrets/global/ssh/authorized_keys.age".path}'";
+        AuthorizedKeysCommand = "${pkgs.bash}/bin/bash -c 'cat ${
+          config.age.secrets."secrets/global/ssh/authorized_keys.age".path
+        }'";
         AuthorizedKeysCommandUser = "root";
       };
     };
   };
 
-  systemd.mounts = [{
-    type = "nfs";
-    mountConfig.Options = "noatime";
-    what = "alienware.home.urandom.io:/storage";
-    where = "/mnt/storage";
-  }];
+  systemd.mounts = [
+    {
+      type = "nfs";
+      mountConfig.Options = "noatime";
+      what = "alienware.home.urandom.io:/storage";
+      where = "/mnt/storage";
+    }
+  ];
 
-  systemd.automounts = [{
-    wantedBy = [ "multi-user.target" ];
-    automountConfig.TimeoutIdleSec = "600";
-    where = "/mnt/storage";
-  }];
+  systemd.automounts = [
+    {
+      wantedBy = [ "multi-user.target" ];
+      automountConfig.TimeoutIdleSec = "600";
+      where = "/mnt/storage";
+    }
+  ];
 
   security.rtkit.enable = true;
 
@@ -88,7 +108,8 @@
       "/etc/ssh/ssh_host_ed25519_key"
     ];
     secrets = {
-      "secrets/global/ssh/authorized_keys.age".file = "${secretsPath}/secrets/global/ssh/authorized_keys.age";
+      "secrets/global/ssh/authorized_keys.age".file =
+        "${secretsPath}/secrets/global/ssh/authorized_keys.age";
     };
   };
 

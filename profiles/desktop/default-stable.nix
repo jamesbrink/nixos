@@ -33,7 +33,6 @@
     libinput.enable = true;
     touchegg.enable = true;
 
-
     xserver = {
       enable = true;
 

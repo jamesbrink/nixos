@@ -1,4 +1,12 @@
-{ config, pkgs, lib, secretsPath, inputs, self, ... } @args:
+{
+  config,
+  pkgs,
+  lib,
+  secretsPath,
+  inputs,
+  self,
+  ...
+}@args:
 
 {
   disabledModules = [
@@ -25,7 +33,10 @@
 
   nix = {
     settings = {
-      experimental-features = [ "nix-command" "flakes" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
       auto-optimise-store = true;
     };
     gc = {
@@ -44,14 +55,20 @@
   fileSystems."/mnt/data" = {
     device = "/dev/disk/by-uuid/d62b78a4-d4b6-4b81-b3e5-cc7baa98ba36";
     fsType = "ext4";
-    options = [ "users" "nofail" ];
+    options = [
+      "users"
+      "nofail"
+    ];
   };
 
   # Mount 8TB USB
   fileSystems."/mnt/storage" = {
     device = "/dev/disk/by-uuid/be35c200-fa3e-499c-a638-19ee53e32478";
     fsType = "ext4";
-    options = [ "users" "nofail" ];
+    options = [
+      "users"
+      "nofail"
+    ];
   };
 
   fileSystems."/export/storage" = {
@@ -231,13 +248,19 @@
       folders = {
         "Projects" = {
           path = "/home/jamesbrink/Projects";
-          devices = [ "DarkStarMk6Mod1" "Alienware15R4" ];
+          devices = [
+            "DarkStarMk6Mod1"
+            "Alienware15R4"
+          ];
           label = "Projects";
           # enable = true;
         };
         "Documents" = {
           path = "/home/jamesbrink/Documents";
-          devices = [ "DarkStarMk6Mod1" "Alienware15R4" ];
+          devices = [
+            "DarkStarMk6Mod1"
+            "Alienware15R4"
+          ];
           label = "Documents";
           # enable = true;
         };
@@ -470,10 +493,24 @@
     AllowSuspendThenHibernate=no
   '';
 
-  networking.firewall.allowedTCPPorts = [ 22 3389 47984 47989 47990 48010 7865 ];
+  networking.firewall.allowedTCPPorts = [
+    22
+    3389
+    47984
+    47989
+    47990
+    48010
+    7865
+  ];
   networking.firewall.allowedUDPPortRanges = [
-    { from = 47998; to = 48000; }
-    { from = 8000; to = 8010; }
+    {
+      from = 47998;
+      to = 48000;
+    }
+    {
+      from = 8000;
+      to = 8010;
+    }
   ];
   networking.firewall.enable = false;
   system.stateVersion = "24.11";

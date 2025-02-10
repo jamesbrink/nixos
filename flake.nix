@@ -37,7 +37,19 @@
     };
   };
 
-  outputs = { self, nixpkgs, nixos-unstable, home-manager, home-manager-unstable, agenix, secrets, vscode-server, claude-desktop, ... }@inputs:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      nixos-unstable,
+      home-manager,
+      home-manager-unstable,
+      agenix,
+      secrets,
+      vscode-server,
+      claude-desktop,
+      ...
+    }@inputs:
     let
       system = "x86_64-linux";
       lib = nixpkgs.lib;
@@ -99,7 +111,12 @@
           system = "x86_64-linux";
 
           specialArgs = {
-            inherit inputs agenix self claude-desktop;
+            inherit
+              inputs
+              agenix
+              self
+              claude-desktop
+              ;
             secretsPath = "${inputs.secrets}";
           };
 
@@ -107,9 +124,12 @@
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
             vscode-server.nixosModules.default
-            ({ config, pkgs, ... }: {
-              services.vscode-server.enable = true;
-            })
+            (
+              { config, pkgs, ... }:
+              {
+                services.vscode-server.enable = true;
+              }
+            )
             ./hosts/hal9000/default.nix
 
             # Use unstable packages

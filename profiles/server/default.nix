@@ -15,14 +15,14 @@
     k3s
     terraform-lsp
     opentofu
-    
+
     # Monitoring and maintenance
     iperf2
     ipmitool
     speedtest-cli
-    
+
     # Security
     git-crypt
     git-secrets
   ];
-} 
+}
