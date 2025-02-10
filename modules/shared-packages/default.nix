@@ -14,6 +14,7 @@
     dnsutils
     fastfetch
     fd
+    fio
     git
     hdparm
     home-manager
@@ -30,6 +31,7 @@
     netcat
     nfs-utils
     nixpkgs-fmt
+    nvme-cli
     openssh
     p7zip
     parted
@@ -41,6 +43,7 @@
     rsync
     screen
     speedtest-cli
+    sysstat
     thefuck
     tmux
     tree

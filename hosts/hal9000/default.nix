@@ -46,7 +46,11 @@
   };
 
   boot = {
-    kernelParams = [ "audit=1" ];
+    kernelParams = [
+      "audit=1"
+      "zfs.zfs_arc_max=17179869184"
+      "zfs.zfs_txg_timeout=5" # Faster transaction group commits
+    ];
     kernel.sysctl."kernel.dmesg_restrict" = 0;
     supportedFilesystems = [ "zfs" ];
     zfs.forceImportRoot = false;
@@ -87,6 +91,18 @@
       "zfsutil"
       "X-mount.mkdir"
     ];
+  };
+
+  services.zfs = {
+    autoScrub.enable = true;
+    trim.enable = false; # You mentioned performance issues with trim
+    zed = {
+      enableMail = false;
+      settings = {
+        ZED_DEBUG_LOG = "off";
+        ZED_NOTIFY_VERBOSE = "1";
+      };
+    };
   };
 
   fileSystems."/mnt/storage-fast/AI" = {
@@ -319,107 +335,107 @@
     };
     oci-containers = {
       containers = {
-        # postgis = {
-        #   image = "postgis/postgis:13-3.5";
-        #   environment = {
-        #     POSTGRES_USER = "postgres";
-        #     POSTGRES_PASSWORD = "postgres";
-        #   };
-        #   volumes = [
-        #     "/mnt/storage-fast/quantierra:/var/lib/postgresql/data"
-        #   ];
-        #   ports = [
-        #     "5432:5432"
-        #   ];
-        # };
-        # ollama = {
-        #   image = "ollama/ollama";
-        #   volumes = [
-        #     "/var/lib/private/ollama:/root/.ollama"
-        #   ];
-        #   ports = [
-        #     "11434:11434"
-        #   ];
-        #   autoStart = true;
-        #   extraOptions = [
-        #     "--gpus=all"
-        #     "--name=ollama"
-        #   ];
-        # };
+        postgis = {
+          image = "postgis/postgis:13-3.5";
+          environment = {
+            POSTGRES_USER = "postgres";
+            POSTGRES_PASSWORD = "postgres";
+          };
+          volumes = [
+            "/mnt/storage-fast/quantierra:/var/lib/postgresql/data"
+          ];
+          ports = [
+            "5432:5432"
+          ];
+        };
+        ollama = {
+          image = "ollama/ollama";
+          volumes = [
+            "/var/lib/private/ollama:/root/.ollama"
+          ];
+          ports = [
+            "11434:11434"
+          ];
+          autoStart = true;
+          extraOptions = [
+            "--gpus=all"
+            "--name=ollama"
+          ];
+        };
 
-        # comfyui = {
-        #   image = "jamesbrink/comfyui:v0.3.12";
-        #   volumes = [
-        #     "/home/jamesbrink/AI/ComfyUI:/comfyui"
-        #     "/home/jamesbrink/AI/ComfyUI-User-Data:/comfyui/user"
-        #     "/home/jamesbrink/AI/Models/StableDiffusion:/comfyui/models"
-        #     "/home/jamesbrink/AI/Output:/comfyui/output"
-        #     "/home/jamesbrink/AI/Input:/comfyui/input"
-        #   ];
-        #   extraOptions = [
-        #     "--gpus=all"
-        #     "--network=host"
-        #     "--name=comfyui"
-        #     "--user=${toString config.users.users.jamesbrink.uid}:${toString config.users.users.jamesbrink.group}"
-        #   ];
-        #   cmd = [
-        #     "--listen"
-        #     "--port"
-        #     "8190"
-        #     "--preview-method"
-        #     "auto"
-        #   ];
-        #   environment = {
-        #     PUID = "${toString config.users.users.jamesbrink.uid}";
-        #     PGID = "${toString config.users.users.jamesbrink.group}";
-        #   };
-        #   autoStart = true;
-        # };
+        comfyui = {
+          image = "jamesbrink/comfyui:v0.3.14";
+          volumes = [
+            "/home/jamesbrink/AI/ComfyUI:/comfyui"
+            "/home/jamesbrink/AI/ComfyUI-User-Data:/comfyui/user"
+            "/home/jamesbrink/AI/Models/StableDiffusion:/comfyui/models"
+            "/home/jamesbrink/AI/Output:/comfyui/output"
+            "/home/jamesbrink/AI/Input:/comfyui/input"
+          ];
+          extraOptions = [
+            "--gpus=all"
+            "--network=host"
+            "--name=comfyui"
+            "--user=${toString config.users.users.jamesbrink.uid}:${toString config.users.users.jamesbrink.group}"
+          ];
+          cmd = [
+            "--listen"
+            "--port"
+            "8190"
+            "--preview-method"
+            "auto"
+          ];
+          environment = {
+            PUID = "${toString config.users.users.jamesbrink.uid}";
+            PGID = "${toString config.users.users.jamesbrink.group}";
+          };
+          autoStart = true;
+        };
 
-        # fooocus = {
-        #   image = "jamesbrink/fooocus:latest";
-        #   volumes = [
-        #     "/home/jamesbrink/AI/Models/StableDiffusion:/fooocus/models"
-        #     "/home/jamesbrink/AI/Output:/fooocus/output"
-        #   ];
-        #   extraOptions = [
-        #     "--gpus=all"
-        #     "--network=host"
-        #     "--name=fooocus"
-        #     "--user=${toString config.users.users.jamesbrink.uid}:${toString config.users.users.jamesbrink.group}"
-        #   ];
-        #   autoStart = false;
-        # };
+        fooocus = {
+          image = "jamesbrink/fooocus:latest";
+          volumes = [
+            "/home/jamesbrink/AI/Models/StableDiffusion:/fooocus/models"
+            "/home/jamesbrink/AI/Output:/fooocus/output"
+          ];
+          extraOptions = [
+            "--gpus=all"
+            "--network=host"
+            "--name=fooocus"
+            "--user=${toString config.users.users.jamesbrink.uid}:${toString config.users.users.jamesbrink.group}"
+          ];
+          autoStart = false;
+        };
 
-        # open-webui = {
-        #   image = "ghcr.io/open-webui/open-webui:main";
-        #   volumes = [
-        #     "open-webui:/app/backend/data"
-        #   ];
-        #   ports = [
-        #     "3000:8080"
-        #   ];
-        #   extraOptions = [
-        #     "--add-host=host.docker.internal:host-gateway"
-        #     "--name=open-webui"
-        #   ];
-        #   autoStart = true;
-        # };
+        open-webui = {
+          image = "ghcr.io/open-webui/open-webui:main";
+          volumes = [
+            "open-webui:/app/backend/data"
+          ];
+          ports = [
+            "3000:8080"
+          ];
+          extraOptions = [
+            "--add-host=host.docker.internal:host-gateway"
+            "--name=open-webui"
+          ];
+          autoStart = true;
+        };
 
-        # pipelines = {
-        #   image = "ghcr.io/open-webui/pipelines:main";
-        #   volumes = [
-        #     "pipelines:/app/pipelines"
-        #   ];
-        #   ports = [
-        #     "9099:9099"
-        #   ];
-        #   extraOptions = [
-        #     "--add-host=host.docker.internal:host-gateway"
-        #     "--name=pipelines"
-        #   ];
-        #   autoStart = true;
-        # };
+        pipelines = {
+          image = "ghcr.io/open-webui/pipelines:main";
+          volumes = [
+            "pipelines:/app/pipelines"
+          ];
+          ports = [
+            "9099:9099"
+          ];
+          extraOptions = [
+            "--add-host=host.docker.internal:host-gateway"
+            "--name=pipelines"
+          ];
+          autoStart = true;
+        };
       };
     };
     incus = {
