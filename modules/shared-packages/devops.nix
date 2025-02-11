@@ -2,6 +2,7 @@
 
 {
   environment.systemPackages = with pkgs; [
+    act
     atool
     awscli2
     certbot
