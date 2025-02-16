@@ -1,11 +1,10 @@
-{
-  config,
-  pkgs,
-  lib,
-  secretsPath,
-  inputs,
-  self,
-  ...
+{ config
+, pkgs
+, lib
+, secretsPath
+, inputs
+, self
+, ...
 }@args:
 {
   disabledModules = [
@@ -98,6 +97,7 @@
     "d /var/lib/libvirt/images 0775 root libvirtd"
     "d /mnt/storage-fast/quantierra 0755 root root"
     "d /mnt/storage-fast/Steam 0755 jamesbrink users"
+    "d /var/log/rustdesk 0755 root root"
   ];
 
   fileSystems."/mnt/storage-fast" = {
@@ -307,6 +307,34 @@
     ];
   };
 
+
+  systemd.services.rustdesk = {
+    description = "RustDesk Remote Desktop Client";
+    after = [ "network.target" "display-manager.service" ];
+    wants = [ "network.target" "display-manager.service" ];
+    wantedBy = [ "multi-user.target" "graphical-session.target" ];
+    environment = {
+      DISPLAY = ":0";
+      XAUTHORITY = "/run/user/1000/.Xauthority";
+      XDG_RUNTIME_DIR = "/run/user/1000";
+      RUSTDESK_DISPLAY_BACKEND = "x11";
+    };
+    serviceConfig = {
+      Type = "simple";
+      User = "jamesbrink";
+      Group = "users";
+      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.rustdesk}/bin/rustdesk --service --elevate --log-level trace --password \"$(cat ${config.age.secrets."secrets/hal9000/rustdesk.age".path})\"'";
+      RuntimeDirectory = "rustdesk";
+      RuntimeDirectoryMode = "0755";
+      LogsDirectory = "rustdesk";
+      LogsDirectoryMode = "0755";
+      StandardOutput = "append:/var/log/rustdesk/rustdesk.log";
+      StandardError = "append:/var/log/rustdesk/rustdesk.err";
+      Restart = "always";
+      RestartSec = "10s";
+    };
+  };
+
   # services.sunshine = {
   #   enable = true;
   #   autoStart = true;
@@ -374,6 +402,12 @@
       "secrets/global/ssh/authorized_keys.age".file =
         "${secretsPath}/secrets/global/ssh/authorized_keys.age";
       "secrets/hal9000/tailscale.age".file = "${secretsPath}/secrets/hal9000/tailscale.age";
+      "secrets/hal9000/rustdesk.age" = {
+        file = "${secretsPath}/secrets/hal9000/rustdesk.age";
+        owner = "jamesbrink";
+        group = "users";
+        mode = "0400";
+      };
     };
   };
 
