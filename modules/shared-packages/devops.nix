@@ -28,6 +28,7 @@
     openvpn3
     openvswitch
     packer
+    postgresql
     pre-commit
     restic
     restique
