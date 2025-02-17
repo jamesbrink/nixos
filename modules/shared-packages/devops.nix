@@ -9,6 +9,8 @@
     cmake
     cw
     devbox
+    devpod
+    devpod-desktop
     gcc
     gh
     git-crypt
