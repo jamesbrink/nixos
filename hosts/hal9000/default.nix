@@ -97,7 +97,7 @@
     "d /var/lib/libvirt/images 0775 root libvirtd"
     "d /mnt/storage-fast/quantierra 0755 root root"
     "d /mnt/storage-fast/Steam 0755 jamesbrink users"
-    "d /var/log/rustdesk 0755 root root"
+    "d ${config.users.users.jamesbrink.home}/.local/share/rustdesk 0755 jamesbrink users"
   ];
 
   fileSystems."/mnt/storage-fast" = {
@@ -293,7 +293,7 @@
   };
 
   services.rustdesk-server = {
-    enable = true;
+    enable = false;
     openFirewall = true;
     signal.relayHosts = [ "home.urandom.io" ];
   };
@@ -308,30 +308,35 @@
   };
 
 
-  systemd.services.rustdesk = {
+  systemd.user.services.rustdesk = {
     description = "RustDesk Remote Desktop Client";
-    after = [ "network.target" "display-manager.service" ];
-    wants = [ "network.target" "display-manager.service" ];
-    wantedBy = [ "multi-user.target" "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    wants = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    wantedBy = [ "graphical-session.target" ];
     environment = {
       DISPLAY = ":0";
-      XAUTHORITY = "/run/user/1000/.Xauthority";
-      XDG_RUNTIME_DIR = "/run/user/1000";
+      XAUTHORITY = "${config.users.users.jamesbrink.home}/.Xauthority";
+      XDG_RUNTIME_DIR = "/run/user/1001";
       RUSTDESK_DISPLAY_BACKEND = "x11";
+      WAYLAND_DISPLAY = "wayland-0";
+      GNOME_SETUP_DISPLAY = ":1";
     };
     serviceConfig = {
       Type = "simple";
-      User = "jamesbrink";
-      Group = "users";
+      ExecStartPre = [
+        "-${pkgs.procps}/bin/pkill -u jamesbrink rustdesk"
+        "${pkgs.bash}/bin/bash -c 'until ${pkgs.iproute2}/bin/ip route | grep -q ^default; do sleep 1; done'"
+      ];
       ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.rustdesk}/bin/rustdesk --service --elevate --log-level trace --password \"$(cat ${config.age.secrets."secrets/hal9000/rustdesk.age".path})\"'";
       RuntimeDirectory = "rustdesk";
-      RuntimeDirectoryMode = "0755";
       LogsDirectory = "rustdesk";
-      LogsDirectoryMode = "0755";
-      StandardOutput = "append:/var/log/rustdesk/rustdesk.log";
-      StandardError = "append:/var/log/rustdesk/rustdesk.err";
+      StandardOutput = "append:${config.users.users.jamesbrink.home}/.local/share/rustdesk/rustdesk.log";
+      StandardError = "append:${config.users.users.jamesbrink.home}/.local/share/rustdesk/rustdesk.err";
       Restart = "always";
-      RestartSec = "10s";
+      RestartSec = "3s";
+      KillMode = "process";
+      RestartPreventExitStatus = "SIGKILL";
     };
   };
 
