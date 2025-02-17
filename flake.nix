@@ -58,6 +58,16 @@
         config = {
           allowUnfree = true;
         };
+        overlays = [
+          (final: prev: {
+            unstablePkgs = import nixos-unstable {
+              inherit system;
+              config = {
+                allowUnfree = true;
+              };
+            };
+          })
+        ];
       };
     in
     {
@@ -98,6 +108,10 @@
           specialArgs = {
             inherit inputs agenix;
             secretsPath = "${inputs.secrets}";
+            unstablePkgs = import nixos-unstable {
+              inherit system;
+              config.allowUnfree = true;
+            };
           };
 
           modules = [

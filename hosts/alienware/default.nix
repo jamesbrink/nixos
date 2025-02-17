@@ -1,11 +1,10 @@
-{
-  config,
-  pkgs,
-  lib,
-  secretsPath,
-  inputs,
-  self,
-  ...
+{ config
+, pkgs
+, lib
+, secretsPath
+, inputs
+, self
+, ...
 }@args:
 
 {
@@ -16,7 +15,7 @@
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
-    ../../users/regular/jamesbrink.nix
+    (import ../../users/regular/jamesbrink.nix { inherit (args) config pkgs inputs unstablePkgs; inherit (args.inputs) claude-desktop; })
     ../../profiles/desktop/default-stable.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
@@ -386,6 +385,7 @@
     direnv
     dnsutils
     docker
+    exo
     fd
     file
     fira-code-nerdfont

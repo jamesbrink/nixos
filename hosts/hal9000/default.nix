@@ -14,7 +14,7 @@
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
-    ../../users/regular/jamesbrink.nix
+    (import ../../users/regular/jamesbrink.nix { inherit (args) config pkgs inputs; unstablePkgs = pkgs.unstablePkgs; inherit (args.inputs) claude-desktop; })
     ../../profiles/desktop/default-stable.nix
     ../../profiles/keychron/default.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
@@ -803,6 +803,7 @@
     bridge-utils
     distrobox
     dotnetPackages.Nuget
+    exo
     glxinfo
     incus
     nvidia-vaapi-driver

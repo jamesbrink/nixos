@@ -3,11 +3,12 @@
   pkgs,
   inputs,
   claude-desktop,
+  unstablePkgs,
   ...
 }:
 
 let
-  unstable = pkgs.unstablePkgs;
+  unstable = unstablePkgs;
 in
 {
   users.users.jamesbrink = {
