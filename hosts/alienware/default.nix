@@ -445,7 +445,7 @@
     python3
     python311Packages.boto3
     python311Packages.pip
-    python312Packages.pynvim
+    python311Packages.pynvim
     restic
     restique
     ripgrep

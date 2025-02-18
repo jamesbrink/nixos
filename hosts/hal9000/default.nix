@@ -82,6 +82,14 @@
   hardware.nvidia-container-toolkit.enable = true;
   hardware.pulseaudio.enable = false;
 
+  # Enable NVIDIA CUDA and OpenCL support
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
+
+
   swapDevices = [
     {
       device = "/var/swapfile";
@@ -803,6 +811,7 @@
     bridge-utils
     distrobox
     dotnetPackages.Nuget
+    # unstablePkgs.exo
     exo
     glxinfo
     incus
@@ -810,7 +819,6 @@
     nvtopPackages.nvidia
     OVMF
     podman
-    python311Packages.huggingface-hub
     samba4Full
     spice
     spice-gtk

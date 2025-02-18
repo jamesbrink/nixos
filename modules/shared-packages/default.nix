@@ -1,8 +1,7 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 
 {
@@ -42,10 +41,17 @@
     p7zip
     parted
     pciutils
-    python3
+    python311Full
     python311Packages.boto3
     python311Packages.pip
-    python312Packages.pynvim
+    python311Packages.pynvim
+    python311Packages.torch
+    python311Packages.torchvision
+    python311Packages.torchaudio
+    python311Packages.tensorflow
+    python311Packages.huggingface-hub
+    python311Packages.llvmlite
+    python311Packages.numba
     rsync
     screen
     speedtest-cli
