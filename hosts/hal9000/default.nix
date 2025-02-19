@@ -1,10 +1,11 @@
-{ config
-, pkgs
-, lib
-, secretsPath
-, inputs
-, self
-, ...
+{
+  config,
+  pkgs,
+  lib,
+  secretsPath,
+  inputs,
+  self,
+  ...
 }@args:
 {
   disabledModules = [
@@ -14,7 +15,11 @@
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
-    (import ../../users/regular/jamesbrink.nix { inherit (args) config pkgs inputs; unstablePkgs = pkgs.unstablePkgs; inherit (args.inputs) claude-desktop; })
+    (import ../../users/regular/jamesbrink.nix {
+      inherit (args) config pkgs inputs;
+      unstablePkgs = pkgs.unstablePkgs;
+      inherit (args.inputs) claude-desktop;
+    })
     ../../profiles/desktop/default-stable.nix
     ../../profiles/keychron/default.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
@@ -87,8 +92,6 @@
     enable = true;
     enable32Bit = true;
   };
-
-
 
   swapDevices = [
     {
@@ -315,7 +318,6 @@
     ];
   };
 
-
   systemd.user.services.rustdesk = {
     description = "RustDesk Remote Desktop Client";
     after = [ "graphical-session.target" ];
@@ -336,7 +338,9 @@
         "-${pkgs.procps}/bin/pkill -u jamesbrink rustdesk"
         "${pkgs.bash}/bin/bash -c 'until ${pkgs.iproute2}/bin/ip route | grep -q ^default; do sleep 1; done'"
       ];
-      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.rustdesk}/bin/rustdesk --service --elevate --log-level trace --password \"$(cat ${config.age.secrets."secrets/hal9000/rustdesk.age".path})\"'";
+      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.rustdesk}/bin/rustdesk --service --elevate --log-level trace --password \"$(cat ${
+        config.age.secrets."secrets/hal9000/rustdesk.age".path
+      })\"'";
       RuntimeDirectory = "rustdesk";
       LogsDirectory = "rustdesk";
       StandardOutput = "append:${config.users.users.jamesbrink.home}/.local/share/rustdesk/rustdesk.log";
@@ -771,6 +775,26 @@
   };
 
   users.defaultUserShell = pkgs.zsh;
+
+  # Allow user to bind to privileged ports
+  systemd.user.extraConfig = ''
+    DefaultCapabilityBoundingSet=CAP_NET_BIND_SERVICE
+    AmbientCapabilities=CAP_NET_BIND_SERVICE
+  '';
+
+  # Grant capabilities to the user for direct process execution
+  security.wrappers.capability-port-80 = {
+    owner = "jamesbrink";
+    group = "users";
+    capabilities = "cap_net_bind_service+eip";
+    source = "${pkgs.bash}/bin/bash";
+  };
+
+  # Set user capabilities via pam_cap
+  security.pam.services.login.setEnvironment = true;
+  environment.etc."security/capability.conf".text = ''
+    cap_net_bind_service   jamesbrink
+  '';
 
   programs.virt-manager.enable = true;
   programs.nix-ld.enable = true;
