@@ -102,6 +102,45 @@
           ];
         };
 
+        n100-04 = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+
+          specialArgs = {
+            inherit
+              inputs
+              agenix
+              self
+              claude-desktop
+              ;
+            secretsPath = "${inputs.secrets}";
+          };
+
+          modules = [
+            home-manager.nixosModules.home-manager
+            agenix.nixosModules.default
+            vscode-server.nixosModules.default
+            (
+              { config, pkgs, ... }:
+              {
+                services.vscode-server.enable = true;
+              }
+            )
+            ./hosts/n100-04/default.nix
+
+            # Use unstable packages
+            {
+              nixpkgs.overlays = [
+                (final: prev: {
+                  unstablePkgs = import nixos-unstable {
+                    system = "x86_64-linux";
+                    config.allowUnfree = true;
+                  };
+                })
+              ];
+            }
+          ];
+        };
+
         alienware = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
 
@@ -160,9 +199,5 @@
           ];
         };
       };
-
-      # packages.${system} = {
-      #   ollama-cuda = pkgs.callPackage ./modules/packages/ollama {};
-      # };
     };
 }

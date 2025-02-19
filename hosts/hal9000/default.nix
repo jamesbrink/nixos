@@ -352,13 +352,6 @@
     };
   };
 
-  # services.sunshine = {
-  #   enable = true;
-  #   autoStart = true;
-  #   capSysAdmin = true;
-  #   openFirewall = true;
-  # };
-
   # systemd.services."getty@tty1".enable = false;
   # systemd.services."autovt@tty1".enable = false;
 
@@ -389,7 +382,6 @@
     port = 11434;
     acceleration = "cuda";
     package = pkgs.unstablePkgs.ollama-cuda;
-    # package = self.packages.x86_64-linux.ollama-cuda;
   };
 
   systemd.mounts = [

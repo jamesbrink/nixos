@@ -47,6 +47,7 @@
     terraform-lsp
     tflint
     tig
+    treefmt
     yq-go
     zellij
     zfs

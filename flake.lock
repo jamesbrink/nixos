@@ -212,11 +212,11 @@
     "secrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1739738298,
-        "narHash": "sha256-m1BKKZIN+Zd2sAdKcnSC/GwMaFYz3y99nUi3pmvVy64=",
+        "lastModified": 1740011194,
+        "narHash": "sha256-ghdfXCVJH6vtPa2IBMGUSZZS0rhQMnkA0Cm7LkE20tQ=",
         "ref": "refs/heads/main",
-        "rev": "e4b31982bd2e41476a0bd5211c91dfbacb8f829a",
-        "revCount": 8,
+        "rev": "dcf70a9bcdb14cda70c74634c378e61a4bc7a2d8",
+        "revCount": 9,
         "type": "git",
         "url": "ssh://git@github.com/jamesbrink/nix-secrets.git"
       },

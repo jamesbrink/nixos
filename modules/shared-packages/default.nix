@@ -1,11 +1,14 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  inputs,
+  ...
 }:
 
 {
   environment.systemPackages = with pkgs; [
+    inputs.agenix.packages.${pkgs.system}.default
     at
     bitwarden-cli
     (btop.override {
