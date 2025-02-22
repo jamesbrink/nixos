@@ -1,10 +1,11 @@
-{ config
-, pkgs
-, lib
-, secretsPath
-, inputs
-, self
-, ...
+{
+  config,
+  pkgs,
+  lib,
+  secretsPath,
+  inputs,
+  self,
+  ...
 }@args:
 {
   disabledModules = [
@@ -899,7 +900,6 @@
     authKeyFile = "${config.age.secrets."secrets/hal9000/tailscale.age".path}";
   };
 
-
   services.ai-starter-kit = {
     enable = true;
     storagePath = "/storage-fast/n8n";
@@ -907,7 +907,7 @@
     qdrant.enable = true;
     postgres = {
       user = "n8n";
-      password = "n8n";  # You might want to change this
+      password = "n8n"; # You might want to change this
       database = "n8n";
     };
   };

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -77,9 +82,17 @@ in
       };
       restartIfChanged = false;
       wantedBy = [ "multi-user.target" ];
-      before = [ "podman-postgres.service" "podman-n8n.service" "podman-qdrant.service" ];
+      before = [
+        "podman-postgres.service"
+        "podman-n8n.service"
+        "podman-qdrant.service"
+      ];
       conflicts = [ "shutdown.target" ];
-      partOf = [ "podman-postgres.service" "podman-n8n.service" "podman-qdrant.service" ];
+      partOf = [
+        "podman-postgres.service"
+        "podman-n8n.service"
+        "podman-qdrant.service"
+      ];
     };
 
     virtualisation.oci-containers.containers = {
