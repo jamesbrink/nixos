@@ -12,6 +12,7 @@
   ];
   imports = [
     ./hardware-configuration.nix
+    ./nginx.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
     (import ../../users/regular/jamesbrink.nix {
@@ -425,6 +426,12 @@
         file = "${secretsPath}/secrets/hal9000/rustdesk.age";
         owner = "jamesbrink";
         group = "users";
+        mode = "0400";
+      };
+      "secrets/global/aws/cert-credentials-secret.age" = {
+        file = "${secretsPath}/secrets/global/aws/cert-credentials-secret.age";
+        owner = "nginx";
+        group = "nginx";
         mode = "0400";
       };
     };
