@@ -1,11 +1,10 @@
-{
-  config,
-  pkgs,
-  lib,
-  secretsPath,
-  inputs,
-  self,
-  ...
+{ config
+, pkgs
+, lib
+, secretsPath
+, inputs
+, self
+, ...
 }@args:
 {
   disabledModules = [
@@ -22,6 +21,7 @@
     })
     ../../profiles/desktop/default-stable.nix
     ../../profiles/keychron/default.nix
+    ../../modules/services/ai-starter-kit/default.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
 
@@ -108,6 +108,7 @@
     "d /var/lib/libvirt/images 0775 root libvirtd"
     "d /mnt/storage-fast/quantierra 0755 root root"
     "d /mnt/storage-fast/Steam 0755 jamesbrink users"
+    "d /mnt/storage-fast/n8n 0755 root root"
     "d ${config.users.users.jamesbrink.home}/.local/share/rustdesk 0755 jamesbrink users"
   ];
 
@@ -168,6 +169,15 @@
 
   fileSystems."/mnt/storage-fast/Steam" = {
     device = "storage-fast/Steam";
+    fsType = "zfs";
+    options = [
+      "zfsutil"
+      "X-mount.mkdir"
+    ];
+  };
+
+  fileSystems."/mnt/storage-fast/n8n" = {
+    device = "storage-fast/n8n";
     fsType = "zfs";
     options = [
       "zfsutil"
@@ -880,5 +890,18 @@
     enable = true;
     openFirewall = true;
     authKeyFile = "${config.age.secrets."secrets/hal9000/tailscale.age".path}";
+  };
+
+
+  services.ai-starter-kit = {
+    enable = true;
+    storagePath = "/storage-fast/n8n";
+    n8n.enable = true;
+    qdrant.enable = true;
+    postgres = {
+      user = "n8n";
+      password = "n8n";  # You might want to change this
+      database = "n8n";
+    };
   };
 }
