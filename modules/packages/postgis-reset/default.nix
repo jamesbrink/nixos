@@ -5,7 +5,7 @@
 }:
 
 let
-  # Create the rollback script
+  # Create the rollback script for PostgreSQL 13
   postgis-rollback = pkgs.writeScriptBin "postgis-rollback" ''
     #!${pkgs.bash}/bin/bash
 
@@ -38,7 +38,36 @@ let
     echo "Reset complete!"
   '';
 
-  # Create a derivation that combines our script and webhook config
+  # Create the rollback script for PostgreSQL 17
+  postgis17-rollback = pkgs.writeScriptBin "postgis17-rollback" ''
+    #!${pkgs.bash}/bin/bash
+
+    # Exit on any error
+    set -e
+
+    echo "Stopping podman-postgis17 service..."
+    ${pkgs.systemd}/bin/systemctl stop podman-postgis17.service
+
+    # Wait for the service to fully stop
+    echo "Waiting for service to stop completely..."
+    while ${pkgs.systemd}/bin/systemctl is-active --quiet podman-postgis17.service; do
+        echo -n "."
+        sleep 1
+    done
+    echo "Service stopped"
+
+    # Roll back to the upgrade-complete snapshot
+    echo "Rolling back to pg17-upgrade-complete snapshot..."
+    ${pkgs.zfs}/bin/zfs rollback storage-fast/quantierra-dev-17@pg17-upgrade-complete
+
+    # Start the service back up
+    echo "Starting podman-postgis17 service..."
+    ${pkgs.systemd}/bin/systemctl start podman-postgis17.service
+
+    echo "Reset complete!"
+  '';
+
+  # Create a derivation that combines both scripts and webhook configs
   postgis-reset = pkgs.symlinkJoin {
     name = "postgis-reset";
     paths = [
@@ -48,6 +77,7 @@ let
         destination = "/etc/webhook/hooks.json";
       })
       postgis-rollback
+      postgis17-rollback
     ];
   };
 in
