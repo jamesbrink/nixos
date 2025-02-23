@@ -22,6 +22,13 @@
       "webhook.home.urandom.io" = {
         forceSSL = true;
         useACMEHost = "home.urandom.io";
+        extraConfig = ''
+          add_header 'Access-Control-Allow-Origin' 'https://zfs.home.urandom.io' always;
+          add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+          add_header 'Access-Control-Allow-Headers' 'DNT, User-Agent, X-Requested-With, If-Modified-Since, Cache-Control, Content-Type, Range, X-Webhook-Token' always;
+          add_header 'Access-Control-Max-Age' 1728000 always;
+          add_header 'Access-Control-Expose-Headers' 'Content-Length, Content-Range' always;
+        '';
         locations."/" = {
           proxyPass = "http://127.0.0.1:9000";
           proxyWebsockets = true;
