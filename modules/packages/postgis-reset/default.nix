@@ -12,16 +12,9 @@ let
     # Exit on any error
     set -e
 
-    echo "Stopping podman-postgis service..."
-    ${pkgs.systemd}/bin/systemctl stop podman-postgis.service
-
-    # Wait for the service to fully stop
-    echo "Waiting for service to stop completely..."
-    while ${pkgs.systemd}/bin/systemctl is-active --quiet podman-postgis.service; do
-        echo -n "."
-        sleep 1
-    done
-    echo "Service stopped"
+    echo "Killing PostgreSQL 13 container..."
+    ${pkgs.podman}/bin/podman kill postgis || true
+    echo "Container killed"
 
     # Destroy the existing clone
     echo "Destroying existing dev clone..."
@@ -45,16 +38,9 @@ let
     # Exit on any error
     set -e
 
-    echo "Stopping podman-postgis17 service..."
-    ${pkgs.systemd}/bin/systemctl stop podman-postgis17.service
-
-    # Wait for the service to fully stop
-    echo "Waiting for service to stop completely..."
-    while ${pkgs.systemd}/bin/systemctl is-active --quiet podman-postgis17.service; do
-        echo -n "."
-        sleep 1
-    done
-    echo "Service stopped"
+    echo "Killing PostgreSQL 17 container..."
+    ${pkgs.podman}/bin/podman kill postgis17 || true
+    echo "Container killed"
 
     # Roll back to the upgrade-complete snapshot
     echo "Rolling back to pg17-upgrade-complete snapshot..."
