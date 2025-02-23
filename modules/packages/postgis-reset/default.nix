@@ -67,7 +67,35 @@ let
     echo "Reset complete!"
   '';
 
-  # Create a derivation that combines both scripts and webhook configs
+  # Create the webhook handler script
+  webhook-handler = pkgs.writeScriptBin "webhook-postgis-reset" ''
+    #!${pkgs.bash}/bin/bash
+
+    # Exit on any error
+    set -e
+
+    # Get the token from the first argument
+    TOKEN="$1"
+
+    case "$TOKEN" in
+      "reset")
+        echo "PostgreSQL 13 rollback initiated"
+        ${postgis-rollback}/bin/postgis-rollback
+        echo "PostgreSQL 13 rollback completed"
+        ;;
+      "reset17")
+        echo "PostgreSQL 17 rollback initiated"
+        ${postgis17-rollback}/bin/postgis17-rollback
+        echo "PostgreSQL 17 rollback completed"
+        ;;
+      *)
+        echo "Invalid token: $TOKEN"
+        exit 1
+        ;;
+    esac
+  '';
+
+  # Create a derivation that combines all scripts and webhook config
   postgis-reset = pkgs.symlinkJoin {
     name = "postgis-reset";
     paths = [
@@ -78,6 +106,7 @@ let
       })
       postgis-rollback
       postgis17-rollback
+      webhook-handler
     ];
   };
 in
