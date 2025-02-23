@@ -890,6 +890,7 @@
     nvidia-vaapi-driver
     nvtopPackages.nvidia
     OVMF
+    pgbackrest
     pgweb
     podman
     samba4Full
