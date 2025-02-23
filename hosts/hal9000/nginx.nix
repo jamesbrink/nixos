@@ -21,7 +21,7 @@
     virtualHosts = {
       "hal9000.home.urandom.io" = {
         forceSSL = true;
-        useACMEHost = "hal9000.home.urandom.io";
+        useACMEHost = "home.urandom.io";
 
         root = "/var/www/hal9000.home.urandom.io";
 
@@ -41,7 +41,7 @@
 
       "n8n.home.urandom.io" = {
         forceSSL = true;
-        useACMEHost = "n8n.home.urandom.io";
+        useACMEHost = "home.urandom.io";
 
         locations."/" = {
           proxyPass = "http://127.0.0.1:5678";
@@ -57,7 +57,7 @@
 
       "sd.home.urandom.io" = {
         forceSSL = true;
-        useACMEHost = "sd.home.urandom.io";
+        useACMEHost = "home.urandom.io";
 
         locations."/" = {
           proxyPass = "http://127.0.0.1:8190";
@@ -73,7 +73,7 @@
 
       "comfyui.home.urandom.io" = {
         forceSSL = true;
-        useACMEHost = "comfyui.home.urandom.io";
+        useACMEHost = "home.urandom.io";
 
         locations."/" = {
           proxyPass = "http://127.0.0.1:8190";
@@ -89,7 +89,7 @@
 
       "webui.home.urandom.io" = {
         forceSSL = true;
-        useACMEHost = "webui.home.urandom.io";
+        useACMEHost = "home.urandom.io";
 
         locations."/" = {
           proxyPass = "http://127.0.0.1:3000";
@@ -105,7 +105,7 @@
 
       "pgweb.home.urandom.io" = {
         forceSSL = true;
-        useACMEHost = "pgweb.home.urandom.io";
+        useACMEHost = "home.urandom.io";
 
         locations = {
           "/" = {
@@ -138,92 +138,8 @@
     defaults.server = "https://acme-v02.api.letsencrypt.org/directory";
 
     certs = {
-      "hal9000.home.urandom.io" = {
-        dnsProvider = "route53";
-        credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
-        dnsPropagationCheck = true;
-        dnsResolver = "1.1.1.1:53";
-        extraLegoFlags = [
-          "--dns.resolvers"
-          "1.1.1.1:53"
-          "--dns-timeout"
-          "120"
-          "--dns.propagation-wait"
-          "120s"
-        ];
-        group = "nginx";
-        reloadServices = [ "nginx" ];
-      };
-
-      "n8n.home.urandom.io" = {
-        dnsProvider = "route53";
-        credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
-        dnsPropagationCheck = true;
-        dnsResolver = "1.1.1.1:53";
-        extraLegoFlags = [
-          "--dns.resolvers"
-          "1.1.1.1:53"
-          "--dns-timeout"
-          "120"
-          "--dns.propagation-wait"
-          "120s"
-        ];
-        group = "nginx";
-        reloadServices = [ "nginx" ];
-      };
-
-      "sd.home.urandom.io" = {
-        dnsProvider = "route53";
-        credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
-        dnsPropagationCheck = true;
-        dnsResolver = "1.1.1.1:53";
-        extraLegoFlags = [
-          "--dns.resolvers"
-          "1.1.1.1:53"
-          "--dns-timeout"
-          "120"
-          "--dns.propagation-wait"
-          "120s"
-        ];
-        group = "nginx";
-        reloadServices = [ "nginx" ];
-      };
-
-      "comfyui.home.urandom.io" = {
-        dnsProvider = "route53";
-        credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
-        dnsPropagationCheck = true;
-        dnsResolver = "1.1.1.1:53";
-        extraLegoFlags = [
-          "--dns.resolvers"
-          "1.1.1.1:53"
-          "--dns-timeout"
-          "120"
-          "--dns.propagation-wait"
-          "120s"
-        ];
-        group = "nginx";
-        reloadServices = [ "nginx" ];
-      };
-
-      "webui.home.urandom.io" = {
-        dnsProvider = "route53";
-        credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
-        dnsPropagationCheck = true;
-        dnsResolver = "1.1.1.1:53";
-        extraLegoFlags = [
-          "--dns.resolvers"
-          "1.1.1.1:53"
-          "--dns-timeout"
-          "120"
-          "--dns.propagation-wait"
-          "120s"
-        ];
-        group = "nginx";
-        reloadServices = [ "nginx" ];
-      };
-
-      "pgweb.home.urandom.io" = {
+      "home.urandom.io" = {
+        domain = "*.home.urandom.io";
         dnsProvider = "route53";
         credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
         dnsPropagationCheck = true;

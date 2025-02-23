@@ -48,6 +48,7 @@
     tflint
     tig
     treefmt
+    webhook
     yq-go
     zellij
     zfs
