@@ -1,7 +1,12 @@
 { pkgs, ... }:
 
+let
+  database-scripts = import ./database-scripts.nix { inherit pkgs; };
+in
+
 {
   environment.systemPackages = with pkgs; [
+    database-scripts
     act
     atool
     awscli2

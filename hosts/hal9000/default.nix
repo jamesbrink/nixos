@@ -454,7 +454,7 @@
             POSTGRES_PASSWORD = "postgres";
           };
           volumes = [
-            "/mnt/storage-fast/quantierra:/var/lib/postgresql/data"
+            "/storage-fast/quantierra-dev:/var/lib/postgresql/data"
           ];
           ports = [
             "5432:5432"
@@ -904,11 +904,7 @@
   # pgweb service configuration
   systemd.services.pgweb = {
     description = "pgweb PostgreSQL database browser";
-    after = [
-      "network.target"
-      "podman-postgis.service"
-    ];
-    requires = [ "podman-postgis.service" ];
+    after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
     environment = {
       PGHOST = "127.0.0.1";
@@ -918,10 +914,9 @@
     };
     serviceConfig = {
       Type = "simple";
-      ExecStartPre = "+${pkgs.bash}/bin/bash -c 'until ${pkgs.postgresql}/bin/pg_isready -h 127.0.0.1 -p 5432; do sleep 1; done'";
       ExecStart = "${pkgs.pgweb}/bin/pgweb --bind=0.0.0.0 --listen=8081 --host=127.0.0.1 --port=5432 --user=postgres --pass=postgres --db=nyc_real_estate_dev --skip-open --sessions";
       Restart = "always";
-      RestartSec = "10s";
+      RestartSec = "5s";
       User = "jamesbrink";
     };
   };
