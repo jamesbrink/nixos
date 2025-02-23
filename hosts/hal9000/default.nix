@@ -455,6 +455,15 @@
           };
           volumes = [
             "/storage-fast/quantierra-dev:/var/lib/postgresql/data"
+            "${../../modules/services/postgresql/postgresql.conf}:/etc/postgresql/postgresql.conf:ro"
+            "${../../modules/services/postgresql/pg_hba.conf}:/etc/postgresql/pg_hba.conf:ro"
+          ];
+          cmd = [
+            "postgres"
+            "-c"
+            "config_file=/etc/postgresql/postgresql.conf"
+            "-c"
+            "hba_file=/etc/postgresql/pg_hba.conf"
           ];
           ports = [
             "5432:5432"
