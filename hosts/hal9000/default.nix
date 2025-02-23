@@ -21,6 +21,7 @@
       unstablePkgs = pkgs.unstablePkgs;
       inherit (args.inputs) claude-desktop;
     })
+    ../../users/regular/strivedi.nix
     ../../profiles/desktop/default-stable.nix
     ../../profiles/keychron/default.nix
     ../../modules/services/ai-starter-kit/default.nix
