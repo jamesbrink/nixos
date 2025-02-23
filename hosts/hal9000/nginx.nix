@@ -102,6 +102,30 @@
           '';
         };
       };
+
+      "pgweb.home.urandom.io" = {
+        forceSSL = true;
+        useACMEHost = "pgweb.home.urandom.io";
+
+        locations = {
+          "/" = {
+            proxyPass = "http://127.0.0.1:8081";
+            proxyWebsockets = true;
+            extraConfig = ''
+              proxy_set_header Origin "";
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection "upgrade";
+            '';
+          };
+          "/static/" = {
+            proxyPass = "http://127.0.0.1:8081";
+            extraConfig = ''
+              expires 30d;
+              add_header Cache-Control "public, no-transform";
+            '';
+          };
+        };
+      };
     };
   };
 
@@ -183,6 +207,23 @@
       };
 
       "webui.home.urandom.io" = {
+        dnsProvider = "route53";
+        credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
+        dnsPropagationCheck = true;
+        dnsResolver = "1.1.1.1:53";
+        extraLegoFlags = [
+          "--dns.resolvers"
+          "1.1.1.1:53"
+          "--dns-timeout"
+          "120"
+          "--dns.propagation-wait"
+          "120s"
+        ];
+        group = "nginx";
+        reloadServices = [ "nginx" ];
+      };
+
+      "pgweb.home.urandom.io" = {
         dnsProvider = "route53";
         credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
         dnsPropagationCheck = true;

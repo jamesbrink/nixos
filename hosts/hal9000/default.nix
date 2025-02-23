@@ -840,18 +840,19 @@
   ];
 
   environment.systemPackages = with pkgs; [
+    # unstablePkgs.exo
     audit
     bottles
     bridge-utils
     distrobox
     dotnetPackages.Nuget
-    # unstablePkgs.exo
     exo
     glxinfo
     incus
     nvidia-vaapi-driver
     nvtopPackages.nvidia
     OVMF
+    pgweb
     podman
     samba4Full
     spice
@@ -898,6 +899,31 @@
     enable = true;
     openFirewall = true;
     authKeyFile = "${config.age.secrets."secrets/hal9000/tailscale.age".path}";
+  };
+
+  # pgweb service configuration
+  systemd.services.pgweb = {
+    description = "pgweb PostgreSQL database browser";
+    after = [
+      "network.target"
+      "podman-postgis.service"
+    ];
+    requires = [ "podman-postgis.service" ];
+    wantedBy = [ "multi-user.target" ];
+    environment = {
+      PGHOST = "127.0.0.1";
+      PGUSER = "postgres";
+      PGPASSWORD = "postgres";
+      PGDATABASE = "nyc_real_estate_dev";
+    };
+    serviceConfig = {
+      Type = "simple";
+      ExecStartPre = "+${pkgs.bash}/bin/bash -c 'until ${pkgs.postgresql}/bin/pg_isready -h 127.0.0.1 -p 5432; do sleep 1; done'";
+      ExecStart = "${pkgs.pgweb}/bin/pgweb --bind=0.0.0.0 --listen=8081 --host=127.0.0.1 --port=5432 --user=postgres --pass=postgres --db=nyc_real_estate_dev --skip-open --sessions";
+      Restart = "always";
+      RestartSec = "10s";
+      User = "jamesbrink";
+    };
   };
 
   services.ai-starter-kit = {
