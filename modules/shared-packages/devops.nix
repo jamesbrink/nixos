@@ -16,11 +16,15 @@
     git-crypt
     git-secrets
     gnumake
+    helm
+    helm-ls
     incus
+    infracost
     jdk
     kind
     kubectl
     kubectx
+    kubescape
     lego
     libxisf
     mtr
@@ -49,6 +53,8 @@
     tig
     treefmt
     webhook
+    websocat
+    websocketd
     yq-go
     zellij
     zfs
