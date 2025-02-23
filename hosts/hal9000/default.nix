@@ -884,6 +884,7 @@
     bottles
     bridge-utils
     distrobox
+    websocketd
     dotnetPackages.Nuget
     exo
     glxinfo
@@ -975,6 +976,35 @@
       Restart = "always";
       RestartSec = "5s";
       User = "jamesbrink";
+    };
+  };
+
+  # ZFS monitoring websocket service
+  # Copy ZFS monitor HTML file
+  system.activationScripts.copyZfsMonitorHtml = ''
+    mkdir -p /var/www/zfs.home.urandom.io
+    cp ${./zfs-monitor.html} /var/www/zfs.home.urandom.io/index.html
+    chmod 644 /var/www/zfs.home.urandom.io/index.html
+  '';
+
+  systemd.services.zfs-monitor = {
+    description = "ZFS monitoring websocket service";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+
+    serviceConfig = {
+      ExecStart = "${pkgs.websocketd}/bin/websocketd --port=9999 --address=0.0.0.0 ${pkgs.writeScript "zfs-monitor" ''
+        #!${pkgs.bash}/bin/bash
+        while true; do
+          ${pkgs.zfs}/bin/zfs list 2>/dev/null | ${pkgs.gawk}/bin/awk "NR>1" | ${pkgs.coreutils}/bin/stdbuf -oL ${pkgs.coreutils}/bin/tr "\n" ";" | ${pkgs.gnused}/bin/sed "s/;$//";
+          ${pkgs.coreutils}/bin/sync;
+          ${pkgs.coreutils}/bin/stdbuf -oL ${pkgs.coreutils}/bin/echo;
+          sleep 1;
+        done
+      ''}";
+      Restart = "always";
+      RestartSec = "5s";
+      User = "root"; # Needed for ZFS commands
     };
   };
 

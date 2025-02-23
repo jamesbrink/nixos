@@ -48,6 +48,29 @@
         '';
       };
 
+      "zfs.home.urandom.io" = {
+        forceSSL = true;
+        useACMEHost = "home.urandom.io";
+
+        locations."/" = {
+          root = "/var/www/zfs.home.urandom.io";
+          index = "index.html";
+        };
+
+        locations."/ws" = {
+          proxyPass = "http://127.0.0.1:9999";
+          proxyWebsockets = true;
+        };
+
+        # Security headers
+        extraConfig = ''
+          add_header X-Frame-Options "SAMEORIGIN" always;
+          add_header X-Content-Type-Options "nosniff" always;
+          add_header X-XSS-Protection "1; mode=block" always;
+          add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        '';
+      };
+
       "n8n.home.urandom.io" = {
         forceSSL = true;
         useACMEHost = "home.urandom.io";
