@@ -23,15 +23,19 @@ let
     done
     echo "Service stopped"
 
-    # Perform the ZFS rollback
-    echo "Rolling back ZFS dataset..."
-    ${pkgs.zfs}/bin/zfs rollback -r storage-fast/quantierra@dev
+    # Destroy the existing clone
+    echo "Destroying existing dev clone..."
+    ${pkgs.zfs}/bin/zfs destroy storage-fast/quantierra-dev
+
+    # Create a new clone from the dev snapshot
+    echo "Creating new clone from dev snapshot..."
+    ${pkgs.zfs}/bin/zfs clone storage-fast/quantierra@dev storage-fast/quantierra-dev
 
     # Start the service back up
     echo "Starting podman-postgis service..."
     ${pkgs.systemd}/bin/systemctl start podman-postgis.service
 
-    echo "Rollback complete!"
+    echo "Reset complete!"
   '';
 
   # Create a derivation that combines our script and webhook config
