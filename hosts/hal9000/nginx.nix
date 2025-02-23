@@ -54,6 +54,54 @@
           '';
         };
       };
+
+      "sd.home.urandom.io" = {
+        forceSSL = true;
+        useACMEHost = "sd.home.urandom.io";
+
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8190";
+          proxyWebsockets = true;
+          extraConfig = ''
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          '';
+        };
+      };
+
+      "comfyui.home.urandom.io" = {
+        forceSSL = true;
+        useACMEHost = "comfyui.home.urandom.io";
+
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8190";
+          proxyWebsockets = true;
+          extraConfig = ''
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          '';
+        };
+      };
+
+      "webui.home.urandom.io" = {
+        forceSSL = true;
+        useACMEHost = "webui.home.urandom.io";
+
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:3000";
+          proxyWebsockets = true;
+          extraConfig = ''
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          '';
+        };
+      };
     };
   };
 
@@ -84,6 +132,57 @@
       };
 
       "n8n.home.urandom.io" = {
+        dnsProvider = "route53";
+        credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
+        dnsPropagationCheck = true;
+        dnsResolver = "1.1.1.1:53";
+        extraLegoFlags = [
+          "--dns.resolvers"
+          "1.1.1.1:53"
+          "--dns-timeout"
+          "120"
+          "--dns.propagation-wait"
+          "120s"
+        ];
+        group = "nginx";
+        reloadServices = [ "nginx" ];
+      };
+
+      "sd.home.urandom.io" = {
+        dnsProvider = "route53";
+        credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
+        dnsPropagationCheck = true;
+        dnsResolver = "1.1.1.1:53";
+        extraLegoFlags = [
+          "--dns.resolvers"
+          "1.1.1.1:53"
+          "--dns-timeout"
+          "120"
+          "--dns.propagation-wait"
+          "120s"
+        ];
+        group = "nginx";
+        reloadServices = [ "nginx" ];
+      };
+
+      "comfyui.home.urandom.io" = {
+        dnsProvider = "route53";
+        credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
+        dnsPropagationCheck = true;
+        dnsResolver = "1.1.1.1:53";
+        extraLegoFlags = [
+          "--dns.resolvers"
+          "1.1.1.1:53"
+          "--dns-timeout"
+          "120"
+          "--dns.propagation-wait"
+          "120s"
+        ];
+        group = "nginx";
+        reloadServices = [ "nginx" ];
+      };
+
+      "webui.home.urandom.io" = {
         dnsProvider = "route53";
         credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
         dnsPropagationCheck = true;
