@@ -15,7 +15,7 @@
     }
   },
   {
-    "id": "postgis17-rollback",
+    "id": "postgis-rollback",
     "execute-command": "/run/current-system/sw/bin/postgis17-rollback",
     "command-working-directory": "/",
     "response-message": "PostgreSQL 17 rollback initiated",
