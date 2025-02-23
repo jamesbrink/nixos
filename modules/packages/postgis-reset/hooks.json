@@ -1,0 +1,18 @@
+[
+  {
+    "id": "postgis-rollback",
+    "execute-command": "/run/current-system/sw/bin/postgis-rollback",
+    "command-working-directory": "/",
+    "response-message": "Postgis rollback initiated",
+    "trigger-rule": {
+      "match": {
+        "type": "value",
+        "value": "reset",
+        "parameter": {
+          "source": "header",
+          "name": "X-Webhook-Token"
+        }
+      }
+    }
+  }
+]

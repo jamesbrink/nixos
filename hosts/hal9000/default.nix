@@ -901,6 +901,23 @@
     authKeyFile = "${config.age.secrets."secrets/hal9000/tailscale.age".path}";
   };
 
+  # webhook service configuration
+  environment.etc."webhook/hooks.json".source = ../../modules/packages/postgis-reset/hooks.json;
+
+  systemd.services.webhook = {
+    description = "Webhook Server";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "simple";
+      User = "root";
+      Group = "root";
+      ExecStart = "${pkgs.webhook}/bin/webhook -hooks /etc/webhook/hooks.json -verbose";
+      Restart = "always";
+      RestartSec = "10s";
+    };
+  };
+
   # pgweb service configuration
   systemd.services.pgweb = {
     description = "pgweb PostgreSQL database browser";

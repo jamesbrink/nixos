@@ -19,6 +19,15 @@
 
     # Virtual Host configuration
     virtualHosts = {
+      "webhook.home.urandom.io" = {
+        forceSSL = true;
+        useACMEHost = "home.urandom.io";
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:9000";
+          proxyWebsockets = true;
+        };
+      };
+
       "hal9000.home.urandom.io" = {
         forceSSL = true;
         useACMEHost = "home.urandom.io";

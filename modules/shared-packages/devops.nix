@@ -1,12 +1,12 @@
 { pkgs, ... }:
 
 let
-  database-scripts = import ./database-scripts.nix { inherit pkgs; };
+  postgis-reset = import ../packages/postgis-reset { inherit pkgs; };
 in
 
 {
   environment.systemPackages = with pkgs; [
-    database-scripts
+    postgis-reset
     act
     atool
     awscli2
