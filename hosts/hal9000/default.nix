@@ -903,7 +903,11 @@
   services.ai-starter-kit = {
     enable = true;
     storagePath = "/storage-fast/n8n";
-    n8n.enable = true;
+    n8n = {
+      enable = true;
+      editorBaseUrl = "https://n8n.home.urandom.io";
+      webhookUrl = "https://n8n.home.urandom.io";
+    };
     qdrant.enable = true;
     postgres = {
       user = "n8n";
