@@ -60,6 +60,7 @@ in
       unstable.windsurf
       warp-terminal
       waveterm
+      wezterm
       winbox4
       wireshark
       xonsh
