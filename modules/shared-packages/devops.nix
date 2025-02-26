@@ -6,7 +6,6 @@ in
 
 {
   environment.systemPackages = with pkgs; [
-    postgis-reset
     act
     atool
     awscli2
@@ -34,11 +33,13 @@ in
     libxisf
     mtr
     nerdfonts
+    nodejs_23
     open-vm-tools
     opentofu
     openvpn3
     openvswitch
     packer
+    postgis-reset
     postgresql
     pre-commit
     restic
@@ -57,6 +58,7 @@ in
     tflint
     tig
     treefmt
+    uv
     webhook
     websocat
     websocketd
