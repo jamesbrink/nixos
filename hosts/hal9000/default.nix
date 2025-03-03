@@ -901,7 +901,6 @@
     spice-protocol
     steam
     sunshine
-    unstablePkgs.goose-cli
     unstablePkgs.ollama-cuda
     virt-viewer
     vulkan-tools

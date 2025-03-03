@@ -31,9 +31,9 @@ in
         cudaSupport = true;
         cudaPackages = pkgs.cudaPackages_12_3;
       })
+      claude-desktop.packages.${pkgs.system}.default
       atuin
       barrier
-      claude-desktop.packages.${pkgs.system}.default
       dbeaver-bin
       discord
       drawio
@@ -56,7 +56,9 @@ in
       postman
       signal-desktop
       termius
+      unstable.claude-code
       unstable.code-cursor
+      unstable.goose-cli
       unstable.windsurf
       warp-terminal
       waveterm
