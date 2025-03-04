@@ -70,8 +70,10 @@
         const DATASETS_TO_SHOW = [
             '/storage-fast',
             '/storage-fast/quantierra',
-            '/storage-fast/quantierra-dev',
-            '/storage-fast/quantierra-dev-17'
+            '/storage-fast/quantierra/base',
+            '/storage-fast/quantierra/archive',
+            '/storage-fast/quantierra/postgres13',
+            '/storage-fast/quantierra/postgres17',
         ];
 
         function showModal(title, message, progress = 0) {
@@ -112,13 +114,13 @@
         }
 
         function getResetButton(dataset) {
-            if (dataset === '/storage-fast/quantierra-dev') {
+            if (dataset === '/storage-fast/quantierra/postgres13') {
                 return `<button type="button" onclick="resetDatabase(13);" 
                     class="bg-pg-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                     Reset PostgreSQL 13
                 </button>`;
             }
-            if (dataset === '/storage-fast/quantierra-dev-17') {
+            if (dataset === '/storage-fast/quantierra/postgres17') {
                 return `<button type="button" onclick="resetDatabase(17);" 
                     class="bg-pg-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                     Reset PostgreSQL 17

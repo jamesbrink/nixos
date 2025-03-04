@@ -13,20 +13,20 @@ let
     set -e
 
     echo "Killing PostgreSQL 13 container..."
-    ${pkgs.podman}/bin/podman kill postgis || true
+    ${pkgs.podman}/bin/podman kill postgis13 || true
     echo "Container killed"
 
     # Destroy the existing clone
     echo "Destroying existing dev clone..."
-    ${pkgs.zfs}/bin/zfs destroy storage-fast/quantierra-dev
+    ${pkgs.zfs}/bin/zfs destroy storage-fast/quantierra/postgres13
 
-    # Create a new clone from the dev snapshot
-    echo "Creating new clone from dev snapshot..."
-    ${pkgs.zfs}/bin/zfs clone storage-fast/quantierra@dev storage-fast/quantierra-dev
+    echo "Creating new clone from storage-fast/quantierra/base@backup_20250227..."
+    ${pkgs.zfs}/bin/zfs clone storage-fast/quantierra/base@backup_20250227 storage-fast/quantierra/postgres13
+    touch /storage-fast/quantierra/postgres13/standby.signal
 
     # Start the service back up
-    echo "Starting podman-postgis service..."
-    ${pkgs.systemd}/bin/systemctl start podman-postgis.service
+    echo "Starting podman-postgis13 service..."
+    ${pkgs.systemd}/bin/systemctl start podman-postgis13.service
 
     echo "Reset complete!"
   '';
@@ -44,7 +44,7 @@ let
 
     # Roll back to the upgrade-complete snapshot
     echo "Rolling back to pg17-upgrade-complete snapshot..."
-    ${pkgs.zfs}/bin/zfs rollback storage-fast/quantierra-dev-17@pg17-upgrade-complete
+    ${pkgs.zfs}/bin/zfs rollback storage-fast/quantierra/postgres13-17@pg17-upgrade-complete
 
     # Start the service back up
     echo "Starting podman-postgis17 service..."

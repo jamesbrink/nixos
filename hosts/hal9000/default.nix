@@ -1,11 +1,10 @@
-{
-  config,
-  pkgs,
-  lib,
-  secretsPath,
-  inputs,
-  self,
-  ...
+{ config
+, pkgs
+, lib
+, secretsPath
+, inputs
+, self
+, ...
 }@args:
 {
   disabledModules = [
@@ -448,14 +447,15 @@
     };
     oci-containers = {
       containers = {
-        postgis = {
+        postgis13 = {
           image = "postgis/postgis:13-3.5";
           environment = {
             POSTGRES_USER = "postgres";
             POSTGRES_PASSWORD = "postgres";
           };
           volumes = [
-            "/storage-fast/quantierra-dev:/var/lib/postgresql/data"
+            "/storage-fast/quantierra/postgres13:/var/lib/postgresql/data"
+            "/storage-fast/quantierra/archive:/var/lib/postgresql/archive:ro"
             "${../../modules/services/postgresql/postgresql.conf}:/etc/postgresql/postgresql.conf:ro"
             "${../../modules/services/postgresql/pg_hba.conf}:/etc/postgresql/pg_hba.conf:ro"
           ];
@@ -471,33 +471,33 @@
           ];
         };
 
-        postgis17 = {
-          image = "postgis/postgis:17-3.5";
-          user = "postgres:postgres";
-          entrypoint = "/usr/lib/postgresql/17/bin/postgres";
-          environment = {
-            POSTGRES_USER = "postgres";
-            POSTGRES_PASSWORD = "postgres";
-            POSTGRES_HOST_AUTH_METHOD = "trust";
-            POSTGRES_INITDB_ARGS = "";
-          };
-          volumes = [
-            "/storage-fast/quantierra-dev-17:/var/lib/postgresql/data"
-            "${../../modules/services/postgresql/postgresql.conf}:/etc/postgresql/postgresql.conf:ro"
-            "${../../modules/services/postgresql/pg_hba.conf}:/etc/postgresql/pg_hba.conf:ro"
-          ];
-          cmd = [
-            "-D"
-            "/var/lib/postgresql/data/new"
-            "-c"
-            "config_file=/etc/postgresql/postgresql.conf"
-            "-c"
-            "hba_file=/etc/postgresql/pg_hba.conf"
-          ];
-          ports = [
-            "5433:5432"
-          ];
-        };
+        # postgis17 = {
+        #   image = "postgis/postgis:17-3.5";
+        #   user = "postgres:postgres";
+        #   entrypoint = "/usr/lib/postgresql/17/bin/postgres";
+        #   environment = {
+        #     POSTGRES_USER = "postgres";
+        #     POSTGRES_PASSWORD = "postgres";
+        #     POSTGRES_HOST_AUTH_METHOD = "trust";
+        #     POSTGRES_INITDB_ARGS = "";
+        #   };
+        #   volumes = [
+        #     "/storage-fast/quantierra-dev-17:/var/lib/postgresql/data"
+        #     "${../../modules/services/postgresql/postgresql.conf}:/etc/postgresql/postgresql.conf:ro"
+        #     "${../../modules/services/postgresql/pg_hba.conf}:/etc/postgresql/pg_hba.conf:ro"
+        #   ];
+        #   cmd = [
+        #     "-D"
+        #     "/var/lib/postgresql/data/new"
+        #     "-c"
+        #     "config_file=/etc/postgresql/postgresql.conf"
+        #     "-c"
+        #     "hba_file=/etc/postgresql/pg_hba.conf"
+        #   ];
+        #   ports = [
+        #     "5433:5432"
+        #   ];
+        # };
 
         ollama = {
           image = "ollama/ollama";
