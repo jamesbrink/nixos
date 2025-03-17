@@ -32,7 +32,7 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     claude-desktop = {
-      url = "github:jamesbrink/claude-desktop-linux-flake/d88fee8";
+      url = "github:jamesbrink/claude-desktop-linux-flake/a39cdbb";
       inputs.nixpkgs.follows = "nixos-unstable";
     };
   };

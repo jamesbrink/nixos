@@ -187,6 +187,15 @@
     ];
   };
 
+  fileSystems."/mnt/storage-fast/ollama" = {
+    device = "storage-fast/ollama";
+    fsType = "zfs";
+    options = [
+      "zfsutil"
+      "X-mount.mkdir"
+    ];
+  };
+
   fileSystems."/home/jamesbrink/AI" = {
     device = "/mnt/storage-fast/AI";
     options = [ "bind" ];
@@ -500,9 +509,9 @@
         # };
 
         ollama = {
-          image = "ollama/ollama";
+          image = "ollama/ollama:latest";
           volumes = [
-            "/var/lib/private/ollama:/root/.ollama"
+            "/storage-fast/ollama:/root/.ollama"
           ];
           ports = [
             "11434:11434"
@@ -566,6 +575,9 @@
           ports = [
             "3000:8080"
           ];
+          environment = {
+            OLLAMA_BASE_URL = "http://hal9000:11434";
+          };
           extraOptions = [
             "--add-host=host.docker.internal:host-gateway"
             "--name=open-webui"
@@ -649,7 +661,7 @@
         ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/pipelines:main
         # ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
         # ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:latest
-        ${pkgs.podman}/bin/podman pull ollama/ollama
+        ${pkgs.podman}/bin/podman pull ollama/ollama:latest
 
         # Restart containers to use new images
         ${pkgs.systemd}/bin/systemctl restart podman-ollama
