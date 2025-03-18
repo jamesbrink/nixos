@@ -217,7 +217,7 @@
                 help = "Update NixOS and flake inputs";
                 command = ''
                   echo "Updating NixOS and flake inputs..."
-                  nix flake update
+                  NIXPKGS_ALLOW_UNFREE=1 nix flake update --impure
                   echo "Update complete! You may now run 'deploy <hostname>' to apply the updates."
                 '';
               }
@@ -242,7 +242,7 @@
                   fi
 
                   echo "Building configuration for $HOST..."
-                  nix build .#nixosConfigurations.$HOST.config.system.build.toplevel
+                  NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
                   echo "Build for $HOST complete!"
                 '';
               }
@@ -253,7 +253,7 @@
                 help = "Check the Nix expressions for errors";
                 command = ''
                   echo "Checking Nix expressions for errors..."
-                  nix flake check
+                  NIXPKGS_ALLOW_UNFREE=1 nix flake check --impure
                   echo "Check complete!"
                 '';
               }
@@ -417,10 +417,10 @@
 
                   if [ "$HOSTNAME" = "$HOST" ]; then
                     # Local rollback
-                    sudo nixos-rebuild --rollback switch
+                    sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild --rollback switch --impure
                   else
                     # Remote rollback
-                    ssh root@$HOST "nixos-rebuild --rollback switch"
+                    ssh root@$HOST "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild --rollback switch --impure"
                   fi
 
                   echo "Rollback on $HOST complete!"
