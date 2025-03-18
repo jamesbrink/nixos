@@ -62,6 +62,9 @@ This project uses:
 - Secure secrets management with Agenix
 - Remote development support with VSCode Server
 - Modular configuration structure
+- Enhanced development shell with deployment and maintenance commands
+- Automatic code formatting with treefmt
+- Unfree packages support in development environment
 
 ## Dependencies
 
@@ -77,6 +80,21 @@ This configuration relies on several external inputs:
 
 ### Deploy to a Host
 
+#### Using the Development Shell (Recommended)
+
+```shell
+# Enter the development shell
+nix develop
+
+# Deploy to a host
+deploy hal9000
+
+# Test deployment without making changes
+deploy-test hal9000
+```
+
+#### Manual Deployment
+
 To deploy to a specific host (e.g., hal9000):
 
 ```shell
@@ -91,7 +109,31 @@ sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#hal9000 --verb
 
 ### Development Workflow
 
-1. **Local Testing**
+1. **Using the Development Shell**
+   ```shell
+   # Enter the development shell
+   nix develop
+   
+   # Available commands in the development shell:
+   # Development commands
+   format              # Format all files using treefmt
+   check               # Check Nix expressions for errors
+   
+   # Deployment commands
+   deploy <hostname>   # Deploy configuration to a host
+   deploy-test <hostname> # Test deployment without making changes
+   build <hostname>    # Build configuration without deploying
+   
+   # Maintenance commands
+   update              # Update NixOS and flake inputs
+   health-check <hostname> # Check system health
+   gc <hostname>       # Run garbage collection
+   show-hosts          # List all available hosts
+   show-generations <hostname> # Show NixOS generations
+   rollback <hostname> # Rollback to previous generation
+   ```
+
+2. **Local Testing**
    ```shell
    # Test configuration build without applying
    nixos-rebuild build --flake .#<hostname>
@@ -100,7 +142,7 @@ sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#hal9000 --verb
    nixos-rebuild build --flake .#<hostname> --fast
    ```
 
-2. **Updating Dependencies**
+3. **Updating Dependencies**
    ```shell
    # Update all flake inputs
    nix flake update
@@ -109,11 +151,21 @@ sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#hal9000 --verb
    nix flake lock --update-input nixpkgs
    ```
 
-3. **Working with Home Manager**
+4. **Working with Home Manager**
    ```shell
    # Apply home-manager configuration
    home-manager switch --flake .#<username>@<hostname>
    ```
+
+5. **Code Formatting**
+   ```shell
+   # Format all files using treefmt
+   nix develop --command format
+   ```
+   
+   The repository uses treefmt with the following formatters:
+   - nixfmt for Nix files
+   - prettier for HTML, CSS, JS, and JSON files
 
 ## Contributing
 

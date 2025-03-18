@@ -35,6 +35,9 @@
       url = "github:jamesbrink/claude-desktop-linux-flake/a39cdbb";
       inputs.nixpkgs.follows = "nixos-unstable";
     };
+    devshell = {
+      url = "github:numtide/devshell";
+    };
   };
 
   outputs =
@@ -48,6 +51,7 @@
       secrets,
       vscode-server,
       claude-desktop,
+      devshell,
       ...
     }@inputs:
     let
@@ -71,6 +75,366 @@
       };
     in
     {
+      #########################################################################
+      # Development Shells                                                    #
+      #########################################################################
+
+      devShells = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-darwin" "x86_64-darwin" ] (
+        system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ devshell.overlays.default ];
+            config.allowUnfree = true;
+          };
+
+        in
+        # Note: We can't detect hostname at evaluation time in pure Nix
+        # We'll use shell commands at runtime instead
+        {
+          default = pkgs.devshell.mkShell {
+            name = "nix-config-dev";
+
+            # Allow unfree packages in the devshell
+            env = [
+              {
+                name = "NIXPKGS_ALLOW_UNFREE";
+                value = "1";
+              }
+            ];
+
+            packages = with pkgs; [
+              nixfmt-rfc-style
+              treefmt
+              rsync
+              openssh
+              nodePackages.prettier # For JSON and HTML formatting
+              jq # For JSON processing
+            ];
+
+            commands = [
+              # ───────────────────────────────────────────────────────
+              # DEVELOPMENT COMMANDS - For local development work
+              # ───────────────────────────────────────────────────────
+              {
+                name = "format";
+                category = "development";
+                help = "Format all Nix files using treefmt";
+                command = ''
+                  echo "Formatting files using treefmt..."
+                  treefmt
+                  if [ $? -eq 0 ]; then
+                    echo "Formatting complete!"
+                  else
+                    echo "Formatting failed. Check the error messages above."
+                    exit 1
+                  fi
+                '';
+              }
+
+              # ───────────────────────────────────────────────────────
+              # DEPLOYMENT COMMANDS - For updating the hosts
+              # ───────────────────────────────────────────────────────
+              {
+                name = "deploy";
+                category = "deployment";
+                help = "Deploy the configuration to a target host";
+                command = ''
+                  # Check if argument is provided
+                  if [ $# -eq 0 ]; then
+                    HOST=""
+                  else
+                    HOST="$1"
+                  fi
+                  if [ -z "$HOST" ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: deploy <hostname>"
+                    echo "Available hosts:"
+                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                    exit 1
+                  fi
+
+                  HOSTNAME=$(hostname)
+
+                  echo "Deploying configuration to $HOST..."
+
+                  # Check if we're on the target host
+                  if [ "$HOSTNAME" = "$HOST" ]; then
+                    echo "Deploying locally to $HOST..."
+                    sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#$HOST --verbose --impure
+                  else
+                    echo "Deploying remotely to $HOST..."
+                    # Copy the flake to the remote server and build there
+                    rsync -avz --exclude '.git' --exclude 'result' . root@$HOST:/tmp/nixos-config/
+                    ssh root@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#$HOST --verbose --impure"
+                  fi
+
+                  echo "Deployment to $HOST complete!"
+                '';
+              }
+
+              {
+                name = "deploy-test";
+                category = "deployment";
+                help = "Test the deployment without making changes";
+                command = ''
+                  # Check if argument is provided
+                  if [ $# -eq 0 ]; then
+                    HOST=""
+                  else
+                    HOST="$1"
+                  fi
+                  if [ -z "$HOST" ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: deploy-test <hostname>"
+                    echo "Available hosts:"
+                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                    exit 1
+                  fi
+
+                  HOSTNAME=$(hostname)
+
+                  echo "Testing deployment to $HOST..."
+
+                  # Check if we're on the target host
+                  if [ "$HOSTNAME" = "$HOST" ]; then
+                    echo "Testing locally on $HOST..."
+                    sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$HOST --impure
+                  else
+                    echo "Testing remotely on $HOST..."
+                    # Copy the flake to the remote server and test there
+                    rsync -avz --exclude '.git' --exclude 'result' . root@$HOST:/tmp/nixos-config/
+                    ssh root@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$HOST --impure"
+                  fi
+
+                  echo "Deployment test for $HOST complete!"
+                '';
+              }
+
+              {
+                name = "update";
+                category = "deployment";
+                help = "Update NixOS and flake inputs";
+                command = ''
+                  echo "Updating NixOS and flake inputs..."
+                  nix flake update
+                  echo "Update complete! You may now run 'deploy <hostname>' to apply the updates."
+                '';
+              }
+
+              {
+                name = "build";
+                category = "deployment";
+                help = "Build the configuration for a target host without deploying";
+                command = ''
+                  # Check if argument is provided
+                  if [ $# -eq 0 ]; then
+                    HOST=""
+                  else
+                    HOST="$1"
+                  fi
+                  if [ -z "$HOST" ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: build <hostname>"
+                    echo "Available hosts:"
+                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                    exit 1
+                  fi
+
+                  echo "Building configuration for $HOST..."
+                  nix build .#nixosConfigurations.$HOST.config.system.build.toplevel
+                  echo "Build for $HOST complete!"
+                '';
+              }
+
+              {
+                name = "check";
+                category = "development";
+                help = "Check the Nix expressions for errors";
+                command = ''
+                  echo "Checking Nix expressions for errors..."
+                  nix flake check
+                  echo "Check complete!"
+                '';
+              }
+
+              # ───────────────────────────────────────────────────────
+              # MAINTENANCE COMMANDS - For system maintenance
+              # ───────────────────────────────────────────────────────
+              {
+                name = "health-check";
+                category = "maintenance";
+                help = "Check the health of a system";
+                command = ''
+                  # Check if argument is provided
+                  if [ $# -eq 0 ]; then
+                    HOST=""
+                  else
+                    HOST="$1"
+                  fi
+                  if [ -z "$HOST" ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: health-check <hostname>"
+                    echo "Available hosts:"
+                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                    exit 1
+                  fi
+
+                  HOSTNAME=$(hostname)
+
+                  echo "Checking system health on $HOST..."
+
+                  if [ "$HOSTNAME" = "$HOST" ]; then
+                    # Local health check
+                    echo "\nDisk usage on $HOST:"
+                    df -h | grep -v tmpfs
+                    echo "\nMemory usage on $HOST:"
+                    free -h
+                    echo "\nSystem load on $HOST:"
+                    uptime
+                    echo "\nFailed services on $HOST:"
+                    systemctl --failed
+                    echo "\nJournal errors on $HOST (last 10):"
+                    journalctl -p 3 -xn 10
+                  else
+                    # Remote health check
+                    echo "\nDisk usage on $HOST:"
+                    ssh root@$HOST "df -h | grep -v tmpfs"
+                    echo "\nMemory usage on $HOST:"
+                    ssh root@$HOST "free -h"
+                    echo "\nSystem load on $HOST:"
+                    ssh root@$HOST "uptime"
+                    echo "\nFailed services on $HOST:"
+                    ssh root@$HOST "systemctl --failed"
+                    echo "\nJournal errors on $HOST (last 10):"
+                    ssh root@$HOST "journalctl -p 3 -xn 10"
+                  fi
+
+                  echo "\nHealth check for $HOST complete."
+                '';
+              }
+
+              {
+                name = "gc";
+                category = "maintenance";
+                help = "Run garbage collection to free up disk space";
+                command = ''
+                  # Check if argument is provided
+                  if [ $# -eq 0 ]; then
+                    HOST=""
+                  else
+                    HOST="$1"
+                  fi
+                  if [ -z "$HOST" ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: gc <hostname>"
+                    echo "Available hosts:"
+                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                    exit 1
+                  fi
+
+                  HOSTNAME=$(hostname)
+
+                  echo "Running garbage collection on $HOST..."
+
+                  if [ "$HOSTNAME" = "$HOST" ]; then
+                    # Local garbage collection
+                    sudo nix-collect-garbage -d
+                  else
+                    # Remote garbage collection
+                    ssh root@$HOST "nix-collect-garbage -d"
+                  fi
+
+                  echo "Garbage collection on $HOST complete!"
+                '';
+              }
+
+              {
+                name = "show-hosts";
+                category = "maintenance";
+                help = "Show all available hosts";
+                command = ''
+                  echo "Available hosts:"
+                  find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                '';
+              }
+
+              {
+                name = "show-generations";
+                category = "maintenance";
+                help = "Show NixOS generations on a host";
+                command = ''
+                  # Check if argument is provided
+                  if [ $# -eq 0 ]; then
+                    HOST=""
+                  else
+                    HOST="$1"
+                  fi
+                  if [ -z "$HOST" ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: show-generations <hostname>"
+                    echo "Available hosts:"
+                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                    exit 1
+                  fi
+
+                  HOSTNAME=$(hostname)
+
+                  if [ "$HOSTNAME" = "$HOST" ]; then
+                    # Local generations
+                    echo "NixOS generations on $HOST:"
+                    sudo nix-env -p /nix/var/nix/profiles/system --list-generations
+                  else
+                    # Remote generations
+                    echo "NixOS generations on $HOST:"
+                    ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --list-generations"
+                  fi
+                '';
+              }
+
+              {
+                name = "rollback";
+                category = "maintenance";
+                help = "Rollback to the previous generation on a host";
+                command = ''
+                  # Check if argument is provided
+                  if [ $# -eq 0 ]; then
+                    HOST=""
+                  else
+                    HOST="$1"
+                  fi
+                  if [ -z "$HOST" ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: rollback <hostname>"
+                    echo "Available hosts:"
+                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                    exit 1
+                  fi
+
+                  HOSTNAME=$(hostname)
+
+                  echo "Rolling back to previous generation on $HOST..."
+
+                  if [ "$HOSTNAME" = "$HOST" ]; then
+                    # Local rollback
+                    sudo nixos-rebuild --rollback switch
+                  else
+                    # Remote rollback
+                    ssh root@$HOST "nixos-rebuild --rollback switch"
+                  fi
+
+                  echo "Rollback on $HOST complete!"
+                '';
+              }
+            ];
+          };
+        }
+      );
+
+      #########################################################################
+      # NixOS Configurations                                                  #
+      #########################################################################
+
       nixosConfigurations = {
         n100-01 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";

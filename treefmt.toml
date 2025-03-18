@@ -1,3 +1,41 @@
-[formatter.nixfmt-rfc-style]
+# Global excludes to prevent warnings for files that don't need formatting
+excludes = [
+  # Documentation files
+  "**/*.md",
+  "README.md",
+  "LICENSE",
+  
+  # AI rule files
+  ".windsurfrules",
+  ".cursorrules",
+  
+  # Git files
+  ".gitignore",
+  
+  # Lock files
+  "**/flake.lock",
+  "flake.lock",
+  
+  # Package files
+  "modules/packages/ollama/disable-git.patch",
+  "modules/packages/ollama/skip-rocm-cp.patch",
+  "modules/packages/postgis-reset/hooks.json",
+  
+  # Config files
+  "modules/services/postgresql/pg_hba.conf",
+  "modules/services/postgresql/postgresql.conf",
+  "users/regular/.ssh/config_external",
+  
+  # Config files
+  "**/treefmt.toml",
+  "treefmt.toml"
+]
+
+[formatter.nix]
 command = "nixfmt"
 includes = ["*.nix"]
+
+[formatter.prettier]
+command = "prettier"
+options = ["--write"]
+includes = ["*.html", "*.css", "*.js", "*.json"]

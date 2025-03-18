@@ -56,6 +56,7 @@ in
       postman
       signal-desktop
       termius
+      tldr
       unstable.claude-code
       unstable.code-cursor
       unstable.goose-cli

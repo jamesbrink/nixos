@@ -1,10 +1,11 @@
-{ config
-, pkgs
-, lib
-, secretsPath
-, inputs
-, self
-, ...
+{
+  config,
+  pkgs,
+  lib,
+  secretsPath,
+  inputs,
+  self,
+  ...
 }@args:
 {
   disabledModules = [
