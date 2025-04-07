@@ -17,7 +17,12 @@
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
     (import ../../users/regular/jamesbrink.nix {
-      inherit (args) config pkgs inputs secretsPath;
+      inherit (args)
+        config
+        pkgs
+        inputs
+        secretsPath
+        ;
       unstablePkgs = pkgs.unstablePkgs;
       inherit (args.inputs) claude-desktop;
     })
@@ -106,16 +111,13 @@
   # Create mount points with appropriate permissions
   systemd.tmpfiles.rules = [
     "d /mnt 0775 root users"
-    "d /mnt/storage-fast 0775 root users"
+    "d /storage-fast 0775 root users"
     "d /mnt/storage 0775 root users"
     "d /var/lib/libvirt/images 0775 root libvirtd"
-    "d /mnt/storage-fast/quantierra 0755 root root"
-    "d /mnt/storage-fast/Steam 0755 jamesbrink users"
-    "d /mnt/storage-fast/n8n 0755 root root"
     "d ${config.users.users.jamesbrink.home}/.local/share/rustdesk 0755 jamesbrink users"
   ];
 
-  fileSystems."/mnt/storage-fast" = {
+  fileSystems."/storage-fast" = {
     device = "storage-fast";
     fsType = "zfs";
     neededForBoot = true;
@@ -137,7 +139,7 @@
     };
   };
 
-  fileSystems."/mnt/storage-fast/AI" = {
+  fileSystems."/storage-fast/AI" = {
     device = "storage-fast/AI";
     fsType = "zfs";
     options = [
@@ -146,7 +148,7 @@
     ];
   };
 
-  fileSystems."/mnt/storage-fast/quantierra" = {
+  fileSystems."/storage-fast/quantierra" = {
     device = "storage-fast/quantierra";
     fsType = "zfs";
     options = [
@@ -170,7 +172,7 @@
     '';
   };
 
-  fileSystems."/mnt/storage-fast/Steam" = {
+  fileSystems."/storage-fast/Steam" = {
     device = "storage-fast/Steam";
     fsType = "zfs";
     options = [
@@ -179,7 +181,7 @@
     ];
   };
 
-  fileSystems."/mnt/storage-fast/n8n" = {
+  fileSystems."/storage-fast/n8n" = {
     device = "storage-fast/n8n";
     fsType = "zfs";
     options = [
@@ -188,7 +190,7 @@
     ];
   };
 
-  fileSystems."/mnt/storage-fast/ollama" = {
+  fileSystems."/storage-fast/ollama" = {
     device = "storage-fast/ollama";
     fsType = "zfs";
     options = [
@@ -198,7 +200,7 @@
   };
 
   fileSystems."/home/jamesbrink/AI" = {
-    device = "/mnt/storage-fast/AI";
+    device = "/storage-fast/AI";
     options = [ "bind" ];
   };
 
@@ -214,7 +216,7 @@
   };
 
   fileSystems."/export/storage-fast" = {
-    device = "/mnt/storage-fast";
+    device = "/storage-fast";
     options = [ "bind" ];
   };
 
