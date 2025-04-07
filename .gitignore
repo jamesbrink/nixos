@@ -45,3 +45,5 @@ secrets/
 
 # Local development files
 /local/ 
+
+nix-secrets/

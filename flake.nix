@@ -223,6 +223,27 @@
               }
 
               {
+                name = "update-input";
+                category = "deployment";
+                help = "Update a specific flake input";
+                command = ''
+                  # Check if argument is provided
+                  if [ $# -eq 0 ]; then
+                    echo "Error: You must specify an input name."
+                    echo "Usage: update-input <input-name>"
+                    echo "Available inputs:"
+                    nix flake metadata --json | jq -r '.locks.nodes | keys[]'
+                    exit 1
+                  fi
+
+                  INPUT="$1"
+                  echo "Updating flake input '$INPUT'..."
+                  NIXPKGS_ALLOW_UNFREE=1 nix flake lock --update-input "$INPUT" --impure
+                  echo "Update of '$INPUT' complete! You may now run 'deploy <hostname>' to apply the updates."
+                '';
+              }
+
+              {
                 name = "build";
                 category = "deployment";
                 help = "Build the configuration for a target host without deploying";

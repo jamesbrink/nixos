@@ -17,7 +17,7 @@
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
     (import ../../users/regular/jamesbrink.nix {
-      inherit (args) config pkgs inputs;
+      inherit (args) config pkgs inputs secretsPath;
       unstablePkgs = pkgs.unstablePkgs;
       inherit (args.inputs) claude-desktop;
     })

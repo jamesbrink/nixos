@@ -4,6 +4,7 @@
   inputs,
   claude-desktop,
   unstablePkgs,
+  secretsPath,
   ...
 }:
 
@@ -82,6 +83,7 @@ in
       home.file."/home/jamesbrink/.ssh/config_external" = {
         source = .ssh/config_external;
       };
+
       home.sessionVariables = {
         SSH_AUTH_SOCK = lib.mkForce "/run/user/$(getent passwd ${config.home.username} | cut -d: -f3)/ssh-agent";
       };
@@ -208,6 +210,38 @@ in
   age.identityPaths = [
     "/home/jamesbrink/.ssh/id_ed25519"
   ];
+
+  age.secrets."aws-config" = {
+    file = "${secretsPath}/secrets/jamesbrink/aws/config.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
+  age.secrets."aws-credentials" = {
+    file = "${secretsPath}/secrets/jamesbrink/aws/credentials.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
+  systemd.services.aws-config-setup = {
+    description = "Setup AWS configuration files";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+      mkdir -p /home/jamesbrink/.aws
+      cp ${config.age.secrets."aws-config".path} /home/jamesbrink/.aws/config
+      cp ${config.age.secrets."aws-credentials".path} /home/jamesbrink/.aws/credentials
+      chmod 600 /home/jamesbrink/.aws/config /home/jamesbrink/.aws/credentials
+      chown jamesbrink:users /home/jamesbrink/.aws/config /home/jamesbrink/.aws/credentials
+    '';
+  };
 
   services.syncthing = {
     enable = true;
