@@ -108,7 +108,8 @@
               treefmt
               rsync
               openssh
-              nodePackages.prettier # For JSON and HTML formatting
+              # Temporarily disable prettier due to NodeJS build issues
+              # nodePackages.prettier # For JSON and HTML formatting
               jq # For JSON processing
             ];
 

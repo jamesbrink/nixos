@@ -91,6 +91,13 @@ in
         starship = {
           enable = true;
         };
+        direnv = {
+          enable = true;
+          nix-direnv = {
+            enable = true;
+          };
+          enableZshIntegration = true;
+        };
         zsh = {
           enable = true;
           enableCompletion = true;
