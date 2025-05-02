@@ -181,6 +181,9 @@ in
                 export AWS_SECRET_ACCESS_KEY="$SOURCE_AWS_SECRET_ACCESS_KEY"
                 export AWS_SESSION_TOKEN="$SOURCE_AWS_SESSION_TOKEN"
             }
+
+            # Alias for claude code
+            alias claude="~/.claude/local/claude"
           '';
         };
         ssh = {
