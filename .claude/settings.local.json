@@ -3,7 +3,8 @@
     "allow": [
       "Bash(nix develop:*)",
       "Bash(nix flake lock:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
