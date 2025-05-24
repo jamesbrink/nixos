@@ -108,3 +108,11 @@ The codebase follows a modular NixOS flake structure with clear separation of co
 
 ## Workflow Recommendations
 - Always use `deploy-test` over `build` when on macOS
+
+## Secrets Management Process
+- To update secrets for agenix:
+  1. Ensure the secret is prepared in the private secrets repository
+  2. Use `agenix -e <secret-file>` to edit encrypted secrets
+  3. Rekey secrets if host SSH keys have changed using `agenix -r`
+  4. Commit and push changes to the secrets repository
+  5. Deploy the configuration to apply new secrets
