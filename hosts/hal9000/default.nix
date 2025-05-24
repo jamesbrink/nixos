@@ -526,34 +526,34 @@
           ];
         };
 
-        # comfyui = {
-        #   image = "jamesbrink/comfyui:v0.3.14";
-        #   volumes = [
-        #     "/home/jamesbrink/AI/ComfyUI:/comfyui"
-        #     "/home/jamesbrink/AI/ComfyUI-User-Data:/comfyui/user"
-        #     "/home/jamesbrink/AI/Models/StableDiffusion:/comfyui/models"
-        #     "/home/jamesbrink/AI/Output:/comfyui/output"
-        #     "/home/jamesbrink/AI/Input:/comfyui/input"
-        #   ];
-        #   extraOptions = [
-        #     "--gpus=all"
-        #     "--network=host"
-        #     "--name=comfyui"
-        #     "--user=${toString config.users.users.jamesbrink.uid}:${toString config.users.users.jamesbrink.group}"
-        #   ];
-        #   cmd = [
-        #     "--listen"
-        #     "--port"
-        #     "8190"
-        #     "--preview-method"
-        #     "auto"
-        #   ];
-        #   environment = {
-        #     PUID = "${toString config.users.users.jamesbrink.uid}";
-        #     PGID = "${toString config.users.users.jamesbrink.group}";
-        #   };
-        #   autoStart = true;
-        # };
+        comfyui = {
+          image = "jamesbrink/comfyui:latest";
+          volumes = [
+            "/home/jamesbrink/AI/ComfyUI-User-Data:/data/user:z"
+            "/home/jamesbrink/AI/Models/StableDiffusion:/data/models:z"
+            "/home/jamesbrink/AI/Output:/data/output:z"
+            "/home/jamesbrink/AI/Input:/data/input:z"
+            "/home/jamesbrink/AI/ComfyUI/custom_nodes:/data/custom_nodes:z"
+          ];
+          cmd = [
+            "--listen"
+            "--port"
+            "8188"
+            "--preview-method"
+            "auto"
+          ];
+          extraOptions = [
+            "--gpus=all"
+            "--network=host"
+            "--name=comfyui"
+          ];
+          environment = {
+            PUID = "${toString config.users.users.jamesbrink.uid}";
+            PGID = "${toString config.users.groups.users.gid}";
+          };
+          ports = [ "8188:8188" ];
+          autoStart = true;
+        };
 
         fooocus = {
           image = "jamesbrink/fooocus:latest";

@@ -115,7 +115,7 @@
         useACMEHost = "home.urandom.io";
 
         locations."/" = {
-          proxyPass = "http://127.0.0.1:8190";
+          proxyPass = "http://127.0.0.1:8188";
           proxyWebsockets = true;
           extraConfig = ''
             proxy_set_header X-Real-IP $remote_addr;
