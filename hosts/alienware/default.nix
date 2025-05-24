@@ -22,6 +22,7 @@
         pkgs
         inputs
         unstablePkgs
+        secretsPath
         ;
       inherit (args.inputs) claude-desktop;
     })
@@ -171,7 +172,7 @@
   services.printing.enable = true;
 
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
 
   # hardware.opengl = {
   #   enable = true;
@@ -320,8 +321,8 @@
   virtualisation.docker = {
     enable = true;
     enableOnBoot = true;
-    enableNvidia = true;
   };
+  hardware.nvidia-container-toolkit.enable = true;
   virtualisation.vmware.guest.enable = true;
   virtualisation.incus.enable = true;
   virtualisation.vswitch.enable = true;
@@ -329,7 +330,7 @@
 
   services.xrdp.enable = true;
   services.xrdp.openFirewall = true;
-  services.xrdp.defaultWindowManager = "${pkgs.gnome.gnome-session}/bin/gnome-session";
+  services.xrdp.defaultWindowManager = "${pkgs.gnome-session}/bin/gnome-session";
   services.gnome.gnome-remote-desktop.enable = true;
   security.sudo.extraRules = [
     {
@@ -360,7 +361,6 @@
     dedicatedServer.openFirewall = true;
   };
 
-  programs.darling.enable = true;
   programs.zsh.enable = true;
   programs.zsh.autosuggestions.enable = true;
   systemd.services."getty@tty1".enable = false;
@@ -388,8 +388,6 @@
     cmake
     cudaPackages.cudatoolkit
     cw
-    darling
-    darling-dmg
     dig
     direnv
     dnsutils
@@ -397,7 +395,7 @@
     exo
     fd
     file
-    fira-code-nerdfont
+    nerd-fonts.fira-code
     fly
     gcc
     gimp
@@ -407,7 +405,7 @@
     git-secrets
     gitea
     gitlab
-    gnome.gnome-session
+    gnome-session
     gnumake
     gparted
     hdparm
@@ -434,13 +432,12 @@
     mtr-gui
     neofetch
     neovim
-    nerdfonts
     netcat
     nfs-utils
     nixpkgs-fmt
     nodejs
     nodenv
-    nushellFull
+    nushell
     nvtopPackages.nvidia
     open-vm-tools
     openssh

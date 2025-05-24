@@ -11,8 +11,7 @@
     gnome-remote-desktop
     gnome-session
     bitwarden
-    fira-code-nerdfont
-    nerdfonts
+    nerd-fonts.fira-code
   ];
 
   services = {

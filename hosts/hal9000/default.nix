@@ -93,7 +93,7 @@
   };
 
   hardware.nvidia-container-toolkit.enable = true;
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
 
   # Enable NVIDIA CUDA and OpenCL support
   hardware.graphics = {

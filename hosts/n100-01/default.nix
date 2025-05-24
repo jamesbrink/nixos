@@ -2,6 +2,8 @@
   config,
   pkgs,
   lib,
+  inputs,
+  claude-desktop,
   secretsPath,
   ...
 }:
@@ -11,7 +13,11 @@
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
-    ../../users/regular/jamesbrink.nix
+    (import ../../users/regular/jamesbrink.nix {
+      inherit config pkgs inputs secretsPath;
+      unstablePkgs = pkgs.unstablePkgs;
+      inherit claude-desktop;
+    })
     ../../profiles/desktop/default-stable.nix
   ];
 
@@ -40,7 +46,7 @@
     };
   };
 
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
 
   swapDevices = [
     {

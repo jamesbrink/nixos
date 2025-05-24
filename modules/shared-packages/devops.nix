@@ -32,8 +32,7 @@ in
     lego
     libxisf
     mtr
-    nerdfonts
-    nodejs_23
+    nodejs
     open-vm-tools
     opentofu
     openvpn3

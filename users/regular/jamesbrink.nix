@@ -27,6 +27,9 @@ in
     ];
     shell = pkgs.zsh;
     useDefaultShell = true;
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBQdtaj2iZIndBqpu9vlSxRFgvLxNEV2afiqqdznsrEh jamesbrink@MacBook-Pro"
+    ];
     packages = with pkgs; [
       (pkgs.callPackage ../../pkgs/llama-cpp {
         cudaSupport = true;
@@ -54,7 +57,7 @@ in
       nushell
       obsidian
       openai-whisper-cpp
-      postman
+      unstable.postman
       signal-desktop
       termius
       tldr
@@ -119,7 +122,7 @@ in
           };
 
           history.size = 100000;
-          initExtraFirst = ''
+          initContent = lib.mkBefore ''
             if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
               . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
               . /nix/var/nix/profiles/default/etc/profile.d/nix.sh

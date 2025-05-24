@@ -3,14 +3,14 @@
 
   inputs = {
     nixpkgs = {
-      url = "github:nixos/nixpkgs/nixos-24.11";
+      url = "github:nixos/nixpkgs/nixos-25.05";
     };
     nixos-unstable = {
       url = "github:nixos/nixpkgs/nixos-unstable";
     };
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -108,8 +108,7 @@
               treefmt
               rsync
               openssh
-              # Temporarily disable prettier due to NodeJS build issues
-              # nodePackages.prettier # For JSON and HTML formatting
+              nodePackages.prettier # For JSON and HTML formatting
               jq # For JSON processing
             ];
 
@@ -462,7 +461,7 @@
           system = "x86_64-linux";
 
           specialArgs = {
-            inherit inputs agenix;
+            inherit inputs agenix claude-desktop;
             secretsPath = "${inputs.secrets}";
           };
 
@@ -470,6 +469,17 @@
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
             ./hosts/n100-01/default.nix
+            # Use unstable packages
+            {
+              nixpkgs.overlays = [
+                (final: prev: {
+                  unstablePkgs = import nixos-unstable {
+                    system = "x86_64-linux";
+                    config.allowUnfree = true;
+                  };
+                })
+              ];
+            }
           ];
         };
 
@@ -477,7 +487,7 @@
           system = "x86_64-linux";
 
           specialArgs = {
-            inherit inputs agenix;
+            inherit inputs agenix claude-desktop;
             secretsPath = "${inputs.secrets}";
           };
 
@@ -485,6 +495,17 @@
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
             ./hosts/n100-03/default.nix
+            # Use unstable packages
+            {
+              nixpkgs.overlays = [
+                (final: prev: {
+                  unstablePkgs = import nixos-unstable {
+                    system = "x86_64-linux";
+                    config.allowUnfree = true;
+                  };
+                })
+              ];
+            }
           ];
         };
 

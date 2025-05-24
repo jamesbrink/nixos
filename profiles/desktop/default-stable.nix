@@ -6,7 +6,6 @@
     bitwarden
     blender
     chromium
-    fira-code-nerdfont
     fusuma
     gimp
     gnome-remote-desktop
@@ -15,7 +14,7 @@
     inkscape-with-extensions
     libinput
     libinput-gestures
-    nerdfonts
+    nerd-fonts.fira-code
     rustdesk
     rustdesk-flutter
     slack

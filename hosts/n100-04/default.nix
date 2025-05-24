@@ -15,7 +15,12 @@
     ../../modules/shared-packages/devops.nix
     ../../modules/shared-packages/agenix.nix
     (import ../../users/regular/jamesbrink.nix {
-      inherit config pkgs inputs;
+      inherit
+        config
+        pkgs
+        inputs
+        secretsPath
+        ;
       unstablePkgs = pkgs.unstablePkgs;
       inherit claude-desktop;
     })
@@ -146,11 +151,6 @@
       }
     ];
   };
-
-  # SSH key management for jamesbrink user
-  users.users.jamesbrink.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL/oRSpEnuE4edzkc7VHhIhe9Y4tTTjl/9489JjC19zY jamesbrink@DarkStarMk6Mod1"
-  ];
 
   virtualisation = {
     podman = {
