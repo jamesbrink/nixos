@@ -526,34 +526,34 @@
           ];
         };
 
-        comfyui = {
-          image = "jamesbrink/comfyui:latest";
-          volumes = [
-            "/home/jamesbrink/AI/ComfyUI-User-Data:/data/user:z"
-            "/home/jamesbrink/AI/Models/StableDiffusion:/data/models:z"
-            "/home/jamesbrink/AI/Output:/data/output:z"
-            "/home/jamesbrink/AI/Input:/data/input:z"
-            "/home/jamesbrink/AI/ComfyUI/custom_nodes:/data/custom_nodes:z"
-          ];
-          cmd = [
-            "--listen"
-            "--port"
-            "8188"
-            "--preview-method"
-            "auto"
-          ];
-          extraOptions = [
-            "--gpus=all"
-            "--network=host"
-            "--name=comfyui"
-          ];
-          environment = {
-            PUID = "${toString config.users.users.jamesbrink.uid}";
-            PGID = "${toString config.users.groups.users.gid}";
-          };
-          ports = [ "8188:8188" ];
-          autoStart = true;
-        };
+        # comfyui = {
+        #   image = "jamesbrink/comfyui:latest";
+        #   volumes = [
+        #     "/home/jamesbrink/AI/ComfyUI-User-Data:/data/user:z"
+        #     "/home/jamesbrink/AI/Models/StableDiffusion:/data/models:z"
+        #     "/home/jamesbrink/AI/Output:/data/output:z"
+        #     "/home/jamesbrink/AI/Input:/data/input:z"
+        #     "/home/jamesbrink/AI/ComfyUI/custom_nodes:/data/custom_nodes:z"
+        #   ];
+        #   cmd = [
+        #     "--listen"
+        #     "--port"
+        #     "8188"
+        #     "--preview-method"
+        #     "auto"
+        #   ];
+        #   extraOptions = [
+        #     "--gpus=all"
+        #     "--network=host"
+        #     "--name=comfyui"
+        #   ];
+        #   environment = {
+        #     PUID = "${toString config.users.users.jamesbrink.uid}";
+        #     PGID = "${toString config.users.groups.users.gid}";
+        #   };
+        #   ports = [ "8188:8188" ];
+        #   autoStart = true;
+        # };
 
         fooocus = {
           image = "jamesbrink/fooocus:latest";

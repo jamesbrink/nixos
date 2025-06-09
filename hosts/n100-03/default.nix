@@ -13,7 +13,12 @@
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
     (import ../../users/regular/jamesbrink.nix {
-      inherit config pkgs inputs secretsPath;
+      inherit
+        config
+        pkgs
+        inputs
+        secretsPath
+        ;
       unstablePkgs = pkgs.unstablePkgs;
       inherit claude-desktop;
     })
