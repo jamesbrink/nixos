@@ -23,6 +23,7 @@ result-*
 *.log
 *.tmp
 .DS_Store
+/tmp/
 
 # Python virtual environments (if using any Python tools)
 venv/
