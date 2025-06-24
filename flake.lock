@@ -31,11 +31,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1749223377,
-        "narHash": "sha256-H50DosbznMYjzqPu6DYA1pNd7Ei/rFDFbznb4A50zEc=",
+        "lastModified": 1750168945,
+        "narHash": "sha256-AIjeJzpJepgg8/7puBP/QlAjOY+PsrQL/bHp0nd4H00=",
         "owner": "k3d3",
         "repo": "claude-desktop-linux-flake",
-        "rev": "21020c8ba14662447ad20ce19101436953268a7a",
+        "rev": "6d9eb2a653be8a6c06bc29a419839570e0ffc858",
         "type": "github"
       },
       "original": {
@@ -246,11 +246,11 @@
     "secrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1748061630,
-        "narHash": "sha256-ciLSeUM/QsiUHPMj5dBQW1m3nzb6MZf0HrP4SoWQHNM=",
+        "lastModified": 1750739113,
+        "narHash": "sha256-YriZiAeLF96h2A+t7jpHBxm7Rzq6QLQzpEgm2wo59dg=",
         "ref": "refs/heads/main",
-        "rev": "30880504b5836fe30874f97258c7d0d76e10db5e",
-        "revCount": 16,
+        "rev": "23b24e039eab8511703b0339a2119525b697dd82",
+        "revCount": 18,
         "type": "git",
         "url": "ssh://git@github.com/jamesbrink/nix-secrets.git"
       },

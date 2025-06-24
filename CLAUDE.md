@@ -2,8 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> **IMPORTANT**: When updating this file, always copy the contents to `.windsurfrules`, `.cursorrules`, and `.goosehints` to keep all AI assistant configurations in sync.
-
 ## Commands
 
 ### Development Commands
@@ -110,9 +108,8 @@ The codebase follows a modular NixOS flake structure with clear separation of co
 - Always use `deploy-test` over `build` when on macOS
 
 ## Secrets Management Process
-- To update secrets for agenix:
-  1. Ensure the secret is prepared in the private secrets repository
-  2. Use `agenix -e <secret-file>` to edit encrypted secrets
-  3. Rekey secrets if host SSH keys have changed using `agenix -r`
-  4. Commit and push changes to the secrets repository
-  5. Deploy the configuration to apply new secrets
+- Secrets are managed using agenix
+- Stored in a separate private repository
+- Each host's SSH key must be added as a recipient
+- Re-encrypt secrets after adding new recipients using `agenix -r`
+- See CLAUDE.local.md for detailed instructions (not committed to repo)

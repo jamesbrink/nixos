@@ -6,213 +6,181 @@ This repository contains my personal NixOS configurations managed through the Ni
 
 This project uses:
 - Nix Flakes for reproducible builds and dependency management
-- Multi-host configuration with a mix of stable (24.11) and unstable channels
+- Multi-host configuration with NixOS 25.05 (stable) and unstable channels
 - Home Manager for user environment management
-- Agenix for secrets management
+- Agenix for secrets management (stored in a separate private repository)
 - VSCode Server support for remote development
 - Modular configuration structure for better maintainability
+- Claude Desktop and other AI development tools
 
 ## Project Structure
 
 ```
 .
-├── README.md
-├── flake.lock
-├── flake.nix        # Main flake configuration and input sources
+├── CLAUDE.md        # AI assistant guidance and documentation
+├── LICENSE          # MIT License
+├── README.md        # This file
+├── flake.lock       # Locked dependencies
+├── flake.nix        # Main flake configuration
+├── treefmt.toml     # Code formatting configuration
 ├── hosts/           # Host-specific configurations
-│   ├── hal9000/     # Configuration for hal9000 machine
-│   │   ├── default.nix
-│   │   └── hardware-configuration.nix
-│   ├── n100-01/     # Configuration for n100-01 machine
-│   │   ├── default.nix
-│   │   └── hardware-configuration.nix
-│   └── n100-03/     # Configuration for n100-03 machine
-│       ├── default.nix
-│       └── hardware-configuration.nix
-├── modules/         # Shared NixOS modules
-│   ├── desktop/     # Desktop environment configurations
+│   ├── alienware/   # Desktop workstation
+│   ├── hal9000/     # Main server with AI services
+│   ├── n100-01/     # Cluster node 1
+│   ├── n100-03/     # Cluster node 3
+│   ├── n100-04/     # Cluster node 4
+│   └── sevastopol/  # 2013 iMac 27"
+├── modules/         # Shared modules and services
 │   ├── packages/    # Custom package definitions
-│   │   └── ollama
-│   │       ├── default.nix
-│   │       ├── disable-git.patch
-│   │       └── skip-rocm-cp.patch
-│   ├── services/    # System service configurations
-│   ├── shared-packages/ # Common package sets
-│   │   ├── default.nix
-│   │   └── devops.nix
-│   └── system/      # Core system configurations
-├── profiles/        # Reusable system profiles
-│   ├── desktop
-│   │   ├── default-stable.nix
-│   │   └── default.nix
-│   ├── minimal
-│   └── server
-│       └── default.nix
-└── users/          # User-specific configurations
-    ├── regular
-    │   └── jamesbrink.nix
-    └── root
+│   │   ├── ollama/  # Ollama AI model runner
+│   │   └── postgis-reset/
+│   ├── services/    # Service configurations
+│   │   ├── ai-starter-kit/  # n8n/qdrant/postgres integration
+│   │   └── postgresql/
+│   └── shared-packages/     # Common package sets
+│       ├── agenix.nix
+│       ├── default.nix
+│       └── devops.nix
+├── pkgs/           # Custom package builds
+│   └── llama-cpp/  # CUDA-enabled llama.cpp
+├── profiles/       # Reusable system profiles
+│   ├── desktop/    # Desktop environment (stable/unstable)
+│   ├── keychron/   # Keyboard configuration
+│   └── server/     # Server profile
+└── users/          # User configurations
+    └── regular/
+        ├── jamesbrink.nix
+        └── strivedi.nix
 ```
 
-## Features
+## Hosts
 
-- Multi-host configuration management
-- Mix of stable (24.11) and unstable channels
-- Integrated Home Manager for user environment management
-- Secure secrets management with Agenix
-- Remote development support with VSCode Server
-- Modular configuration structure
-- Enhanced development shell with deployment and maintenance commands
-- Automatic code formatting with treefmt
-- Unfree packages support in development environment
+- **alienware**: Desktop workstation with NVIDIA GPU support
+- **hal9000**: Main server running AI services (Ollama, ComfyUI, etc.)
+- **n100-01, n100-03, n100-04**: Intel N100 cluster nodes
+- **sevastopol**: 2013 iMac 27" desktop system
 
-## Dependencies
+## Development Shell
 
-This configuration relies on several external inputs:
-- nixpkgs (nixos-24.11)
-- nixos-unstable
-- home-manager (release-24.11)
-- home-manager-unstable
-- agenix
-- vscode-server
+The project includes a comprehensive development shell with categorized commands:
+
+### Development Commands
+- `format` - Format all files using treefmt (nixfmt for .nix, prettier for web files)
+- `check` - Check Nix expressions for errors (runs `nix flake check --impure`)
+
+### Deployment Commands
+- `deploy <hostname>` - Deploy configuration to a host (auto-detects local/remote)
+- `deploy-test <hostname>` - Test deployment without making changes (dry-activate)
+- `build <hostname>` - Build configuration without deploying
+- `update` - Update all NixOS and flake inputs
+- `update-input <input>` - Update a specific flake input
+
+### Maintenance Commands
+- `show-hosts` - List all available hosts
+- `health-check <hostname>` - Check system health (disk, memory, services, errors)
+- `gc <hostname>` - Run garbage collection on a host
+- `show-generations <hostname>` - Show NixOS generations on a host
+- `rollback <hostname>` - Roll back to the previous generation
 
 ## Quick Start
 
-### Deploy to a Host
-
-#### Using the Development Shell (Recommended)
-
-```shell
-# Enter the development shell
+### Enter Development Shell
+```bash
 nix develop
-
-# Deploy to a host
-deploy hal9000
-
-# Test deployment without making changes
-deploy-test hal9000
 ```
 
-#### Manual Deployment
+### Deploy to a Host
+```bash
+# Deploy to a specific host
+deploy alienware
 
-To deploy to a specific host (e.g., hal9000):
+# Test deployment first
+deploy-test sevastopol
 
-```shell
-nixos-rebuild switch --fast --flake .#hal9000 --target-host hal9000 --build-host hal9000 --use-remote-sudo
+# Build without deploying
+build hal9000
 ```
 
-For hosts requiring unfree packages:
+### Adding a New Host
 
-```shell
-sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#hal9000 --verbose --impure
-```
-
-### Development Workflow
-
-1. **Using the Development Shell**
-   ```shell
-   # Enter the development shell
-   nix develop
-   
-   # Available commands in the development shell:
-   # Development commands
-   format              # Format all files using treefmt
-   check               # Check Nix expressions for errors
-   
-   # Deployment commands
-   deploy <hostname>   # Deploy configuration to a host
-   deploy-test <hostname> # Test deployment without making changes
-   build <hostname>    # Build configuration without deploying
-   
-   # Maintenance commands
-   update              # Update NixOS and flake inputs
-   health-check <hostname> # Check system health
-   gc <hostname>       # Run garbage collection
-   show-hosts          # List all available hosts
-   show-generations <hostname> # Show NixOS generations
-   rollback <hostname> # Rollback to previous generation
+1. Generate hardware configuration on the target machine:
+   ```bash
+   nixos-generate-config --dir /tmp/config
    ```
 
-2. **Local Testing**
-   ```shell
-   # Test configuration build without applying
-   nixos-rebuild build --flake .#<hostname>
-   
-   # Test with fast compilation (development)
-   nixos-rebuild build --flake .#<hostname> --fast
+2. Create host directory and copy configuration:
+   ```bash
+   mkdir hosts/newhostname
+   cp /tmp/config/* hosts/newhostname/
    ```
 
-3. **Updating Dependencies**
-   ```shell
-   # Update all flake inputs
-   nix flake update
-   
-   # Update specific input
-   nix flake lock --update-input nixpkgs
+3. Update `hosts/newhostname/default.nix` to follow project patterns
+
+4. Add host to `flake.nix`:
+   ```nix
+   newhostname = nixpkgs.lib.nixosSystem {
+     system = "x86_64-linux";
+     specialArgs = {
+       inherit inputs agenix;
+       secretsPath = "${inputs.secrets}";
+     };
+     modules = [
+       home-manager.nixosModules.home-manager
+       agenix.nixosModules.default
+       ./hosts/newhostname/default.nix
+     ];
+   };
    ```
 
-4. **Working with Home Manager**
-   ```shell
-   # Apply home-manager configuration
-   home-manager switch --flake .#<username>@<hostname>
-   ```
+5. Set up SSH keys and add to secrets repository
+6. Deploy: `deploy newhostname`
 
-5. **Code Formatting**
-   ```shell
-   # Format all files using treefmt
-   nix develop --command format
-   ```
-   
-   The repository uses treefmt with the following formatters:
-   - nixfmt for Nix files
-   - prettier for HTML, CSS, JS, and JSON files
+## Secrets Management
 
-## Contributing
+Secrets are managed using agenix and stored in a separate private repository:
+- Repository: `git@github.com:jamesbrink/nix-secrets.git`
+- Each host's SSH key must be added to `secrets.nix`
+- Re-encrypt secrets after adding new recipients: `agenix -r`
 
-1. **Fork and Clone**
-   ```shell
-   git clone https://github.com/jamesbrink/nixos.git
-   cd nixos
-   ```
+## Key Features
 
-2. **Branch Naming**
-   - Use descriptive branch names: `feature/new-service`, `fix/broken-config`
-   - Keep changes focused and atomic
+### Channel Management
+- Stable channel (nixos-25.05) as default
+- Unstable overlay available via `pkgs.unstablePkgs`
+- Per-host channel selection based on requirements
 
-3. **Commit Guidelines**
-   - Write clear commit messages
-   - Reference issues when applicable
-   - Sign your commits
+### Container Services
+- Podman for containerized services
+- Custom AI service stack with automatic updates
+- Network isolation with podman networks
 
-4. **Testing**
-   - Test configurations locally before pushing
-   - Ensure secrets are properly managed
-   - Verify on all affected hosts
+### Storage Architecture
+- ZFS for advanced storage features on main servers
+- NFS exports for shared storage across network
+- Bind mounts for service-specific storage paths
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Build Failures**
-   - Check for dirty git working tree
-   - Verify flake inputs are up-to-date
-   - Ensure correct system architecture is targeted
+1. **Hash Mismatch Errors**
+   - Update the affected input: `update-input <input-name>`
+   - Or update all inputs: `update`
 
-2. **Remote Deployment Issues**
-   - Verify SSH access to target host
-   - Check sudo permissions
-   - Ensure target host has sufficient resources
+2. **Git Not Found on Fresh Install**
+   - The target system needs git installed to fetch secrets
+   - Consider manual bootstrap or temporary secrets bypass
 
-3. **Home Manager Conflicts**
-   - Backup existing configurations
-   - Remove conflicting dotfiles
-   - Check for path conflicts
+3. **SSH Key Issues**
+   - Ensure host SSH keys are added to secrets repository
+   - Verify GitHub access from the target host
 
-### Debug Tips
+### Development Tips
 
-- Use `--show-trace` for detailed error information
-- Enable verbose output with `-v` or `-vv`
-- Check system journal for errors: `journalctl -xe`
+- Always use `--impure` flag due to unfree packages
+- Run `format` before committing changes
+- Use `deploy-test` before actual deployment
+- Check CLAUDE.md for AI-assisted development guidelines
 
 ## License
 
@@ -220,4 +188,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-This configuration is built on top of the excellent work by the NixOS community and various module maintainers.
+Built on the excellent work by the NixOS community and various module maintainers.
