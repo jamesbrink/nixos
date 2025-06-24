@@ -269,6 +269,77 @@
               }
 
               {
+                name = "deploy-local";
+                category = "deployment";
+                help = "Build locally and deploy to a remote host (useful for low-RAM targets)";
+                command = ''
+                  # Check if argument is provided
+                  if [ $# -eq 0 ]; then
+                    HOST=""
+                  else
+                    HOST="$1"
+                  fi
+                  if [ -z "$HOST" ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: deploy-local <hostname>"
+                    echo "Available hosts:"
+                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                    exit 1
+                  fi
+
+                  HOSTNAME=$(hostname)
+
+                  # Check if we're trying to deploy to ourselves
+                  if [ "$HOSTNAME" = "$HOST" ]; then
+                    echo "Error: deploy-local is for remote hosts only. Use 'deploy' for local deployment."
+                    exit 1
+                  fi
+
+                  # Check if we already have a build result
+                  if [ -L ./result ] && [ -e ./result ]; then
+                    # Verify this result is for the correct host
+                    RESULT_HOST=$(readlink ./result | grep -oP 'nixos-system-\K[^-]+' || echo "unknown")
+                    if [ "$RESULT_HOST" = "$HOST" ]; then
+                      echo "Found existing build result for $HOST, using it..."
+                    else
+                      echo "Existing build result is for '$RESULT_HOST', not '$HOST'. Building fresh..."
+                      NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
+                      if [ $? -ne 0 ]; then
+                        echo "Build failed! Aborting deployment."
+                        exit 1
+                      fi
+                    fi
+                  else
+                    echo "No existing build result found. Building configuration for $HOST locally..."
+                    NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
+                    if [ $? -ne 0 ]; then
+                      echo "Build failed! Aborting deployment."
+                      exit 1
+                    fi
+                  fi
+
+                  echo "Build complete! Copying closure to $HOST..."
+                  nix-copy-closure --to root@$HOST ./result
+                  
+                  if [ $? -ne 0 ]; then
+                    echo "Failed to copy closure to $HOST! Aborting deployment."
+                    exit 1
+                  fi
+
+                  echo "Switching to new configuration on $HOST..."
+                  STORE_PATH=$(readlink -f ./result)
+                  ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --set $STORE_PATH && /nix/var/nix/profiles/system/bin/switch-to-configuration switch"
+                  
+                  if [ $? -eq 0 ]; then
+                    echo "Deployment to $HOST complete!"
+                  else
+                    echo "Failed to switch configuration on $HOST!"
+                    exit 1
+                  fi
+                '';
+              }
+
+              {
                 name = "check";
                 category = "development";
                 help = "Check the Nix expressions for errors";

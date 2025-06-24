@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Deployment Commands
 - `deploy <hostname>`: Deploy configuration to a host (automatically detects local vs remote)
+- `deploy-local <hostname>`: Build locally and deploy to a remote host (useful for low-RAM targets)
 - `deploy-test <hostname>`: Test deployment without making changes (dry-activate)
 - `build <hostname>`: Build configuration for a host without deploying
 - `update`: Update all NixOS and flake inputs
