@@ -320,7 +320,7 @@
 
                   echo "Build complete! Copying closure to $HOST..."
                   nix-copy-closure --to root@$HOST ./result
-                  
+
                   if [ $? -ne 0 ]; then
                     echo "Failed to copy closure to $HOST! Aborting deployment."
                     exit 1
@@ -329,7 +329,7 @@
                   echo "Switching to new configuration on $HOST..."
                   STORE_PATH=$(readlink -f ./result)
                   ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --set $STORE_PATH && /nix/var/nix/profiles/system/bin/switch-to-configuration switch"
-                  
+
                   if [ $? -eq 0 ]; then
                     echo "Deployment to $HOST complete!"
                   else

@@ -58,7 +58,7 @@ in
       obsidian
       openai-whisper-cpp
       unstable.postman
-      signal-desktop
+      unstable.signal-desktop
       termius
       tldr
       unstable.claude-code

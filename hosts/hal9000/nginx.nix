@@ -204,6 +204,15 @@
     "d /var/www/hal9000.home.urandom.io 755 nginx nginx"
   ];
 
+  # Configure ACME service to treat exit code 11 as success
+  # Exit code 11 is used when certificate renewal is skipped because
+  # the certificate has more than 30 days until expiration
+  systemd.services."acme-home.urandom.io" = {
+    serviceConfig = {
+      SuccessExitStatus = [ 11 ];
+    };
+  };
+
   # Open firewall ports
   networking.firewall = {
     allowedTCPPorts = [
