@@ -135,6 +135,39 @@ build hal9000
 5. Set up SSH keys and add to secrets repository
 6. Deploy: `deploy newhostname`
 
+### Initial Darwin (macOS) Setup
+
+For first-time deployment to a Darwin host, you need to configure passwordless sudo:
+
+1. SSH into the Darwin host:
+   ```bash
+   ssh jamesbrink@hostname
+   ```
+
+2. Create a sudoers file for your user:
+   ```bash
+   sudo visudo -f /etc/sudoers.d/jamesbrink
+   ```
+
+3. Add this line:
+   ```
+   jamesbrink ALL=(ALL) NOPASSWD: ALL
+   ```
+
+4. Save and exit (`:wq` in vi)
+
+5. Fix file permissions:
+   ```bash
+   sudo chmod 440 /etc/sudoers.d/jamesbrink
+   ```
+
+6. Verify configuration:
+   ```bash
+   sudo visudo -c
+   ```
+
+After this, remote deployments will work without password prompts.
+
 ## Secrets Management
 
 Secrets are managed using agenix and stored in a separate private repository:
