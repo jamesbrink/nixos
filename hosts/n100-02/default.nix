@@ -60,7 +60,7 @@
 
   # Networking
   networking = {
-    hostName = "n100-01";
+    hostName = "n100-02";
     domain = "home.urandom.io";
     networkmanager.enable = true;
     firewall.enable = false;

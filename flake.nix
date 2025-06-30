@@ -813,6 +813,32 @@
           ];
         };
 
+        n100-02 = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+
+          specialArgs = {
+            inherit inputs agenix claude-desktop;
+            secretsPath = "${inputs.secrets}";
+          };
+
+          modules = [
+            home-manager.nixosModules.home-manager
+            agenix.nixosModules.default
+            ./hosts/n100-02/default.nix
+            # Use unstable packages
+            {
+              nixpkgs.overlays = [
+                (final: prev: {
+                  unstablePkgs = import nixos-unstable {
+                    system = "x86_64-linux";
+                    config.allowUnfree = true;
+                  };
+                })
+              ];
+            }
+          ];
+        };
+
         n100-03 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
 

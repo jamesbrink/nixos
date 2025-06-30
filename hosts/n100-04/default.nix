@@ -1,34 +1,21 @@
 {
   config,
-  lib,
   pkgs,
+  lib,
   inputs,
-  claude-desktop,
   secretsPath,
   ...
-}@args:
+}:
 
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/shared-packages/default.nix
-    ../../modules/shared-packages/devops.nix
+    ../../profiles/server/default.nix
     ../../modules/shared-packages/agenix.nix
     ../../users/regular/jamesbrink.nix
-    ../../profiles/desktop/default-stable.nix
   ];
 
-  nixpkgs.config = {
-    allowUnfree = true;
-  };
-
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=no
-    AllowHibernation=no
-    AllowHybridSleep=no
-    AllowSuspendThenHibernate=no
-  '';
-
+  # Basic Nix configuration
   nix = {
     settings = {
       experimental-features = [
@@ -44,19 +31,26 @@
     };
   };
 
-  boot.loader.grub = {
-    enable = true;
-    zfsSupport = true;
-    efiSupport = true;
-    efiInstallAsRemovable = true;
-    mirroredBoots = [
-      {
-        devices = [ "nodev" ];
-        path = "/boot";
-      }
-    ];
+  nixpkgs.config.allowUnfree = true;
+
+  # Boot configuration for ZFS
+  boot = {
+    kernel.sysctl."kernel.dmesg_restrict" = 0;
+    loader.grub = {
+      enable = true;
+      zfsSupport = true;
+      efiSupport = true;
+      efiInstallAsRemovable = true;
+      mirroredBoots = [
+        {
+          devices = [ "nodev" ];
+          path = "/boot";
+        }
+      ];
+    };
   };
 
+  # ZFS filesystems
   fileSystems."/" = {
     device = "zpool/root";
     fsType = "zfs";
@@ -79,10 +73,103 @@
 
   swapDevices = [ ];
 
-  networking.hostId = "ce7b643e";
-  networking.hostName = "n100-04";
-  networking.networkmanager.enable = true;
+  # Prevent sleep/hibernation
+  systemd.sleep.extraConfig = ''
+    AllowSuspend=no
+    AllowHibernation=no
+    AllowHybridSleep=no
+    AllowSuspendThenHibernate=no
+  '';
 
+  # Networking
+  networking = {
+    hostId = "ce7b643e"; # Required for ZFS
+    hostName = "n100-04";
+    domain = "home.urandom.io";
+    networkmanager.enable = true;
+    firewall.enable = false;
+  };
+
+  # Services
+  services = {
+    openssh = {
+      enable = true;
+      settings = {
+        PasswordAuthentication = true;
+        LoginGraceTime = 0;
+        AuthorizedKeysCommand = "${pkgs.bash}/bin/bash -c 'cat ${
+          config.age.secrets."secrets/global/ssh/authorized_keys.age".path
+        }'";
+        AuthorizedKeysCommandUser = "root";
+      };
+    };
+  };
+
+  # NFS mount for shared storage
+  systemd.mounts = [
+    {
+      type = "nfs";
+      mountConfig.Options = "noatime";
+      what = "alienware.home.urandom.io:/storage";
+      where = "/mnt/storage";
+    }
+  ];
+
+  systemd.automounts = [
+    {
+      wantedBy = [ "multi-user.target" ];
+      automountConfig.TimeoutIdleSec = "600";
+      where = "/mnt/storage";
+    }
+  ];
+
+  # Age secrets with SSH host keys
+  age = {
+    identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    secrets = {
+      "secrets/global/ssh/authorized_keys.age".file =
+        "${secretsPath}/secrets/global/ssh/authorized_keys.age";
+
+      # Host-specific SSH keys
+      "ssh_host_ed25519_key" = {
+        file = "${inputs.secrets}/secrets/n100-04/ssh/host-ed25519-key.age";
+        path = "/etc/ssh/ssh_host_ed25519_key";
+        mode = "0600";
+        owner = "root";
+        group = "root";
+      };
+      "ssh_host_rsa_key" = {
+        file = "${inputs.secrets}/secrets/n100-04/ssh/host-rsa-key.age";
+        path = "/etc/ssh/ssh_host_rsa_key";
+        mode = "0600";
+        owner = "root";
+        group = "root";
+      };
+    };
+  };
+
+  # SSH host key configuration
+  services.openssh.hostKeys = [
+    {
+      path = config.age.secrets."ssh_host_ed25519_key".path;
+      type = "ed25519";
+    }
+    {
+      path = config.age.secrets."ssh_host_rsa_key".path;
+      type = "rsa";
+      bits = 4096;
+    }
+  ];
+
+  # Virtualization
+  virtualisation = {
+    docker = {
+      enable = true;
+      enableOnBoot = true;
+    };
+  };
+
+  # Time and locale
   time.timeZone = "America/Phoenix";
   i18n = {
     defaultLocale = "en_US.UTF-8";
@@ -99,115 +186,30 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [
-    distrobox
-    podman
-    vim
-    wget
-  ];
-
-  # Configure age secrets for SSH host keys
-  age.secrets."ssh_host_ed25519_key" = {
-    file = "${inputs.secrets}/secrets/n100-04/ssh/host-ed25519-key.age";
-    path = "/etc/ssh/ssh_host_ed25519_key";
-    mode = "0600";
-    owner = "root";
-    group = "root";
-  };
-
-  age.secrets."ssh_host_rsa_key" = {
-    file = "${inputs.secrets}/secrets/n100-04/ssh/host-rsa-key.age";
-    path = "/etc/ssh/ssh_host_rsa_key";
-    mode = "0600";
-    owner = "root";
-    group = "root";
-  };
-
-  services.openssh = {
-    enable = true;
-    settings = {
-      PermitRootLogin = "no";
-      PasswordAuthentication = true;
-      PubkeyAuthentication = true;
-    };
-    hostKeys = [
-      {
-        path = config.age.secrets."ssh_host_ed25519_key".path;
-        type = "ed25519";
-      }
-      {
-        path = config.age.secrets."ssh_host_rsa_key".path;
-        type = "rsa";
-        bits = 4096;
-      }
-    ];
-  };
-
-  virtualisation = {
-    podman = {
-      enable = true;
-      dockerCompat = true;
-      defaultNetwork.settings.dns_enabled = true;
+  # Environment
+  environment = {
+    shells = with pkgs; [ zsh ];
+    variables = {
+      EDITOR = "vim";
     };
   };
 
+  # Programs
   programs = {
     zsh = {
       enable = true;
       autosuggestions.enable = true;
     };
-    ssh = {
-      startAgent = true;
-      extraConfig = ''
-        AddKeysToAgent yes
-      '';
-    };
-    tmux = {
-      enable = true;
-      terminal = "screen-256color";
-      historyLimit = 10000;
-    };
     mosh.enable = true;
-    firefox.enable = true;
-    appimage = {
-      enable = true;
-      binfmt = true;
-    };
     neovim = {
       enable = true;
       defaultEditor = true;
       vimAlias = true;
       viAlias = true;
-      configure = {
-        packages.myVimPackage = with pkgs.vimPlugins; {
-          start = [
-            ansible-vim
-            nvim-treesitter
-            nvim-treesitter-parsers.c
-            nvim-treesitter-parsers.lua
-            nvim-treesitter-parsers.nix
-            nvim-treesitter-parsers.terraform
-            nvim-treesitter-parsers.vimdoc
-            nvim-treesitter-parsers.python
-            nvim-treesitter-parsers.ruby
-            telescope-nvim
-            vim-terraform
-          ];
-        };
-        customRC = ''
-          syntax on
-          filetype plugin indent on
-          set title
-          set number
-          set hidden
-          set encoding=utf-8
-          set title
-        '';
-      };
     };
   };
 
   users.defaultUserShell = pkgs.zsh;
-  networking.firewall.enable = false;
+
   system.stateVersion = "25.05";
 }

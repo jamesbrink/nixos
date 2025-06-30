@@ -31,8 +31,14 @@
     # notion # Not available on darwin - use homebrew cask instead
   ];
 
-  # Homebrew casks for GUI applications
+  # Homebrew configuration
   homebrew = {
+    # Command-line tools via Homebrew
+    brews = [
+      "uvx" # Python app runner for Claude Desktop and other apps
+    ];
+
+    # GUI applications via Homebrew casks
     casks = [
       # Browsers
       "zen"

@@ -3,7 +3,6 @@
   pkgs,
   lib,
   inputs,
-  claude-desktop,
   secretsPath,
   ...
 }:
@@ -11,11 +10,12 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/shared-packages/default.nix
+    ../../profiles/server/default.nix
+    ../../modules/shared-packages/agenix.nix
     ../../users/regular/jamesbrink.nix
-    ../../profiles/desktop/default-stable.nix
   ];
 
+  # Basic Nix configuration
   nix = {
     settings = {
       experimental-features = [
@@ -33,6 +33,7 @@
 
   nixpkgs.config.allowUnfree = true;
 
+  # Boot configuration
   boot = {
     kernel.sysctl."kernel.dmesg_restrict" = 0;
     loader = {
@@ -41,15 +42,15 @@
     };
   };
 
-  services.pulseaudio.enable = false;
-
+  # Swap configuration
   swapDevices = [
     {
       device = "/var/swapfile";
-      size = 32768;
+      size = 16384; # 16GB swap
     }
   ];
 
+  # Prevent sleep/hibernation
   systemd.sleep.extraConfig = ''
     AllowSuspend=no
     AllowHibernation=no
@@ -57,22 +58,16 @@
     AllowSuspendThenHibernate=no
   '';
 
+  # Networking
   networking = {
     hostName = "n100-03";
     domain = "home.urandom.io";
     networkmanager.enable = true;
-    hosts = {
-      "127.0.0.1" = [
-        "localhost"
-        "${config.networking.hostName}"
-      ];
-    };
     firewall.enable = false;
   };
 
+  # Services
   services = {
-    rpcbind.enable = true;
-    printing.enable = true;
     openssh = {
       enable = true;
       settings = {
@@ -86,6 +81,7 @@
     };
   };
 
+  # NFS mount for shared storage
   systemd.mounts = [
     {
       type = "nfs";
@@ -103,31 +99,25 @@
     }
   ];
 
-  security.rtkit.enable = true;
-
+  # Age secrets
   age = {
-    identityPaths = [
-      "/etc/ssh/ssh_host_ed25519_key"
-    ];
+    identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
       "secrets/global/ssh/authorized_keys.age".file =
         "${secretsPath}/secrets/global/ssh/authorized_keys.age";
     };
   };
 
+  # Virtualization
   virtualisation = {
     docker = {
       enable = true;
       enableOnBoot = true;
-      enableNvidia = false;
     };
-    incus.enable = true;
-    vswitch.enable = true;
-    libvirtd.enable = true;
   };
 
+  # Time and locale
   time.timeZone = "America/Phoenix";
-
   i18n = {
     defaultLocale = "en_US.UTF-8";
     extraLocaleSettings = {
@@ -143,56 +133,26 @@
     };
   };
 
+  # Environment
   environment = {
     shells = with pkgs; [ zsh ];
     variables = {
       EDITOR = "vim";
-      OLLAMA_HOST = "desktop2";
     };
   };
 
+  # Programs
   programs = {
     zsh = {
       enable = true;
       autosuggestions.enable = true;
     };
     mosh.enable = true;
-    firefox.enable = true;
-    appimage = {
-      enable = true;
-      binfmt = true;
-    };
     neovim = {
       enable = true;
       defaultEditor = true;
       vimAlias = true;
       viAlias = true;
-      configure = {
-        packages.myVimPackage = with pkgs.vimPlugins; {
-          start = [
-            ansible-vim
-            nvim-treesitter
-            nvim-treesitter-parsers.c
-            nvim-treesitter-parsers.lua
-            nvim-treesitter-parsers.nix
-            nvim-treesitter-parsers.terraform
-            nvim-treesitter-parsers.vimdoc
-            nvim-treesitter-parsers.python
-            nvim-treesitter-parsers.ruby
-            telescope-nvim
-            vim-terraform
-          ];
-        };
-        customRC = ''
-          syntax on
-          filetype plugin indent on
-          set title
-          set number
-          set hidden
-          set encoding=utf-8
-          set title
-        '';
-      };
     };
   };
 
