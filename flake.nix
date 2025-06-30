@@ -137,7 +137,7 @@
               nodePackages.prettier # For JSON and HTML formatting
               jq # For JSON processing
               age # For secrets encryption
-              agenix.packages.${system}.default # For secrets management
+              (pkgs.callPackage "${inputs.agenix}/pkgs/agenix.nix" {}) # agenix from flake input
             ];
 
             commands = [
@@ -677,15 +677,28 @@
                     echo "Error: You must specify a secret file to edit."
                     echo "Usage: secrets-edit <secret-name>"
                     echo "Example: secrets-edit jamesbrink/syncthing-password"
+                    echo "       or: secrets-edit global/syncthing/alienware15r4-id"
                     exit 1
                   fi
 
-                  SECRET_FILE="secrets/$1.age"
+                  SECRET_PATH="$1"
+                  
+                  # Remove 'secrets/' prefix if present (handle the double prefix case)
+                  SECRET_PATH="''${SECRET_PATH#secrets/}"
+                  
+                  # Remove '.age' suffix if present
+                  SECRET_PATH="''${SECRET_PATH%.age}"
+                  
+                  # The actual file path
+                  SECRET_FILE="secrets/secrets/$SECRET_PATH.age"
+                  
                   if [ ! -f "$SECRET_FILE" ]; then
                     echo "Creating new secret: $SECRET_FILE"
+                    mkdir -p "$(dirname "$SECRET_FILE")"
                   fi
 
-                  RULES=secrets/secrets.nix agenix -e "$SECRET_FILE"
+                  # Use proper agenix syntax
+                  RULES=secrets/secrets.nix EDITOR="''${EDITOR:-vim}" agenix -e "$SECRET_FILE" -i ~/.ssh/id_ed25519
                 '';
               }
 
@@ -708,7 +721,7 @@
                 help = "List all secret files";
                 command = ''
                   echo "Available secrets:"
-                  find secrets -name "*.age" -type f | sort | sed 's|^secrets/||' | sed 's|\.age$||'
+                  find secrets/secrets -name "*.age" -type f | sort | sed 's|^secrets/secrets/||' | sed 's|\.age$||'
                 '';
               }
 
@@ -719,9 +732,9 @@
                 command = ''
                   echo "Verifying all secrets..."
                   FAILED=0
-                  for secret in $(find secrets -name "*.age" -type f | sort); do
+                  for secret in $(find secrets/secrets -name "*.age" -type f | sort); do
                     echo -n "Checking $secret... "
-                    if RULES=secrets/secrets.nix agenix -d "$secret" > /dev/null 2>&1; then
+                    if RULES=secrets/secrets.nix agenix -d "$secret" -i ~/.ssh/id_ed25519 > /dev/null 2>&1; then
                       echo "✓"
                     else
                       echo "✗ FAILED"
