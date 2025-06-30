@@ -153,7 +153,27 @@ If you see "can't find terminal definition for alacritty":
 
 ## Secrets Management Process
 - Secrets are managed using agenix
-- Stored in a separate private repository
-- Each host's SSH key must be added as a recipient
-- Re-encrypt secrets after adding new recipients using `agenix -r`
-- See CLAUDE.local.md for detailed instructions (not committed to repo)
+- Stored as a git submodule in `secrets/` (private repository)
+- Each host's SSH key must be added as a recipient in `secrets/secrets.nix`
+- Re-encrypt secrets after adding new recipients using `secrets-rekey` command
+
+### Secrets Management Commands
+- `secrets-edit <path>`: Create or edit a secret (e.g., `secrets-edit jamesbrink/syncthing-password`)
+- `secrets-list`: List all available secrets
+- `secrets-rekey`: Re-encrypt all secrets with current recipients
+- `secrets-verify`: Verify all secrets can be decrypted
+- `secrets-sync`: Pull latest changes from the secrets submodule
+- `secrets-add-host <hostname>`: Get SSH key for a new host to add to recipients
+
+### Adding a New Host to Secrets
+1. Run `secrets-add-host <hostname>` to get the host's SSH key
+2. Add the key to `secrets/secrets.nix` in the host keys section
+3. Add the host to all relevant `publicKeys` arrays
+4. Run `secrets-rekey` to re-encrypt all secrets
+5. Commit and push changes in the secrets submodule
+
+### Security Notes
+- Never commit plaintext secrets to the repository
+- The secrets submodule is private and should remain so
+- Syncthing passwords are now managed at the host level, not in user configs
+- Webhook tokens and API keys should be moved to encrypted secrets

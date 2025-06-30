@@ -81,14 +81,56 @@ let
     esac
   '';
 
+  # Webhook configuration template
+  # Note: The actual tokens should be provided via environment variables or secrets
+  webhookConfig = ''
+    [{
+      "id": "postgis-rollback",
+      "trigger-rule": {
+        "or": [
+          {
+            "match": {
+              "type": "value",
+              "value": "WEBHOOK_TOKEN_RESET",
+              "parameter": {
+                "source": "header",
+                "name": "X-Webhook-Token"
+              }
+            }
+          },
+          {
+            "match": {
+              "type": "value",
+              "value": "WEBHOOK_TOKEN_RESET17",
+              "parameter": {
+                "source": "header",
+                "name": "X-Webhook-Token"
+              }
+            }
+          }
+        ]
+      },
+      "pass-arguments-to-command": [
+        {
+          "source": "header",
+          "name": "X-Webhook-Token"
+        }
+      ],
+      "command-working-directory": "/",
+      "execute-command": "/run/current-system/sw/bin/webhook-postgis-reset",
+      "response-message": "Database reset completed successfully",
+      "include-command-output-in-response": true
+    }]
+  '';
+
   # Create a derivation that combines all scripts and webhook config
   postgis-reset = pkgs.symlinkJoin {
     name = "postgis-reset";
     paths = [
       (pkgs.writeTextFile {
         name = "webhook-config";
-        text = builtins.readFile ./hooks.json;
-        destination = "/etc/webhook/hooks.json";
+        text = webhookConfig;
+        destination = "/etc/webhook/hooks.json.template";
       })
       postgis-rollback
       postgis17-rollback

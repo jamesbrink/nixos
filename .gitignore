@@ -34,7 +34,6 @@ __pycache__/
 *.key
 *.pem
 *.cert
-secrets/
 .secrets/
 .env
 

@@ -106,8 +106,8 @@ in
             # Always color ls and group directories
             alias ls='ls --color=auto'
 
-            # GitHub Token
-            export GITHUB_TOKEN="<TBD>"
+            # GitHub Token - Set via environment or use gh auth token
+            # export GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')"
 
             ##############
             # AWS Settings

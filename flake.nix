@@ -24,7 +24,7 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     secrets = {
-      url = "git+ssh://git@github.com/jamesbrink/nix-secrets.git";
+      url = "path:./secrets";
       flake = false;
     };
     vscode-server = {
@@ -619,6 +619,118 @@
                   fi
 
                   echo "Rollback on $HOST complete!"
+                '';
+              }
+
+              {
+                name = "secrets-edit";
+                category = "secrets";
+                help = "Edit a secret file";
+                command = ''
+                  if [ $# -eq 0 ]; then
+                    echo "Error: You must specify a secret file to edit."
+                    echo "Usage: secrets-edit <secret-name>"
+                    echo "Example: secrets-edit jamesbrink/syncthing-password"
+                    exit 1
+                  fi
+
+                  SECRET_FILE="secrets/$1.age"
+                  if [ ! -f "$SECRET_FILE" ]; then
+                    echo "Creating new secret: $SECRET_FILE"
+                  fi
+
+                  RULES=secrets/secrets.nix agenix -e "$SECRET_FILE"
+                '';
+              }
+
+              {
+                name = "secrets-rekey";
+                category = "secrets";
+                help = "Re-encrypt all secrets with current recipients";
+                command = ''
+                  echo "Re-encrypting all secrets..."
+                  cd secrets
+                  RULES=./secrets.nix agenix -r -i ~/.ssh/id_ed25519
+                  cd ..
+                  echo "All secrets have been re-encrypted"
+                '';
+              }
+
+              {
+                name = "secrets-list";
+                category = "secrets";
+                help = "List all secret files";
+                command = ''
+                  echo "Available secrets:"
+                  find secrets -name "*.age" -type f | sort | sed 's|^secrets/||' | sed 's|\.age$||'
+                '';
+              }
+
+              {
+                name = "secrets-verify";
+                category = "secrets";
+                help = "Verify all secrets can be decrypted";
+                command = ''
+                  echo "Verifying all secrets..."
+                  FAILED=0
+                  for secret in $(find secrets -name "*.age" -type f | sort); do
+                    echo -n "Checking $secret... "
+                    if RULES=secrets/secrets.nix agenix -d "$secret" > /dev/null 2>&1; then
+                      echo "✓"
+                    else
+                      echo "✗ FAILED"
+                      FAILED=$((FAILED + 1))
+                    fi
+                  done
+                  
+                  if [ $FAILED -eq 0 ]; then
+                    echo "All secrets verified successfully!"
+                  else
+                    echo "WARNING: $FAILED secrets failed verification"
+                    exit 1
+                  fi
+                '';
+              }
+
+              {
+                name = "secrets-sync";
+                category = "secrets";
+                help = "Pull latest secrets from the submodule";
+                command = ''
+                  echo "Updating secrets submodule..."
+                  git submodule update --remote --merge secrets
+                  echo "Secrets submodule updated"
+                '';
+              }
+
+              {
+                name = "secrets-add-host";
+                category = "secrets";
+                help = "Add a new host to secrets recipients";
+                command = ''
+                  if [ $# -eq 0 ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: secrets-add-host <hostname>"
+                    exit 1
+                  fi
+
+                  HOST="$1"
+                  echo "Getting SSH host key for $HOST..."
+                  
+                  # Try to get the host key
+                  KEY=$(ssh-keyscan -t ed25519 "$HOST" 2>/dev/null | grep -v "^#" | head -1)
+                  
+                  if [ -z "$KEY" ]; then
+                    echo "Error: Could not retrieve SSH key for $HOST"
+                    exit 1
+                  fi
+                  
+                  echo "Found key: $KEY"
+                  echo ""
+                  echo "Add this to secrets/secrets.nix in the host keys section:"
+                  echo "  $HOST = \"$(echo "$KEY" | cut -d' ' -f2-3)\";"
+                  echo ""
+                  echo "Then run 'secrets-rekey' to re-encrypt all secrets"
                 '';
               }
             ];

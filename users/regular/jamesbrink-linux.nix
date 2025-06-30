@@ -163,7 +163,8 @@ in
     settings = {
       gui = {
         user = "jamesbrink";
-        password = "password";
+        # Password should be set via web UI or environment
+        # To use a secret, configure it at the system level in the host configuration
       };
 
       devices = {
