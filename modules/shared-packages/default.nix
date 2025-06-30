@@ -8,8 +8,13 @@
 
 {
   environment.systemPackages = with pkgs; [
-    inputs.agenix.packages.${pkgs.system}.default
-    at
+    acpi
+    age
+    agenix
+    atop
+    aws-google-auth
+    bandwhich
+    bat
     bitwarden-cli
     (btop.override {
       cudaSupport = config.hardware.nvidia.package != null;
