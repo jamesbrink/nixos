@@ -100,7 +100,6 @@
     hostName = "alienware";
     domain = "home.urandom.io";
     networkmanager.enable = true;
-    firewall.enable = false;
   };
 
   # Time and locale configuration
@@ -213,7 +212,7 @@
     settings = {
       gui = {
         user = "jamesbrink";
-        password = "$SYNCTHING_PASSWORD";  # Will be replaced by age secret
+        passwordFile = config.age.secrets."secrets/alienware/syncthing-password".path;
       };
       devices = {
         "DarkStarMk6Mod1" = {
@@ -258,9 +257,15 @@
     };
   };
 
-  users.defaultUserShell = pkgs.zsh;
+  # Shell configuration
   environment.shells = with pkgs; [ zsh ];
+  users.defaultUserShell = pkgs.zsh;
+  programs.zsh = {
+    enable = true;
+    autosuggestions.enable = true;
+  };
 
+  # Neovim configuration
   programs.neovim = {
     enable = true;
     defaultEditor = true;
@@ -294,25 +299,46 @@
     };
   };
 
+  # SSH configuration with age secrets
   services.openssh = {
     enable = true;
-    settings.PasswordAuthentication = true;
+    settings = {
+      PasswordAuthentication = true;
+      LoginGraceTime = 0;
+      AuthorizedKeysCommand = "${pkgs.bash}/bin/bash -c 'cat ${
+        config.age.secrets."secrets/global/ssh/authorized_keys.age".path
+      }'";
+      AuthorizedKeysCommandUser = "root";
+    };
   };
-  # services.openvswitch.enable = true;
-  virtualisation.docker = {
-    enable = true;
-    enableOnBoot = true;
-  };
-  hardware.nvidia-container-toolkit.enable = true;
-  virtualisation.vmware.guest.enable = true;
-  virtualisation.incus.enable = true;
-  virtualisation.vswitch.enable = true;
-  virtualisation.libvirtd.enable = true;
 
-  services.xrdp.enable = true;
-  services.xrdp.openFirewall = true;
-  services.xrdp.defaultWindowManager = "${pkgs.gnome-session}/bin/gnome-session";
+  # Age secrets configuration
+  age = {
+    identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    secrets = {
+      "secrets/global/ssh/authorized_keys.age".file =
+        "${secretsPath}/secrets/global/ssh/authorized_keys.age";
+      "secrets/alienware/syncthing-password".file =
+        "${secretsPath}/secrets/alienware/syncthing-password.age";
+    };
+  };
+
+  # Virtualization configuration
+  virtualisation = {
+    docker = {
+      enable = true;
+      enableOnBoot = true;
+    };
+    vmware.guest.enable = true;
+    incus.enable = true;
+    vswitch.enable = true;
+    libvirtd.enable = true;
+  };
+
+  # Remote desktop services
   services.gnome.gnome-remote-desktop.enable = true;
+
+  # Sudo configuration
   security.sudo.extraRules = [
     {
       users = [ "jamesbrink" ];
@@ -325,154 +351,94 @@
     }
   ];
 
-  security.wrappers.sunshine = {
-    owner = "root";
-    group = "root";
-    capabilities = "cap_sys_admin+p";
-    source = "${pkgs.sunshine}/bin/sunshine";
-  };
-
+  # Service discovery and VPN
   services.avahi.publish.enable = true;
   services.avahi.publish.userServices = true;
   services.tailscale.enable = true;
 
+  # Steam gaming
   programs.steam = {
     enable = true;
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;
   };
 
-  programs.zsh.enable = true;
-  programs.zsh.autosuggestions.enable = true;
+  # Additional programs
+  programs.firefox.enable = true;
+  programs.mosh.enable = true;
+
+  # System services
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
 
-  programs.firefox.enable = true;
+  # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
+  # Host-specific packages (beyond what's in shared modules and desktop profile)
   environment.systemPackages = with pkgs; [
-    # pixinsight
-    alacritty
-    alacritty-theme
-    ansible
-    at
-    autorestic
-    awscli2
-    bitwarden
-    bitwarden-cli
-    blender
-    bzip2
-    cachix
-    certbot
-    chromium
-    circleci-cli
-    cmake
+    # CUDA and GPU tools
     cudaPackages.cudatoolkit
-    cw
-    dig
-    direnv
-    dnsutils
-    docker
-    exo
-    fd
-    file
-    nerd-fonts.fira-code
-    fly
-    gcc
-    gimp
-    git
-    git-crypt
-    git-secrets
-    git-secrets
-    gitea
-    gitlab
-    gnome-session
-    gnumake
+    nvtopPackages.nvidia
+
+    # Storage and filesystem tools
     gparted
     hdparm
-    headscale
     hfsprogs
-    home-manager
-    htop
-    iperf2
-    ipmitool
-    jdk
-    jq
+    libxisf
+    zfs
+
+    # Virtualization tools
+    open-vm-tools
+    openvswitch
+    vagrant
+
+    # Gaming and streaming
+    sunshine
+    steam
+    wineWowPackages.full
+
+    # Development tools not in shared packages
+    cmake
+    gcc
+    python311Packages.boto3
+    python311Packages.pip
+    python311Packages.pynvim
+    rustfmt
+    rustup
+
+    # Specific tools
+    alacritty-theme
+    exo
+    fly
+    gitea
+    gitlab
+    headscale
     k3s
     k6
     kind
     kops
-    kubectl
-    kubectx
     lego
-    lf
     libxisf
-    lshw
     mkdocs
-    mtr
     mtr-gui
-    neofetch
-    neovim
-    netcat
-    nfs-utils
-    nixpkgs-fmt
-    nodejs
     nodenv
     nushell
-    nvtopPackages.nvidia
-    open-vm-tools
-    openssh
-    opentofu
-    openvswitch
     packer
-    packer
-    parted
-    pre-commit
     pyenv
-    python3
-    python311Packages.boto3
-    python311Packages.pip
-    python311Packages.pynvim
-    restic
     restique
-    ripgrep
-    rng-tools
-    rsync
-    rustfmt
-    rustup
-    screen
-    shellcheck
-    slack
     slack-cli
     slack-term
     spin
-    sshpass
-    starship
-    steam
     sublime
-    sunshine
-    tailscale
-    terraform-docs
-    terraform-lsp
-    tflint
     tigervnc
-    tmux
-    unzip
-    vagrant
-    vim
-    vscode
     vscode-extensions.adpyke.codesnap
     vscode-extensions.twxs.cmake
-    wget
-    wineWowPackages.full
-    wireguard-tools
     xorg.xinit
     xrdp
     zellij
-    zfs
-    zsh
   ];
 
+  # Power management
   systemd.sleep.extraConfig = ''
     AllowSuspend=no
     AllowHibernation=no
@@ -480,25 +446,30 @@
     AllowSuspendThenHibernate=no
   '';
 
-  networking.firewall.allowedTCPPorts = [
-    22
-    3389
-    47984
-    47989
-    47990
-    48010
-    7865
-  ];
-  networking.firewall.allowedUDPPortRanges = [
-    {
-      from = 47998;
-      to = 48000;
-    }
-    {
-      from = 8000;
-      to = 8010;
-    }
-  ];
-  networking.firewall.enable = false;
+  # Firewall configuration (disabled for home network)
+  networking.firewall = {
+    enable = false;
+    allowedTCPPorts = [
+      22 # SSH
+      3389 # RDP
+      47984 # Sunshine
+      47989 # Sunshine
+      47990 # Sunshine
+      48010 # Sunshine
+      7865 # Custom service
+    ];
+    allowedUDPPortRanges = [
+      {
+        from = 47998;
+        to = 48000;
+      }
+      {
+        from = 8000;
+        to = 8010;
+      }
+    ];
+  };
+
+  # System state version
   system.stateVersion = "25.05";
 }

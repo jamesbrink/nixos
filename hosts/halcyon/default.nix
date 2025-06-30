@@ -93,6 +93,9 @@
       "openzfs"
       "winbox"
 
+      # AI Tools (Apple Silicon specific)
+      "chatgpt" # ChatGPT desktop app
+
       # Note: obsidian and raycast are already in profiles/darwin/desktop.nix
     ];
   };
