@@ -11,6 +11,7 @@
   imports = [
     ./hardware.nix
     ../../profiles/darwin/desktop.nix # Use full desktop profile
+    ../../modules/shared-packages/default.nix
     ../../modules/darwin/packages.nix
     ../../modules/darwin/dock.nix
     ../../users/regular/jamesbrink-darwin.nix
