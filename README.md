@@ -50,11 +50,12 @@ This project uses:
 │   ├── services/    # Service configurations
 │   │   ├── ai-starter-kit/  # n8n/qdrant/postgres integration
 │   │   └── postgresql/      # PostgreSQL with PostGIS
-│   └── shared-packages/     # Common package sets
-│       ├── agenix.nix       # Age encryption tools
-│       ├── default.nix      # Default packages
-│       ├── devops.nix       # DevOps tools
-│       └── devops-darwin.nix # Darwin DevOps tools
+│   ├── shared-packages/     # Common package sets
+│   │   ├── agenix.nix       # Age encryption tools
+│   │   ├── default.nix      # Default packages
+│   │   ├── devops.nix       # DevOps tools
+│   │   └── devops-darwin.nix # Darwin DevOps tools
+│   └── claude-desktop.nix   # Claude desktop config deployment
 ├── pkgs/           # Custom package builds
 │   └── llama-cpp/  # CUDA-enabled llama.cpp
 ├── profiles/       # Reusable system profiles
@@ -121,6 +122,8 @@ The project includes a comprehensive development shell with categorized commands
 - `secrets-verify` - Verify all secrets can be decrypted
 - `secrets-sync` - Pull latest changes from the secrets submodule
 - `secrets-add-host <hostname>` - Get SSH key for a new host to add to recipients
+
+**Note**: All secrets commands support both `~/.ssh/id_rsa` and `~/.ssh/id_ed25519` keys (preferring id_rsa).
 
 ## Quick Start
 
@@ -272,6 +275,14 @@ Secrets are managed using agenix and stored in a separate private repository:
 - ZFS for advanced storage features on main servers
 - NFS exports for shared storage across network
 - Bind mounts for service-specific storage paths
+
+### Claude Desktop Configuration
+- Automatic deployment of Claude desktop settings across all hosts
+- Configuration stored as encrypted agenix secret
+- Deploys to platform-specific locations:
+  - Darwin: `/Library/Application Support/Claude/`
+  - Linux: `~/.config/Claude/`
+- Managed through activation scripts with proper permissions
 
 ### Darwin (macOS) Support
 - Full nix-darwin integration for declarative macOS configuration

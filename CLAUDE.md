@@ -51,6 +51,7 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
    - Shared package sets (default.nix, devops.nix)
    - Darwin-specific modules (dock management, Homebrew packages)
    - Service configurations with proper NixOS/nix-darwin module patterns
+   - Claude desktop configuration deployment (claude-desktop.nix)
 
 5. **User Management** (`users/*/`):
    - Per-user configurations with home-manager integration
@@ -134,6 +135,19 @@ If you see "can't find terminal definition for alacritty":
 
 ## Recent Architecture Changes
 
+### Claude Desktop Configuration (June 2025)
+- Added automatic deployment of Claude desktop configuration across all hosts
+- Configuration is stored as an encrypted secret using agenix
+- Deploys to `/Library/Application Support/Claude/` on Darwin hosts
+- Deploys to `~/.config/Claude/` on Linux hosts
+- Uses activation scripts with proper platform-specific handling
+
+### Agenix Integration Improvements (June 2025)
+- Fixed agenix package to use flake input directly, avoiding Nix builds from source
+- Updated all secrets commands to support both id_rsa and id_ed25519 SSH keys
+- Improved secrets path structure in secrets.nix for better clarity
+- Enhanced secrets commands with better error handling and path normalization
+
 ### User Module Refactoring (December 2024)
 - Refactored user modules to fix infinite recursion issues
 - Split user configurations into platform-specific files:
@@ -164,6 +178,8 @@ If you see "can't find terminal definition for alacritty":
 - `secrets-verify`: Verify all secrets can be decrypted
 - `secrets-sync`: Pull latest changes from the secrets submodule
 - `secrets-add-host <hostname>`: Get SSH key for a new host to add to recipients
+
+**Note**: Secrets commands now support both `~/.ssh/id_rsa` and `~/.ssh/id_ed25519` keys, preferring `id_rsa` when available.
 
 ### Adding a New Host to Secrets
 1. Run `secrets-add-host <hostname>` to get the host's SSH key
