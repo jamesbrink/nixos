@@ -683,22 +683,28 @@
 
                   SECRET_PATH="$1"
                   
-                  # Remove 'secrets/' prefix if present (handle the double prefix case)
+                  # Remove 'secrets/' prefix if present 
                   SECRET_PATH="''${SECRET_PATH#secrets/}"
                   
                   # Remove '.age' suffix if present
                   SECRET_PATH="''${SECRET_PATH%.age}"
                   
                   # The actual file path
-                  SECRET_FILE="secrets/secrets/$SECRET_PATH.age"
+                  SECRET_FILE="secrets/$SECRET_PATH.age"
                   
                   if [ ! -f "$SECRET_FILE" ]; then
                     echo "Creating new secret: $SECRET_FILE"
                     mkdir -p "$(dirname "$SECRET_FILE")"
                   fi
 
-                  # Use proper agenix syntax
-                  RULES=secrets/secrets.nix EDITOR="''${EDITOR:-vim}" agenix -e "$SECRET_FILE" -i ~/.ssh/id_ed25519
+                  # Use proper agenix syntax - try ~/.ssh/id_rsa first, fall back to id_ed25519
+                  if [ -f ~/.ssh/id_rsa ]; then
+                    IDENTITY_FILE=~/.ssh/id_rsa
+                  else
+                    IDENTITY_FILE=~/.ssh/id_ed25519
+                  fi
+                  
+                  RULES=secrets/secrets.nix EDITOR="''${EDITOR:-vim}" agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE"
                 '';
               }
 
@@ -709,7 +715,15 @@
                 command = ''
                   echo "Re-encrypting all secrets..."
                   cd secrets
-                  RULES=./secrets.nix agenix -r -i ~/.ssh/id_ed25519
+                  
+                  # Use id_rsa if available, otherwise id_ed25519
+                  if [ -f ~/.ssh/id_rsa ]; then
+                    IDENTITY_FILE=~/.ssh/id_rsa
+                  else
+                    IDENTITY_FILE=~/.ssh/id_ed25519
+                  fi
+                  
+                  RULES=./secrets.nix agenix -r -i "$IDENTITY_FILE"
                   cd ..
                   echo "All secrets have been re-encrypted"
                 '';
@@ -721,7 +735,7 @@
                 help = "List all secret files";
                 command = ''
                   echo "Available secrets:"
-                  find secrets/secrets -name "*.age" -type f | sort | sed 's|^secrets/secrets/||' | sed 's|\.age$||'
+                  find secrets/secrets -name "*.age" -type f | sort | sed 's|^secrets/||' | sed 's|\.age$||'
                 '';
               }
 
@@ -732,9 +746,17 @@
                 command = ''
                   echo "Verifying all secrets..."
                   FAILED=0
+                  
+                  # Use id_rsa if available, otherwise id_ed25519
+                  if [ -f ~/.ssh/id_rsa ]; then
+                    IDENTITY_FILE=~/.ssh/id_rsa
+                  else
+                    IDENTITY_FILE=~/.ssh/id_ed25519
+                  fi
+                  
                   for secret in $(find secrets/secrets -name "*.age" -type f | sort); do
                     echo -n "Checking $secret... "
-                    if RULES=secrets/secrets.nix agenix -d "$secret" -i ~/.ssh/id_ed25519 > /dev/null 2>&1; then
+                    if RULES=secrets/secrets.nix agenix -d "$secret" -i "$IDENTITY_FILE" > /dev/null 2>&1; then
                       echo "✓"
                     else
                       echo "✗ FAILED"

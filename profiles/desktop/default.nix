@@ -1,6 +1,10 @@
 { pkgs, ... }:
 
 {
+  imports = [
+    ../../modules/claude-desktop.nix
+  ];
+
   environment.systemPackages = with pkgs; [
     alacritty
     chromium

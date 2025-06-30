@@ -8,6 +8,7 @@
 {
   imports = [
     ./default.nix
+    ../../modules/claude-desktop.nix
   ];
 
   # Desktop-specific packages

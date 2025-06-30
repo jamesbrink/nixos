@@ -4,6 +4,7 @@
 {
   imports = [
     ../../modules/shared-packages/default.nix
+    ../../modules/claude-desktop.nix
   ];
 
   environment.systemPackages = with pkgs; [
