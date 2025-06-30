@@ -45,6 +45,9 @@
     unzip
     p7zip
 
+    # Security tools
+    age
+
     # macOS specific
     mas # Mac App Store CLI
     dockutil

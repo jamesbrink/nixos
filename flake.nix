@@ -136,6 +136,8 @@
               openssh
               nodePackages.prettier # For JSON and HTML formatting
               jq # For JSON processing
+              age # For secrets encryption
+              agenix.packages.${system}.default # For secrets management
             ];
 
             commands = [

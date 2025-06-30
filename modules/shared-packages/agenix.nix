@@ -1,14 +1,9 @@
+# This module installs the agenix CLI tools
+# The agenix module itself is imported at the flake level
+{ pkgs, ... }:
 {
-  pkgs,
-  config,
-  lib,
-  inputs,
-  ...
-}:
-{
-  imports = [
-    inputs.agenix.nixosModules.default
+  environment.systemPackages = with pkgs; [
+    agenix
+    age
   ];
-
-  environment.systemPackages = [ inputs.agenix.packages.${pkgs.system}.default ];
 }

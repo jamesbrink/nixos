@@ -11,7 +11,6 @@
   imports = [
     ./hardware-configuration.nix
     ../../profiles/server/default.nix
-    ../../modules/shared-packages/agenix.nix
     ../../users/regular/jamesbrink.nix
   ];
 
