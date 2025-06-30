@@ -1025,13 +1025,13 @@
         };
 
         sevastopol = darwin.lib.darwinSystem {
-          system = "aarch64-darwin"; # M4 Mac
+          system = "x86_64-darwin"; # Intel iMac 27" 2013
 
           specialArgs = {
             inherit inputs agenix;
             secretsPath = "${inputs.secrets}";
             unstablePkgs = import nixos-unstable {
-              system = "aarch64-darwin";
+              system = "x86_64-darwin";
               config.allowUnfree = true;
             };
           };
@@ -1058,7 +1058,7 @@
               nixpkgs.overlays = [
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
-                    system = "aarch64-darwin";
+                    system = "x86_64-darwin";
                     config.allowUnfree = true;
                   };
                 })
