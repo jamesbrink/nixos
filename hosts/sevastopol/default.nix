@@ -13,16 +13,7 @@
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
-    (import ../../users/regular/jamesbrink.nix {
-      inherit (args)
-        config
-        pkgs
-        inputs
-        unstablePkgs
-        secretsPath
-        ;
-      inherit (args.inputs) claude-desktop;
-    })
+    ../../users/regular/jamesbrink.nix
     ../../profiles/desktop/default-stable.nix
   ];
 

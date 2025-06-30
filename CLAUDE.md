@@ -26,31 +26,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## High-Level Architecture
 
 ### Repository Structure
-The codebase follows a modular NixOS flake structure with clear separation of concerns:
+The codebase follows a modular NixOS/nix-darwin flake structure with clear separation of concerns:
 
 1. **Flake Configuration** (`flake.nix`):
-   - Defines all external inputs (nixpkgs stable/unstable, home-manager, agenix, vscode-server)
+   - Defines all external inputs (nixpkgs stable/unstable, home-manager, agenix, vscode-server, darwin, nix-homebrew)
    - Configures development shell with all deployment and maintenance commands
-   - Defines NixOS configurations for each host with appropriate modules and overlays
+   - Defines NixOS configurations for Linux hosts and darwinConfigurations for macOS hosts
+   - Supports both x86_64-linux and aarch64-darwin (Apple Silicon) architectures
 
 2. **Host Configurations** (`hosts/*/`):
-   - Each host has its own directory with `default.nix` and `hardware-configuration.nix`
+   - Each host has its own directory with `default.nix` and hardware configuration
    - Hosts import shared profiles, modules, and user configurations
-   - Special configurations: `hal9000` (main server with AI services), `n100-*` (cluster nodes), `alienware` (desktop)
+   - Linux hosts: `hal9000` (main server with AI services), `n100-*` (cluster nodes), `alienware` (desktop), `sevastopol`
+   - macOS hosts: `halcyon` (M4 Mac)
 
 3. **Profiles** (`profiles/*/`):
-   - Reusable system profiles (desktop, server, keychron)
-   - Desktop profile includes GNOME, development tools, and remote access
+   - Reusable system profiles (desktop, server, keychron, darwin)
+   - Linux desktop profile includes GNOME, development tools, and remote access
+   - Darwin profiles include macOS-specific settings, Homebrew integration, and dock management
    - Profiles can have stable and unstable variants
 
 4. **Modules** (`modules/*/`):
    - Custom services (ai-starter-kit for n8n/qdrant/postgres integration)
    - Shared package sets (default.nix, devops.nix)
-   - Service configurations with proper NixOS module patterns
+   - Darwin-specific modules (dock management, Homebrew packages)
+   - Service configurations with proper NixOS/nix-darwin module patterns
 
 5. **User Management** (`users/*/`):
    - Per-user configurations with home-manager integration
    - Supports both stable and unstable package channels per user
+   - Cross-platform user module with conditional logic for Linux vs Darwin
    - Includes user-specific packages, dotfiles, and shell configurations
 
 ### Key Architectural Patterns
@@ -104,9 +109,47 @@ The codebase follows a modular NixOS flake structure with clear separation of co
 - The development shell includes all necessary tools for maintenance
 - NIXPKGS_ALLOW_UNFREE=1 is set automatically in deployment commands
 - Host configurations can mix stable and unstable packages via overlays
+- Darwin hosts use nix-darwin instead of nixos-rebuild for system management
+- macOS deployments require Determinate Nix (nix.enable = false in darwin configs)
+- Homebrew is integrated for GUI applications not available in nixpkgs
+- Alacritty is installed via Nix packages (not Homebrew) on Darwin
+- Terminal applications use MesloLGS Nerd Font (not "MesloLGS NF")
+- The `thefuck` package has been replaced with `pay-respects` (aliases: `fuck`, `pr`)
+
+## Known Issues and Solutions
+
+### Alacritty Terminal Definition Error
+If you see "can't find terminal definition for alacritty":
+- The terminfo file is manually installed to `~/.terminfo/a/alacritty`
+- Future deployments will automatically handle this via activation scripts
+- Terminal applications should use `TERM=alacritty` (not xterm-256color)
+
+### Ollama Installation on macOS
+- Ollama is installed via Homebrew cask as `ollama-app` (not `ollama`)
+- The CLI is automatically linked to `/opt/homebrew/bin/ollama`
+- Start the Ollama app from Applications before using the CLI
 
 ## Workflow Recommendations
 - Always use `deploy-test` over `build` when on macOS
+
+## Recent Architecture Changes
+
+### User Module Refactoring (December 2024)
+- Refactored user modules to fix infinite recursion issues
+- Split user configurations into platform-specific files:
+  - `jamesbrink.nix`: Main entry point that selects appropriate config
+  - `jamesbrink-darwin.nix`: macOS-specific configuration
+  - `jamesbrink-linux.nix`: Linux-specific configuration
+  - `jamesbrink-shared.nix`: Shared configuration for both platforms
+- Fixed conditional imports to prevent circular dependencies
+- Improved cross-platform compatibility with proper platform detection
+
+### Darwin (macOS) Support
+- Full support for Apple Silicon Macs (tested on M4)
+- Integration with Homebrew for GUI applications via nix-homebrew
+- Custom dock management module for automatic dock configuration
+- Separate package sets for Darwin vs Linux systems
+- Platform-specific service configurations
 
 ## Secrets Management Process
 - Secrets are managed using agenix

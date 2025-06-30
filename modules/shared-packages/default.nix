@@ -59,7 +59,7 @@
     screen
     speedtest-cli
     sysstat
-    thefuck
+    pay-respects
     tmux
     tree
     unzip

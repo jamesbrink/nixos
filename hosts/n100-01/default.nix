@@ -13,16 +13,7 @@
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
-    (import ../../users/regular/jamesbrink.nix {
-      inherit
-        config
-        pkgs
-        inputs
-        secretsPath
-        ;
-      unstablePkgs = pkgs.unstablePkgs;
-      inherit claude-desktop;
-    })
+    ../../users/regular/jamesbrink.nix
     ../../profiles/desktop/default-stable.nix
   ];
 
@@ -208,5 +199,5 @@
 
   users.defaultUserShell = pkgs.zsh;
 
-  system.stateVersion = "24.05";
+  system.stateVersion = "25.05";
 }

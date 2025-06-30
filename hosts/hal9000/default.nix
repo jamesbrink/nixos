@@ -16,16 +16,7 @@
     ./nginx.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
-    (import ../../users/regular/jamesbrink.nix {
-      inherit (args)
-        config
-        pkgs
-        inputs
-        secretsPath
-        ;
-      unstablePkgs = pkgs.unstablePkgs;
-      inherit (args.inputs) claude-desktop;
-    })
+    ../../users/regular/jamesbrink.nix
     ../../users/regular/strivedi.nix
     ../../profiles/desktop/default-stable.nix
     ../../profiles/keychron/default.nix
@@ -924,7 +915,7 @@
     xorriso
   ];
 
-  system.stateVersion = "24.11";
+  system.stateVersion = "25.05";
 
   systemd.services.systemd-networkd-wait-online = {
     serviceConfig = {

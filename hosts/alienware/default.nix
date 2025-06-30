@@ -16,16 +16,7 @@
     ./hardware-configuration.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
-    (import ../../users/regular/jamesbrink.nix {
-      inherit (args)
-        config
-        pkgs
-        inputs
-        unstablePkgs
-        secretsPath
-        ;
-      inherit (args.inputs) claude-desktop;
-    })
+    ../../users/regular/jamesbrink.nix
     ../../profiles/desktop/default-stable.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
@@ -519,5 +510,5 @@
     }
   ];
   networking.firewall.enable = false;
-  system.stateVersion = "24.11";
+  system.stateVersion = "25.05";
 }

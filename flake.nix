@@ -38,6 +38,27 @@
     devshell = {
       url = "github:numtide/devshell";
     };
+
+    # Darwin-specific inputs
+    darwin = {
+      url = "github:LnL7/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixos-unstable";
+    };
+    nix-homebrew = {
+      url = "github:zhaofengli/nix-homebrew";
+    };
+    homebrew-bundle = {
+      url = "github:homebrew/homebrew-bundle";
+      flake = false;
+    };
+    homebrew-core = {
+      url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
+      flake = false;
+    };
   };
 
   outputs =
@@ -52,6 +73,11 @@
       vscode-server,
       claude-desktop,
       devshell,
+      darwin,
+      nix-homebrew,
+      homebrew-bundle,
+      homebrew-core,
+      homebrew-cask,
       ...
     }@inputs:
     let
@@ -154,19 +180,36 @@
                     exit 1
                   fi
 
-                  HOSTNAME=$(hostname)
+                  HOSTNAME=$(hostname | cut -d. -f1 | tr '[:upper:]' '[:lower:]')
+                  SYSTEM=$(uname -s | tr '[:upper:]' '[:lower:]')
+                  HOST_LOWER=$(echo "$HOST" | tr '[:upper:]' '[:lower:]')
 
                   echo "Deploying configuration to $HOST..."
 
                   # Check if we're on the target host
-                  if [ "$HOSTNAME" = "$HOST" ]; then
+                  if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
                     echo "Deploying locally to $HOST..."
-                    sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#$HOST --verbose --impure
+                    if [ "$SYSTEM" = "darwin" ]; then
+                      # macOS deployment - darwin-rebuild requires sudo
+                      sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake .#$HOST --impure
+                    else
+                      # NixOS deployment
+                      sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#$HOST --verbose --impure
+                    fi
                   else
                     echo "Deploying remotely to $HOST..."
-                    # Copy the flake to the remote server and build there
-                    rsync -avz --exclude '.git' --exclude 'result' . root@$HOST:/tmp/nixos-config/
-                    ssh root@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#$HOST --verbose --impure"
+                    # Check if remote host is darwin or linux
+                    REMOTE_SYSTEM=$(ssh root@$HOST "uname -s | tr '[:upper:]' '[:lower:]'")
+                    
+                    if [ "$REMOTE_SYSTEM" = "darwin" ]; then
+                      # Copy the flake to the remote darwin server and build there
+                      rsync -avz --exclude '.git' --exclude 'result' . jamesbrink@$HOST:/tmp/nixos-config/
+                      ssh jamesbrink@$HOST "cd /tmp/nixos-config && sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake .#$HOST --impure"
+                    else
+                      # Copy the flake to the remote NixOS server and build there
+                      rsync -avz --exclude '.git' --exclude 'result' . root@$HOST:/tmp/nixos-config/
+                      ssh root@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#$HOST --verbose --impure"
+                    fi
                   fi
 
                   echo "Deployment to $HOST complete!"
@@ -192,19 +235,37 @@
                     exit 1
                   fi
 
-                  HOSTNAME=$(hostname)
+                  HOSTNAME=$(hostname | cut -d. -f1 | tr '[:upper:]' '[:lower:]')
+                  SYSTEM=$(uname -s | tr '[:upper:]' '[:lower:]')
+                  HOST_LOWER=$(echo "$HOST" | tr '[:upper:]' '[:lower:]')
 
                   echo "Testing deployment to $HOST..."
 
                   # Check if we're on the target host
-                  if [ "$HOSTNAME" = "$HOST" ]; then
+                  if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
                     echo "Testing locally on $HOST..."
-                    sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$HOST --impure
+                    if [ "$SYSTEM" = "darwin" ]; then
+                      # macOS dry-run (darwin doesn't have dry-activate)
+                      echo "Note: darwin doesn't support dry-activate. Building configuration instead..."
+                      NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$HOST.system --impure
+                    else
+                      # NixOS dry-run
+                      sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$HOST --impure
+                    fi
                   else
                     echo "Testing remotely on $HOST..."
-                    # Copy the flake to the remote server and test there
-                    rsync -avz --exclude '.git' --exclude 'result' . root@$HOST:/tmp/nixos-config/
-                    ssh root@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$HOST --impure"
+                    # Check if remote host is darwin or linux
+                    REMOTE_SYSTEM=$(ssh root@$HOST "uname -s | tr '[:upper:]' '[:lower:]'")
+                    
+                    if [ "$REMOTE_SYSTEM" = "darwin" ]; then
+                      # Copy the flake to the remote darwin server and test there
+                      rsync -avz --exclude '.git' --exclude 'result' . jamesbrink@$HOST:/tmp/nixos-config/
+                      ssh jamesbrink@$HOST "cd /tmp/nixos-config && echo 'Note: darwin doesn't support dry-activate. Building configuration instead...' && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$HOST.system --impure"
+                    else
+                      # Copy the flake to the remote NixOS server and test there
+                      rsync -avz --exclude '.git' --exclude 'result' . root@$HOST:/tmp/nixos-config/
+                      ssh root@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$HOST --impure"
+                    fi
                   fi
 
                   echo "Deployment test for $HOST complete!"
@@ -263,7 +324,17 @@
                   fi
 
                   echo "Building configuration for $HOST..."
-                  NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
+
+                  # Check if host exists in nixosConfigurations or darwinConfigurations
+                  if nix eval --json .#nixosConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                    NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
+                  elif nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                    NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#darwinConfigurations.$HOST.system
+                  else
+                    echo "Error: Host '$HOST' not found in nixosConfigurations or darwinConfigurations"
+                    exit 1
+                  fi
+
                   echo "Build for $HOST complete!"
                 '';
               }
@@ -287,54 +358,86 @@
                     exit 1
                   fi
 
-                  HOSTNAME=$(hostname)
+                  HOSTNAME=$(hostname | cut -d. -f1 | tr '[:upper:]' '[:lower:]')
+                  HOST_LOWER=$(echo "$HOST" | tr '[:upper:]' '[:lower:]')
 
                   # Check if we're trying to deploy to ourselves
-                  if [ "$HOSTNAME" = "$HOST" ]; then
+                  if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
                     echo "Error: deploy-local is for remote hosts only. Use 'deploy' for local deployment."
                     exit 1
                   fi
 
-                  # Check if we already have a build result
-                  if [ -L ./result ] && [ -e ./result ]; then
-                    # Verify this result is for the correct host
-                    RESULT_HOST=$(readlink ./result | grep -oP 'nixos-system-\K[^-]+' || echo "unknown")
-                    if [ "$RESULT_HOST" = "$HOST" ]; then
-                      echo "Found existing build result for $HOST, using it..."
+                  # Check if host is Darwin or NixOS
+                  if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                    # Darwin deployment
+                    echo "Building darwin configuration for $HOST locally..."
+                    NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#darwinConfigurations.$HOST.system
+                    if [ $? -ne 0 ]; then
+                      echo "Build failed! Aborting deployment."
+                      exit 1
+                    fi
+                    
+                    echo "Build complete! Copying closure to $HOST..."
+                    nix-copy-closure --to jamesbrink@$HOST ./result
+                    
+                    if [ $? -ne 0 ]; then
+                      echo "Failed to copy closure to $HOST! Aborting deployment."
+                      exit 1
+                    fi
+                    
+                    echo "Switching to new configuration on $HOST..."
+                    STORE_PATH=$(readlink -f ./result)
+                    ssh jamesbrink@$HOST "sudo $STORE_PATH/sw/bin/darwin-rebuild switch --flake .#$HOST"
+                    
+                    if [ $? -eq 0 ]; then
+                      echo "Deployment to $HOST complete!"
                     else
-                      echo "Existing build result is for '$RESULT_HOST', not '$HOST'. Building fresh..."
+                      echo "Failed to switch configuration on $HOST!"
+                      exit 1
+                    fi
+                  else
+                    # NixOS deployment
+                    # Check if we already have a build result
+                    if [ -L ./result ] && [ -e ./result ]; then
+                      # Verify this result is for the correct host (macOS-compatible grep)
+                      RESULT_HOST=$(readlink ./result | sed -n 's/.*nixos-system-\([^-]*\).*/\1/p' || echo "unknown")
+                      if [ "$RESULT_HOST" = "$HOST" ]; then
+                        echo "Found existing build result for $HOST, using it..."
+                      else
+                        echo "Existing build result is for '$RESULT_HOST', not '$HOST'. Building fresh..."
+                        NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
+                        if [ $? -ne 0 ]; then
+                          echo "Build failed! Aborting deployment."
+                          exit 1
+                        fi
+                      fi
+                    else
+                      echo "No existing build result found. Building configuration for $HOST locally..."
                       NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
                       if [ $? -ne 0 ]; then
                         echo "Build failed! Aborting deployment."
                         exit 1
                       fi
                     fi
-                  else
-                    echo "No existing build result found. Building configuration for $HOST locally..."
-                    NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
+
+                    echo "Build complete! Copying closure to $HOST..."
+                    nix-copy-closure --to root@$HOST ./result
+
                     if [ $? -ne 0 ]; then
-                      echo "Build failed! Aborting deployment."
+                      echo "Failed to copy closure to $HOST! Aborting deployment."
                       exit 1
                     fi
-                  fi
 
-                  echo "Build complete! Copying closure to $HOST..."
-                  nix-copy-closure --to root@$HOST ./result
+                    echo "Switching to new configuration on $HOST..."
+                    STORE_PATH=$(readlink -f ./result)
+                    ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --set $STORE_PATH && /nix/var/nix/profiles/system/bin/switch-to-configuration switch"
 
-                  if [ $? -ne 0 ]; then
-                    echo "Failed to copy closure to $HOST! Aborting deployment."
-                    exit 1
-                  fi
-
-                  echo "Switching to new configuration on $HOST..."
-                  STORE_PATH=$(readlink -f ./result)
-                  ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --set $STORE_PATH && /nix/var/nix/profiles/system/bin/switch-to-configuration switch"
-
-                  if [ $? -eq 0 ]; then
-                    echo "Deployment to $HOST complete!"
-                  else
-                    echo "Failed to switch configuration on $HOST!"
-                    exit 1
+                    if [ $? -eq 0 ]; then
+                      echo "Deployment to $HOST complete!"
+                    else
+                      echo "Failed to switch configuration on $HOST!"
+                      exit 1
+                    fi
                   fi
                 '';
               }
@@ -712,6 +815,56 @@
                 })
               ];
             }
+          ];
+        };
+      };
+
+      #########################################################################
+      # Darwin Configurations                                                 #
+      #########################################################################
+
+      darwinConfigurations = {
+        halcyon = darwin.lib.darwinSystem {
+          system = "aarch64-darwin"; # M4 Mac
+
+          specialArgs = {
+            inherit inputs agenix;
+            secretsPath = "${inputs.secrets}";
+            unstablePkgs = import nixos-unstable {
+              system = "aarch64-darwin";
+              config.allowUnfree = true;
+            };
+          };
+
+          modules = [
+            home-manager-unstable.darwinModules.home-manager
+            agenix.darwinModules.default
+            nix-homebrew.darwinModules.nix-homebrew
+            {
+              nix-homebrew = {
+                user = "jamesbrink";
+                enable = true;
+                taps = {
+                  "homebrew/homebrew-core" = homebrew-core;
+                  "homebrew/homebrew-cask" = homebrew-cask;
+                  "homebrew/homebrew-bundle" = homebrew-bundle;
+                };
+                mutableTaps = true;
+                autoMigrate = true;
+              };
+            }
+            {
+              nixpkgs.config.allowUnfree = true;
+              nixpkgs.overlays = [
+                (final: prev: {
+                  unstablePkgs = import nixos-unstable {
+                    system = "aarch64-darwin";
+                    config.allowUnfree = true;
+                  };
+                })
+              ];
+            }
+            ./hosts/halcyon/default.nix
           ];
         };
       };
