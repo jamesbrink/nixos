@@ -1,9 +1,5 @@
 { pkgs, ... }:
 
-let
-  postgis-reset = import ../packages/postgis-reset { inherit pkgs; };
-in
-
 {
   environment.systemPackages = with pkgs; [
     act
@@ -38,7 +34,6 @@ in
     openvpn3
     openvswitch
     packer
-    postgis-reset
     postgresql
     pre-commit
     restic

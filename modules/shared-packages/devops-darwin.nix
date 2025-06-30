@@ -19,7 +19,7 @@
     kubectl
     kubectx
     kubescape
-    nodejs
+    # nodejs # Using Homebrew's version instead (provides npm and npx)
     opentofu
     packer
     postgresql
@@ -38,7 +38,7 @@
     tflint
     tig
     treefmt
-    uv
+    # uv # Moved to Homebrew for darwin to match old setup
     webhook
     websocat
     websocketd

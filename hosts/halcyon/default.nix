@@ -32,6 +32,7 @@
       { path = "/Applications/Visual Studio Code.app"; }
       { path = "${config.users.users.jamesbrink.home}/.nix-profile/Applications/Alacritty.app"; }
       { path = "/Applications/Ghostty.app"; }
+      { path = "/Applications/Claude.app"; }
       { path = "/Applications/Slack.app"; }
       { path = "/Applications/Discord.app"; }
       { path = "/System/Applications/System Settings.app"; }

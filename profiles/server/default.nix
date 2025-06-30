@@ -3,7 +3,7 @@
 
 {
   imports = [
-    ../../modules/system/default-packages.nix
+    ../../modules/shared-packages/default.nix
   ];
 
   environment.systemPackages = with pkgs; [

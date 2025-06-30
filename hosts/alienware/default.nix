@@ -14,13 +14,14 @@
   ];
   imports = [
     ./hardware-configuration.nix
+    ../../profiles/desktop/default-stable.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
-    ../../profiles/desktop/default-stable.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
 
+  # Security audit configuration
   security.audit.enable = true;
   security.auditd.enable = true;
   security.audit.failureMode = "printk";
@@ -31,6 +32,7 @@
     "-w /var/log/audit/ -p wa -k audit_logs"
   ];
 
+  # Nix configuration
   nix = {
     settings = {
       experimental-features = [
@@ -46,10 +48,14 @@
     };
   };
 
-  # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernel.sysctl."kernel.dmesg_restrict" = 0;
+  # Boot configuration
+  boot = {
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
+    kernel.sysctl."kernel.dmesg_restrict" = 0;
+  };
 
   # Mount second drive (Data)
   fileSystems."/mnt/data" = {
@@ -81,6 +87,7 @@
     options = [ "bind" ];
   };
 
+  # NFS Server configuration
   services.nfs.server.enable = true;
   services.nfs.server.exports = ''
     /export           10.70.100.0/24(rw,fsid=0,no_subtree_check)
@@ -88,9 +95,32 @@
     /export/data      10.70.100.0/24(rw,nohide,insecure,no_subtree_check)
   '';
 
-  networking.hostName = "Alienware15R4";
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  # Networking configuration
+  networking = {
+    hostName = "alienware";
+    domain = "home.urandom.io";
+    networkmanager.enable = true;
+    firewall.enable = false;
+  };
 
+  # Time and locale configuration
+  time.timeZone = "America/Phoenix";
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    extraLocaleSettings = {
+      LC_ADDRESS = "en_US.UTF-8";
+      LC_IDENTIFICATION = "en_US.UTF-8";
+      LC_MEASUREMENT = "en_US.UTF-8";
+      LC_MONETARY = "en_US.UTF-8";
+      LC_NAME = "en_US.UTF-8";
+      LC_NUMERIC = "en_US.UTF-8";
+      LC_PAPER = "en_US.UTF-8";
+      LC_TELEPHONE = "en_US.UTF-8";
+      LC_TIME = "en_US.UTF-8";
+    };
+  };
+
+  # nix-ld configuration for dynamic linking
   programs.nix-ld.enable = true;
   programs.nix-ld.libraries = with pkgs; [
     autoconf
@@ -123,63 +153,33 @@
     zlib
   ];
 
-  # Enable networking
-  networking.networkmanager.enable = true;
-
-  # Set your time zone.
-  time.timeZone = "America/Phoenix";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
+  # Sound configuration with PipeWire
+  services.pulseaudio.enable = false;
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
   };
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-
-  # Configure keymap in X11
-  services.xserver = {
-    xkb = {
-      layout = "us";
-      variant = "";
+  # NVIDIA GPU configuration
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.nvidia = {
+    modesetting.enable = true;
+    powerManagement.enable = false;
+    powerManagement.finegrained = false;
+    open = false;
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    prime = {
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:1:0:0";
     };
   };
+  hardware.nvidia-container-toolkit.enable = true;
 
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-
-  # Enable sound with pipewire.
-  services.pulseaudio.enable = false;
-
-  # hardware.opengl = {
-  #   enable = true;
-  #   driSupport = true;
-  #   driSupport32Bit = true;
-  # };
-
-  # Load nvidia driver for Xorg and Wayland
-  services.xserver.videoDrivers = [ "nvidia" ];
-
-  hardware.nvidia.prime = {
-    # sync.enable = true;
-    intelBusId = "PCI:0:2:0";
-    nvidiaBusId = "PCI:1:0:0";
-  };
-
+  # Sunshine game streaming
   systemd.user.services.sunshine = {
     description = "Sunshine self-hosted game stream host for Moonlight";
     startLimitBurst = 5;
@@ -191,25 +191,17 @@
     };
   };
 
-  hardware.nvidia = {
-    modesetting.enable = true;
-    powerManagement.enable = false;
-    powerManagement.finegrained = false;
-    open = false;
-    nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+  security.wrappers.sunshine = {
+    owner = "root";
+    group = "root";
+    capabilities = "cap_sys_admin+p";
+    source = "${pkgs.sunshine}/bin/sunshine";
   };
 
+  # VSCode Server (commented out)
   # services.vscode-server.enable = true;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-  };
 
-  # Syncthing
+  # Syncthing configuration
   services.syncthing = {
     enable = true;
     user = "jamesbrink";
@@ -221,7 +213,7 @@
     settings = {
       gui = {
         user = "jamesbrink";
-        password = "password";
+        password = "$SYNCTHING_PASSWORD";  # Will be replaced by age secret
       };
       devices = {
         "DarkStarMk6Mod1" = {
@@ -253,7 +245,6 @@
             "Alienware15R4"
           ];
           label = "Projects";
-          # enable = true;
         };
         "Documents" = {
           path = "/home/jamesbrink/Documents";
@@ -262,7 +253,6 @@
             "Alienware15R4"
           ];
           label = "Documents";
-          # enable = true;
         };
       };
     };

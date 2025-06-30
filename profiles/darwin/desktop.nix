@@ -33,12 +33,13 @@
 
   # Homebrew configuration
   homebrew = {
-    # Command-line tools via Homebrew
+    # Command-line tools
     brews = [
-      "uvx" # Python app runner for Claude Desktop and other apps
+      "node" # Node.js (provides npm and npx)
+      "uv" # Python package manager and runner (provides uvx)
     ];
 
-    # GUI applications via Homebrew casks
+    # GUI applications
     casks = [
       # Browsers
       "zen"
@@ -64,6 +65,7 @@
       "little-snitch"
 
       # AI Tools
+      "claude" # Claude Desktop
       "diffusionbee"
       "ollama-app"
     ];

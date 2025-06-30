@@ -913,6 +913,7 @@
     winetricks
     wineWowPackages.waylandFull
     xorriso
+    (import ../../modules/packages/postgis-reset { inherit pkgs; })
   ];
 
   system.stateVersion = "25.05";
@@ -948,7 +949,47 @@
   };
 
   # webhook service configuration
-  environment.etc."webhook/hooks.json".source = ../../modules/packages/postgis-reset/hooks.json;
+  environment.etc."webhook/hooks.json".text = ''
+    [
+      {
+        "id": "postgis-rollback",
+        "trigger-rule": {
+          "or": [
+            {
+              "match": {
+                "type": "value",
+                "value": "WEBHOOK_TOKEN_RESET",
+                "parameter": {
+                  "source": "header",
+                  "name": "X-Webhook-Token"
+                }
+              }
+            },
+            {
+              "match": {
+                "type": "value",
+                "value": "WEBHOOK_TOKEN_RESET17",
+                "parameter": {
+                  "source": "header",
+                  "name": "X-Webhook-Token"
+                }
+              }
+            }
+          ]
+        },
+        "pass-arguments-to-command": [
+          {
+            "source": "header",
+            "name": "X-Webhook-Token"
+          }
+        ],
+        "command-working-directory": "/",
+        "execute-command": "/run/current-system/sw/bin/webhook-postgis-reset",
+        "response-message": "Database reset completed successfully",
+        "include-command-output-in-response": true
+      }
+    ]
+  '';
 
   systemd.services.webhook = {
     description = "Webhook Server";
