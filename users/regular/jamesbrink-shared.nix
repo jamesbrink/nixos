@@ -25,7 +25,7 @@ in
         source = ./ssh/config_external;
       };
 
-      home.sessionVariables = {
+      home.sessionVariables = lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
         SSH_AUTH_SOCK = "/run/user/$(id -u)/ssh-agent";
       };
 
@@ -86,69 +86,71 @@ in
 
         alacritty = {
           enable = true;
-          settings = {
-            env = {
-              TERM = "alacritty";
-            };
-            window = {
-              padding = {
-                x = 24;
-                y = 24;
+          settings =
+            {
+              env = {
+                TERM = "alacritty";
               };
-              opacity = 1.0;
-            };
-            font = {
-              normal = {
-                family = "MesloLGS Nerd Font";
-                style = "Regular";
+              window = {
+                padding = {
+                  x = 24;
+                  y = 24;
+                };
+                opacity = 1.0;
               };
-              size = if pkgs.stdenv.isDarwin then 14 else 10;
-            };
-            colors = {
-              # Rosé Pine theme
-              primary = {
-                background = "0x191724";
-                foreground = "0xe0def4";
+              font = {
+                normal = {
+                  family = "MesloLGS Nerd Font";
+                  style = "Regular";
+                };
+                size = if pkgs.stdenv.isDarwin then 14 else 10;
+              };
+              colors = {
+                # Rosé Pine theme
+                primary = {
+                  background = "0x191724";
+                  foreground = "0xe0def4";
+                };
+                cursor = {
+                  text = "0x191724";
+                  cursor = "0xe0def4";
+                };
+                normal = {
+                  black = "0x26233a";
+                  red = "0xeb6f92";
+                  green = "0x31748f";
+                  yellow = "0xf6c177";
+                  blue = "0x9ccfd8";
+                  magenta = "0xc4a7e7";
+                  cyan = "0xebbcba";
+                  white = "0xe0def4";
+                };
+                bright = {
+                  black = "0x6e6a86";
+                  red = "0xeb6f92";
+                  green = "0x31748f";
+                  yellow = "0xf6c177";
+                  blue = "0x9ccfd8";
+                  magenta = "0xc4a7e7";
+                  cyan = "0xebbcba";
+                  white = "0xe0def4";
+                };
               };
               cursor = {
-                text = "0x191724";
-                cursor = "0xe0def4";
+                style = "Block";
               };
-              normal = {
-                black = "0x26233a";
-                red = "0xeb6f92";
-                green = "0x31748f";
-                yellow = "0xf6c177";
-                blue = "0x9ccfd8";
-                magenta = "0xc4a7e7";
-                cyan = "0xebbcba";
-                white = "0xe0def4";
+              selection = {
+                save_to_clipboard = true;
               };
-              bright = {
-                black = "0x6e6a86";
-                red = "0xeb6f92";
-                green = "0x31748f";
-                yellow = "0xf6c177";
-                blue = "0x9ccfd8";
-                magenta = "0xc4a7e7";
-                cyan = "0xebbcba";
-                white = "0xe0def4";
+              mouse = {
+                hide_when_typing = false;
+              };
+            }
+            // lib.optionalAttrs pkgs.stdenv.isDarwin {
+              keyboard = {
+                option_as_alt = "Both";
               };
             };
-            cursor = {
-              style = "Block";
-            };
-            selection = {
-              save_to_clipboard = true;
-            };
-            mouse = {
-              hide_when_typing = false;
-            };
-          } // lib.optionalAttrs pkgs.stdenv.isDarwin {
-            keyboard = {
-              option_as_alt = "Both";
-            };
-          };
         };
 
         zsh = {
@@ -183,6 +185,9 @@ in
             share = true; # Share history between sessions
           };
           initContent = ''
+            # Ensure alacritty terminfo is found
+            export TERMINFO_DIRS="$HOME/.terminfo:''${TERMINFO_DIRS:-/usr/share/terminfo}"
+
             # ZSH History Configuration - Never overwrite, always append
             setopt APPEND_HISTORY          # Append to history file, don't overwrite
             setopt INC_APPEND_HISTORY      # Write to history file immediately, not when shell exits

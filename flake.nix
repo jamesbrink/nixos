@@ -198,14 +198,14 @@
                     fi
                   else
                     echo "Deploying remotely to $HOST..."
-                    # Check if remote host is darwin or linux
-                    REMOTE_SYSTEM=$(ssh root@$HOST "uname -s | tr '[:upper:]' '[:lower:]'")
-                    
-                    if [ "$REMOTE_SYSTEM" = "darwin" ]; then
+                    # Check if host is darwin or linux by checking flake configuration
+                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                      # Darwin host - use regular user
                       # Copy the flake to the remote darwin server and build there
                       rsync -avz --exclude '.git' --exclude 'result' . jamesbrink@$HOST:/tmp/nixos-config/
                       ssh jamesbrink@$HOST "cd /tmp/nixos-config && sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake .#$HOST --impure"
                     else
+                      # NixOS host - use root
                       # Copy the flake to the remote NixOS server and build there
                       rsync -avz --exclude '.git' --exclude 'result' . root@$HOST:/tmp/nixos-config/
                       ssh root@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#$HOST --verbose --impure"
@@ -254,14 +254,15 @@
                     fi
                   else
                     echo "Testing remotely on $HOST..."
-                    # Check if remote host is darwin or linux
-                    REMOTE_SYSTEM=$(ssh root@$HOST "uname -s | tr '[:upper:]' '[:lower:]'")
-                    
-                    if [ "$REMOTE_SYSTEM" = "darwin" ]; then
+                    # Check if host is darwin or linux by checking flake configuration
+                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                      # Darwin host - use regular user
                       # Copy the flake to the remote darwin server and test there
                       rsync -avz --exclude '.git' --exclude 'result' . jamesbrink@$HOST:/tmp/nixos-config/
-                      ssh jamesbrink@$HOST "cd /tmp/nixos-config && echo 'Note: darwin doesn't support dry-activate. Building configuration instead...' && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$HOST.system --impure"
+                      echo "Note: darwin doesn't support dry-activate. Building configuration instead..."
+                      ssh jamesbrink@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$HOST.system --impure"
                     else
+                      # NixOS host - use root
                       # Copy the flake to the remote NixOS server and test there
                       rsync -avz --exclude '.git' --exclude 'result' . root@$HOST:/tmp/nixos-config/
                       ssh root@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$HOST --impure"
@@ -493,16 +494,30 @@
                     journalctl -p 3 -xn 10
                   else
                     # Remote health check
-                    echo "\nDisk usage on $HOST:"
-                    ssh root@$HOST "df -h | grep -v tmpfs"
-                    echo "\nMemory usage on $HOST:"
-                    ssh root@$HOST "free -h"
-                    echo "\nSystem load on $HOST:"
-                    ssh root@$HOST "uptime"
-                    echo "\nFailed services on $HOST:"
-                    ssh root@$HOST "systemctl --failed"
-                    echo "\nJournal errors on $HOST (last 10):"
-                    ssh root@$HOST "journalctl -p 3 -xn 10"
+                    # Check if host is darwin or linux by checking flake configuration
+                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                      # Darwin host - use regular user with sudo where needed
+                      echo "\nDisk usage on $HOST:"
+                      ssh jamesbrink@$HOST "df -h | grep -v tmpfs"
+                      echo "\nMemory usage on $HOST:"
+                      ssh jamesbrink@$HOST "vm_stat | perl -ne '/page size of (\d+)/ and \$size=\$1; /Pages\s+([^:]+)[^\d]+(\d+)/ and printf(\"%-20s %8.2f GB\\n\", \"\$1:\", \$2 * \$size / 1073741824);'"
+                      echo "\nSystem load on $HOST:"
+                      ssh jamesbrink@$HOST "uptime"
+                      echo "\nSystem services on $HOST:"
+                      ssh jamesbrink@$HOST "sudo launchctl list | grep -E '(com.apple|org.nixos)' | head -20"
+                    else
+                      # NixOS host - use root
+                      echo "\nDisk usage on $HOST:"
+                      ssh root@$HOST "df -h | grep -v tmpfs"
+                      echo "\nMemory usage on $HOST:"
+                      ssh root@$HOST "free -h"
+                      echo "\nSystem load on $HOST:"
+                      ssh root@$HOST "uptime"
+                      echo "\nFailed services on $HOST:"
+                      ssh root@$HOST "systemctl --failed"
+                      echo "\nJournal errors on $HOST (last 10):"
+                      ssh root@$HOST "journalctl -p 3 -xn 10"
+                    fi
                   fi
 
                   echo "\nHealth check for $HOST complete."
@@ -537,7 +552,14 @@
                     sudo nix-collect-garbage -d
                   else
                     # Remote garbage collection
-                    ssh root@$HOST "nix-collect-garbage -d"
+                    # Check if host is darwin or linux by checking flake configuration
+                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                      # Darwin host - use regular user with sudo
+                      ssh jamesbrink@$HOST "sudo nix-collect-garbage -d"
+                    else
+                      # NixOS host - use root
+                      ssh root@$HOST "nix-collect-garbage -d"
+                    fi
                   fi
 
                   echo "Garbage collection on $HOST complete!"
@@ -577,12 +599,20 @@
 
                   if [ "$HOSTNAME" = "$HOST" ]; then
                     # Local generations
-                    echo "NixOS generations on $HOST:"
+                    echo "System generations on $HOST:"
                     sudo nix-env -p /nix/var/nix/profiles/system --list-generations
                   else
                     # Remote generations
-                    echo "NixOS generations on $HOST:"
-                    ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --list-generations"
+                    # Check if host is darwin or linux by checking flake configuration
+                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                      # Darwin host - use regular user with sudo
+                      echo "Darwin generations on $HOST:"
+                      ssh jamesbrink@$HOST "sudo nix-env -p /nix/var/nix/profiles/system --list-generations"
+                    else
+                      # NixOS host - use root
+                      echo "NixOS generations on $HOST:"
+                      ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --list-generations"
+                    fi
                   fi
                 '';
               }
@@ -612,10 +642,24 @@
 
                   if [ "$HOSTNAME" = "$HOST" ]; then
                     # Local rollback
-                    sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild --rollback switch --impure
+                    SYSTEM=$(uname -s | tr '[:upper:]' '[:lower:]')
+                    if [ "$SYSTEM" = "darwin" ]; then
+                      # macOS rollback
+                      sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- --rollback switch --impure
+                    else
+                      # NixOS rollback
+                      sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild --rollback switch --impure
+                    fi
                   else
                     # Remote rollback
-                    ssh root@$HOST "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild --rollback switch --impure"
+                    # Check if host is darwin or linux by checking flake configuration
+                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                      # Darwin host - use regular user with sudo
+                      ssh jamesbrink@$HOST "sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- --rollback switch --impure"
+                    else
+                      # NixOS host - use root
+                      ssh root@$HOST "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild --rollback switch --impure"
+                    fi
                   fi
 
                   echo "Rollback on $HOST complete!"
@@ -682,7 +726,7 @@
                       FAILED=$((FAILED + 1))
                     fi
                   done
-                  
+
                   if [ $FAILED -eq 0 ]; then
                     echo "All secrets verified successfully!"
                   else
@@ -716,15 +760,15 @@
 
                   HOST="$1"
                   echo "Getting SSH host key for $HOST..."
-                  
+
                   # Try to get the host key
                   KEY=$(ssh-keyscan -t ed25519 "$HOST" 2>/dev/null | grep -v "^#" | head -1)
-                  
+
                   if [ -z "$KEY" ]; then
                     echo "Error: Could not retrieve SSH key for $HOST"
                     exit 1
                   fi
-                  
+
                   echo "Found key: $KEY"
                   echo ""
                   echo "Add this to secrets/secrets.nix in the host keys section:"
@@ -892,7 +936,7 @@
           ];
         };
 
-        sevastopol = nixpkgs.lib.nixosSystem {
+        sevastopol-linux = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
 
           specialArgs = {
@@ -914,7 +958,7 @@
                 services.vscode-server.enable = true;
               }
             )
-            ./hosts/sevastopol/default.nix
+            ./hosts/sevastopol-linux/default.nix
 
             # Use unstable packages
             {
@@ -977,6 +1021,50 @@
               ];
             }
             ./hosts/halcyon/default.nix
+          ];
+        };
+
+        sevastopol = darwin.lib.darwinSystem {
+          system = "aarch64-darwin"; # M4 Mac
+
+          specialArgs = {
+            inherit inputs agenix;
+            secretsPath = "${inputs.secrets}";
+            unstablePkgs = import nixos-unstable {
+              system = "aarch64-darwin";
+              config.allowUnfree = true;
+            };
+          };
+
+          modules = [
+            home-manager-unstable.darwinModules.home-manager
+            agenix.darwinModules.default
+            nix-homebrew.darwinModules.nix-homebrew
+            {
+              nix-homebrew = {
+                user = "jamesbrink";
+                enable = true;
+                taps = {
+                  "homebrew/homebrew-core" = homebrew-core;
+                  "homebrew/homebrew-cask" = homebrew-cask;
+                  "homebrew/homebrew-bundle" = homebrew-bundle;
+                };
+                mutableTaps = true;
+                autoMigrate = true;
+              };
+            }
+            {
+              nixpkgs.config.allowUnfree = true;
+              nixpkgs.overlays = [
+                (final: prev: {
+                  unstablePkgs = import nixos-unstable {
+                    system = "aarch64-darwin";
+                    config.allowUnfree = true;
+                  };
+                })
+              ];
+            }
+            ./hosts/sevastopol/default.nix
           ];
         };
       };

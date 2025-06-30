@@ -107,7 +107,7 @@ in
             alias ls='ls --color=auto'
 
             # GitHub Token - Set via environment or use gh auth token
-            # export GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')"
+            # export GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo)"
 
             ##############
             # AWS Settings

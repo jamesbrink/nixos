@@ -116,9 +116,18 @@
     # Install alacritty terminfo for all users
     echo "Setting up alacritty terminfo..."
     # Note: terminfo files are stored by first character (a for alacritty)
-    if [ -f "${pkgs.alacritty.terminfo}/share/terminfo/a/alacritty" ] || [ -f "${pkgs.ncurses}/share/terminfo/a/alacritty" ]; then
-      TERMINFO_SRC="${pkgs.alacritty.terminfo}/share/terminfo/a/alacritty"
-      [ -f "$TERMINFO_SRC" ] || TERMINFO_SRC="${pkgs.ncurses}/share/terminfo/a/alacritty"
+    # Try multiple possible locations for the terminfo file
+    TERMINFO_SRC=""
+    for path in "${pkgs.alacritty}/share/terminfo/a/alacritty" \
+                "${pkgs.alacritty.terminfo}/share/terminfo/a/alacritty" \
+                "${pkgs.ncurses}/share/terminfo/a/alacritty"; do
+      if [ -f "$path" ]; then
+        TERMINFO_SRC="$path"
+        break
+      fi
+    done
+
+    if [ -n "$TERMINFO_SRC" ]; then
       
       # System-wide installation
       mkdir -p /usr/share/terminfo/a
