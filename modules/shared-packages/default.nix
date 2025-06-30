@@ -8,11 +8,8 @@
 
 {
   environment.systemPackages = with pkgs; [
-    acpi
     age
-    agenix
-    atop
-    aws-google-auth
+    inputs.agenix.packages.${pkgs.system}.default
     bandwhich
     bat
     bitwarden-cli
@@ -48,7 +45,6 @@
     openssh
     p7zip
     parted
-    pciutils
     python311Full
     python311Packages.boto3
     python311Packages.pip

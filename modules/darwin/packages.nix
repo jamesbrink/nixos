@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }:
 
@@ -47,6 +48,7 @@
 
     # Security tools
     age
+    inputs.agenix.packages.${pkgs.system}.default
 
     # macOS specific
     mas # Mac App Store CLI
