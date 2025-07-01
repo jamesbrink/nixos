@@ -91,13 +91,17 @@ in
               env = {
                 TERM = "xterm-256color"; # Use xterm-256color for better compatibility
               };
-              window = {
-                padding = {
-                  x = 24;
-                  y = 24;
+              window =
+                {
+                  padding = {
+                    x = 24;
+                    y = 24;
+                  };
+                  opacity = 1.0;
+                }
+                // lib.optionalAttrs pkgs.stdenv.isDarwin {
+                  option_as_alt = "Both";
                 };
-                opacity = 1.0;
-              };
               font = {
                 normal = {
                   family = "MesloLGS Nerd Font";
@@ -144,11 +148,6 @@ in
               };
               mouse = {
                 hide_when_typing = false;
-              };
-            }
-            // lib.optionalAttrs pkgs.stdenv.isDarwin {
-              keyboard = {
-                option_as_alt = "Both";
               };
             };
         };
