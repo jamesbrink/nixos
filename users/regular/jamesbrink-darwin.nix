@@ -65,4 +65,21 @@ in
     group = "staff";
     mode = "0600";
   };
+
+  # Darwin-specific activation script for AWS config
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    echo "Setting up AWS configuration for jamesbrink..."
+    # Run as the user with sudo
+    sudo -u jamesbrink bash -c "
+      mkdir -p /Users/jamesbrink/.aws
+      
+      # Copy the decrypted AWS config files
+      cp -f ${config.age.secrets."aws-config".path} /Users/jamesbrink/.aws/config
+      cp -f ${config.age.secrets."aws-credentials".path} /Users/jamesbrink/.aws/credentials
+      
+      # Fix permissions
+      chmod 600 /Users/jamesbrink/.aws/config /Users/jamesbrink/.aws/credentials
+    "
+    echo "AWS configuration deployed to /Users/jamesbrink/.aws/"
+  '';
 }
