@@ -127,6 +127,10 @@
                 name = "NIXPKGS_ALLOW_UNFREE";
                 value = "1";
               }
+              {
+                name = "EDITOR";
+                value = "vim";
+              }
             ];
 
             packages = with pkgs; [
@@ -137,7 +141,54 @@
               nodePackages.prettier # For JSON and HTML formatting
               jq # For JSON processing
               age # For secrets encryption
-              (pkgs.callPackage "${inputs.agenix}/pkgs/agenix.nix" {}) # agenix from flake input
+              (pkgs.callPackage "${inputs.agenix}/pkgs/agenix.nix" { }) # agenix from flake input
+
+              # Neovim with Nix language support
+              (neovim.override {
+                viAlias = true;
+                vimAlias = true;
+                configure = {
+                  customRC = ''
+                    " Enable syntax highlighting
+                    syntax on
+                    filetype plugin indent on
+
+                    " Better defaults
+                    set number
+                    set relativenumber
+                    set expandtab
+                    set shiftwidth=2
+                    set tabstop=2
+                    set smartindent
+                    set ignorecase
+                    set smartcase
+                    set hlsearch
+                    set incsearch
+
+                    " Enable mouse support
+                    set mouse=a
+
+                    " Better colors for terminal
+                    set termguicolors
+
+                    " Nix file type settings
+                    autocmd FileType nix setlocal shiftwidth=2 tabstop=2 expandtab
+                  '';
+                  packages.myVimPackage = with pkgs.vimPlugins; {
+                    start = [
+                      vim-nix # Nix syntax highlighting
+                      nvim-treesitter # Better syntax highlighting
+                      vim-sensible # Sensible defaults
+                      vim-fugitive # Git integration
+                      vim-surround # Surrounding text objects
+                      vim-commentary # Easy commenting
+                    ];
+                  };
+                };
+              })
+
+              # Nix language server
+              nil
             ];
 
             commands = [
@@ -676,34 +727,39 @@
                   if [ $# -eq 0 ]; then
                     echo "Error: You must specify a secret file to edit."
                     echo "Usage: secrets-edit <secret-name>"
-                    echo "Example: secrets-edit jamesbrink/syncthing-password"
-                    echo "       or: secrets-edit global/syncthing/alienware15r4-id"
+                    echo "Example: secrets-edit global/claude-desktop-config"
+                    echo "         secrets-edit hal9000/syncthing-password"
+                    echo ""
+                    echo "Note: Do NOT include the 'secrets/' prefix"
                     exit 1
                   fi
 
                   SECRET_PATH="$1"
-                  
+
                   # Remove 'secrets/' prefix if present 
                   SECRET_PATH="''${SECRET_PATH#secrets/}"
-                  
+
                   # Remove '.age' suffix if present
                   SECRET_PATH="''${SECRET_PATH%.age}"
-                  
+
                   # The actual file path
                   SECRET_FILE="secrets/$SECRET_PATH.age"
-                  
+
                   if [ ! -f "$SECRET_FILE" ]; then
                     echo "Creating new secret: $SECRET_FILE"
                     mkdir -p "$(dirname "$SECRET_FILE")"
                   fi
 
-                  # Use proper agenix syntax - try ~/.ssh/id_rsa first, fall back to id_ed25519
-                  if [ -f ~/.ssh/id_rsa ]; then
+                  # Use proper agenix syntax - use ed25519 by default
+                  if [ -f ~/.ssh/id_ed25519 ]; then
+                    IDENTITY_FILE=~/.ssh/id_ed25519
+                  elif [ -f ~/.ssh/id_rsa ]; then
                     IDENTITY_FILE=~/.ssh/id_rsa
                   else
-                    IDENTITY_FILE=~/.ssh/id_ed25519
+                    echo "Error: No SSH identity file found (~/.ssh/id_ed25519 or ~/.ssh/id_rsa)"
+                    exit 1
                   fi
-                  
+
                   RULES=secrets/secrets.nix EDITOR="''${EDITOR:-vim}" agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE"
                 '';
               }
@@ -715,14 +771,17 @@
                 command = ''
                   echo "Re-encrypting all secrets..."
                   cd secrets
-                  
-                  # Use id_rsa if available, otherwise id_ed25519
-                  if [ -f ~/.ssh/id_rsa ]; then
+
+                  # Use id_ed25519 by default, fall back to id_rsa
+                  if [ -f ~/.ssh/id_ed25519 ]; then
+                    IDENTITY_FILE=~/.ssh/id_ed25519
+                  elif [ -f ~/.ssh/id_rsa ]; then
                     IDENTITY_FILE=~/.ssh/id_rsa
                   else
-                    IDENTITY_FILE=~/.ssh/id_ed25519
+                    echo "Error: No SSH identity file found (~/.ssh/id_ed25519 or ~/.ssh/id_rsa)"
+                    exit 1
                   fi
-                  
+
                   RULES=./secrets.nix agenix -r -i "$IDENTITY_FILE"
                   cd ..
                   echo "All secrets have been re-encrypted"
@@ -735,7 +794,7 @@
                 help = "List all secret files";
                 command = ''
                   echo "Available secrets:"
-                  find secrets/secrets -name "*.age" -type f | sort | sed 's|^secrets/||' | sed 's|\.age$||'
+                  find secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
                 '';
               }
 
@@ -746,15 +805,18 @@
                 command = ''
                   echo "Verifying all secrets..."
                   FAILED=0
-                  
-                  # Use id_rsa if available, otherwise id_ed25519
-                  if [ -f ~/.ssh/id_rsa ]; then
+
+                  # Use id_ed25519 by default, fall back to id_rsa
+                  if [ -f ~/.ssh/id_ed25519 ]; then
+                    IDENTITY_FILE=~/.ssh/id_ed25519
+                  elif [ -f ~/.ssh/id_rsa ]; then
                     IDENTITY_FILE=~/.ssh/id_rsa
                   else
-                    IDENTITY_FILE=~/.ssh/id_ed25519
+                    echo "Error: No SSH identity file found (~/.ssh/id_ed25519 or ~/.ssh/id_rsa)"
+                    exit 1
                   fi
-                  
-                  for secret in $(find secrets/secrets -name "*.age" -type f | sort); do
+
+                  for secret in $(find secrets -name "*.age" -type f | sort); do
                     echo -n "Checking $secret... "
                     if RULES=secrets/secrets.nix agenix -d "$secret" -i "$IDENTITY_FILE" > /dev/null 2>&1; then
                       echo "✓"
@@ -812,6 +874,69 @@
                   echo "  $HOST = \"$(echo "$KEY" | cut -d' ' -f2-3)\";"
                   echo ""
                   echo "Then run 'secrets-rekey' to re-encrypt all secrets"
+                '';
+              }
+
+              {
+                name = "secrets-print";
+                category = "secrets";
+                help = "Decrypt and print a secret (for testing/debugging)";
+                command = ''
+                  if [ $# -eq 0 ]; then
+                    echo "Error: You must specify a secret file to print."
+                    echo "Usage: secrets-print <secret-name>"
+                    echo "Example: secrets-print global/claude-desktop-config"
+                    echo "         secrets-print hal9000/syncthing-password"
+                    echo ""
+                    echo "Available secrets:"
+                    find secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
+                    exit 1
+                  fi
+
+                  SECRET_PATH="$1"
+
+                  # Remove 'secrets/' prefix if present 
+                  SECRET_PATH="''${SECRET_PATH#secrets/}"
+
+                  # Remove '.age' suffix if present
+                  SECRET_PATH="''${SECRET_PATH%.age}"
+
+                  # The actual file path
+                  SECRET_FILE="secrets/$SECRET_PATH.age"
+
+                  if [ ! -f "$SECRET_FILE" ]; then
+                    echo "Error: Secret file not found: $SECRET_PATH"
+                    echo ""
+                    echo "Available secrets:"
+                    find secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
+                    exit 1
+                  fi
+
+                  # Check for identity file
+                  IDENTITY_FILE=""
+                  if [ -f ~/.ssh/id_ed25519 ]; then
+                    IDENTITY_FILE="$HOME/.ssh/id_ed25519"
+                  elif [ -f ~/.ssh/id_rsa ]; then
+                    IDENTITY_FILE="$HOME/.ssh/id_rsa"
+                  else
+                    echo "Error: No SSH identity file found (~/.ssh/id_ed25519 or ~/.ssh/id_rsa)"
+                    exit 1
+                  fi
+
+                  echo "Decrypting $SECRET_FILE..."
+                  echo "────────────────────────────────────────────────────────"
+
+                  if RULES=secrets/secrets.nix agenix -d "$SECRET_FILE" -i "$IDENTITY_FILE"; then
+                    echo ""
+                    echo "────────────────────────────────────────────────────────"
+                    echo "Secret decrypted successfully!"
+                  else
+                    echo ""
+                    echo "────────────────────────────────────────────────────────"
+                    echo "Error: Failed to decrypt secret. Make sure you have access to this secret."
+                    echo "This usually means your SSH key is not listed as a recipient for this secret."
+                    exit 1
+                  fi
                 '';
               }
             ];
@@ -1047,7 +1172,7 @@
           system = "aarch64-darwin"; # M4 Mac
 
           specialArgs = {
-            inherit inputs agenix;
+            inherit inputs agenix claude-desktop;
             secretsPath = "${inputs.secrets}";
             unstablePkgs = import nixos-unstable {
               system = "aarch64-darwin";
@@ -1091,7 +1216,7 @@
           system = "x86_64-darwin"; # Intel iMac 27" 2013
 
           specialArgs = {
-            inherit inputs agenix;
+            inherit inputs agenix claude-desktop;
             secretsPath = "${inputs.secrets}";
             unstablePkgs = import nixos-unstable {
               system = "x86_64-darwin";

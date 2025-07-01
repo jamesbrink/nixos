@@ -178,6 +178,7 @@ If you see "can't find terminal definition for alacritty":
 - `secrets-verify`: Verify all secrets can be decrypted
 - `secrets-sync`: Pull latest changes from the secrets submodule
 - `secrets-add-host <hostname>`: Get SSH key for a new host to add to recipients
+- `secrets-print <path>`: Decrypt and print a secret for testing/debugging (e.g., `secrets-print global/claude-desktop-config`)
 
 **Note**: Secrets commands now support both `~/.ssh/id_rsa` and `~/.ssh/id_ed25519` keys, preferring `id_rsa` when available.
 
