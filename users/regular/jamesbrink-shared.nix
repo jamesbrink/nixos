@@ -89,7 +89,7 @@ in
           settings =
             {
               env = {
-                TERM = "alacritty";
+                TERM = "xterm-256color"; # Use xterm-256color for better compatibility
               };
               window = {
                 padding = {
@@ -185,8 +185,16 @@ in
             share = true; # Share history between sessions
           };
           initContent = ''
-            # Ensure alacritty terminfo is found
-            export TERMINFO_DIRS="$HOME/.terminfo:''${TERMINFO_DIRS:-/usr/share/terminfo}"
+            # Fix terminal issues
+            if [[ "$TERM" == "alacritty" ]]; then
+              export TERM=xterm-256color
+            fi
+            
+            # Ensure terminfo is available
+            export TERMINFO_DIRS="$HOME/.nix-profile/share/terminfo:/usr/share/terminfo"
+            
+            # Fix backspace key
+            stty erase '^?'
 
             # ZSH History Configuration - Never overwrite, always append
             setopt APPEND_HISTORY          # Append to history file, don't overwrite

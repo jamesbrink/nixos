@@ -111,39 +111,4 @@
     ];
   };
 
-  # Activation scripts
-  system.activationScripts.terminfo.text = ''
-    # Install alacritty terminfo for all users
-    echo "Setting up alacritty terminfo..."
-    # Note: terminfo files are stored by first character (a for alacritty)
-    # Try multiple possible locations for the terminfo file
-    TERMINFO_SRC=""
-    for path in "${pkgs.alacritty}/share/terminfo/a/alacritty" \
-                "${pkgs.alacritty.terminfo}/share/terminfo/a/alacritty" \
-                "${pkgs.ncurses}/share/terminfo/a/alacritty"; do
-      if [ -f "$path" ]; then
-        TERMINFO_SRC="$path"
-        break
-      fi
-    done
-
-    if [ -n "$TERMINFO_SRC" ]; then
-      
-      # System-wide installation
-      mkdir -p /usr/share/terminfo/a
-      cp -f "$TERMINFO_SRC" /usr/share/terminfo/a/alacritty || true
-      
-      # Also install for specific users
-      for user_home in /Users/*; do
-        if [ -d "$user_home" ]; then
-          user_name=$(basename "$user_home")
-          if id "$user_name" >/dev/null 2>&1; then
-            sudo -u "$user_name" mkdir -p "$user_home/.terminfo/a" 2>/dev/null || true
-            sudo -u "$user_name" cp -f "$TERMINFO_SRC" "$user_home/.terminfo/a/alacritty" 2>/dev/null || true
-          fi
-        fi
-      done
-      echo "Alacritty terminfo installed"
-    fi
-  '';
 }
