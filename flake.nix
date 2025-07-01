@@ -930,12 +930,12 @@
 
                   echo "Decrypting $SECRET_FILE..."
                   echo "────────────────────────────────────────────────────────"
-                  
+
                   # Decrypt and capture output
                   # We need to cd into secrets directory because agenix expects paths relative to rules file
                   DECRYPTED_CONTENT=$(cd secrets && RULES=./secrets.nix agenix -d "secrets/$SECRET_PATH.age" -i "$IDENTITY_FILE" 2>&1)
                   DECRYPT_STATUS=$?
-                  
+
                   if [ $DECRYPT_STATUS -eq 0 ]; then
                     echo "$DECRYPTED_CONTENT"
                     echo "────────────────────────────────────────────────────────"
@@ -1093,6 +1093,17 @@
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
             ./hosts/alienware/default.nix
+            # Use unstable packages
+            {
+              nixpkgs.overlays = [
+                (final: prev: {
+                  unstablePkgs = import nixos-unstable {
+                    system = "x86_64-linux";
+                    config.allowUnfree = true;
+                  };
+                })
+              ];
+            }
           ];
         };
 
