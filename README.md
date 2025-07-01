@@ -36,6 +36,7 @@ This project uses:
 │   ├── hal9000/     # Main server with AI services (NixOS)
 │   ├── halcyon/     # M4 Mac (Darwin)
 │   ├── n100-01/     # Cluster node 1 (NixOS)
+│   ├── n100-02/     # Cluster node 2 (NixOS)
 │   ├── n100-03/     # Cluster node 3 (NixOS)
 │   ├── n100-04/     # Cluster node 4 (NixOS)
 │   ├── sevastopol/  # Intel iMac 27" 2013 (Darwin)
@@ -85,7 +86,7 @@ This project uses:
 ### NixOS Hosts
 - **alienware**: Desktop workstation with NVIDIA GPU support
 - **hal9000**: Main server running AI services (Ollama, ComfyUI, etc.)
-- **n100-01, n100-03, n100-04**: Intel N100 cluster nodes
+- **n100-01, n100-02, n100-03, n100-04**: Intel N100 cluster nodes
 - **sevastopol-linux**: Intel iMac 27" 2013 dual-boot (Linux side)
 
 ### Darwin (macOS) Hosts
@@ -94,7 +95,11 @@ This project uses:
 
 ## Development Shell
 
-The project includes a comprehensive development shell with categorized commands:
+The project includes a comprehensive development shell with categorized commands. The shell includes:
+- Neovim with Nix syntax highlighting and language server (nil)
+- Git, direnv, and other development tools
+- All deployment and maintenance commands listed below
+- EDITOR environment variable set to vim
 
 ### Development Commands
 - `format` - Format all files using treefmt (nixfmt for .nix, prettier for web files)
@@ -122,8 +127,9 @@ The project includes a comprehensive development shell with categorized commands
 - `secrets-verify` - Verify all secrets can be decrypted
 - `secrets-sync` - Pull latest changes from the secrets submodule
 - `secrets-add-host <hostname>` - Get SSH key for a new host to add to recipients
+- `secrets-print <path>` - Decrypt and print a secret (for testing/debugging)
 
-**Note**: All secrets commands support both `~/.ssh/id_rsa` and `~/.ssh/id_ed25519` keys (preferring id_rsa).
+**Note**: All secrets commands support both `~/.ssh/id_ed25519` and `~/.ssh/id_rsa` keys (preferring ed25519).
 
 ## Quick Start
 
@@ -254,10 +260,12 @@ After this, remote deployments will work without password prompts.
 
 ## Secrets Management
 
-Secrets are managed using agenix and stored in a separate private repository:
-- Repository: `git@github.com:jamesbrink/nix-secrets.git`
-- Each host's SSH key must be added to `secrets.nix`
-- Re-encrypt secrets after adding new recipients: `agenix -r`
+Secrets are managed using agenix and stored in a separate private repository as a git submodule:
+- Repository: `git@github.com:jamesbrink/nix-secrets.git` (submodule at `./secrets/`)
+- Each host's SSH key must be added to `secrets/secrets.nix`
+- Re-encrypt secrets after adding new recipients: `secrets-rekey`
+- Secret files are stored in `secrets/secrets/` directory structure
+- All secrets commands handle the nested directory structure automatically
 
 ## Key Features
 
@@ -277,12 +285,13 @@ Secrets are managed using agenix and stored in a separate private repository:
 - Bind mounts for service-specific storage paths
 
 ### Claude Desktop Configuration
-- Automatic deployment of Claude desktop settings across all hosts
-- Configuration stored as encrypted agenix secret
+- Automatic deployment of Claude desktop settings for the jamesbrink user
+- Configuration stored as encrypted agenix secret (`secrets/global/claude-desktop-config.age`)
 - Deploys to platform-specific locations:
-  - Darwin: `/Library/Application Support/Claude/`
-  - Linux: `~/.config/Claude/`
+  - Darwin: `/Users/jamesbrink/Library/Application Support/Claude/claude_desktop_config.json`
+  - Linux: `/home/jamesbrink/.config/Claude/claude_desktop_config.json`
 - Managed through activation scripts with proper permissions
+- Includes MCP server configurations for various AI and development tools
 
 ### Darwin (macOS) Support
 - Full nix-darwin integration for declarative macOS configuration
