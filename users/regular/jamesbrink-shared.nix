@@ -86,70 +86,69 @@ in
 
         alacritty = {
           enable = true;
-          settings =
-            {
-              env = {
-                TERM = "xterm-256color"; # Use xterm-256color for better compatibility
+          settings = {
+            env = {
+              TERM = "xterm-256color"; # Use xterm-256color for better compatibility
+            };
+            window =
+              {
+                padding = {
+                  x = 24;
+                  y = 24;
+                };
+                opacity = 1.0;
+              }
+              // lib.optionalAttrs pkgs.stdenv.isDarwin {
+                option_as_alt = "Both";
               };
-              window =
-                {
-                  padding = {
-                    x = 24;
-                    y = 24;
-                  };
-                  opacity = 1.0;
-                }
-                // lib.optionalAttrs pkgs.stdenv.isDarwin {
-                  option_as_alt = "Both";
-                };
-              font = {
-                normal = {
-                  family = "MesloLGS Nerd Font";
-                  style = "Regular";
-                };
-                size = if pkgs.stdenv.isDarwin then 14 else 10;
+            font = {
+              normal = {
+                family = "MesloLGS Nerd Font";
+                style = "Regular";
               };
-              colors = {
-                # Rosé Pine theme
-                primary = {
-                  background = "0x191724";
-                  foreground = "0xe0def4";
-                };
-                cursor = {
-                  text = "0x191724";
-                  cursor = "0xe0def4";
-                };
-                normal = {
-                  black = "0x26233a";
-                  red = "0xeb6f92";
-                  green = "0x31748f";
-                  yellow = "0xf6c177";
-                  blue = "0x9ccfd8";
-                  magenta = "0xc4a7e7";
-                  cyan = "0xebbcba";
-                  white = "0xe0def4";
-                };
-                bright = {
-                  black = "0x6e6a86";
-                  red = "0xeb6f92";
-                  green = "0x31748f";
-                  yellow = "0xf6c177";
-                  blue = "0x9ccfd8";
-                  magenta = "0xc4a7e7";
-                  cyan = "0xebbcba";
-                  white = "0xe0def4";
-                };
+              size = if pkgs.stdenv.isDarwin then 14 else 10;
+            };
+            colors = {
+              # Rosé Pine theme
+              primary = {
+                background = "0x191724";
+                foreground = "0xe0def4";
               };
               cursor = {
-                style = "Block";
+                text = "0x191724";
+                cursor = "0xe0def4";
               };
-              selection = {
-                save_to_clipboard = true;
+              normal = {
+                black = "0x26233a";
+                red = "0xeb6f92";
+                green = "0x31748f";
+                yellow = "0xf6c177";
+                blue = "0x9ccfd8";
+                magenta = "0xc4a7e7";
+                cyan = "0xebbcba";
+                white = "0xe0def4";
               };
-              mouse = {
-                hide_when_typing = false;
+              bright = {
+                black = "0x6e6a86";
+                red = "0xeb6f92";
+                green = "0x31748f";
+                yellow = "0xf6c177";
+                blue = "0x9ccfd8";
+                magenta = "0xc4a7e7";
+                cyan = "0xebbcba";
+                white = "0xe0def4";
               };
             };
+            cursor = {
+              style = "Block";
+            };
+            selection = {
+              save_to_clipboard = true;
+            };
+            mouse = {
+              hide_when_typing = false;
+            };
+          };
         };
 
         zsh = {
@@ -188,10 +187,10 @@ in
             if [[ "$TERM" == "alacritty" ]]; then
               export TERM=xterm-256color
             fi
-            
+
             # Ensure terminfo is available
             export TERMINFO_DIRS="$HOME/.nix-profile/share/terminfo:/usr/share/terminfo"
-            
+
             # Fix backspace key
             stty erase '^?'
 

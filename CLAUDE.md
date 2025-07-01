@@ -28,6 +28,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Repository Structure
 The codebase follows a modular NixOS/nix-darwin flake structure with clear separation of concerns:
 
+```
+.
+├── hosts/                 # Host-specific configurations
+│   ├── alienware/        # Gaming desktop (Linux)
+│   ├── hal9000/          # Main server with AI services (Linux)
+│   ├── halcyon/          # M4 Mac (Darwin)
+│   ├── n100-01..04/      # Cluster nodes (Linux)
+│   ├── sevastopol/       # 2013 iMac 27" (Darwin)
+│   └── sevastopol-linux/ # 2013 iMac 27" dual-boot (Linux)
+├── modules/              # Custom modules and services
+│   ├── darwin/           # macOS-specific modules
+│   ├── packages/         # Custom package definitions
+│   ├── services/         # Service configurations
+│   ├── shared-packages/  # Shared package sets
+│   └── claude-desktop.nix # Claude desktop config
+├── pkgs/                 # Custom package derivations
+│   └── llama-cpp/        # LLaMA C++ implementation
+├── profiles/             # Reusable system profiles
+│   ├── darwin/           # macOS base profiles
+│   ├── desktop/          # Linux desktop environments
+│   ├── keychron/         # Keyboard-specific settings
+│   └── server/           # Server configurations
+├── secrets/              # Encrypted secrets (agenix)
+│   ├── global/           # Shared secrets
+│   └── secrets.nix       # Age recipients configuration
+├── users/                # User configurations
+│   └── regular/          # Regular user accounts
+├── flake.nix            # Flake definition
+├── flake.lock           # Pinned dependencies
+├── treefmt.toml         # Code formatting config
+└── CLAUDE.md            # This file
+```
+
 1. **Flake Configuration** (`flake.nix`):
    - Defines all external inputs (nixpkgs stable/unstable, home-manager, agenix, vscode-server, darwin, nix-homebrew)
    - Configures development shell with all deployment and maintenance commands
@@ -164,6 +197,13 @@ If you see "can't find terminal definition for alacritty":
 - Custom dock management module for automatic dock configuration
 - Separate package sets for Darwin vs Linux systems
 - Platform-specific service configurations
+
+### Alacritty Terminal Fixes (July 2025)
+- Fixed "can't find terminal definition for alacritty" errors on Darwin
+- Changed Alacritty TERM from "alacritty" to "xterm-256color" for compatibility
+- Added zsh initialization to handle terminfo lookup and backspace key fixes
+- Moved `option_as_alt` setting to correct window section in Alacritty config
+- Removed non-functional terminfo activation script
 
 ## Secrets Management Process
 - Secrets are managed using agenix
