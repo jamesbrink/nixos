@@ -150,6 +150,13 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 - Terminal applications use MesloLGS Nerd Font (not "MesloLGS NF")
 - The `thefuck` package has been replaced with `pay-respects` (aliases: `fuck`, `pr`)
 
+## Package Configuration Notes
+
+### DataGrip Database IDE
+- **Darwin**: Installed via Homebrew cask in `profiles/darwin/desktop.nix`
+- **Linux**: Installed via `jetbrains.datagrip` package in `users/regular/jamesbrink-linux.nix`
+- Available on all systems where jamesbrink user is configured
+
 ## Known Issues and Solutions
 
 ### Alacritty Terminal Definition Error
@@ -184,10 +191,13 @@ If you see "can't find terminal definition for alacritty":
 ### User Module Refactoring (December 2024)
 - Refactored user modules to fix infinite recursion issues
 - Split user configurations into platform-specific files:
-  - `jamesbrink.nix`: Main entry point that selects appropriate config
-  - `jamesbrink-darwin.nix`: macOS-specific configuration
-  - `jamesbrink-linux.nix`: Linux-specific configuration
-  - `jamesbrink-shared.nix`: Shared configuration for both platforms
+  - `jamesbrink.nix`: Linux-only wrapper that imports `jamesbrink-linux.nix`
+  - `jamesbrink-darwin.nix`: macOS-specific configuration (imported directly by Darwin hosts)
+  - `jamesbrink-linux.nix`: Linux-specific configuration (imported via `jamesbrink.nix`)
+  - `jamesbrink-shared.nix`: Shared configuration imported by both platform configs
+- Host configurations import the appropriate user module:
+  - Linux hosts: Import `jamesbrink.nix`
+  - Darwin hosts: Import `jamesbrink-darwin.nix` directly
 - Fixed conditional imports to prevent circular dependencies
 - Improved cross-platform compatibility with proper platform detection
 
