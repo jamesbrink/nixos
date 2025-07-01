@@ -7,17 +7,20 @@
   ...
 }:
 
-{
-  # Deploy Claude desktop config for all users
-  age.secrets.claude-desktop-config = {
-    file = "${secretsPath}/secrets/global/claude-desktop-config.age";
-    mode = "644";
-  };
+with lib;
 
-  # Single activation script that handles both Darwin and Linux
-  system.activationScripts.claudeDesktopConfig.text =
-    if pkgs.stdenv.isDarwin then
-      ''
+{
+  config = mkMerge [
+    # Age secret configuration (common for both platforms)
+    {
+      age.secrets.claude-desktop-config = {
+        file = "${secretsPath}/secrets/global/claude-desktop-config.age";
+        mode = "644";
+      };
+    }
+    # Darwin activation
+    (mkIf pkgs.stdenv.isDarwin {
+      system.activationScripts.postActivation.text = mkAfter ''
         echo "Setting up Claude desktop configuration for Darwin..."
         # For Darwin - deploy to Library/Application Support/Claude
         CLAUDE_DIR="/Users/jamesbrink/Library/Application Support/Claude"
@@ -28,26 +31,35 @@
             mkdir -p '$CLAUDE_DIR'
           fi
           
-          # Link the decrypted config
-          ln -sf ${config.age.secrets.claude-desktop-config.path} '$CLAUDE_DIR/claude_desktop_config.json'
+          # Copy the decrypted config with correct filename (underscores, not hyphens)
+          cp -f ${config.age.secrets.claude-desktop-config.path} '$CLAUDE_DIR/claude_desktop_config.json'
+          chmod 644 '$CLAUDE_DIR/claude_desktop_config.json'
         "
-        echo "Claude desktop configuration linked to $CLAUDE_DIR/claude_desktop_config.json"
-      ''
-    else if pkgs.stdenv.isLinux then
-      ''
-        echo "Setting up Claude desktop configuration for Linux..."
-        # For Linux - deploy to user's .config/Claude
-        CLAUDE_DIR="/home/jamesbrink/.config/Claude"
+        echo "Claude desktop configuration deployed to $CLAUDE_DIR/claude_desktop_config.json"
+      '';
+    })
 
-        if [ ! -d "$CLAUDE_DIR" ]; then
-          mkdir -p "$CLAUDE_DIR"
-          chown jamesbrink:users "$CLAUDE_DIR"
-        fi
+    # Linux activation
+    (mkIf pkgs.stdenv.isLinux {
+      system.activationScripts.claudeDesktopConfig = {
+        text = ''
+          echo "Setting up Claude desktop configuration for Linux..."
+          # For Linux - deploy to user's .config/Claude
+          CLAUDE_DIR="/home/jamesbrink/.config/Claude"
 
-        # Link the decrypted config
-        ln -sf ${config.age.secrets.claude-desktop-config.path} "$CLAUDE_DIR/claude_desktop_config.json"
-        echo "Claude desktop configuration linked to $CLAUDE_DIR/claude_desktop_config.json"
-      ''
-    else
-      "";
+          if [ ! -d "$CLAUDE_DIR" ]; then
+            mkdir -p "$CLAUDE_DIR"
+            chown jamesbrink:users "$CLAUDE_DIR"
+          fi
+
+          # Copy the decrypted config with correct filename (underscores, not hyphens)
+          cp -f ${config.age.secrets.claude-desktop-config.path} "$CLAUDE_DIR/claude_desktop_config.json"
+          chown jamesbrink:users "$CLAUDE_DIR/claude_desktop_config.json"
+          chmod 644 "$CLAUDE_DIR/claude_desktop_config.json"
+          echo "Claude desktop configuration deployed to $CLAUDE_DIR/claude_desktop_config.json"
+        '';
+        deps = [ "agenix" ];
+      };
+    })
+  ];
 }

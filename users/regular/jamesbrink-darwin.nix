@@ -14,6 +14,7 @@ in
 {
   imports = [
     ./jamesbrink-shared.nix
+    ../../modules/claude-desktop.nix
   ];
 
   # Darwin user configuration

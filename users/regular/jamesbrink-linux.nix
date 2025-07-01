@@ -17,6 +17,7 @@ in
 {
   imports = [
     ./jamesbrink-shared.nix
+    ../../modules/claude-desktop.nix
   ];
 
   # Linux user configuration
