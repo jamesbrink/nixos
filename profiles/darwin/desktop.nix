@@ -53,6 +53,7 @@
       "zoom"
 
       # Development
+      "datagrip"
       "orbstack"
       "visual-studio-code"
 
