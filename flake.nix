@@ -743,7 +743,10 @@
                   SECRET_PATH="''${SECRET_PATH%.age}"
 
                   # The actual file path
-                  SECRET_FILE="secrets/secrets/$SECRET_PATH.age"
+                  SECRET_FILE="secrets/$SECRET_PATH.age"
+
+                  # Change to secrets directory for proper path resolution
+                  cd secrets
 
                   if [ ! -f "$SECRET_FILE" ]; then
                     echo "Creating new secret: $SECRET_FILE"
@@ -760,7 +763,8 @@
                     exit 1
                   fi
 
-                  RULES=secrets/secrets.nix EDITOR="''${EDITOR:-vim}" agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE"
+                  RULES=./secrets.nix EDITOR="''${EDITOR:-vim}" agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE"
+                  cd ..
                 '';
               }
 
@@ -1081,7 +1085,7 @@
           system = "x86_64-linux";
 
           specialArgs = {
-            inherit inputs agenix;
+            inherit inputs agenix claude-desktop;
             secretsPath = "${inputs.secrets}";
             unstablePkgs = import nixos-unstable {
               inherit system;

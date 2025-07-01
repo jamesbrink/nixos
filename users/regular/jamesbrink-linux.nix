@@ -9,9 +9,9 @@
 let
   # Get these from specialArgs or use defaults
   inputs = config._module.args.inputs or { };
+  secretsPath = config._module.args.secretsPath or inputs.secrets or "";
   claude-desktop = config._module.args.claude-desktop or inputs.claude-desktop or null;
   unstablePkgs = config._module.args.unstablePkgs or pkgs.unstablePkgs or pkgs;
-  secretsPath = config._module.args.secretsPath or "";
   unstable = unstablePkgs;
 in
 {
@@ -19,6 +19,7 @@ in
     ./jamesbrink-shared.nix
     ../../modules/claude-desktop.nix
   ];
+  
 
   # Linux user configuration
   users.users.jamesbrink = {
