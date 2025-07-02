@@ -17,7 +17,7 @@
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
-    ../../users/regular/strivedi.nix
+    # ../../users/regular/strivedi.nix # Temporarily disabled for UID migration
     ../../profiles/desktop/default-stable.nix
     ../../profiles/keychron/default.nix
     ../../modules/services/ai-starter-kit/default.nix
@@ -342,7 +342,7 @@
     environment = {
       DISPLAY = ":0";
       XAUTHORITY = "${config.users.users.jamesbrink.home}/.Xauthority";
-      XDG_RUNTIME_DIR = "/run/user/1001";
+      XDG_RUNTIME_DIR = "/run/user/${toString config.users.users.jamesbrink.uid}";
       RUSTDESK_DISPLAY_BACKEND = "x11";
       WAYLAND_DISPLAY = "wayland-0";
       GNOME_SETUP_DISPLAY = ":1";
