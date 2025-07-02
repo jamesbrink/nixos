@@ -201,6 +201,12 @@ If you see "can't find terminal definition for alacritty":
 - Fixed conditional imports to prevent circular dependencies
 - Improved cross-platform compatibility with proper platform detection
 
+### Secrets Path Handling in User Modules (July 2025)
+- Fixed AWS secrets path resolution issues during remote deployments
+- User modules now accept `secretsPath` as a function argument with fallback logic
+- Ensures secrets can be found regardless of whether building locally or remotely
+- AWS secrets are configured in `users/regular/jamesbrink-linux.nix` with proper path handling
+
 ### Darwin (macOS) Support
 - Full support for Apple Silicon Macs (tested on M4)
 - Integration with Homebrew for GUI applications via nix-homebrew
@@ -220,6 +226,17 @@ If you see "can't find terminal definition for alacritty":
 - Stored as a git submodule in `secrets/` (private repository)
 - Each host's SSH key must be added as a recipient in `secrets/secrets.nix`
 - Re-encrypt secrets after adding new recipients using `secrets-rekey` command
+
+### Secrets Path Resolution
+- The secrets input is defined as `path:./secrets` in the flake
+- During local builds, `secretsPath` is set to `${inputs.secrets}` which resolves to the nix store path
+- During remote deployments, the flake and secrets are copied to `/tmp/nixos-config/` on the target host
+- User modules handle path resolution with fallback logic:
+  - First tries the `secretsPath` argument passed from host configuration
+  - Falls back to `config._module.args.secretsPath` if available
+  - Finally falls back to `"./secrets"` for remote deployments
+- All secret file paths follow the pattern: `${secretsPath}/secrets/<category>/<name>.age`
+- The double `secrets` in the path is intentional: `secretsPath` points to the repository root, and `secrets/` is the subdirectory containing encrypted files
 
 ### Secrets Management Commands
 - `secrets-edit <path>`: Create or edit a secret (e.g., `secrets-edit jamesbrink/syncthing-password`)
