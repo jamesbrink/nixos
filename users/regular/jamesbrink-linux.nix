@@ -21,7 +21,6 @@ let
       effectiveInputs.secrets
     else
       "./secrets"; # Fallback for remote deployments
-  claude-desktop = effectiveInputs.claude-desktop or null;
   unstablePkgs = config._module.args.unstablePkgs or pkgs.unstablePkgs or pkgs;
   unstable = unstablePkgs;
 in
@@ -78,12 +77,6 @@ in
             cudaPackages = pkgs.cudaPackages_12_3;
           })
         ]
-        ++ (
-          if claude-desktop != null then
-            [ claude-desktop.packages.${pkgs.system}.claude-desktop ]
-          else
-            builtins.trace "WARNING: claude-desktop is null" []
-        )
         ++ [
           barrier
           dbeaver-bin

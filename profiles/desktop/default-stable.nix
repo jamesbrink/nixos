@@ -1,4 +1,8 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   imports = [
@@ -6,6 +10,8 @@
   ];
 
   environment.systemPackages = with pkgs; [
+    # Claude Desktop application
+    inputs.claude-desktop.packages.${pkgs.system}.claude-desktop
     alacritty
     bitwarden
     blender
