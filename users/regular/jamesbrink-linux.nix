@@ -3,24 +3,25 @@
   config,
   pkgs,
   lib,
+  inputs ? {},
   secretsPath ? null,
   ...
 }:
 
 let
-  # Get these from specialArgs or use defaults
-  inputs = config._module.args.inputs or { };
+  # Get inputs from module args if not passed as parameter
+  effectiveInputs = if inputs != {} then inputs else config._module.args.inputs or { };
   # Use the secretsPath from function arguments if available, otherwise try from module args
   effectiveSecretsPath =
     if secretsPath != null then
       secretsPath
     else if (config._module.args.secretsPath or null) != null then
       config._module.args.secretsPath
-    else if (inputs.secrets or null) != null then
-      inputs.secrets
+    else if (effectiveInputs.secrets or null) != null then
+      effectiveInputs.secrets
     else
       "./secrets"; # Fallback for remote deployments
-  claude-desktop = config._module.args."claude-desktop" or inputs."claude-desktop" or null;
+  claude-desktop = effectiveInputs.claude-desktop or null;
   unstablePkgs = config._module.args.unstablePkgs or pkgs.unstablePkgs or pkgs;
   unstable = unstablePkgs;
 in
@@ -57,6 +58,8 @@ in
   home-manager.users.jamesbrink =
     { pkgs, ... }:
     {
+      # Make inputs available to home-manager
+      _module.args = { inputs = effectiveInputs; };
       home.packages =
         with pkgs;
         [
@@ -77,7 +80,7 @@ in
         ]
         ++ (
           if claude-desktop != null then
-            [ claude-desktop.packages.${pkgs.system}.default ]
+            [ claude-desktop.packages.${pkgs.system}.claude-desktop ]
           else
             builtins.trace "WARNING: claude-desktop is null" []
         )
