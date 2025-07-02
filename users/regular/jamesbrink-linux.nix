@@ -11,12 +11,14 @@ let
   # Get these from specialArgs or use defaults
   inputs = config._module.args.inputs or { };
   # Use the secretsPath from function arguments if available, otherwise try from module args
-  effectiveSecretsPath = if secretsPath != null then secretsPath else (config._module.args.secretsPath or inputs.secrets or "");
+  effectiveSecretsPath = if secretsPath != null then secretsPath 
+    else if (config._module.args.secretsPath or null) != null then config._module.args.secretsPath
+    else if (inputs.secrets or null) != null then inputs.secrets
+    else "./secrets";  # Fallback for remote deployments
   claude-desktop = config._module.args.claude-desktop or inputs.claude-desktop or null;
   unstablePkgs = config._module.args.unstablePkgs or pkgs.unstablePkgs or pkgs;
   unstable = unstablePkgs;
 in
-assert effectiveSecretsPath != "" -> throw "secretsPath is empty, AWS secrets will fail!";
 {
   imports = [
     ./jamesbrink-shared.nix
