@@ -23,6 +23,7 @@ in
   imports = [
     ./jamesbrink-shared.nix
     ../../modules/claude-desktop.nix
+    ../../modules/ghostty-terminfo.nix
   ];
   
 
@@ -156,6 +157,9 @@ in
       chown jamesbrink:users /home/jamesbrink/.aws/config /home/jamesbrink/.aws/credentials
     '';
   };
+
+  # Enable Ghostty terminfo support
+  programs.ghostty-terminfo.enable = true;
 
   # Syncthing service
   services.syncthing = {

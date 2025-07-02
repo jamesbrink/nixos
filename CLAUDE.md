@@ -170,6 +170,14 @@ If you see "can't find terminal definition for alacritty":
 - The CLI is automatically linked to `/opt/homebrew/bin/ollama`
 - Start the Ollama app from Applications before using the CLI
 
+### Ghostty Terminal Definition Error
+If you see "can't find terminal definition for xterm-ghostty":
+- **Linux hosts**: The `ghostty-terminfo` module is automatically enabled via user configuration
+- **SSH connections**: Use `ghostty-ssh-setup <hostname>` to copy terminfo to remote hosts
+- **Sudo environments**: TERMINFO variables are preserved automatically
+- **Fallback**: The terminal will automatically fall back to `xterm-256color` if needed
+- The zsh configuration includes automatic detection and fallback for Ghostty
+
 ## Workflow Recommendations
 - Always use `deploy-test` over `build` when on macOS
 

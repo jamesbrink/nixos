@@ -188,8 +188,17 @@ in
               export TERM=xterm-256color
             fi
 
+            # Handle Ghostty terminal
+            if [[ "$TERM" == "xterm-ghostty" ]]; then
+              # Check if terminfo entry exists
+              if ! infocmp xterm-ghostty >/dev/null 2>&1; then
+                # Fallback to xterm-256color if xterm-ghostty is not available
+                export TERM=xterm-256color
+              fi
+            fi
+
             # Ensure terminfo is available
-            export TERMINFO_DIRS="$HOME/.nix-profile/share/terminfo:/usr/share/terminfo"
+            export TERMINFO_DIRS="$HOME/.nix-profile/share/terminfo:/usr/share/terminfo:${pkgs.ncurses}/share/terminfo"
 
             # Fix backspace key
             stty erase '^?'
@@ -275,6 +284,58 @@ in
 
             # Alias for claude code
             alias claude="~/.claude/local/claude"
+
+            # Ghostty SSH helper - copy terminfo to remote host
+            ghostty-ssh-setup() {
+              local host="$1"
+              if [[ -z "$host" ]]; then
+                echo "Usage: ghostty-ssh-setup <hostname>"
+                echo "       ghostty-ssh-setup all  # Setup on all known hosts"
+                return 1
+              fi
+              
+              # Function to setup a single host
+              setup_single_host() {
+                local target="$1"
+                echo -n "Setting up Ghostty terminfo on $target... "
+                
+                # Check if we have ghostty terminfo locally
+                if ! command -v infocmp >/dev/null 2>&1; then
+                  echo "SKIP (infocmp not found)"
+                  return 1
+                fi
+                
+                if ! infocmp xterm-ghostty >/dev/null 2>&1; then
+                  echo "SKIP (xterm-ghostty not found locally)"
+                  return 1
+                fi
+                
+                # Check if host already has it
+                if ssh -o ConnectTimeout=5 "$target" "infocmp xterm-ghostty" >/dev/null 2>&1; then
+                  echo "already installed"
+                  return 0
+                fi
+                
+                # Copy terminfo to remote host
+                if infocmp -x xterm-ghostty | ssh -o ConnectTimeout=5 "$target" -- tic -x - 2>/dev/null; then
+                  echo "✓"
+                  return 0
+                else
+                  echo "✗ (failed)"
+                  return 1
+                fi
+              }
+              
+              if [[ "$host" == "all" ]]; then
+                echo "Setting up Ghostty terminfo on all configured hosts..."
+                local hosts=(alienware hal9000 n100-01 n100-02 n100-03 n100-04 sevastopol-linux halcyon sevastopol)
+                for h in "${hosts[@]}"; do
+                  setup_single_host "$h"
+                done
+              else
+                setup_single_host "$host"
+              fi
+            }
           '';
         };
 
