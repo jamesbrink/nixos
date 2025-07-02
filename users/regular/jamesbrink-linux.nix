@@ -11,10 +11,15 @@ let
   # Get these from specialArgs or use defaults
   inputs = config._module.args.inputs or { };
   # Use the secretsPath from function arguments if available, otherwise try from module args
-  effectiveSecretsPath = if secretsPath != null then secretsPath 
-    else if (config._module.args.secretsPath or null) != null then config._module.args.secretsPath
-    else if (inputs.secrets or null) != null then inputs.secrets
-    else "./secrets";  # Fallback for remote deployments
+  effectiveSecretsPath =
+    if secretsPath != null then
+      secretsPath
+    else if (config._module.args.secretsPath or null) != null then
+      config._module.args.secretsPath
+    else if (inputs.secrets or null) != null then
+      inputs.secrets
+    else
+      "./secrets"; # Fallback for remote deployments
   claude-desktop = config._module.args.claude-desktop or inputs.claude-desktop or null;
   unstablePkgs = config._module.args.unstablePkgs or pkgs.unstablePkgs or pkgs;
   unstable = unstablePkgs;
@@ -25,7 +30,6 @@ in
     ../../modules/claude-desktop.nix
     ../../modules/ghostty-terminfo.nix
   ];
-  
 
   # Linux user configuration
   users.users.jamesbrink = {
