@@ -258,14 +258,65 @@ If you see "can't find terminal definition for xterm-ghostty":
 **Note**: Secrets commands now support both `~/.ssh/id_rsa` and `~/.ssh/id_ed25519` keys, preferring `id_rsa` when available.
 
 ### Adding a New Host to Secrets
+
+#### Quick Method (using built-in commands):
 1. Run `secrets-add-host <hostname>` to get the host's SSH key
 2. Add the key to `secrets/secrets.nix` in the host keys section
 3. Add the host to all relevant `publicKeys` arrays
 4. Run `secrets-rekey` to re-encrypt all secrets
 5. Commit and push changes in the secrets submodule
 
+#### Manual Method (for advanced cases):
+1. Clone the secrets repository if working outside the submodule:
+   ```bash
+   git clone git@github.com:jamesbrink/nix-secrets.git ../nix-secrets
+   ```
+
+2. Get the new host's SSH public key:
+   ```bash
+   ssh-keyscan -t ed25519 <hostname>
+   ```
+
+3. Add the host key to `secrets.nix`:
+   ```nix
+   hostname = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...";
+   ```
+
+4. Add the new host to all `publicKeys` arrays in `secrets.nix`
+
+5. Re-encrypt all secrets with the new recipient:
+   ```bash
+   # If using the built-in command:
+   secrets-rekey
+   
+   # Or manually with agenix:
+   RULES=../nix-secrets/secrets.nix agenix -r -i ~/.ssh/id_ed25519
+   ```
+
+6. Commit and push changes:
+   ```bash
+   git -C ../nix-secrets add -A
+   git -C ../nix-secrets commit -m "Add <hostname> to age recipients"
+   git -C ../nix-secrets push
+   ```
+
+7. Update the secrets input in the main repo:
+   ```bash
+   nix flake lock --update-input secrets
+   ```
+
+### Editing Existing Secrets
+- To edit a secret: `secrets-edit <path>` or manually: `agenix -e <secret-file>`
+- To create a new secret: `secrets-edit <new-path>` or manually: `agenix -e <new-secret-file>`
+- Always commit and push changes to the secrets repository
+
 ### Security Notes
 - Never commit plaintext secrets to the repository
-- The secrets submodule is private and should remain so
+- The secrets submodule is private and should remain so (Repository: `git@github.com:jamesbrink/nix-secrets.git`)
 - Syncthing passwords are now managed at the host level, not in user configs
 - Webhook tokens and API keys should be moved to encrypted secrets
+- Never add local-only files to the repo (CLAUDE.local.md, settings.local.json)
+
+### Development Best Practices
+- Always use `deploy-test` before `deploy` on production systems
+- Keep sensitive information in encrypted secrets only
