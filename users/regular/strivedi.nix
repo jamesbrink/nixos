@@ -16,6 +16,7 @@ in
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGeh1TYgVXpFLZglqo2whsob7FY4Mjkz4dYnV7t39LvM"
     ];
     isNormalUser = true;
+    uid = 1001;
     description = "James Brink";
     extraGroups = [
       "docker"

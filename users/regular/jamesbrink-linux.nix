@@ -20,7 +20,7 @@ let
       inputs.secrets
     else
       "./secrets"; # Fallback for remote deployments
-  claude-desktop = config._module.args.claude-desktop or inputs.claude-desktop or null;
+  claude-desktop = config._module.args."claude-desktop" or inputs."claude-desktop" or null;
   unstablePkgs = config._module.args.unstablePkgs or pkgs.unstablePkgs or pkgs;
   unstable = unstablePkgs;
 in
@@ -34,6 +34,7 @@ in
   # Linux user configuration
   users.users.jamesbrink = {
     isNormalUser = true;
+    uid = 1000;
     description = "James Brink";
     extraGroups = [
       "docker"
@@ -74,9 +75,12 @@ in
             cudaPackages = pkgs.cudaPackages_12_3;
           })
         ]
-        ++ lib.optionals (claude-desktop != null) [
-          claude-desktop.packages.${pkgs.system}.default
-        ]
+        ++ (
+          if claude-desktop != null then
+            [ claude-desktop.packages.${pkgs.system}.default ]
+          else
+            builtins.trace "WARNING: claude-desktop is null" []
+        )
         ++ [
           barrier
           dbeaver-bin
