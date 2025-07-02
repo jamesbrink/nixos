@@ -3,17 +3,20 @@
   config,
   pkgs,
   lib,
+  secretsPath ? null,
   ...
 }:
 
 let
   # Get these from specialArgs or use defaults
   inputs = config._module.args.inputs or { };
-  secretsPath = config._module.args.secretsPath or inputs.secrets or "";
+  # Use the secretsPath from function arguments if available, otherwise try from module args
+  effectiveSecretsPath = if secretsPath != null then secretsPath else (config._module.args.secretsPath or inputs.secrets or "");
   claude-desktop = config._module.args.claude-desktop or inputs.claude-desktop or null;
   unstablePkgs = config._module.args.unstablePkgs or pkgs.unstablePkgs or pkgs;
   unstable = unstablePkgs;
 in
+assert effectiveSecretsPath != "" -> throw "secretsPath is empty, AWS secrets will fail!";
 {
   imports = [
     ./jamesbrink-shared.nix
@@ -120,14 +123,14 @@ in
   ];
 
   age.secrets."aws-config" = {
-    file = "${secretsPath}/secrets/jamesbrink/aws/config.age";
+    file = "${effectiveSecretsPath}/secrets/jamesbrink/aws/config.age";
     owner = "jamesbrink";
     group = "users";
     mode = "0600";
   };
 
   age.secrets."aws-credentials" = {
-    file = "${secretsPath}/secrets/jamesbrink/aws/credentials.age";
+    file = "${effectiveSecretsPath}/secrets/jamesbrink/aws/credentials.age";
     owner = "jamesbrink";
     group = "users";
     mode = "0600";
