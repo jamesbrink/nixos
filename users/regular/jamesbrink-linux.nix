@@ -3,14 +3,14 @@
   config,
   pkgs,
   lib,
-  inputs ? {},
+  inputs ? { },
   secretsPath ? null,
   ...
 }:
 
 let
   # Get inputs from module args if not passed as parameter
-  effectiveInputs = if inputs != {} then inputs else config._module.args.inputs or { };
+  effectiveInputs = if inputs != { } then inputs else config._module.args.inputs or { };
   # Use the secretsPath from function arguments if available, otherwise try from module args
   effectiveSecretsPath =
     if secretsPath != null then
@@ -58,7 +58,9 @@ in
     { pkgs, ... }:
     {
       # Make inputs available to home-manager
-      _module.args = { inputs = effectiveInputs; };
+      _module.args = {
+        inputs = effectiveInputs;
+      };
       home.packages =
         with pkgs;
         [
