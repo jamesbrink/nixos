@@ -39,6 +39,9 @@
       {
         path = "${config.users.users.jamesbrink.home}/Downloads";
         section = "others";
+        view = "fan"; # Fan style
+        display = "folder";
+        sort = "dateadded"; # Sort by Date Added
       }
     ];
   };
