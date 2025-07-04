@@ -32,13 +32,15 @@ if [ ! -f "$REPO_ROOT/flake.nix" ]; then
     exit 1
 fi
 
-cd "$NETBOOT_DIR"
-
 log_info "Building N100 netboot images..."
+
+# Create a temporary directory for build results
+BUILD_DIR=$(mktemp -d /tmp/netboot-build.XXXXXX)
+trap "rm -rf $BUILD_DIR" EXIT
 
 # Build installer image
 log_info "Building installer image..."
-if nix build .#n100-installer --impure; then
+if nix build "$NETBOOT_DIR#n100-installer" --impure --out-link "$BUILD_DIR/installer-result"; then
     log_info "Installer image built successfully"
 else
     log_error "Failed to build installer image"
@@ -46,13 +48,13 @@ else
 fi
 
 # Save installer paths
-INSTALLER_KERNEL="$(readlink -f result/kernel)"
-INSTALLER_INITRD="$(readlink -f result/initrd)"
-INSTALLER_SYSTEM="$(cat result/system-path)"
+INSTALLER_KERNEL="$(readlink -f "$BUILD_DIR/installer-result/kernel")"
+INSTALLER_INITRD="$(readlink -f "$BUILD_DIR/installer-result/initrd")"
+INSTALLER_SYSTEM="$(cat "$BUILD_DIR/installer-result/system-path")"
 
 # Build rescue image
 log_info "Building rescue image..."
-if nix build .#n100-rescue --impure; then
+if nix build "$NETBOOT_DIR#n100-rescue" --impure --out-link "$BUILD_DIR/rescue-result"; then
     log_info "Rescue image built successfully"
 else
     log_error "Failed to build rescue image"
@@ -60,9 +62,9 @@ else
 fi
 
 # Save rescue paths
-RESCUE_KERNEL="$(readlink -f result/kernel)"
-RESCUE_INITRD="$(readlink -f result/initrd)"
-RESCUE_SYSTEM="$(cat result/system-path)"
+RESCUE_KERNEL="$(readlink -f "$BUILD_DIR/rescue-result/kernel")"
+RESCUE_INITRD="$(readlink -f "$BUILD_DIR/rescue-result/initrd")"
+RESCUE_SYSTEM="$(cat "$BUILD_DIR/rescue-result/system-path")"
 
 # Ask user if they want to deploy
 read -p "Deploy images to HAL9000? (y/n): " -n 1 -r
