@@ -40,47 +40,59 @@ trap "rm -rf $BUILD_DIR" EXIT
 
 # Build installer image
 log_info "Building installer image..."
-if nix build "$NETBOOT_DIR#n100-installer" --impure --out-link "$BUILD_DIR/installer-result"; then
+# Use explicit flake reference with dir parameter
+if nix build ".?dir=modules/netboot#n100-installer" --impure --out-link "$BUILD_DIR/installer-result"; then
     log_info "Installer image built successfully"
-    # Debug: List contents
-    ls -la "$BUILD_DIR/installer-result/" >&2
 else
     log_error "Failed to build installer image"
     exit 1
 fi
 
-# Save installer paths
-INSTALLER_KERNEL="$(readlink -f "$BUILD_DIR/installer-result/kernel")"
-INSTALLER_INITRD="$(readlink -f "$BUILD_DIR/installer-result/initrd")"
-
-# Check if system-path file exists
-if [ ! -f "$BUILD_DIR/installer-result/system-path" ]; then
-    log_error "system-path file not found in installer result"
+# Check what was actually built
+if [ -f "$BUILD_DIR/installer-result/kernel" ]; then
+    # Direct output format
+    INSTALLER_KERNEL="$(readlink -f "$BUILD_DIR/installer-result/kernel")"
+    INSTALLER_INITRD="$(readlink -f "$BUILD_DIR/installer-result/initrd")"
+    if [ -f "$BUILD_DIR/installer-result/system-path" ]; then
+        INSTALLER_SYSTEM="$(cat "$BUILD_DIR/installer-result/system-path")"
+    else
+        log_error "system-path file not found in installer result"
+        exit 1
+    fi
+else
+    log_error "Expected kernel file not found in build result"
+    log_error "Build result contains:"
+    ls -la "$BUILD_DIR/installer-result/" >&2
     exit 1
 fi
 
-INSTALLER_SYSTEM="$(cat "$BUILD_DIR/installer-result/system-path")"
-
 # Build rescue image
 log_info "Building rescue image..."
-if nix build "$NETBOOT_DIR#n100-rescue" --impure --out-link "$BUILD_DIR/rescue-result"; then
+# Use explicit flake reference with dir parameter
+if nix build ".?dir=modules/netboot#n100-rescue" --impure --out-link "$BUILD_DIR/rescue-result"; then
     log_info "Rescue image built successfully"
 else
     log_error "Failed to build rescue image"
     exit 1
 fi
 
-# Save rescue paths
-RESCUE_KERNEL="$(readlink -f "$BUILD_DIR/rescue-result/kernel")"
-RESCUE_INITRD="$(readlink -f "$BUILD_DIR/rescue-result/initrd")"
-
-# Check if system-path file exists
-if [ ! -f "$BUILD_DIR/rescue-result/system-path" ]; then
-    log_error "system-path file not found in rescue result"
+# Check what was actually built
+if [ -f "$BUILD_DIR/rescue-result/kernel" ]; then
+    # Direct output format
+    RESCUE_KERNEL="$(readlink -f "$BUILD_DIR/rescue-result/kernel")"
+    RESCUE_INITRD="$(readlink -f "$BUILD_DIR/rescue-result/initrd")"
+    if [ -f "$BUILD_DIR/rescue-result/system-path" ]; then
+        RESCUE_SYSTEM="$(cat "$BUILD_DIR/rescue-result/system-path")"
+    else
+        log_error "system-path file not found in rescue result"
+        exit 1
+    fi
+else
+    log_error "Expected kernel file not found in build result"
+    log_error "Build result contains:"
+    ls -la "$BUILD_DIR/rescue-result/" >&2
     exit 1
 fi
-
-RESCUE_SYSTEM="$(cat "$BUILD_DIR/rescue-result/system-path")"
 
 # Debug output
 log_info "Build results:"
@@ -107,37 +119,42 @@ SSH_HOST="hal9000"
 
 # Create directory structure
 log_info "Creating directory structure on HAL9000..."
-ssh "$SSH_HOST" "mkdir -p $NETBOOT_ROOT/images/{n100-installer,n100-rescue} $NETBOOT_ROOT/custom"
+ssh "$SSH_HOST" "sudo mkdir -p $NETBOOT_ROOT/images/{n100-installer,n100-rescue} $NETBOOT_ROOT/custom $NETBOOT_ROOT/scripts"
 
 # Deploy installer
 log_info "Deploying installer image..."
-scp "$INSTALLER_KERNEL" "$SSH_HOST:$NETBOOT_ROOT/images/n100-installer/kernel"
-scp "$INSTALLER_INITRD" "$SSH_HOST:$NETBOOT_ROOT/images/n100-installer/initrd"
+scp "$INSTALLER_KERNEL" "$SSH_HOST:/tmp/kernel-installer"
+scp "$INSTALLER_INITRD" "$SSH_HOST:/tmp/initrd-installer"
+ssh "$SSH_HOST" "sudo mv /tmp/kernel-installer $NETBOOT_ROOT/images/n100-installer/kernel"
+ssh "$SSH_HOST" "sudo mv /tmp/initrd-installer $NETBOOT_ROOT/images/n100-installer/initrd"
 
 # Save init path for installer
 log_info "Saving installer init path..."
-ssh "$SSH_HOST" "echo '$INSTALLER_SYSTEM/init' > $NETBOOT_ROOT/images/n100-installer/init-path"
+ssh "$SSH_HOST" "echo '$INSTALLER_SYSTEM/init' | sudo tee $NETBOOT_ROOT/images/n100-installer/init-path > /dev/null"
 
 # Deploy rescue
 log_info "Deploying rescue image..."
-scp "$RESCUE_KERNEL" "$SSH_HOST:$NETBOOT_ROOT/images/n100-rescue/kernel"
-scp "$RESCUE_INITRD" "$SSH_HOST:$NETBOOT_ROOT/images/n100-rescue/initrd"
+scp "$RESCUE_KERNEL" "$SSH_HOST:/tmp/kernel-rescue"
+scp "$RESCUE_INITRD" "$SSH_HOST:/tmp/initrd-rescue"
+ssh "$SSH_HOST" "sudo mv /tmp/kernel-rescue $NETBOOT_ROOT/images/n100-rescue/kernel"
+ssh "$SSH_HOST" "sudo mv /tmp/initrd-rescue $NETBOOT_ROOT/images/n100-rescue/initrd"
 
 # Save init path for rescue
 log_info "Saving rescue init path..."
-ssh "$SSH_HOST" "echo '$RESCUE_SYSTEM/init' > $NETBOOT_ROOT/images/n100-rescue/init-path"
+ssh "$SSH_HOST" "echo '$RESCUE_SYSTEM/init' | sudo tee $NETBOOT_ROOT/images/n100-rescue/init-path > /dev/null"
 
 # Deploy auto-install script
 log_info "Deploying auto-install script..."
-scp "$NETBOOT_DIR/auto-install.sh" "$SSH_HOST:$NETBOOT_ROOT/scripts/"
+scp "$NETBOOT_DIR/auto-install.sh" "$SSH_HOST:/tmp/auto-install.sh"
+ssh "$SSH_HOST" "sudo mkdir -p $NETBOOT_ROOT/scripts && sudo mv /tmp/auto-install.sh $NETBOOT_ROOT/scripts/"
 
 # Update TFTP iPXE scripts with correct init paths
 log_info "Updating TFTP iPXE scripts with correct init paths..."
-ssh "$SSH_HOST" "find $NETBOOT_ROOT/tftp -name '*.ipxe' -exec sed -i 's|/nix/store/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-nixos-system-installer/init|$INSTALLER_SYSTEM/init|g' {} \;"
+ssh "$SSH_HOST" "sudo find $NETBOOT_ROOT/tftp -name '*.ipxe' -exec sed -i 's|/nix/store/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-nixos-system-installer/init|$INSTALLER_SYSTEM/init|g' {} \;"
 
 # Create a custom autochain.ipxe file with the correct init path
 log_info "Creating custom autochain.ipxe with correct init path..."
-ssh "$SSH_HOST" "cat > $NETBOOT_ROOT/custom/autochain.ipxe" << 'EOF'
+ssh "$SSH_HOST" "sudo tee $NETBOOT_ROOT/custom/autochain.ipxe > /dev/null" << 'EOF'
 #!ipxe
 
 # N100 MAC Address Auto-detection and Boot
@@ -196,11 +213,12 @@ exit 1
 EOF
 
 # Replace the placeholder with the actual init path
-ssh "$SSH_HOST" "sed -i 's|INSTALLER_INIT_PATH|$INSTALLER_SYSTEM/init|g' $NETBOOT_ROOT/custom/autochain.ipxe"
+ssh "$SSH_HOST" "sudo sed -i 's|INSTALLER_INIT_PATH|$INSTALLER_SYSTEM/init|g' $NETBOOT_ROOT/custom/autochain.ipxe"
 
 # Set permissions
 log_info "Setting permissions..."
-ssh "$SSH_HOST" "chmod -R 755 $NETBOOT_ROOT/images $NETBOOT_ROOT/scripts"
+ssh "$SSH_HOST" "sudo chmod -R 755 $NETBOOT_ROOT/images $NETBOOT_ROOT/scripts $NETBOOT_ROOT/custom"
+ssh "$SSH_HOST" "sudo chown -R nginx:nginx $NETBOOT_ROOT/images $NETBOOT_ROOT/scripts $NETBOOT_ROOT/custom"
 
 log_info "Deployment complete!"
 log_info ""
