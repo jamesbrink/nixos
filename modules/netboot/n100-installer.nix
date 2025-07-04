@@ -10,6 +10,8 @@
   imports = [
     # Base netboot installer
     (modulesPath + "/installer/netboot/netboot-minimal.nix")
+    # Static SSH host keys for consistent fingerprint
+    ./installer-ssh-keys.nix
   ];
 
   # System configuration for the installer

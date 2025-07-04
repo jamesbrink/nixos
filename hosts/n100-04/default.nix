@@ -16,32 +16,28 @@
   networking.hostName = "n100-04";
   networking.hostId = "ce7b643e"; # Keep existing hostId for ZFS compatibility
 
-  # SSH host keys managed through agenix
+  # Pre-generated SSH host keys
   age.secrets = {
-    "ssh_host_ed25519_key" = {
+    "ssh-host-ed25519-key" = {
       file = "${secretsPath}/secrets/n100-04/ssh/host-ed25519-key.age";
       path = "/etc/ssh/ssh_host_ed25519_key";
       mode = "0600";
-      owner = "root";
-      group = "root";
     };
-    "ssh_host_rsa_key" = {
+    "ssh-host-rsa-key" = {
       file = "${secretsPath}/secrets/n100-04/ssh/host-rsa-key.age";
       path = "/etc/ssh/ssh_host_rsa_key";
       mode = "0600";
-      owner = "root";
-      group = "root";
     };
   };
 
-  # SSH host key configuration
+  # Ensure SSH host keys are used
   services.openssh.hostKeys = [
     {
-      path = config.age.secrets."ssh_host_ed25519_key".path;
+      path = "/etc/ssh/ssh_host_ed25519_key";
       type = "ed25519";
     }
     {
-      path = config.age.secrets."ssh_host_rsa_key".path;
+      path = "/etc/ssh/ssh_host_rsa_key";
       type = "rsa";
       bits = 4096;
     }
