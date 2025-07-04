@@ -42,6 +42,8 @@ trap "rm -rf $BUILD_DIR" EXIT
 log_info "Building installer image..."
 if nix build "$NETBOOT_DIR#n100-installer" --impure --out-link "$BUILD_DIR/installer-result"; then
     log_info "Installer image built successfully"
+    # Debug: List contents
+    ls -la "$BUILD_DIR/installer-result/" >&2
 else
     log_error "Failed to build installer image"
     exit 1
@@ -50,6 +52,13 @@ fi
 # Save installer paths
 INSTALLER_KERNEL="$(readlink -f "$BUILD_DIR/installer-result/kernel")"
 INSTALLER_INITRD="$(readlink -f "$BUILD_DIR/installer-result/initrd")"
+
+# Check if system-path file exists
+if [ ! -f "$BUILD_DIR/installer-result/system-path" ]; then
+    log_error "system-path file not found in installer result"
+    exit 1
+fi
+
 INSTALLER_SYSTEM="$(cat "$BUILD_DIR/installer-result/system-path")"
 
 # Build rescue image
@@ -64,7 +73,21 @@ fi
 # Save rescue paths
 RESCUE_KERNEL="$(readlink -f "$BUILD_DIR/rescue-result/kernel")"
 RESCUE_INITRD="$(readlink -f "$BUILD_DIR/rescue-result/initrd")"
+
+# Check if system-path file exists
+if [ ! -f "$BUILD_DIR/rescue-result/system-path" ]; then
+    log_error "system-path file not found in rescue result"
+    exit 1
+fi
+
 RESCUE_SYSTEM="$(cat "$BUILD_DIR/rescue-result/system-path")"
+
+# Debug output
+log_info "Build results:"
+log_info "  Installer kernel: $(basename "$INSTALLER_KERNEL")"
+log_info "  Installer system: $INSTALLER_SYSTEM"
+log_info "  Rescue kernel: $(basename "$RESCUE_KERNEL")"
+log_info "  Rescue system: $RESCUE_SYSTEM"
 
 # Ask user if they want to deploy
 read -p "Deploy images to HAL9000? (y/n): " -n 1 -r
