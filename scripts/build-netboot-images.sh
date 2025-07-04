@@ -4,8 +4,24 @@ set -euo pipefail
 # Build and deploy netboot images for N100 cluster
 # This script should be run from the nixos repository root
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Handle script running from nix store vs local directory
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+if [[ "$SCRIPT_PATH" == /nix/store/* ]]; then
+    # Running from nix develop - find the actual repo location
+    REPO_ROOT="${NIX_CONFIG_DIR:-$PWD}"
+    # If we're not in the repo, try to find it
+    if [ ! -f "$REPO_ROOT/flake.nix" ]; then
+        REPO_ROOT="$(pwd)"
+        while [ ! -f "$REPO_ROOT/flake.nix" ] && [ "$REPO_ROOT" != "/" ]; do
+            REPO_ROOT="$(dirname "$REPO_ROOT")"
+        done
+    fi
+else
+    # Running locally
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+fi
+
 NETBOOT_DIR="$REPO_ROOT/modules/netboot"
 
 # Colors for output
@@ -40,57 +56,74 @@ trap "rm -rf $BUILD_DIR" EXIT
 
 # Build installer image
 log_info "Building installer image..."
-# Use explicit flake reference with dir parameter
-if nix build ".?dir=modules/netboot#n100-installer" --impure --out-link "$BUILD_DIR/installer-result"; then
+# Change to temp directory to avoid store path issues
+cd "$BUILD_DIR"
+INSTALLER_PATH=$(nix build "path:$REPO_ROOT?dir=modules/netboot#n100-installer" --impure --print-out-paths)
+if [ $? -eq 0 ] && [ -n "$INSTALLER_PATH" ]; then
     log_info "Installer image built successfully"
+    # Create symlink for consistency
+    ln -sf "$INSTALLER_PATH" "$BUILD_DIR/installer-result"
 else
     log_error "Failed to build installer image"
+    log_error "Error: $INSTALLER_PATH"
     exit 1
 fi
 
+# Resolve the actual build output path
+INSTALLER_RESULT="$(readlink -f "$BUILD_DIR/installer-result")"
+
 # Check what was actually built
-if [ -f "$BUILD_DIR/installer-result/kernel" ]; then
+if [ -f "$INSTALLER_RESULT/kernel" ]; then
     # Direct output format
-    INSTALLER_KERNEL="$(readlink -f "$BUILD_DIR/installer-result/kernel")"
-    INSTALLER_INITRD="$(readlink -f "$BUILD_DIR/installer-result/initrd")"
-    if [ -f "$BUILD_DIR/installer-result/system-path" ]; then
-        INSTALLER_SYSTEM="$(cat "$BUILD_DIR/installer-result/system-path")"
+    INSTALLER_KERNEL="$INSTALLER_RESULT/kernel"
+    INSTALLER_INITRD="$INSTALLER_RESULT/initrd"
+    if [ -f "$INSTALLER_RESULT/system-path" ]; then
+        INSTALLER_SYSTEM="$(cat "$INSTALLER_RESULT/system-path")"
     else
         log_error "system-path file not found in installer result"
         exit 1
     fi
 else
     log_error "Expected kernel file not found in build result"
+    log_error "Build result path: $INSTALLER_RESULT"
     log_error "Build result contains:"
-    ls -la "$BUILD_DIR/installer-result/" >&2
+    ls -la "$INSTALLER_RESULT/" >&2
     exit 1
 fi
 
 # Build rescue image
 log_info "Building rescue image..."
-# Use explicit flake reference with dir parameter
-if nix build ".?dir=modules/netboot#n100-rescue" --impure --out-link "$BUILD_DIR/rescue-result"; then
+# Build using print-out-paths to get the actual store path (already in BUILD_DIR)
+RESCUE_PATH=$(nix build "path:$REPO_ROOT?dir=modules/netboot#n100-rescue" --impure --print-out-paths)
+if [ $? -eq 0 ] && [ -n "$RESCUE_PATH" ]; then
     log_info "Rescue image built successfully"
+    # Create symlink for consistency
+    ln -sf "$RESCUE_PATH" "$BUILD_DIR/rescue-result"
 else
     log_error "Failed to build rescue image"
+    log_error "Error: $RESCUE_PATH"
     exit 1
 fi
 
+# Resolve the actual build output path
+RESCUE_RESULT="$(readlink -f "$BUILD_DIR/rescue-result")"
+
 # Check what was actually built
-if [ -f "$BUILD_DIR/rescue-result/kernel" ]; then
+if [ -f "$RESCUE_RESULT/kernel" ]; then
     # Direct output format
-    RESCUE_KERNEL="$(readlink -f "$BUILD_DIR/rescue-result/kernel")"
-    RESCUE_INITRD="$(readlink -f "$BUILD_DIR/rescue-result/initrd")"
-    if [ -f "$BUILD_DIR/rescue-result/system-path" ]; then
-        RESCUE_SYSTEM="$(cat "$BUILD_DIR/rescue-result/system-path")"
+    RESCUE_KERNEL="$RESCUE_RESULT/kernel"
+    RESCUE_INITRD="$RESCUE_RESULT/initrd"
+    if [ -f "$RESCUE_RESULT/system-path" ]; then
+        RESCUE_SYSTEM="$(cat "$RESCUE_RESULT/system-path")"
     else
         log_error "system-path file not found in rescue result"
         exit 1
     fi
 else
     log_error "Expected kernel file not found in build result"
+    log_error "Build result path: $RESCUE_RESULT"
     log_error "Build result contains:"
-    ls -la "$BUILD_DIR/rescue-result/" >&2
+    ls -la "$RESCUE_RESULT/" >&2
     exit 1
 fi
 
@@ -101,15 +134,8 @@ log_info "  Installer system: $INSTALLER_SYSTEM"
 log_info "  Rescue kernel: $(basename "$RESCUE_KERNEL")"
 log_info "  Rescue system: $RESCUE_SYSTEM"
 
-# Ask user if they want to deploy
-read -p "Deploy images to HAL9000? (y/n): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    log_info "Deployment cancelled. Images are available at:"
-    log_info "  Installer: $INSTALLER_KERNEL, $INSTALLER_INITRD"
-    log_info "  Rescue: $RESCUE_KERNEL, $RESCUE_INITRD"
-    exit 0
-fi
+# Auto-deploy without prompting
+log_info "Deploying to HAL9000..."
 
 # Deploy to HAL9000
 log_info "Deploying netboot images to HAL9000..."

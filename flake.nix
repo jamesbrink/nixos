@@ -900,14 +900,7 @@
                 category = "netboot";
                 help = "Build and deploy N100 netboot images";
                 command = ''
-                  echo "Building and deploying N100 netboot images..."
-                  cd ${toString ./.}
-                  if sudo ./scripts/build-netboot-images.sh; then
-                    echo "Netboot images built and deployed successfully!"
-                  else
-                    echo "Failed to build/deploy netboot images"
-                    exit 1
-                  fi
+                  NIX_CONFIG_DIR="${toString ./.}" ${./scripts/build-netboot-images.sh}
                 '';
               }
 
