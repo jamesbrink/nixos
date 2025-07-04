@@ -298,9 +298,11 @@ The repository includes a complete netboot infrastructure for provisioning N100 
 
 2. **Build and Deploy Netboot Images**
    ```bash
+   nix develop -c netboot-build
+   # or directly:
    ./scripts/build-netboot-images.sh
    ```
-   This builds installer and rescue images with ZFS support.
+   This builds installer and rescue images with ZFS support and deploys them to HAL9000.
 
 3. **Configure N100 BIOS for PXE Boot**
    - Enter BIOS (F2 or DEL during boot)

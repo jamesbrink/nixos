@@ -16,7 +16,10 @@
 
   # System configuration for the installer
   networking.hostName = "nixos-installer";
-  
+
+  # Enable console access and auto-login for debugging
+  services.getty.autologinUser = lib.mkForce "root";
+
   # Create marker file to identify this as the installer
   system.activationScripts.installerMarker = ''
     touch /etc/is-installer
@@ -140,4 +143,19 @@
 
     <<< NixOS N100 Installer - Run 'n100-install' to begin >>>
   '';
+
+  # Ensure network comes up before SSH
+  systemd.services.sshd = {
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+  };
+
+  # Enable more verbose boot messages
+  boot.consoleLogLevel = 7;
+  boot.kernelParams = lib.mkForce [
+    "console=ttyS0,115200"
+    "console=tty0"
+    "loglevel=7"
+    "systemd.log_level=debug"
+  ];
 }

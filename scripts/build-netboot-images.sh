@@ -154,9 +154,10 @@ scp "$INSTALLER_INITRD" "$SSH_HOST:/tmp/initrd-installer"
 ssh "$SSH_HOST" "sudo mv /tmp/kernel-installer $NETBOOT_ROOT/images/n100-installer/kernel"
 ssh "$SSH_HOST" "sudo mv /tmp/initrd-installer $NETBOOT_ROOT/images/n100-installer/initrd"
 
-# Save init path for installer
+# Save init path for installer (remove leading slash for netboot)
 log_info "Saving installer init path..."
-ssh "$SSH_HOST" "echo '$INSTALLER_SYSTEM/init' | sudo tee $NETBOOT_ROOT/images/n100-installer/init-path > /dev/null"
+INSTALLER_INIT_PATH="${INSTALLER_SYSTEM#/}/init"
+ssh "$SSH_HOST" "echo '$INSTALLER_INIT_PATH' | sudo tee $NETBOOT_ROOT/images/n100-installer/init-path > /dev/null"
 
 # Deploy rescue
 log_info "Deploying rescue image..."
@@ -165,9 +166,10 @@ scp "$RESCUE_INITRD" "$SSH_HOST:/tmp/initrd-rescue"
 ssh "$SSH_HOST" "sudo mv /tmp/kernel-rescue $NETBOOT_ROOT/images/n100-rescue/kernel"
 ssh "$SSH_HOST" "sudo mv /tmp/initrd-rescue $NETBOOT_ROOT/images/n100-rescue/initrd"
 
-# Save init path for rescue
+# Save init path for rescue (remove leading slash for netboot)
 log_info "Saving rescue init path..."
-ssh "$SSH_HOST" "echo '$RESCUE_SYSTEM/init' | sudo tee $NETBOOT_ROOT/images/n100-rescue/init-path > /dev/null"
+RESCUE_INIT_PATH="${RESCUE_SYSTEM#/}/init"
+ssh "$SSH_HOST" "echo '$RESCUE_INIT_PATH' | sudo tee $NETBOOT_ROOT/images/n100-rescue/init-path > /dev/null"
 
 # Deploy auto-install script
 log_info "Deploying auto-install script..."
@@ -176,7 +178,10 @@ ssh "$SSH_HOST" "sudo mkdir -p $NETBOOT_ROOT/scripts && sudo mv /tmp/auto-instal
 
 # Update TFTP iPXE scripts with correct init paths
 log_info "Updating TFTP iPXE scripts with correct init paths..."
+# First update any placeholder patterns
 ssh "$SSH_HOST" "sudo find $NETBOOT_ROOT/tftp -name '*.ipxe' -exec sed -i 's|/nix/store/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-nixos-system-installer/init|$INSTALLER_SYSTEM/init|g' {} \;"
+# Also update any existing nix store paths for the installer
+ssh "$SSH_HOST" "sudo find $NETBOOT_ROOT/tftp -name '*.ipxe' -exec sed -i 's|/nix/store/[a-z0-9]\{32\}-nixos-system-nixos-installer[^/]*/init|$INSTALLER_SYSTEM/init|g' {} \;"
 
 # Create a custom autochain.ipxe file with the correct init path
 log_info "Creating custom autochain.ipxe with correct init path..."
@@ -228,7 +233,7 @@ goto boot_nixos
 :boot_nixos
 set base-url http://${next-server}:8079
 echo Loading NixOS installer for ${hostname} (automatic installation)...
-kernel ${base-url}/images/n100-installer/kernel init=INSTALLER_INIT_PATH initrd=initrd loglevel=4 console=ttyS0,115200 console=tty0 hostname=${hostname} autoinstall=true
+kernel ${base-url}/images/n100-installer/kernel init=/INSTALLER_INIT_PATH initrd=initrd loglevel=4 console=ttyS0,115200 console=tty0 hostname=${hostname} autoinstall=true
 initrd ${base-url}/images/n100-installer/initrd
 boot || goto failed
 
@@ -238,8 +243,8 @@ prompt Press any key to return to menu...
 exit 1
 EOF
 
-# Replace the placeholder with the actual init path
-ssh "$SSH_HOST" "sudo sed -i 's|INSTALLER_INIT_PATH|$INSTALLER_SYSTEM/init|g' $NETBOOT_ROOT/custom/autochain.ipxe"
+# Replace the placeholder with the actual init path (without leading slash)
+ssh "$SSH_HOST" "sudo sed -i 's|INSTALLER_INIT_PATH|$INSTALLER_INIT_PATH|g' $NETBOOT_ROOT/custom/autochain.ipxe"
 
 # Set permissions
 log_info "Setting permissions..."

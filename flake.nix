@@ -937,7 +937,7 @@
                   fi
 
                   HOST="$1"
-                  
+
                   # Validate it's an N100 host
                   if ! echo "$HOST" | grep -q "^n100-0[1-4]$"; then
                     echo "Error: Invalid N100 hostname. Must be n100-01, n100-02, n100-03, or n100-04"
@@ -946,7 +946,7 @@
 
                   # Try to determine the target host
                   TARGET_HOST=""
-                  
+
                   # First try the hostname directly (in case it has the right IP)
                   echo "Checking if $HOST is running the installer..."
                   if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$HOST" "test -f /etc/is-installer" 2>/dev/null; then
@@ -965,7 +965,7 @@
                     echo "  TARGET_HOST=<ip-address> deploy-n100 $HOST"
                     exit 1
                   fi
-                  
+
                   # Allow override via environment variable
                   if [ -n "$TARGET_HOST_OVERRIDE" ]; then
                     TARGET_HOST="$TARGET_HOST_OVERRIDE"
@@ -990,7 +990,7 @@
                   echo "Target: root@$TARGET_HOST"
                   echo "Configuration: $HOST"
                   echo ""
-                  
+
                   NIXPKGS_ALLOW_UNFREE=1 nixos-anywhere \
                     --flake ".#$HOST" \
                     --target-host "root@$TARGET_HOST" \

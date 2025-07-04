@@ -251,6 +251,10 @@ If you see "can't find terminal definition for xterm-ghostty":
 - HTTP serving of boot files via nginx on port 8079 for iPXE chainloading
 - Build script in `scripts/build-netboot-images.sh` for creating and deploying netboot images
 - Setup script in `scripts/setup-n100-macs.sh` for MAC address documentation
+- **Fixed**: Netboot installer now has console access (serial and VGA) with auto-login
+- **Fixed**: SSH host keys are pre-generated for consistent fingerprints
+- **Fixed**: Build script updates TFTP iPXE scripts with correct init paths
+- **Fixed**: `netboot-build` command runs non-interactively via `nix develop -c`
 - MAC addresses configured:
   - n100-01: `e0:51:d8:12:ba:97`
   - n100-02: `e0:51:d8:13:04:50`
