@@ -318,6 +318,13 @@ N100 → DHCP Request → HAL9000
      ← Boot into NixOS ←
 ```
 
+### Netboot URLs
+- **Netboot Server**: `http://hal9000.home.urandom.io:8079/` or `http://netboot.home.urandom.io:8079/`
+- **iPXE Boot Script**: `http://hal9000.home.urandom.io:8079/ipxe/boot.ipxe`
+- **Installer Image**: `http://hal9000.home.urandom.io:8079/images/n100-installer/`
+- **Rescue Image**: `http://hal9000.home.urandom.io:8079/images/n100-rescue/`
+- **Access restricted to**: `10.70.100.0/24` and `100.64.0.0/10` networks
+
 ### Troubleshooting Netboot
 - **PXE not working**: Check BIOS settings and network connectivity
 - **Installation fails**: Boot rescue mode, check with `lsblk` and `journalctl`
