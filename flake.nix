@@ -24,7 +24,7 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     secrets = {
-      url = "path:./secrets";
+      url = "git+ssh://git@github.com/jamesbrink/nix-secrets.git";
       flake = false;
     };
     vscode-server = {
@@ -37,6 +37,10 @@
     };
     devshell = {
       url = "github:numtide/devshell";
+    };
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # Darwin-specific inputs
@@ -73,6 +77,7 @@
       vscode-server,
       claude-desktop,
       devshell,
+      disko,
       darwin,
       nix-homebrew,
       homebrew-bundle,
@@ -975,6 +980,7 @@
           modules = [
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
+            disko.nixosModules.disko
             ./hosts/n100-01/default.nix
             # Use unstable packages
             {
@@ -1001,6 +1007,7 @@
           modules = [
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
+            disko.nixosModules.disko
             ./hosts/n100-02/default.nix
             # Use unstable packages
             {
@@ -1027,6 +1034,7 @@
           modules = [
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
+            disko.nixosModules.disko
             ./hosts/n100-03/default.nix
             # Use unstable packages
             {
@@ -1058,6 +1066,7 @@
           modules = [
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
+            disko.nixosModules.disko
             vscode-server.nixosModules.default
             (
               { config, pkgs, ... }:

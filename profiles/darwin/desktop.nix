@@ -67,7 +67,7 @@
       "little-snitch"
 
       # AI Tools
-      "claude" # Claude Desktop
+      "claude" # Claude Code
       "diffusionbee"
       "ollama-app"
     ];

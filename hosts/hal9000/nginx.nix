@@ -180,7 +180,7 @@
       "home.urandom.io" = {
         domain = "*.home.urandom.io";
         dnsProvider = "route53";
-        credentialsFile = config.age.secrets."secrets/global/aws/cert-credentials-secret.age".path;
+        credentialsFile = config.age.secrets."global-aws-cert-credentials".path;
         dnsPropagationCheck = true;
         dnsResolver = "1.1.1.1:53";
         extraLegoFlags = [

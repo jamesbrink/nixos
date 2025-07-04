@@ -21,6 +21,7 @@
     ../../profiles/desktop/default-stable.nix
     ../../profiles/keychron/default.nix
     ../../modules/services/ai-starter-kit/default.nix
+    ../../modules/services/netboot-server.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
 
@@ -311,7 +312,7 @@
         PasswordAuthentication = true;
         LoginGraceTime = 0;
         AuthorizedKeysCommand = "${pkgs.bash}/bin/bash -c 'cat ${
-          config.age.secrets."secrets/global/ssh/authorized_keys.age".path
+          config.age.secrets."global-ssh-authorized-keys".path
         }'";
         AuthorizedKeysCommandUser = "root";
       };
@@ -354,7 +355,7 @@
         "${pkgs.bash}/bin/bash -c 'until ${pkgs.iproute2}/bin/ip route | grep -q ^default; do sleep 1; done'"
       ];
       ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.rustdesk}/bin/rustdesk --service --elevate --log-level trace --password \"$(cat ${
-        config.age.secrets."secrets/hal9000/rustdesk.age".path
+        config.age.secrets."hal9000-rustdesk".path
       })\"'";
       RuntimeDirectory = "rustdesk";
       LogsDirectory = "rustdesk";
@@ -423,16 +424,19 @@
       "/etc/ssh/ssh_host_ed25519_key"
     ];
     secrets = {
-      "secrets/global/ssh/authorized_keys.age".file =
-        "${secretsPath}/secrets/global/ssh/authorized_keys.age";
-      "secrets/hal9000/tailscale.age".file = "${secretsPath}/secrets/hal9000/tailscale.age";
-      "secrets/hal9000/rustdesk.age" = {
+      "global-ssh-authorized-keys" = {
+        file = "${secretsPath}/secrets/global/ssh/authorized_keys.age";
+      };
+      "hal9000-tailscale" = {
+        file = "${secretsPath}/secrets/hal9000/tailscale.age";
+      };
+      "hal9000-rustdesk" = {
         file = "${secretsPath}/secrets/hal9000/rustdesk.age";
         owner = "jamesbrink";
         group = "users";
         mode = "0400";
       };
-      "secrets/global/aws/cert-credentials-secret.age" = {
+      "global-aws-cert-credentials" = {
         file = "${secretsPath}/secrets/global/aws/cert-credentials-secret.age";
         owner = "nginx";
         group = "nginx";
@@ -945,7 +949,7 @@
   services.tailscale = {
     enable = true;
     openFirewall = true;
-    authKeyFile = "${config.age.secrets."secrets/hal9000/tailscale.age".path}";
+    authKeyFile = "${config.age.secrets."hal9000-tailscale".path}";
   };
 
   # webhook service configuration
@@ -1068,5 +1072,12 @@
       password = "n8n"; # You might want to change this
       database = "n8n";
     };
+  };
+
+  # Enable netboot server for N100 cluster
+  services.netboot-server = {
+    enable = true;
+    interface = "br0";
+    httpPort = 8079;
   };
 }

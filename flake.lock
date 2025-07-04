@@ -122,6 +122,26 @@
         "type": "github"
       }
     },
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1750903843,
+        "narHash": "sha256-Ng9+f0H5/dW+mq/XOKvB9uwvGbsuiiO6HrPdAcVglCs=",
+        "owner": "nix-community",
+        "repo": "disko",
+        "rev": "83c4da299c1d7d300f8c6fd3a72ac46cb0d59aae",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "disko",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems_2"
@@ -340,6 +360,7 @@
         "claude-desktop": "claude-desktop",
         "darwin": "darwin_2",
         "devshell": "devshell",
+        "disko": "disko",
         "home-manager": "home-manager_2",
         "home-manager-unstable": "home-manager-unstable",
         "homebrew-bundle": "homebrew-bundle",
@@ -355,14 +376,18 @@
     "secrets": {
       "flake": false,
       "locked": {
-        "path": "./secrets",
-        "type": "path"
+        "lastModified": 1751428498,
+        "narHash": "sha256-EBa31g4o+FKbbchRB/z+d0GalylQETGfzVraYVhkg2g=",
+        "ref": "refs/heads/main",
+        "rev": "00e6fb7db56b2780bbde5ea51780fc54245e143e",
+        "revCount": 28,
+        "type": "git",
+        "url": "ssh://git@github.com/jamesbrink/nix-secrets.git"
       },
       "original": {
-        "path": "./secrets",
-        "type": "path"
-      },
-      "parent": []
+        "type": "git",
+        "url": "ssh://git@github.com/jamesbrink/nix-secrets.git"
+      }
     },
     "systems": {
       "locked": {

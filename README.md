@@ -267,6 +267,68 @@ Secrets are managed using agenix and stored in a separate private repository as 
 - Secret files are stored in `secrets/secrets/` directory structure
 - All secrets commands handle the nested directory structure automatically
 
+## N100 Cluster Netboot Deployment
+
+The repository includes a complete netboot infrastructure for provisioning N100 cluster nodes via PXE boot.
+
+### Prerequisites
+- HAL9000 server with the netboot configuration deployed
+- N100 machines configured for PXE boot in BIOS
+- Network connectivity between N100 nodes and HAL9000
+
+### Key Components
+- **Disko**: Declarative disk partitioning with ZFS support (see `modules/n100-disko.nix`)
+- **Netboot Installer**: Custom NixOS installer with ZFS and disko support
+- **Auto-install Script**: Automated installation using disko configuration
+
+### Setting Up Netboot
+
+1. **Deploy Netboot Server on HAL9000**
+   ```bash
+   deploy hal9000
+   ```
+   This enables Pixiecore PXE server and configures nginx to serve netboot images.
+
+2. **Build and Deploy Netboot Images**
+   ```bash
+   ./scripts/build-netboot-images.sh
+   ```
+   This builds installer and rescue images with ZFS support.
+
+3. **Configure N100 BIOS for PXE Boot**
+   - Enter BIOS (F2 or DEL during boot)
+   - Enable network boot/PXE boot
+   - Set network boot as first boot priority
+
+4. **Boot and Install**
+   - Boot from network to see the N100 Netboot Menu
+   - Select "Install NixOS with ZFS"
+   - Run `n100-install` for automated installation
+   - The script detects hostname, uses disko to configure ZFS, and installs NixOS
+
+### Network Boot Process
+```
+N100 → DHCP Request → HAL9000
+     ← DHCP + PXE Info ←
+     → TFTP: iPXE.pxe →
+     ← iPXE Bootloader ←
+     → HTTP: boot.ipxe →
+     ← iPXE Script ←
+     → HTTP: kernel/initrd →
+     ← Boot into NixOS ←
+```
+
+### Troubleshooting Netboot
+- **PXE not working**: Check BIOS settings and network connectivity
+- **Installation fails**: Boot rescue mode, check with `lsblk` and `journalctl`
+- **SSH access**: Use `ssh root@n100-XX` (keys pre-configured)
+
+### Adding New N100 Nodes
+1. Generate hostId: `head -c 8 /dev/urandom | od -A n -t x8`
+2. Create host configuration in `hosts/n100-XX/`
+3. Add to secrets recipients if needed
+4. Rebuild netboot images
+
 ## Key Features
 
 ### Channel Management

@@ -75,7 +75,11 @@ in
 
           # Linux-specific packages
           (pkgs.callPackage ../../pkgs/llama-cpp {
-            cudaSupport = true;
+            cudaSupport =
+              config.networking.hostName != "n100-01"
+              && config.networking.hostName != "n100-02"
+              && config.networking.hostName != "n100-03"
+              && config.networking.hostName != "n100-04";
             cudaPackages = pkgs.cudaPackages_12_3;
           })
         ]

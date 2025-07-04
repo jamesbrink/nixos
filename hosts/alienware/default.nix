@@ -212,7 +212,7 @@
     settings = {
       gui = {
         user = "jamesbrink";
-        passwordFile = config.age.secrets."secrets/alienware/syncthing-password".path;
+        passwordFile = config.age.secrets."alienware-syncthing-password".path;
       };
       devices = {
         "DarkStarMk6Mod1" = {
@@ -306,7 +306,7 @@
       PasswordAuthentication = true;
       LoginGraceTime = 0;
       AuthorizedKeysCommand = "${pkgs.bash}/bin/bash -c 'cat ${
-        config.age.secrets."secrets/global/ssh/authorized_keys.age".path
+        config.age.secrets."global-ssh-authorized-keys".path
       }'";
       AuthorizedKeysCommandUser = "root";
     };
@@ -316,10 +316,8 @@
   age = {
     identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
-      "secrets/global/ssh/authorized_keys.age".file =
-        "${secretsPath}/secrets/global/ssh/authorized_keys.age";
-      "secrets/alienware/syncthing-password".file =
-        "${secretsPath}/secrets/alienware/syncthing-password.age";
+      "global-ssh-authorized-keys".file = "${secretsPath}/secrets/global/ssh/authorized_keys.age";
+      "alienware-syncthing-password".file = "${secretsPath}/secrets/alienware/syncthing-password.age";
     };
   };
 

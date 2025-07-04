@@ -39,10 +39,12 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 │   └── sevastopol-linux/ # 2013 iMac 27" dual-boot (Linux)
 ├── modules/              # Custom modules and services
 │   ├── darwin/           # macOS-specific modules
+│   ├── netboot/          # Netboot installer and scripts
 │   ├── packages/         # Custom package definitions
 │   ├── services/         # Service configurations
 │   ├── shared-packages/  # Shared package sets
-│   └── claude-desktop.nix # Claude desktop config
+│   ├── claude-desktop.nix # Claude desktop config
+│   └── n100-disko.nix    # N100 ZFS disk configuration
 ├── pkgs/                 # Custom package derivations
 │   └── llama-cpp/        # LLaMA C++ implementation
 ├── profiles/             # Reusable system profiles
@@ -228,6 +230,15 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Added zsh initialization to handle terminfo lookup and backspace key fixes
 - Moved `option_as_alt` setting to correct window section in Alacritty config
 - Removed non-functional terminfo activation script
+
+### N100 Netboot Infrastructure (July 2025)
+- Implemented complete PXE netboot infrastructure for N100 cluster nodes
+- Added disko support to netboot installer for declarative ZFS partitioning
+- Created `modules/n100-disko.nix` with ZFS configuration (root, nix, var, home datasets + swap zvol)
+- Updated `modules/netboot/auto-install.sh` to use disko instead of manual partitioning
+- Added `modules/netboot/flake.nix` with disko input for building netboot images
+- Netboot server configuration in `modules/services/netboot-server.nix` for HAL9000
+- Build script in `scripts/build-netboot-images.sh` for deploying to netboot server
 
 ## Secrets Management Process
 - Secrets are managed using agenix
