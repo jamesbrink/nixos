@@ -19,4 +19,3 @@
   # Override disk device if needed (default is /dev/sda)
   # disko.devices.disk.main.device = "/dev/nvme0n1";
 }
-

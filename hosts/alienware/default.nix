@@ -22,8 +22,8 @@
   ];
 
   # Security audit configuration
-  security.audit.enable = true;
-  security.auditd.enable = true;
+  security.audit.enable = false;
+  security.auditd.enable = false;
   security.audit.failureMode = "printk";
   security.audit.rules = [
     "-a exit,always -F arch=b64 -S execve"

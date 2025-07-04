@@ -14,6 +14,7 @@
   imports = [
     ./hardware-configuration.nix
     ./nginx.nix
+    ./nginx-netboot.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
@@ -21,7 +22,10 @@
     ../../profiles/desktop/default-stable.nix
     ../../profiles/keychron/default.nix
     ../../modules/services/ai-starter-kit/default.nix
-    ../../modules/services/netboot-server.nix
+    ../../modules/services/tftp-server.nix
+    ../../modules/services/netboot-configs.nix
+    ../../modules/services/netboot-autochain.nix
+    # ../../modules/services/netboot-server.nix  # Replaced by tftp-server.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
 
@@ -34,8 +38,8 @@
   #   user = "jamesbrink";
   # };
 
-  security.audit.enable = true;
-  security.auditd.enable = true;
+  security.audit.enable = false;
+  security.auditd.enable = false;
   security.audit.failureMode = "printk";
   security.audit.rules = [
     "-a exit,always -F arch=b64 -S execve"
@@ -1074,10 +1078,48 @@
     };
   };
 
-  # Enable netboot server for N100 cluster
-  services.netboot-server = {
+  # Enable TFTP server for N100 cluster netboot
+  services.tftp-server = {
     enable = true;
     interface = "br0";
-    httpPort = 8079;
   };
+
+  # Enable N100 netboot configuration file generation
+  services.netbootConfigs = {
+    enable = true;
+    nodes = {
+      "n100-01" = {
+        macAddress = "e0:51:d8:12:ba:97";
+        disk = "/dev/nvme0n1";
+        zfsPool = "rpool";
+        dhcp = true;
+      };
+      "n100-02" = {
+        macAddress = "e0:51:d8:13:04:50";
+        disk = "/dev/nvme0n1";
+        zfsPool = "rpool";
+        dhcp = true;
+      };
+      "n100-03" = {
+        macAddress = "e0:51:d8:13:4e:91";
+        disk = "/dev/nvme0n1";
+        zfsPool = "rpool";
+        dhcp = true;
+      };
+      "n100-04" = {
+        macAddress = "e0:51:d8:15:46:4e";
+        disk = "/dev/nvme0n1";
+        zfsPool = "rpool";
+        dhcp = true;
+      };
+    };
+  };
+
+  # Enable auto-chain script for N100 detection
+  services.netboot-autochain = {
+    enable = true;
+  };
+
+  # Keep nginx serving netboot images on port 8079
+  # (configured in nginx.nix)
 }

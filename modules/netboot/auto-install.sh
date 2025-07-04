@@ -27,12 +27,41 @@ log_error() {
 POOL_NAME="zpool"
 MOUNT_POINT="/mnt"
 
+# Check for kernel parameters
+check_kernel_params() {
+    # Check for autoinstall=true in kernel parameters
+    if grep -q "autoinstall=true" /proc/cmdline; then
+        AUTO_INSTALL=true
+        log_info "Auto-install mode enabled"
+    else
+        AUTO_INSTALL=false
+    fi
+    
+    # Check for hostname in kernel parameters
+    if grep -oE 'hostname=n100-0[1-4]' /proc/cmdline > /dev/null; then
+        HOSTNAME=$(grep -oE 'hostname=n100-0[1-4]' /proc/cmdline | cut -d= -f2)
+        log_info "Hostname from kernel parameter: $HOSTNAME"
+        HOSTNAME_FROM_KERNEL=true
+    else
+        HOSTNAME_FROM_KERNEL=false
+    fi
+}
+
 # Detect hostname from DHCP or prompt
 detect_hostname() {
+    # First check if we already have hostname from kernel parameter
+    if [ "$HOSTNAME_FROM_KERNEL" = true ]; then
+        log_info "Using hostname from kernel parameter: $HOSTNAME"
+        return
+    fi
+    
     local dhcp_hostname=$(hostname)
     if [[ "$dhcp_hostname" =~ ^n100-0[1-4]$ ]]; then
         HOSTNAME="$dhcp_hostname"
         log_info "Detected hostname from DHCP: $HOSTNAME"
+    elif [ "$AUTO_INSTALL" = true ]; then
+        log_error "Auto-install enabled but no hostname detected!"
+        exit 1
     else
         echo "Unable to detect hostname from DHCP."
         echo "Please select the target host:"
@@ -65,22 +94,35 @@ detect_disk() {
         INSTALL_DISK="${DISKS[0]}"
         log_info "Found single disk: $INSTALL_DISK"
     else
-        log_warn "Multiple disks found:"
-        for i in "${!DISKS[@]}"; do
-            size=$(lsblk -dno SIZE "${DISKS[$i]}")
-            echo "$((i+1))) ${DISKS[$i]} ($size)"
-        done
-        read -p "Select disk (1-${#DISKS[@]}): " selection
-        INSTALL_DISK="${DISKS[$((selection-1))]}"
+        if [ "$AUTO_INSTALL" = true ]; then
+            # In auto mode, use the first disk
+            INSTALL_DISK="${DISKS[0]}"
+            log_warn "Multiple disks found, auto-selecting first disk: $INSTALL_DISK"
+        else
+            log_warn "Multiple disks found:"
+            for i in "${!DISKS[@]}"; do
+                size=$(lsblk -dno SIZE "${DISKS[$i]}")
+                echo "$((i+1))) ${DISKS[$i]} ($size)"
+            done
+            read -p "Select disk (1-${#DISKS[@]}): " selection
+            INSTALL_DISK="${DISKS[$((selection-1))]}"
+        fi
     fi
     
     # Confirm disk selection
     log_warn "Selected disk: $INSTALL_DISK"
     lsblk "$INSTALL_DISK"
-    read -p "This will DESTROY all data on $INSTALL_DISK. Continue? (yes/no): " confirm
-    if [ "$confirm" != "yes" ]; then
-        log_error "Installation cancelled"
-        exit 1
+    
+    if [ "$AUTO_INSTALL" = true ]; then
+        log_warn "Auto-install mode: proceeding without confirmation"
+        log_warn "Installing to $INSTALL_DISK in 5 seconds..."
+        sleep 5
+    else
+        read -p "This will DESTROY all data on $INSTALL_DISK. Continue? (yes/no): " confirm
+        if [ "$confirm" != "yes" ]; then
+            log_error "Installation cancelled"
+            exit 1
+        fi
     fi
 }
 
@@ -164,6 +206,9 @@ main() {
 ║                    ZFS Root Configuration                     ║
 ╚═══════════════════════════════════════════════════════════════╝
 EOF
+    
+    # Check kernel parameters first
+    check_kernel_params
     
     # Run installation steps
     detect_hostname

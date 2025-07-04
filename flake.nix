@@ -583,7 +583,7 @@
               }
 
               {
-                name = "gc";
+                name = "nix-gc";
                 category = "maintenance";
                 help = "Run garbage collection to free up disk space";
                 command = ''
@@ -595,7 +595,7 @@
                   fi
                   if [ -z "$HOST" ]; then
                     echo "Error: You must specify a hostname."
-                    echo "Usage: gc <hostname>"
+                    echo "Usage: nix-gc <hostname>"
                     echo "Available hosts:"
                     find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
                     exit 1
@@ -888,6 +888,36 @@
                   echo "  $HOST = \"$(echo "$KEY" | cut -d' ' -f2-3)\";"
                   echo ""
                   echo "Then run 'secrets-rekey' to re-encrypt all secrets"
+                '';
+              }
+
+              # ───────────────────────────────────────────────────────
+              # NETBOOT COMMANDS - For netboot infrastructure
+              # ───────────────────────────────────────────────────────
+              {
+                name = "netboot-build";
+                category = "netboot";
+                help = "Build and deploy N100 netboot images";
+                command = ''
+                  echo "Building and deploying N100 netboot images..."
+                  cd ${toString ./.}
+                  if sudo ./scripts/build-netboot-images.sh; then
+                    echo "Netboot images built and deployed successfully!"
+                  else
+                    echo "Failed to build/deploy netboot images"
+                    exit 1
+                  fi
+                '';
+              }
+
+              {
+                name = "netboot-setup-macs";
+                category = "netboot";
+                help = "Document N100 MAC addresses for netboot";
+                command = ''
+                  echo "Setting up N100 MAC addresses..."
+                  cd ${toString ./.}
+                  ./scripts/setup-n100-macs.sh
                 '';
               }
 

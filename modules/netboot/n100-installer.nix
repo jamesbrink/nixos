@@ -134,4 +134,3 @@
     <<< NixOS N100 Installer - Run 'n100-install' to begin >>>
   '';
 }
-

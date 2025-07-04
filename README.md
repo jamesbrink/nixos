@@ -116,9 +116,13 @@ The project includes a comprehensive development shell with categorized commands
 ### Maintenance Commands
 - `show-hosts` - List all available hosts
 - `health-check <hostname>` - Check system health (disk, memory, services, errors)
-- `gc <hostname>` - Run garbage collection on a host
+- `nix-gc <hostname>` - Run garbage collection on a host
 - `show-generations <hostname>` - Show system generations on a host
 - `rollback <hostname>` - Roll back to the previous generation
+
+### Netboot Commands
+- `scripts/build-netboot-images.sh` - Build N100 installer and rescue images
+- `scripts/setup-n100-macs.sh` - Document N100 MAC addresses for netboot configuration
 
 ### Secrets Commands
 - `secrets-edit <path>` - Create or edit a secret (e.g., `secrets-edit jamesbrink/syncthing-password`)
@@ -277,9 +281,12 @@ The repository includes a complete netboot infrastructure for provisioning N100 
 - Network connectivity between N100 nodes and HAL9000
 
 ### Key Components
+- **TFTP Server**: Serves hostname-based iPXE scripts (port 69)
+- **Nginx HTTP Server**: Serves kernel/initrd images and MAC-based configs (port 8079)
 - **Disko**: Declarative disk partitioning with ZFS support (see `modules/n100-disko.nix`)
 - **Netboot Installer**: Custom NixOS installer with ZFS and disko support
 - **Auto-install Script**: Automated installation using disko configuration
+- **Automated Config Generation**: N100 node configurations are generated automatically from `services.netbootConfigs` in HAL9000's configuration
 
 ### Setting Up Netboot
 
@@ -287,7 +294,7 @@ The repository includes a complete netboot infrastructure for provisioning N100 
    ```bash
    deploy hal9000
    ```
-   This enables Pixiecore PXE server and configures nginx to serve netboot images.
+   This enables TFTP server for PXE booting and configures nginx to serve netboot images.
 
 2. **Build and Deploy Netboot Images**
    ```bash
@@ -308,33 +315,50 @@ The repository includes a complete netboot infrastructure for provisioning N100 
 
 ### Network Boot Process
 ```
-N100 → DHCP Request → HAL9000
-     ← DHCP + PXE Info ←
-     → TFTP: iPXE.pxe →
-     ← iPXE Bootloader ←
-     → HTTP: boot.ipxe →
-     ← iPXE Script ←
-     → HTTP: kernel/initrd →
-     ← Boot into NixOS ←
+N100 → DHCP Request → MikroTik Router
+     ← IP + next-server (HAL9000) + netboot.xyz.efi ←
+     → TFTP: Request netboot.xyz.efi →
+     ← TFTP: netboot.xyz v2.0.87 ←
+     → (Optional) Chain to auto-detect script →
+     ← Auto-boot NixOS installer if N100 MAC detected ←
 ```
 
 ### Netboot URLs
 - **Netboot Server**: `http://hal9000.home.urandom.io:8079/` or `http://netboot.home.urandom.io:8079/`
-- **iPXE Boot Script**: `http://hal9000.home.urandom.io:8079/ipxe/boot.ipxe`
+- **Auto-chain Script**: `http://hal9000.home.urandom.io:8079/custom/autochain.ipxe` (for netboot.xyz integration)
+- **Boot Files**: `http://hal9000.home.urandom.io:8079/boot/` (MAC-based iPXE scripts)
 - **Installer Image**: `http://hal9000.home.urandom.io:8079/images/n100-installer/`
 - **Rescue Image**: `http://hal9000.home.urandom.io:8079/images/n100-rescue/`
 - **Access restricted to**: `10.70.100.0/24` and `100.64.0.0/10` networks
+
+### Automatic N100 Installation
+The netboot infrastructure supports fully automatic installation:
+1. **MAC-based boot files**: `01-e0-51-d8-XX-XX-XX.ipxe` files automatically load for N100 nodes
+2. **Auto-chain with netboot.xyz**: Configure netboot.xyz to use custom URL `http://hal9000:8079/custom/autochain.ipxe`
+3. **Automatic detection**: Script checks MAC address and auto-boots NixOS installer with `autoinstall=true`
+4. **Unattended install**: Installer automatically partitions disk with ZFS and installs NixOS
 
 ### Troubleshooting Netboot
 - **PXE not working**: Check BIOS settings and network connectivity
 - **Installation fails**: Boot rescue mode, check with `lsblk` and `journalctl`
 - **SSH access**: Use `ssh root@n100-XX` (keys pre-configured)
 
+### N100 Cluster Nodes
+Current N100 nodes and their MAC addresses:
+- **n100-01**: `e0:51:d8:12:ba:97` (IP: 10.70.100.201)
+- **n100-02**: `e0:51:d8:13:04:50` (IP: 10.70.100.202)
+- **n100-03**: `e0:51:d8:13:4e:91` (IP: 10.70.100.203)
+- **n100-04**: `e0:51:d8:15:46:4e` (IP: 10.70.100.204)
+
 ### Adding New N100 Nodes
 1. Generate hostId: `head -c 8 /dev/urandom | od -A n -t x8`
 2. Create host configuration in `hosts/n100-XX/`
 3. Add to secrets recipients if needed
-4. Rebuild netboot images
+4. Get MAC address: `ssh root@n100-XX ip link show | grep -A1 'state UP' | grep link/ether`
+5. Update the `services.netbootConfigs.nodes` configuration in `hosts/hal9000/default.nix` with the new node's MAC address
+6. Update `modules/services/tftp-server.nix` and `modules/services/netboot-autochain.nix` for MAC detection
+7. Deploy HAL9000 to generate the new config file: `deploy hal9000`
+8. Rebuild netboot images if needed
 
 ## Key Features
 

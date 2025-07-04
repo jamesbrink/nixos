@@ -19,9 +19,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Maintenance Commands
 - `show-hosts`: List all available hosts
 - `health-check <hostname>`: Check system health (disk, memory, services, errors)
-- `gc <hostname>`: Run garbage collection on a host
+- `nix-gc <hostname>`: Run garbage collection on a host
 - `show-generations <hostname>`: Show NixOS generations on a host
 - `rollback <hostname>`: Roll back to the previous generation
+
+### Netboot Commands
+- `scripts/build-netboot-images.sh`: Build N100 installer and rescue images
+- `scripts/setup-n100-macs.sh`: Document N100 MAC addresses for netboot
+- Test auto-chain: `curl http://hal9000:8079/custom/autochain.ipxe`
+- View boot files: `curl http://hal9000:8079/boot/`
 
 ## High-Level Architecture
 
@@ -46,7 +52,8 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 │   ├── claude-desktop.nix # Claude desktop config
 │   └── n100-disko.nix    # N100 ZFS disk configuration
 ├── pkgs/                 # Custom package derivations
-│   └── llama-cpp/        # LLaMA C++ implementation
+│   ├── llama-cpp/        # LLaMA C++ implementation
+│   └── netboot-xyz/      # Netboot.xyz bootloader package
 ├── profiles/             # Reusable system profiles
 │   ├── darwin/           # macOS base profiles
 │   ├── desktop/          # Linux desktop environments
@@ -233,12 +240,22 @@ If you see "can't find terminal definition for xterm-ghostty":
 
 ### N100 Netboot Infrastructure (July 2025)
 - Implemented complete PXE netboot infrastructure for N100 cluster nodes
+- **Updated to netboot.xyz v2.0.87** with custom package in `pkgs/netboot-xyz/`
 - Added disko support to netboot installer for declarative ZFS partitioning
 - Created `modules/n100-disko.nix` with ZFS configuration (root, nix, var, home datasets + swap zvol)
-- Updated `modules/netboot/auto-install.sh` to use disko instead of manual partitioning
+- Updated `modules/netboot/auto-install.sh` to support automatic installation via kernel parameters
 - Added `modules/netboot/flake.nix` with disko input for building netboot images
-- Netboot server configuration in `modules/services/netboot-server.nix` for HAL9000
-- Build script in `scripts/build-netboot-images.sh` for deploying to netboot server
+- **NEW**: MAC address-based automatic boot files (01-MAC-ADDRESS.ipxe) for N100 nodes
+- **NEW**: Auto-chain script at `http://hal9000:8079/custom/autochain.ipxe` for netboot.xyz integration
+- TFTP-based netboot with both hostname and MAC address detection in `modules/services/tftp-server.nix`
+- HTTP serving of boot files via nginx on port 8079 for iPXE chainloading
+- Build script in `scripts/build-netboot-images.sh` for creating and deploying netboot images
+- Setup script in `scripts/setup-n100-macs.sh` for MAC address documentation
+- MAC addresses configured:
+  - n100-01: `e0:51:d8:12:ba:97`
+  - n100-02: `e0:51:d8:13:04:50`
+  - n100-03: `e0:51:d8:13:4e:91`
+  - n100-04: `e0:51:d8:15:46:4e`
 
 ## Secrets Management Process
 - Secrets are managed using agenix
