@@ -16,6 +16,11 @@
 
   # System configuration for the installer
   networking.hostName = "nixos-installer";
+  
+  # Create marker file to identify this as the installer
+  system.activationScripts.installerMarker = ''
+    touch /etc/is-installer
+  '';
 
   # Enable SSH for remote installation
   services.openssh = {
