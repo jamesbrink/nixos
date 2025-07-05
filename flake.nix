@@ -749,7 +749,7 @@
                   SECRET_PATH="''${SECRET_PATH%.age}"
 
                   # The actual file path
-                  SECRET_FILE="secrets/$SECRET_PATH.age"
+                  SECRET_FILE="$SECRET_PATH.age"
 
                   # Change to secrets directory for proper path resolution
                   cd secrets
