@@ -804,7 +804,7 @@
                 help = "List all secret files";
                 command = ''
                   echo "Available secrets:"
-                  find secrets/secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
+                  find secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
                 '';
               }
 
@@ -826,14 +826,14 @@
                     exit 1
                   fi
 
-                  for secret in $(find secrets/secrets -name "*.age" -type f | sort); do
+                  for secret in $(find secrets -name "*.age" -type f | sort); do
                     echo -n "Checking $secret... "
-                    # Extract the path relative to secrets/secrets/
-                    SECRET_PATH="''${secret#secrets/secrets/}"
+                    # Extract the path relative to secrets/
+                    SECRET_PATH="''${secret#secrets/}"
                     SECRET_PATH="''${SECRET_PATH%.age}"
                     
                     # We need to cd into secrets directory because agenix expects paths relative to rules file
-                    if (cd secrets && RULES=./secrets.nix agenix -d "secrets/$SECRET_PATH.age" -i "$IDENTITY_FILE" > /dev/null 2>&1); then
+                    if (cd secrets && RULES=./secrets.nix agenix -d "$SECRET_PATH.age" -i "$IDENTITY_FILE" > /dev/null 2>&1); then
                       echo "✓"
                     else
                       echo "✗ FAILED"
@@ -1155,7 +1155,7 @@
                     echo "         secrets-print hal9000/syncthing-password"
                     echo ""
                     echo "Available secrets:"
-                    find secrets/secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
+                    find secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
                     exit 1
                   fi
 
@@ -1168,13 +1168,13 @@
                   SECRET_PATH="''${SECRET_PATH%.age}"
 
                   # The actual file path
-                  SECRET_FILE="secrets/secrets/$SECRET_PATH.age"
+                  SECRET_FILE="secrets/$SECRET_PATH.age"
 
                   if [ ! -f "$SECRET_FILE" ]; then
                     echo "Error: Secret file not found: $SECRET_PATH"
                     echo ""
                     echo "Available secrets:"
-                    find secrets/secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
+                    find secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
                     exit 1
                   fi
 
@@ -1194,7 +1194,7 @@
 
                   # Decrypt and capture output
                   # We need to cd into secrets directory because agenix expects paths relative to rules file
-                  DECRYPTED_CONTENT=$(cd secrets && RULES=./secrets.nix agenix -d "secrets/$SECRET_PATH.age" -i "$IDENTITY_FILE" 2>&1)
+                  DECRYPTED_CONTENT=$(cd secrets && RULES=./secrets.nix agenix -d "$SECRET_PATH.age" -i "$IDENTITY_FILE" 2>&1)
                   DECRYPT_STATUS=$?
 
                   if [ $DECRYPT_STATUS -eq 0 ]; then
