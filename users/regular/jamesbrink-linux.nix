@@ -36,6 +36,7 @@ in
     isNormalUser = true;
     uid = 1000;
     description = "James Brink";
+    createHome = true;
     extraGroups = [
       "docker"
       "incus-admin"
@@ -142,6 +143,7 @@ in
   ];
 
   # Age configuration
+  # Host key first for boot-time decryption, then user key for user-specific secrets
   age.identityPaths = [
     "/etc/ssh/ssh_host_ed25519_key"
     "/home/jamesbrink/.ssh/id_ed25519"

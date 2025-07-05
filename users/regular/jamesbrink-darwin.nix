@@ -55,15 +55,21 @@ in
         # TODO: Update aider-chat to use latest unstable once texlive build issue is fixed on Darwin
         # The issue is with texlive-bin-big-2025 failing due to malformed version number on macOS
         # Using aider-chat 0.82.2 from older nixpkgs commit to avoid pypandoc/texlive dependency
-        (let
-          olderNixpkgs = import (builtins.fetchTarball {
-            url = "https://github.com/NixOS/nixpkgs/archive/b6aef6c3553f849e1e6c08f1bcd3061df2b69fc4.tar.gz";
-            sha256 = "1n7pii2bcx3k4yfjma47fdf4pm8k005a9ls0kscykx5j0rdllja3";
-          }) { 
-            system = pkgs.system; 
-            config.allowUnfree = true;
-          };
-        in olderNixpkgs.aider-chat)
+        (
+          let
+            olderNixpkgs =
+              import
+                (builtins.fetchTarball {
+                  url = "https://github.com/NixOS/nixpkgs/archive/b6aef6c3553f849e1e6c08f1bcd3061df2b69fc4.tar.gz";
+                  sha256 = "1n7pii2bcx3k4yfjma47fdf4pm8k005a9ls0kscykx5j0rdllja3";
+                })
+                {
+                  system = pkgs.system;
+                  config.allowUnfree = true;
+                };
+          in
+          olderNixpkgs.aider-chat
+        )
         unstable.code2prompt
         unstable.llm
       ];
