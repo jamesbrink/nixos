@@ -291,6 +291,15 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Ensures Discord and other unfree packages can be installed during deployment
 - deploy-n100 command includes --impure flag for environment variable access
 
+### Secrets and Git Submodule Handling (July 2025)
+- Fixed issue where git submodules (secrets) were not included in path-based flake inputs
+- Implemented rsync-based deployment for both local and remote hosts
+- Deploy command now always copies files to `/tmp/nixos-config/` before building
+- Excludes git-related files (`.git`, `.gitignore`, `.gitmodules`) from deployment
+- Ensures secrets are available as regular files during build, avoiding submodule issues
+- All deployments now use consistent `--flake /tmp/nixos-config#hostname` format
+- Successfully tested on both Darwin (halcyon, sevastopol) and Linux hosts
+
 ## Secrets Management Process
 - Secrets are managed using agenix
 - Stored as a git submodule in `secrets/` (private repository)

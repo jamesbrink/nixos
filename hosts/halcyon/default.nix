@@ -106,5 +106,8 @@
 
   # User configuration is now imported from the module
 
-  # Age secrets configuration is handled in the user module
+  # Age secrets configuration
+  age.identityPaths = [
+    "/etc/ssh/ssh_host_ed25519_key"
+  ];
 }
