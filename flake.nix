@@ -1032,6 +1032,65 @@
               }
 
               {
+                name = "deploy-n100-local";
+                category = "netboot";
+                help = "Deploy to N100 node with local build (for resource-constrained targets)";
+                command = ''
+                  if [ $# -eq 0 ]; then
+                    echo "Error: You must specify an N100 hostname."
+                    echo "Usage: deploy-n100-local <n100-hostname>"
+                    echo "Available N100 hosts: n100-01, n100-02, n100-03, n100-04"
+                    echo ""
+                    echo "This command builds the configuration locally and deploys it to the N100 node."
+                    echo "Use this for nodes that don't have enough resources to build themselves."
+                    exit 1
+                  fi
+
+                  HOST="$1"
+
+                  # Validate it's an N100 host
+                  if ! echo "$HOST" | grep -q "^n100-0[1-4]$"; then
+                    echo "Error: Invalid N100 hostname. Must be n100-01, n100-02, n100-03, or n100-04"
+                    exit 1
+                  fi
+
+                  # Check if host is reachable
+                  echo "Checking connectivity to $HOST..."
+                  if ! ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$HOST" "true" 2>/dev/null; then
+                    echo "Error: Cannot reach $HOST. Make sure the system is online and SSH is available."
+                    exit 1
+                  fi
+
+                  echo "Building configuration for $HOST locally..."
+                  NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
+
+                  if [ $? -ne 0 ]; then
+                    echo "Build failed! Aborting deployment."
+                    exit 1
+                  fi
+
+                  echo "Build complete! Copying closure to $HOST..."
+                  nix-copy-closure --to root@$HOST ./result
+
+                  if [ $? -ne 0 ]; then
+                    echo "Failed to copy closure to $HOST! Aborting deployment."
+                    exit 1
+                  fi
+
+                  echo "Switching to new configuration on $HOST..."
+                  STORE_PATH=$(readlink -f ./result)
+                  ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --set $STORE_PATH && /nix/var/nix/profiles/system/bin/switch-to-configuration switch"
+
+                  if [ $? -eq 0 ]; then
+                    echo "Deployment to $HOST complete!"
+                  else
+                    echo "Failed to switch configuration on $HOST!"
+                    exit 1
+                  fi
+                '';
+              }
+
+              {
                 name = "secrets-print";
                 category = "secrets";
                 help = "Decrypt and print a secret (for testing/debugging)";
