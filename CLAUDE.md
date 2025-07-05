@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `build <hostname>`: Build configuration for a host without deploying
 - `update`: Update all NixOS and flake inputs
 - `update-input <input-name>`: Update a specific flake input
-- `deploy-n100-local <n100-hostname>`: Build locally and deploy to N100 nodes (for resource-constrained targets)
+- `deploy-n100-local <n100-hostname>`: Initial deployment using nixos-anywhere with local build (for resource-constrained N100s)
 
 ### Maintenance Commands
 - `show-hosts`: List all available hosts

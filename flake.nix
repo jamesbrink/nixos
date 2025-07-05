@@ -1034,15 +1034,26 @@
               {
                 name = "deploy-n100-local";
                 category = "netboot";
-                help = "Deploy to N100 node with local build (for resource-constrained targets)";
+                help = "Initial deployment to N100 node using nixos-anywhere with local build (for resource-constrained targets)";
                 command = ''
                   if [ $# -eq 0 ]; then
                     echo "Error: You must specify an N100 hostname."
                     echo "Usage: deploy-n100-local <n100-hostname>"
                     echo "Available N100 hosts: n100-01, n100-02, n100-03, n100-04"
                     echo ""
-                    echo "This command builds the configuration locally and deploys it to the N100 node."
-                    echo "Use this for nodes that don't have enough resources to build themselves."
+                    echo "This command performs initial deployment with local building including:"
+                    echo "  - Building the configuration locally (not on the N100)"
+                    echo "  - Creating ZFS volumes with disko"
+                    echo "  - Installing NixOS configuration"
+                    echo "  - Setting up encrypted secrets"
+                    echo ""
+                    echo "Prerequisites:"
+                    echo "  - N100 node must be booted into netboot installer"
+                    echo "  - SSH access to root@nixos-installer must be available"
+                    echo ""
+                    echo "Environment variables:"
+                    echo "  NIXOS_ANYWHERE_NOCONFIRM=1  Skip confirmation prompt"
+                    echo "  TARGET_HOST_OVERRIDE=<ip>   Override target host IP/hostname"
                     exit 1
                   fi
 
@@ -1054,37 +1065,79 @@
                     exit 1
                   fi
 
-                  # Check if host is reachable
-                  echo "Checking connectivity to $HOST..."
-                  if ! ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$HOST" "true" 2>/dev/null; then
-                    echo "Error: Cannot reach $HOST. Make sure the system is online and SSH is available."
+                  # Try to determine the target host
+                  TARGET_HOST=""
+
+                  # First try the hostname directly (in case it has the right IP)
+                  echo "Checking if $HOST is running the installer..."
+                  if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$HOST" "test -f /etc/is-installer" 2>/dev/null; then
+                    TARGET_HOST="$HOST"
+                    echo "Found installer at $HOST"
+                  # Then try nixos-installer
+                  elif ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@nixos-installer "test -f /etc/is-installer" 2>/dev/null; then
+                    TARGET_HOST="nixos-installer"
+                    echo "Found installer at nixos-installer"
+                  else
+                    echo "Error: Cannot reach installer. Make sure:"
+                    echo "  1. N100 node is booted into netboot installer"
+                    echo "  2. You can SSH to either root@$HOST or root@nixos-installer"
+                    echo ""
+                    echo "If the installer is at a different IP, you can specify it:"
+                    echo "  TARGET_HOST_OVERRIDE=<ip-address> deploy-n100-local $HOST"
                     exit 1
                   fi
 
-                  echo "Building configuration for $HOST locally..."
-                  NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
-
-                  if [ $? -ne 0 ]; then
-                    echo "Build failed! Aborting deployment."
-                    exit 1
+                  # Allow override via environment variable
+                  if [ -n "''${TARGET_HOST_OVERRIDE:-}" ]; then
+                    TARGET_HOST="$TARGET_HOST_OVERRIDE"
+                    echo "Using override target: $TARGET_HOST"
                   fi
 
-                  echo "Build complete! Copying closure to $HOST..."
-                  nix-copy-closure --to root@$HOST ./result
+                  echo "Starting initial deployment to $HOST with local build..."
+                  echo "This will:"
+                  echo "  - Build the configuration locally"
+                  echo "  - Create ZFS volumes according to disko configuration"
+                  echo "  - Install NixOS configuration"
+                  echo "  - Configure encrypted secrets"
+                  echo ""
 
-                  if [ $? -ne 0 ]; then
-                    echo "Failed to copy closure to $HOST! Aborting deployment."
-                    exit 1
+                  # Check if we're in non-interactive mode or auto-confirm
+                  if [ "''${NIXOS_ANYWHERE_NOCONFIRM:-}" = "1" ] || [ "''${CI:-}" = "true" ]; then
+                    echo "Auto-confirming deployment (NIXOS_ANYWHERE_NOCONFIRM=1 or CI=true)"
+                  else
+                    read -p "Continue? (y/N) " -n 1 -r
+                    echo
+                    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                      echo "Deployment cancelled."
+                      exit 0
+                    fi
                   fi
 
-                  echo "Switching to new configuration on $HOST..."
-                  STORE_PATH=$(readlink -f ./result)
-                  ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --set $STORE_PATH && /nix/var/nix/profiles/system/bin/switch-to-configuration switch"
+                  # Run nixos-anywhere with local build
+                  echo "Running nixos-anywhere with local build..."
+                  echo "Target: root@$TARGET_HOST"
+                  echo "Configuration: $HOST"
+                  echo ""
+
+                  NIXPKGS_ALLOW_UNFREE=1 nixos-anywhere \
+                    --impure \
+                    --flake ".#$HOST" \
+                    --target-host "root@$TARGET_HOST" \
+                    --option experimental-features "nix-command flakes" \
+                    --print-build-logs
 
                   if [ $? -eq 0 ]; then
-                    echo "Deployment to $HOST complete!"
+                    echo ""
+                    echo "Initial deployment to $HOST complete!"
+                    echo "The system should reboot into the installed NixOS."
+                    echo ""
+                    echo "Next steps:"
+                    echo "  1. Wait for the system to reboot"
+                    echo "  2. SSH to root@$HOST"
+                    echo "  3. Run further deployments with: deploy-local $HOST"
                   else
-                    echo "Failed to switch configuration on $HOST!"
+                    echo ""
+                    echo "Deployment failed! Check the error messages above."
                     exit 1
                   fi
                 '';
