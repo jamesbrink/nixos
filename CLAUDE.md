@@ -255,11 +255,29 @@ If you see "can't find terminal definition for xterm-ghostty":
 - **Fixed**: SSH host keys are pre-generated for consistent fingerprints
 - **Fixed**: Build script updates TFTP iPXE scripts with correct init paths
 - **Fixed**: `netboot-build` command runs non-interactively via `nix develop -c`
+- **Fixed**: Optimized boot process - removed hardcoded non-existent interface names
+- **Fixed**: Reduced network wait timeout from 120s to 30s for faster boot
+- **Fixed**: Getty services explicitly enabled on tty1 and ttyS0 for reliable console access
 - MAC addresses configured:
   - n100-01: `e0:51:d8:12:ba:97`
   - n100-02: `e0:51:d8:13:04:50`
   - n100-03: `e0:51:d8:13:4e:91`
   - n100-04: `e0:51:d8:15:46:4e`
+
+### SSH Configuration Management (July 2025)
+- Added automatic SSH configuration for local hosts and private IP ranges
+- Created `users/regular/ssh/config.d/00-local-hosts` with StrictHostKeyChecking disabled
+- Configured for all NixOS/Darwin hosts (both hostname and FQDN)
+- Includes all private IP ranges (10.x, 192.168.x, 172.16-31.x)
+- Special handling for hosts with specific usernames (cabby*, station*, server)
+- Uses SSH Include directive to allow manual additions via config_external
+- Applied to both Linux and Darwin hosts via jamesbrink-shared.nix
+
+### Home-Manager Unfree Package Fix (July 2025)
+- Fixed nixos-anywhere deployment failures due to unfree packages
+- Added `nixpkgs.config.allowUnfree = true` to home-manager user configuration
+- Ensures Discord and other unfree packages can be installed during deployment
+- deploy-n100 command includes --impure flag for environment variable access
 
 ## Secrets Management Process
 - Secrets are managed using agenix
