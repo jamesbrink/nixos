@@ -1241,6 +1241,7 @@
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
                     config.allowUnfree = true;
+                    overlays = [ (import ./overlays/aider-no-texlive.nix) ];
                   };
                 })
               ];
@@ -1268,6 +1269,7 @@
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
                     config.allowUnfree = true;
+                    overlays = [ (import ./overlays/aider-no-texlive.nix) ];
                   };
                 })
               ];
@@ -1295,6 +1297,7 @@
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
                     config.allowUnfree = true;
+                    overlays = [ (import ./overlays/aider-no-texlive.nix) ];
                   };
                 })
               ];
@@ -1335,6 +1338,7 @@
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
                     config.allowUnfree = true;
+                    overlays = [ (import ./overlays/aider-no-texlive.nix) ];
                   };
                 })
               ];
@@ -1351,6 +1355,7 @@
             unstablePkgs = import nixos-unstable {
               inherit system;
               config.allowUnfree = true;
+              overlays = [ (import ./overlays/aider-no-texlive.nix) ];
             };
           };
 
@@ -1365,6 +1370,7 @@
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
                     config.allowUnfree = true;
+                    overlays = [ (import ./overlays/aider-no-texlive.nix) ];
                   };
                 })
               ];
@@ -1404,6 +1410,7 @@
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
                     config.allowUnfree = true;
+                    overlays = [ (import ./overlays/aider-no-texlive.nix) ];
                   };
                 })
               ];
@@ -1420,6 +1427,7 @@
             unstablePkgs = import nixos-unstable {
               inherit system;
               config.allowUnfree = true;
+              overlays = [ (import ./overlays/aider-no-texlive.nix) ];
             };
           };
 
@@ -1442,6 +1450,7 @@
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
                     config.allowUnfree = true;
+                    overlays = [ (import ./overlays/aider-no-texlive.nix) ];
                   };
                 })
               ];
@@ -1464,6 +1473,7 @@
             unstablePkgs = import nixos-unstable {
               system = "aarch64-darwin";
               config.allowUnfree = true;
+              overlays = [ (import ./overlays/aider-no-texlive.nix) ];
             };
           };
 
