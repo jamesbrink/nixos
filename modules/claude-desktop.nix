@@ -14,7 +14,7 @@ with lib;
     # Age secret configuration (common for both platforms)
     {
       age.secrets.claude-desktop-config = {
-        file = "${secretsPath}/secrets/global/claude-desktop-config.age";
+        file = "${secretsPath}/global/claude-desktop-config.age";
         mode = "644";
       };
     }

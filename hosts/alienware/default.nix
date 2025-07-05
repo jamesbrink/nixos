@@ -316,8 +316,8 @@
   age = {
     identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
-      "global-ssh-authorized-keys".file = "${secretsPath}/secrets/global/ssh/authorized_keys.age";
-      "alienware-syncthing-password".file = "${secretsPath}/secrets/alienware/syncthing-password.age";
+      "global-ssh-authorized-keys".file = "${secretsPath}/global/ssh/authorized_keys.age";
+      "alienware-syncthing-password".file = "${secretsPath}/alienware/syncthing-password.age";
     };
   };
 

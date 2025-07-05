@@ -24,7 +24,7 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     secrets = {
-      url = "git+ssh://git@github.com/jamesbrink/nix-secrets.git";
+      url = "path:./secrets";
       flake = false;
     };
     vscode-server = {

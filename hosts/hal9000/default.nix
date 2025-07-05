@@ -429,19 +429,19 @@
     ];
     secrets = {
       "global-ssh-authorized-keys" = {
-        file = "${secretsPath}/secrets/global/ssh/authorized_keys.age";
+        file = "${secretsPath}/global/ssh/authorized_keys.age";
       };
       "hal9000-tailscale" = {
-        file = "${secretsPath}/secrets/hal9000/tailscale.age";
+        file = "${secretsPath}/hal9000/tailscale.age";
       };
       "hal9000-rustdesk" = {
-        file = "${secretsPath}/secrets/hal9000/rustdesk.age";
+        file = "${secretsPath}/hal9000/rustdesk.age";
         owner = "jamesbrink";
         group = "users";
         mode = "0400";
       };
       "global-aws-cert-credentials" = {
-        file = "${secretsPath}/secrets/global/aws/cert-credentials-secret.age";
+        file = "${secretsPath}/global/aws/cert-credentials-secret.age";
         owner = "nginx";
         group = "nginx";
         mode = "0400";

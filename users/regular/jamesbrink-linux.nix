@@ -148,14 +148,14 @@ in
   ];
 
   age.secrets."aws-config" = {
-    file = "${effectiveSecretsPath}/secrets/jamesbrink/aws/config.age";
+    file = "${effectiveSecretsPath}/jamesbrink/aws/config.age";
     owner = "jamesbrink";
     group = "users";
     mode = "0600";
   };
 
   age.secrets."aws-credentials" = {
-    file = "${effectiveSecretsPath}/secrets/jamesbrink/aws/credentials.age";
+    file = "${effectiveSecretsPath}/jamesbrink/aws/credentials.age";
     owner = "jamesbrink";
     group = "users";
     mode = "0600";

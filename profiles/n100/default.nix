@@ -122,7 +122,7 @@
   age = {
     identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
-      "global-ssh-authorized-keys".file = "${secretsPath}/secrets/global/ssh/authorized_keys.age";
+      "global-ssh-authorized-keys".file = "${secretsPath}/global/ssh/authorized_keys.age";
     };
   };
 
