@@ -1007,6 +1007,7 @@
                   echo ""
 
                   NIXPKGS_ALLOW_UNFREE=1 nixos-anywhere \
+                    --impure \
                     --flake ".#$HOST" \
                     --target-host "root@$TARGET_HOST" \
                     --build-on-remote \
