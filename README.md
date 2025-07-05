@@ -280,6 +280,33 @@ The repository includes a complete netboot infrastructure for provisioning N100 
 - N100 machines configured for PXE boot in BIOS
 - Network connectivity between N100 nodes and HAL9000
 
+### Initial N100 Deployment Steps (Order Matters!)
+
+For first-time deployment of N100 nodes:
+
+1. **Deploy HAL9000 first** to enable netboot services:
+   ```bash
+   deploy hal9000
+   ```
+
+2. **Build and deploy netboot images**:
+   ```bash
+   scripts/build-netboot-images.sh
+   ```
+
+3. **For initial installation** using nixos-anywhere (resource-constrained N100s):
+   ```bash
+   deploy-n100-local n100-01  # Builds locally, deploys remotely
+   deploy-n100-local n100-02
+   deploy-n100-local n100-03
+   deploy-n100-local n100-04
+   ```
+
+4. **After initial installation**, use regular deploy:
+   ```bash
+   deploy n100-01  # Uses standard deployment
+   ```
+
 ### Key Components
 - **TFTP Server**: Serves hostname-based iPXE scripts (port 69)
 - **Nginx HTTP Server**: Serves kernel/initrd images and MAC-based configs (port 8079)
@@ -310,9 +337,10 @@ The repository includes a complete netboot infrastructure for provisioning N100 
    - Set network boot as first boot priority
 
 4. **Boot and Install**
-   - Boot from network to see the N100 Netboot Menu
-   - Select "Install NixOS with ZFS"
-   - Run `n100-install` for automated installation
+   - Boot from network to see the N100 Boot Menu
+   - Default: Boots from local disk after 20 seconds
+   - Press 'n' for Network installer, 'r' for Rescue mode
+   - In installer, run `n100-install` for automated installation
    - The script detects hostname, uses disko to configure ZFS, and installs NixOS
 
 ### Network Boot Process

@@ -13,6 +13,7 @@
     ../../profiles/darwin/desktop.nix # Use full desktop profile
     ../../modules/darwin/packages.nix
     ../../modules/darwin/dock.nix
+    ../../modules/ssh-keys.nix
     ../../users/regular/jamesbrink-darwin.nix
     ../../modules/shared-packages/devops-darwin.nix
   ];

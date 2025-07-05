@@ -246,6 +246,27 @@ EOF
 # Replace the placeholder with the actual init path (without leading slash)
 ssh "$SSH_HOST" "sudo sed -i 's|INSTALLER_INIT_PATH|$INSTALLER_INIT_PATH|g' $NETBOOT_ROOT/custom/autochain.ipxe"
 
+# Create cmdline.ipxe files for dynamic loading
+log_info "Creating cmdline.ipxe files for dynamic init paths..."
+
+# Installer cmdline.ipxe
+ssh "$SSH_HOST" "sudo tee $NETBOOT_ROOT/images/n100-installer/cmdline.ipxe > /dev/null" << EOF
+#!ipxe
+# Dynamic kernel command line for N100 installer
+kernel \${base-url}/images/n100-installer/kernel init=$INSTALLER_INIT_PATH initrd=initrd loglevel=4 console=ttyS0,115200 console=tty0 hostname=\${hostname}
+initrd \${base-url}/images/n100-installer/initrd
+boot
+EOF
+
+# Rescue cmdline.ipxe
+ssh "$SSH_HOST" "sudo tee $NETBOOT_ROOT/images/n100-rescue/cmdline.ipxe > /dev/null" << EOF
+#!ipxe
+# Dynamic kernel command line for N100 rescue
+kernel \${base-url}/images/n100-rescue/kernel init=$RESCUE_INIT_PATH initrd=initrd loglevel=4 console=ttyS0,115200 console=tty0
+initrd \${base-url}/images/n100-rescue/initrd
+boot
+EOF
+
 # Set permissions
 log_info "Setting permissions..."
 ssh "$SSH_HOST" "sudo chmod -R 755 $NETBOOT_ROOT/images $NETBOOT_ROOT/scripts $NETBOOT_ROOT/custom"

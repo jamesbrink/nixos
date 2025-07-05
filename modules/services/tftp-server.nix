@@ -30,37 +30,78 @@ let
     pkgs.writeText "HOSTNAME-${hostname}.ipxe" ''
       #!ipxe
 
-      # ${hostname} boot script
+      # ${hostname} boot script (hostname-based detection)
       # Expected MAC: ${mac}
       # Expected IP: ${ip}
-      echo Booting ${hostname} from netboot server...
+      echo Detected hostname: ${hostname}
+      echo
+      echo ========================================
+      echo Default: Boot from local disk
+      echo Fallback: Network installer if disk fails
+      echo Timeout: 20 seconds
+      echo ========================================
+      echo
 
       # Set variables
       set base-url http://''${next-server}:8079
       set hostname ${hostname}
 
-      # Show what we're doing
-      echo Hostname: ''${hostname}
-      echo MAC: ''${mac}
-      echo IP: ''${ip}
-      echo Next-server: ''${next-server}
-
       # Verify MAC address matches expected
-      iseq ''${mac} ${mac} && goto mac_ok ||
+      iseq ''${mac} ${mac} && goto verified ||
       echo WARNING: MAC address mismatch!
       echo Expected: ${mac}
       echo Actual: ''${mac}
       prompt Press any key to continue anyway...
 
-      :mac_ok
+      :verified
+      # Set menu timeout to 20 seconds
+      set menu-timeout 20000
+      set menu-default local_disk
+
+      # Display countdown menu
+      menu ${hostname} Boot Menu
+      item --default local_disk --key l local_disk    Boot from local disk
+      item --key n netboot                             Network installer
+      item --key r rescue                              Network rescue mode
+      item --key s shell                               iPXE shell
+      choose --timeout ''${menu-timeout} --default ''${menu-default} selected || goto local_disk
+
+      # Jump to selected option
+      goto ''${selected}
+
+      :local_disk
+      echo Attempting to boot from local disk...
+      # Try to exit iPXE and continue normal boot sequence
+      exit 0 || goto try_sanboot
+
+      :try_sanboot
+      # If exit doesn't work, try sanboot (boot from local disk)
+      echo Trying sanboot for local disk...
+      sanboot --no-describe --drive 0x80 || goto netboot
+
+      :netboot
+      echo
+      echo Local disk boot failed or was interrupted
+      echo Starting network installer for ${hostname}...
+      echo
+
       # Chain to NixOS installer
-      echo Loading NixOS installer for ${hostname}...
-      kernel ''${base-url}/images/n100-installer/kernel init=/nix/store/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-nixos-system-installer/init initrd=initrd loglevel=4 console=ttyS0,115200 console=tty0 hostname=${hostname}
-      initrd ''${base-url}/images/n100-installer/initrd
-      boot || goto failed
+      # Load kernel command line from server (contains the dynamic init path)
+      chain ''${base-url}/images/n100-installer/cmdline.ipxe || goto failed
+
+      :rescue
+      echo Starting network rescue mode for ${hostname}...
+      # Load kernel command line from server (contains the dynamic init path)
+      chain ''${base-url}/images/n100-rescue/cmdline.ipxe || goto failed
+
+      :shell
+      echo Entering iPXE shell...
+      echo Type 'exit' to return to menu
+      shell
+      goto verified
 
       :failed
-      echo Boot failed for ${hostname}
+      echo Boot failed!
       prompt Press any key to reboot
       reboot
     '';
@@ -79,21 +120,70 @@ let
       #!ipxe
 
       # Auto-boot script for ${hostname} (MAC: ${mac})
-      echo Detected MAC ${mac} - Auto-booting ${hostname}...
+      echo Detected MAC ${mac} - System: ${hostname}
+      echo
+      echo ========================================
+      echo Default: Boot from local disk
+      echo Fallback: Network installer if disk fails
+      echo Timeout: 20 seconds
+      echo ========================================
+      echo
+
+      # Set menu timeout to 20 seconds
+      set menu-timeout 20000
+      set menu-default local_disk
+
+      # Display countdown menu
+      menu ${hostname} Boot Menu
+      item --default local_disk --key l local_disk    Boot from local disk
+      item --key n netboot                             Network installer
+      item --key r rescue                              Network rescue mode
+      item --key s shell                               iPXE shell
+      choose --timeout ''${menu-timeout} --default ''${menu-default} selected || goto local_disk
+
+      # Jump to selected option
+      goto ''${selected}
+
+      :local_disk
+      echo Attempting to boot from local disk...
+      # Try to exit iPXE and continue normal boot sequence
+      # This will cause the BIOS/UEFI to try the next boot device (usually the local disk)
+      exit 0 || goto try_sanboot
+
+      :try_sanboot
+      # If exit doesn't work, try sanboot (boot from local disk)
+      echo Trying sanboot for local disk...
+      sanboot --no-describe --drive 0x80 || goto netboot
+
+      :netboot
+      echo
+      echo Local disk boot failed or was interrupted
+      echo Starting network installer for ${hostname}...
+      echo
 
       # Set variables
       set base-url http://''${next-server}:8079
       set hostname ${hostname}
       set expected-mac ${mac}
 
-      # Chain to NixOS installer with automatic installation
-      echo Loading NixOS installer for ${hostname} (automatic installation)...
-      kernel ''${base-url}/images/n100-installer/kernel init=/nix/store/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-nixos-system-installer/init initrd=initrd loglevel=4 console=ttyS0,115200 console=tty0 hostname=${hostname} autoinstall=true
-      initrd ''${base-url}/images/n100-installer/initrd
-      boot || goto failed
+      # Chain to NixOS installer
+      # Load kernel command line from server (contains the dynamic init path)
+      chain ''${base-url}/images/n100-installer/cmdline.ipxe || goto failed
+
+      :rescue
+      echo Starting network rescue mode for ${hostname}...
+      set base-url http://''${next-server}:8079
+      # Load kernel command line from server (contains the dynamic init path)
+      chain ''${base-url}/images/n100-rescue/cmdline.ipxe || goto failed
+
+      :shell
+      echo Entering iPXE shell...
+      echo Type 'exit' to return to menu
+      shell
+      goto menu
 
       :failed
-      echo Boot failed for ${hostname}
+      echo Boot failed!
       prompt Press any key to reboot
       reboot
     '';

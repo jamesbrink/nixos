@@ -239,6 +239,14 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Moved `option_as_alt` setting to correct window section in Alacritty config
 - Removed non-functional terminfo activation script
 
+### SSH Keys Management (July 2025)
+- Added centralized SSH key management via `modules/ssh-keys.nix`
+- All authorized SSH keys are defined in `secrets/secrets.nix` and deployed to all hosts
+- Root user gets all SSH keys automatically on all Linux and Darwin hosts
+- User jamesbrink gets all SSH keys via user module configuration
+- N100 hosts use global SSH keys via agenix-encrypted `secrets/global/ssh/authorized_keys.age`
+- SSH keys module imported in server and desktop profiles, plus Darwin hosts
+
 ### N100 Netboot Infrastructure (July 2025)
 - Implemented complete PXE netboot infrastructure for N100 cluster nodes
 - **Updated to netboot.xyz v2.0.87** with custom package in `pkgs/netboot-xyz/`
@@ -259,6 +267,9 @@ If you see "can't find terminal definition for xterm-ghostty":
 - **Fixed**: Optimized boot process - removed hardcoded non-existent interface names
 - **Fixed**: Reduced network wait timeout from 120s to 30s for faster boot
 - **Fixed**: Getty services explicitly enabled on tty1 and ttyS0 for reliable console access
+- **Fixed**: Netboot installer shutdown hang by using `n100-installer-fixed.nix` which disables serial getty
+- **Fixed**: All SSH keys from `secrets/secrets.nix` are now pre-populated in netboot images
+- **Enhanced**: N100 netboot now defaults to local disk boot with 20s timeout, falls back to network installer
 - MAC addresses configured:
   - n100-01: `e0:51:d8:12:ba:97`
   - n100-02: `e0:51:d8:13:04:50`

@@ -7,6 +7,7 @@
 {
   imports = [
     ../../modules/claude-desktop.nix
+    ../../modules/ssh-keys.nix
   ];
 
   environment.systemPackages = with pkgs; [
