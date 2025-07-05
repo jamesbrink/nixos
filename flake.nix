@@ -918,7 +918,7 @@
               {
                 name = "deploy-n100";
                 category = "netboot";
-                help = "Initial deployment to N100 node using nixos-anywhere (creates ZFS volumes)";
+                help = "Initial deployment to N100 node using nixos-anywhere (creates ZFS volumes). Use NIXOS_ANYWHERE_NOCONFIRM=1 to skip confirmation";
                 command = ''
                   if [ $# -eq 0 ]; then
                     echo "Error: You must specify an N100 hostname."
@@ -933,6 +933,15 @@
                     echo "Prerequisites:"
                     echo "  - N100 node must be booted into netboot installer"
                     echo "  - SSH access to root@nixos-installer must be available"
+                    echo ""
+                    echo "Environment variables:"
+                    echo "  NIXOS_ANYWHERE_NOCONFIRM=1  Skip confirmation prompt"
+                    echo "  TARGET_HOST_OVERRIDE=<ip>   Override target host IP/hostname"
+                    echo ""
+                    echo "Examples:"
+                    echo "  deploy-n100 n100-04"
+                    echo "  NIXOS_ANYWHERE_NOCONFIRM=1 deploy-n100 n100-04"
+                    echo "  TARGET_HOST_OVERRIDE=10.70.100.204 deploy-n100 n100-04"
                     exit 1
                   fi
 
@@ -967,7 +976,7 @@
                   fi
 
                   # Allow override via environment variable
-                  if [ -n "$TARGET_HOST_OVERRIDE" ]; then
+                  if [ -n "''${TARGET_HOST_OVERRIDE:-}" ]; then
                     TARGET_HOST="$TARGET_HOST_OVERRIDE"
                     echo "Using override target: $TARGET_HOST"
                   fi
@@ -978,11 +987,17 @@
                   echo "  - Install NixOS configuration"
                   echo "  - Configure encrypted secrets"
                   echo ""
-                  read -p "Continue? (y/N) " -n 1 -r
-                  echo
-                  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                    echo "Deployment cancelled."
-                    exit 0
+                  
+                  # Check if we're in non-interactive mode or auto-confirm
+                  if [ "''${NIXOS_ANYWHERE_NOCONFIRM:-}" = "1" ] || [ "''${CI:-}" = "true" ]; then
+                    echo "Auto-confirming deployment (NIXOS_ANYWHERE_NOCONFIRM=1 or CI=true)"
+                  else
+                    read -p "Continue? (y/N) " -n 1 -r
+                    echo
+                    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                      echo "Deployment cancelled."
+                      exit 0
+                    fi
                   fi
 
                   # Run nixos-anywhere
