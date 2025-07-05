@@ -149,10 +149,11 @@ ssh "$SSH_HOST" "sudo mkdir -p $NETBOOT_ROOT/images/{n100-installer,n100-rescue}
 
 # Deploy installer
 log_info "Deploying installer image..."
-scp "$INSTALLER_KERNEL" "$SSH_HOST:/tmp/kernel-installer"
-scp "$INSTALLER_INITRD" "$SSH_HOST:/tmp/initrd-installer"
-ssh "$SSH_HOST" "sudo mv /tmp/kernel-installer $NETBOOT_ROOT/images/n100-installer/kernel"
-ssh "$SSH_HOST" "sudo mv /tmp/initrd-installer $NETBOOT_ROOT/images/n100-installer/initrd"
+TEMP_PREFIX="/tmp/netboot-$$-$(date +%s)"
+scp "$INSTALLER_KERNEL" "$SSH_HOST:${TEMP_PREFIX}-kernel-installer"
+scp "$INSTALLER_INITRD" "$SSH_HOST:${TEMP_PREFIX}-initrd-installer"
+ssh "$SSH_HOST" "sudo mv ${TEMP_PREFIX}-kernel-installer $NETBOOT_ROOT/images/n100-installer/kernel"
+ssh "$SSH_HOST" "sudo mv ${TEMP_PREFIX}-initrd-installer $NETBOOT_ROOT/images/n100-installer/initrd"
 
 # Save init path for installer (remove leading slash for netboot)
 log_info "Saving installer init path..."
@@ -161,10 +162,10 @@ ssh "$SSH_HOST" "echo '$INSTALLER_INIT_PATH' | sudo tee $NETBOOT_ROOT/images/n10
 
 # Deploy rescue
 log_info "Deploying rescue image..."
-scp "$RESCUE_KERNEL" "$SSH_HOST:/tmp/kernel-rescue"
-scp "$RESCUE_INITRD" "$SSH_HOST:/tmp/initrd-rescue"
-ssh "$SSH_HOST" "sudo mv /tmp/kernel-rescue $NETBOOT_ROOT/images/n100-rescue/kernel"
-ssh "$SSH_HOST" "sudo mv /tmp/initrd-rescue $NETBOOT_ROOT/images/n100-rescue/initrd"
+scp "$RESCUE_KERNEL" "$SSH_HOST:${TEMP_PREFIX}-kernel-rescue"
+scp "$RESCUE_INITRD" "$SSH_HOST:${TEMP_PREFIX}-initrd-rescue"
+ssh "$SSH_HOST" "sudo mv ${TEMP_PREFIX}-kernel-rescue $NETBOOT_ROOT/images/n100-rescue/kernel"
+ssh "$SSH_HOST" "sudo mv ${TEMP_PREFIX}-initrd-rescue $NETBOOT_ROOT/images/n100-rescue/initrd"
 
 # Save init path for rescue (remove leading slash for netboot)
 log_info "Saving rescue init path..."
@@ -173,8 +174,8 @@ ssh "$SSH_HOST" "echo '$RESCUE_INIT_PATH' | sudo tee $NETBOOT_ROOT/images/n100-r
 
 # Deploy auto-install script
 log_info "Deploying auto-install script..."
-scp "$NETBOOT_DIR/auto-install.sh" "$SSH_HOST:/tmp/auto-install.sh"
-ssh "$SSH_HOST" "sudo mkdir -p $NETBOOT_ROOT/scripts && sudo mv /tmp/auto-install.sh $NETBOOT_ROOT/scripts/"
+scp "$NETBOOT_DIR/auto-install.sh" "$SSH_HOST:${TEMP_PREFIX}-auto-install.sh"
+ssh "$SSH_HOST" "sudo mkdir -p $NETBOOT_ROOT/scripts && sudo mv ${TEMP_PREFIX}-auto-install.sh $NETBOOT_ROOT/scripts/auto-install.sh"
 
 # Update TFTP iPXE scripts with correct init paths
 log_info "Updating TFTP iPXE scripts with correct init paths..."
