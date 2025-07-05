@@ -11,6 +11,7 @@
   imports = [
     ../../modules/n100-disko.nix
     ../../profiles/server/default.nix
+    ../../profiles/desktop/default.nix
     ../../users/regular/jamesbrink.nix
   ];
 
