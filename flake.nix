@@ -1518,6 +1518,7 @@
             unstablePkgs = import nixos-unstable {
               system = "x86_64-darwin";
               config.allowUnfree = true;
+              overlays = [ (import ./overlays/aider-no-texlive.nix) ];
             };
           };
 
@@ -1545,6 +1546,7 @@
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-darwin";
                     config.allowUnfree = true;
+                    overlays = [ (import ./overlays/aider-no-texlive.nix) ];
                   };
                 })
               ];
