@@ -61,7 +61,7 @@ in
       _module.args = {
         inputs = effectiveInputs;
       };
-      
+
       # Allow unfree packages in home-manager
       nixpkgs.config.allowUnfree = true;
       home.packages =

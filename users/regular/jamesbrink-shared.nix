@@ -25,6 +25,10 @@ in
         source = ./ssh/config_external;
       };
 
+      home.file."${homeDir}/.ssh/config.d/00-local-hosts" = {
+        source = ./ssh/config.d/00-local-hosts;
+      };
+
       home.sessionVariables = lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
         SSH_AUTH_SOCK = "/run/user/$(id -u)/ssh-agent";
       };
@@ -343,6 +347,9 @@ in
           enable = true;
           controlMaster = "auto";
           includes = [
+            # Include Nix-managed local hosts configuration first
+            "${config.home.homeDirectory}/.ssh/config.d/00-local-hosts"
+            # Then include user's external config for manual additions
             "${homeDir}/.ssh/config_external"
           ];
         };

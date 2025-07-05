@@ -987,7 +987,7 @@
                   echo "  - Install NixOS configuration"
                   echo "  - Configure encrypted secrets"
                   echo ""
-                  
+
                   # Check if we're in non-interactive mode or auto-confirm
                   if [ "''${NIXOS_ANYWHERE_NOCONFIRM:-}" = "1" ] || [ "''${CI:-}" = "true" ]; then
                     echo "Auto-confirming deployment (NIXOS_ANYWHERE_NOCONFIRM=1 or CI=true)"

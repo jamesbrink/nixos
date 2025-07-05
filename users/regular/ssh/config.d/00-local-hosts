@@ -1,0 +1,167 @@
+# SSH configuration for local hosts and private networks
+# This file is managed by Nix - do not edit directly
+
+# Local NixOS/Darwin hosts
+Host alienware alienware.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host hal9000 hal9000.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host halcyon halcyon.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host sevastopol sevastopol.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host sevastopol-linux sevastopol-linux.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host n100-01 n100-01.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host n100-02 n100-02.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host n100-03 n100-03.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host n100-04 n100-04.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+# Special installer host
+Host nixos-installer nixos-installer.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+# Private IP ranges
+Host 10.*.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 192.168.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+# Docker/container networks (172.16.0.0/12)
+Host 172.16.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.17.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.18.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.19.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.20.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.21.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.22.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.23.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.24.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.25.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.26.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.27.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.28.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.29.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.30.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+Host 172.31.*.*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
+# Special hosts with BSadmin user
+Host cabby*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+  User BSadmin
+
+Host station*
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+  User BSadmin
+
+# Note: 'server' host with both users will need manual handling
+# as SSH config doesn't support multiple user definitions for same host pattern
+Host server
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+  User jamesbrink
