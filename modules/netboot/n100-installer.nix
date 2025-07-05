@@ -20,6 +20,14 @@
   # Enable console access and auto-login for debugging
   services.getty.autologinUser = lib.mkForce "root";
 
+  # Enable getty on both serial and VGA consoles
+  systemd.services."getty@tty1".enable = true;
+  systemd.services."getty@ttyS0".enable = true;
+
+  # Ensure getty services start properly
+  systemd.services."getty@tty1".wantedBy = [ "multi-user.target" ];
+  systemd.services."getty@ttyS0".wantedBy = [ "multi-user.target" ];
+
   # Create marker file to identify this as the installer
   system.activationScripts.installerMarker = ''
     touch /etc/is-installer
@@ -98,11 +106,12 @@
   networking.useDHCP = true;
   networking.networkmanager.enable = false; # Use systemd-networkd in installer
 
-  # Enable DHCP on common interface names
-  networking.interfaces.eth0.useDHCP = lib.mkDefault true;
-  networking.interfaces.enp0s31f6.useDHCP = lib.mkDefault true;
-  networking.interfaces.enp1s0.useDHCP = lib.mkDefault true;
-  networking.interfaces.enp2s0.useDHCP = lib.mkDefault true;
+  # Don't wait for specific interfaces that might not exist
+  systemd.network.wait-online.anyInterface = true;
+  systemd.network.wait-online.timeout = 30; # Reduce timeout from default 120s
+
+  # Enable predictable network interface names
+  networking.usePredictableInterfaceNames = false;
 
   # Auto-installer script location
   environment.etc."n100-auto-install.sh" = {
@@ -142,6 +151,17 @@
   services.getty.helpLine = ''
 
     <<< NixOS N100 Installer - Run 'n100-install' to begin >>>
+  '';
+
+  # Add a custom issue file for login prompt
+  environment.etc."issue".text = ''
+
+    ╔═══════════════════════════════════════════════════════════════╗
+    ║                 NixOS N100 Cluster Installer                  ║
+    ╠═══════════════════════════════════════════════════════════════╣
+    ║  Auto-login enabled as root - no password required            ║
+    ╚═══════════════════════════════════════════════════════════════╝
+
   '';
 
   # Ensure network comes up before SSH
