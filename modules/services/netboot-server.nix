@@ -20,15 +20,19 @@ let
       #!ipxe
 
       # Boot menu for N100 machines
-      menu N100 Netboot Menu
-      item --gap -- ------------------------- N100 Boot Options -------------------------
-      item install    Install NixOS with ZFS (N100 Template)
-      item rescue     NixOS Rescue Environment
-      item local      Boot from local disk
-      item --gap -- ------------------------- Advanced Options -------------------------
-      item shell      iPXE Shell
-      item reboot     Reboot
-      choose --default local --timeout 10000 target && goto ''${target}
+      # Commented out menu to boot directly to installer
+      # menu N100 Netboot Menu
+      # item --gap -- ------------------------- N100 Boot Options -------------------------
+      # item install    Install NixOS with ZFS (N100 Template)
+      # item rescue     NixOS Rescue Environment
+      # item local      Boot from local disk
+      # item --gap -- ------------------------- Advanced Options -------------------------
+      # item shell      iPXE Shell
+      # item reboot     Reboot
+      # choose --default local --timeout 10000 target && goto ''${target}
+
+      # Boot directly to installer
+      goto install
 
       :install
       echo Booting NixOS Installer with ZFS support...
@@ -44,9 +48,9 @@ let
       initrd ''${base-url}/images/n100-rescue/initrd
       boot || goto failed
 
-      :local
-      echo Booting from local disk...
-      exit
+      # :local
+      # echo Booting from local disk...
+      # exit
 
       :shell
       echo Entering iPXE shell...
