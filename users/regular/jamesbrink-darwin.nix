@@ -52,7 +52,7 @@ in
         yt-dlp
 
         # Darwin-specific CLI tools
-        unstable.aider-chat
+        # unstable.aider-chat  # Temporarily disabled due to texlive build issue
         unstable.code2prompt
         unstable.llm
       ];
