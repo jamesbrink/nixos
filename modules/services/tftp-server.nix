@@ -36,9 +36,9 @@ let
       echo Detected hostname: ${hostname}
       echo
       echo ========================================
-      echo Default: Network installer
-      echo Press 'l' for local disk boot
-      echo Timeout: 5 seconds
+      echo Default: Boot from local disk
+      echo Fallback: Network installer if disk fails
+      echo Timeout: 3 seconds
       echo ========================================
       echo
 
@@ -54,17 +54,17 @@ let
       prompt Press any key to continue anyway...
 
       :verified
-      # Set menu timeout to 5 seconds  
-      set menu-timeout 5000
-      set menu-default netboot
+      # Set menu timeout to 3 seconds  
+      set menu-timeout 3000
+      set menu-default local_disk
 
       # Display countdown menu
       menu ${hostname} Boot Menu
-      item --key l local_disk                          Boot from local disk
-      item --default netboot --key n netboot           Network installer
+      item --default local_disk --key l local_disk    Boot from local disk
+      item --key n netboot                             Network installer
       item --key r rescue                              Network rescue mode
       item --key s shell                               iPXE shell
-      choose --timeout ''${menu-timeout} --default ''${menu-default} selected || goto netboot
+      choose --timeout ''${menu-timeout} --default ''${menu-default} selected || goto local_disk
 
       # Jump to selected option
       goto ''${selected}
@@ -123,23 +123,23 @@ let
       echo Detected MAC ${mac} - System: ${hostname}
       echo
       echo ========================================
-      echo Default: Network installer
-      echo Press 'l' for local disk boot
-      echo Timeout: 5 seconds
+      echo Default: Boot from local disk
+      echo Fallback: Network installer if disk fails
+      echo Timeout: 3 seconds
       echo ========================================
       echo
 
-      # Set menu timeout to 5 seconds  
-      set menu-timeout 5000
-      set menu-default netboot
+      # Set menu timeout to 3 seconds  
+      set menu-timeout 3000
+      set menu-default local_disk
 
       # Display countdown menu
       menu ${hostname} Boot Menu
-      item --key l local_disk                          Boot from local disk
-      item --default netboot --key n netboot           Network installer
+      item --default local_disk --key l local_disk    Boot from local disk
+      item --key n netboot                             Network installer
       item --key r rescue                              Network rescue mode
       item --key s shell                               iPXE shell
-      choose --timeout ''${menu-timeout} --default ''${menu-default} selected || goto netboot
+      choose --timeout ''${menu-timeout} --default ''${menu-default} selected || goto local_disk
 
       # Jump to selected option
       goto ''${selected}

@@ -47,16 +47,23 @@ with lib;
           # For Linux - deploy to user's .config/Claude
           CLAUDE_DIR="/home/jamesbrink/.config/Claude"
 
-          if [ ! -d "$CLAUDE_DIR" ]; then
-            mkdir -p "$CLAUDE_DIR"
-            chown jamesbrink:users "$CLAUDE_DIR"
-          fi
+          # Only proceed if the user's home directory exists
+          if [ -d "/home/jamesbrink" ]; then
+            if [ ! -d "$CLAUDE_DIR" ]; then
+              mkdir -p "$CLAUDE_DIR"
+              # Ensure parent .config directory also has correct ownership
+              if [ -d "/home/jamesbrink/.config" ]; then
+                chown jamesbrink:users "/home/jamesbrink/.config"
+              fi
+              chown jamesbrink:users "$CLAUDE_DIR"
+            fi
 
-          # Copy the decrypted config with correct filename (underscores, not hyphens)
-          cp -f ${config.age.secrets.claude-desktop-config.path} "$CLAUDE_DIR/claude_desktop_config.json"
-          chown jamesbrink:users "$CLAUDE_DIR/claude_desktop_config.json"
-          chmod 644 "$CLAUDE_DIR/claude_desktop_config.json"
-          echo "Claude desktop configuration deployed to $CLAUDE_DIR/claude_desktop_config.json"
+            # Copy the decrypted config with correct filename (underscores, not hyphens)
+            cp -f ${config.age.secrets.claude-desktop-config.path} "$CLAUDE_DIR/claude_desktop_config.json"
+            chown jamesbrink:users "$CLAUDE_DIR/claude_desktop_config.json"
+            chmod 644 "$CLAUDE_DIR/claude_desktop_config.json"
+            echo "Claude desktop configuration deployed to $CLAUDE_DIR/claude_desktop_config.json"
+          fi
         '';
         deps = [ "agenix" ];
       };
