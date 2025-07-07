@@ -95,7 +95,14 @@ in
     mode = "0600";
   };
 
-  # Darwin-specific activation script for AWS config
+  age.secrets."github-token" = {
+    file = "${secretsPath}/jamesbrink/github-token.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
+  # Darwin-specific activation script for AWS config and GitHub token
   system.activationScripts.postActivation.text = lib.mkAfter ''
     echo "Setting up AWS configuration for jamesbrink..."
     # Run as the user with sudo
@@ -110,5 +117,20 @@ in
       chmod 600 /Users/jamesbrink/.aws/config /Users/jamesbrink/.aws/credentials
     "
     echo "AWS configuration deployed to /Users/jamesbrink/.aws/"
+
+    echo "Setting up GitHub token environment for jamesbrink..."
+    # Run as the user with sudo
+    sudo -u jamesbrink bash -c "
+      mkdir -p /Users/jamesbrink/.config/environment.d
+      
+      # Create GitHub token environment file
+      echo 'export GITHUB_TOKEN=\"\$(cat ${
+        config.age.secrets."github-token".path
+      })\"' > /Users/jamesbrink/.config/environment.d/github-token.sh
+      
+      # Fix permissions
+      chmod 600 /Users/jamesbrink/.config/environment.d/github-token.sh
+    "
+    echo "GitHub token environment deployed to /Users/jamesbrink/.config/environment.d/"
   '';
 }

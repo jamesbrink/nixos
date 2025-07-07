@@ -240,8 +240,10 @@ in
             # Always color ls and group directories
             alias ls='ls --color=auto'
 
-            # GitHub Token
-            export GITHUB_TOKEN="<TBD>"
+            # Source GitHub Token if available
+            if [[ -f ~/.config/environment.d/github-token.sh ]]; then
+              source ~/.config/environment.d/github-token.sh
+            fi
 
             ##############
             # AWS Settings

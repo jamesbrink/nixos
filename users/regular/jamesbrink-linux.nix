@@ -163,7 +163,14 @@ in
     mode = "0600";
   };
 
-  # Linux-specific systemd service
+  age.secrets."github-token" = {
+    file = "${effectiveSecretsPath}/jamesbrink/github-token.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
+  # Linux-specific systemd services
   systemd.services.aws-config-setup = {
     description = "Setup AWS configuration files";
     wantedBy = [ "multi-user.target" ];
@@ -179,6 +186,26 @@ in
       cp ${config.age.secrets."aws-credentials".path} /home/jamesbrink/.aws/credentials
       chmod 600 /home/jamesbrink/.aws/config /home/jamesbrink/.aws/credentials
       chown jamesbrink:users /home/jamesbrink/.aws/config /home/jamesbrink/.aws/credentials
+    '';
+  };
+
+  systemd.services.github-token-setup = {
+    description = "Setup GitHub token environment";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+      # Read the GitHub token and create a shell source file
+      mkdir -p /home/jamesbrink/.config/environment.d
+      echo "export GITHUB_TOKEN=\"$(cat ${
+        config.age.secrets."github-token".path
+      })\"" > /home/jamesbrink/.config/environment.d/github-token.sh
+      chmod 600 /home/jamesbrink/.config/environment.d/github-token.sh
+      chown jamesbrink:users /home/jamesbrink/.config/environment.d/github-token.sh
     '';
   };
 
