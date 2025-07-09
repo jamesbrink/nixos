@@ -418,10 +418,10 @@ Current N100 nodes and their MAC addresses:
 | | `/export/data` | 10.70.100.0/24 | rw, nohide, insecure, no_subtree_check |
 | **hal9000** | `/export` | 10.70.100.0/24, 100.64.0.0/10 | rw, fsid=0, no_subtree_check |
 | | `/export/storage-fast` | 10.70.100.0/24, 100.64.0.0/10 | rw, nohide, insecure, no_subtree_check |
-| **n100-01** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash |
-| **n100-02** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash |
-| **n100-03** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash |
-| **n100-04** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash |
+| **n100-01** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
+| **n100-02** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
+| **n100-03** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
+| **n100-04** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
 
 #### NFS Mounts (Client Side)
 
@@ -434,6 +434,8 @@ Current N100 nodes and their MAC addresses:
 | **n100-02** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
 | **n100-03** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
 | **n100-04** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
+| **halcyon** (macOS) | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+| **sevastopol** (macOS) | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
 
 #### Storage Details
 
@@ -447,6 +449,12 @@ Current N100 nodes and their MAC addresses:
 - **n100 cluster** exports:
   - Each node exports `/export` directory for local network sharing
   - Configured for both private IP ranges (192.168.0.0/16 and 10.0.0.0/8)
+  - Uses permissive permissions (777) with all_squash for easy access
+
+- **macOS hosts** (halcyon, sevastopol):
+  - Mount all available NFS shares to `/Volumes/NFS-*` for Finder visibility
+  - Uses macOS native automounter with `/etc/auto_nfs` configuration
+  - All shares appear with NFS- prefix in Finder sidebar
 
 All NFS mounts use automount with a 600-second idle timeout for better resource management.
 

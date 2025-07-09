@@ -103,5 +103,33 @@
 
   # User configuration is now imported from the module
 
+  # NFS mounts configuration - mount directly to /Volumes for Finder visibility
+  system.activationScripts.preActivation.text = ''
+        # Create auto_nfs file for automounter
+        sudo tee /etc/auto_nfs > /dev/null <<'EOF'
+    # NFS mounts from various hosts - these will appear in /Volumes and Finder
+    NFS-storage         -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc alienware.home.urandom.io:/export/storage
+    NFS-data            -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc alienware.home.urandom.io:/export/data  
+    NFS-storage-fast    -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc hal9000.home.urandom.io:/export/storage-fast
+    NFS-n100-01         -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc n100-01.home.urandom.io:/export
+    NFS-n100-02         -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc n100-02.home.urandom.io:/export
+    NFS-n100-03         -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc n100-03.home.urandom.io:/export
+    NFS-n100-04         -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc n100-04.home.urandom.io:/export
+    EOF
+        
+        # Update auto_master to include our NFS mounts in /Volumes
+        if ! grep -q "/Volumes.*auto_nfs" /etc/auto_master 2>/dev/null; then
+          # Backup existing auto_master
+          sudo cp /etc/auto_master "/etc/auto_master.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
+          # Remove old /mnt entry if it exists
+          sudo sed -i "" '/\/mnt.*auto_nfs/d' /etc/auto_master 2>/dev/null || true
+          # Add our mount configuration to /Volumes
+          echo "/Volumes		/etc/auto_nfs" | sudo tee -a /etc/auto_master > /dev/null
+        fi
+        
+        # Restart automount to pick up changes
+        sudo automount -cv 2>/dev/null || true
+  '';
+
   # Age secrets configuration is handled in the user module
 }

@@ -1,10 +1,11 @@
 # Shared configuration for N100 cluster nodes
-{ config
-, pkgs
-, lib
-, inputs
-, secretsPath
-, ...
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  secretsPath,
+  ...
 }:
 {
   imports = [
@@ -122,15 +123,15 @@
   services.nfs.server = {
     enable = true;
     exports = ''
-      # Export /export directory to local network
-      /export 192.168.0.0/16(rw,sync,no_subtree_check,no_root_squash)
-      /export 10.0.0.0/8(rw,sync,no_subtree_check,no_root_squash)
+      # Export /export directory to local network with full permissions
+      /export 192.168.0.0/16(rw,sync,no_subtree_check,no_root_squash,insecure,all_squash,anonuid=1000,anongid=100)
+      /export 10.0.0.0/8(rw,sync,no_subtree_check,no_root_squash,insecure,all_squash,anonuid=1000,anongid=100)
     '';
   };
 
-  # Create the export directory
+  # Create the export directory with full permissions
   systemd.tmpfiles.rules = [
-    "d /export 0755 root root -"
+    "d /export 0777 root root -"
   ];
 
   # Age secrets
