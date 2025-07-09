@@ -407,6 +407,49 @@ Current N100 nodes and their MAC addresses:
 - NFS exports for shared storage across network
 - Bind mounts for service-specific storage paths
 
+### NFS Shares Documentation
+
+#### NFS Exports (Server Side)
+
+| Host | Export Path | Allowed Networks | Options |
+|------|-------------|------------------|---------|
+| **alienware** | `/export` | 10.70.100.0/24 | rw, fsid=0, no_subtree_check |
+| | `/export/storage` | 10.70.100.0/24 | rw, nohide, insecure, no_subtree_check |
+| | `/export/data` | 10.70.100.0/24 | rw, nohide, insecure, no_subtree_check |
+| **hal9000** | `/export` | 10.70.100.0/24, 100.64.0.0/10 | rw, fsid=0, no_subtree_check |
+| | `/export/storage-fast` | 10.70.100.0/24, 100.64.0.0/10 | rw, nohide, insecure, no_subtree_check |
+| **n100-01** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash |
+| **n100-02** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash |
+| **n100-03** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash |
+| **n100-04** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash |
+
+#### NFS Mounts (Client Side)
+
+| Host | Mount Point | NFS Server | Remote Path | Options |
+|------|-------------|------------|-------------|---------|
+| **hal9000** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
+| **sevastopol-linux** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
+| | `/mnt/storage-fast` | hal9000.home.urandom.io | `/storage-fast` | noatime, automount |
+| **n100-01** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
+| **n100-02** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
+| **n100-03** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
+| **n100-04** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
+
+#### Storage Details
+
+- **alienware** exports:
+  - `/export/storage` → 8TB USB drive mounted at `/mnt/storage`
+  - `/export/data` → Second internal drive mounted at `/mnt/data`
+  
+- **hal9000** exports:
+  - `/export/storage-fast` → ZFS pool mounted at `/storage-fast`
+
+- **n100 cluster** exports:
+  - Each node exports `/export` directory for local network sharing
+  - Configured for both private IP ranges (192.168.0.0/16 and 10.0.0.0/8)
+
+All NFS mounts use automount with a 600-second idle timeout for better resource management.
+
 ### Claude Desktop Configuration
 - Automatic deployment of Claude desktop settings for the jamesbrink user
 - Configuration stored as encrypted agenix secret (`secrets/global/claude-desktop-config.age`)
