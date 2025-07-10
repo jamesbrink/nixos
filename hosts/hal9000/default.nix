@@ -404,23 +404,6 @@
     package = pkgs.unstablePkgs.ollama-cuda;
   };
 
-  systemd.mounts = [
-    {
-      type = "nfs";
-      mountConfig.Options = "noatime";
-      what = "alienware.home.urandom.io:/storage";
-      where = "/mnt/storage";
-    }
-  ];
-
-  systemd.automounts = [
-    {
-      wantedBy = [ "multi-user.target" ];
-      automountConfig.TimeoutIdleSec = "600";
-      where = "/mnt/storage";
-    }
-  ];
-
   security.rtkit.enable = true;
 
   age = {

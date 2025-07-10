@@ -79,42 +79,6 @@
   # Enable RPC bind service (required for NFS)
   services.rpcbind.enable = true;
 
-  # NFS mounts
-  systemd.mounts = [
-    {
-      type = "nfs";
-      mountConfig.Options = "noatime";
-      what = "alienware.home.urandom.io:/storage";
-      where = "/mnt/storage";
-    }
-    {
-      type = "nfs";
-      mountConfig.Options = "noatime";
-      what = "hal9000.home.urandom.io:/storage-fast";
-      where = "/mnt/storage-fast";
-    }
-  ];
-
-  systemd.automounts = [
-    {
-      wantedBy = [ "multi-user.target" ];
-      automountConfig.TimeoutIdleSec = "600";
-      where = "/mnt/storage";
-    }
-    {
-      wantedBy = [ "multi-user.target" ];
-      automountConfig.TimeoutIdleSec = "600";
-      where = "/mnt/storage-fast";
-    }
-  ];
-
-  # Create mount points
-  systemd.tmpfiles.rules = [
-    "d /mnt 0775 root users"
-    "d /mnt/storage 0775 root users"
-    "d /mnt/storage-fast 0775 root users"
-  ];
-
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It's perfectly fine and recommended to leave

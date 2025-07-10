@@ -425,17 +425,26 @@ Current N100 nodes and their MAC addresses:
 
 #### NFS Mounts (Client Side)
 
+##### Linux Hosts (Automated via `modules/nfs-mounts.nix`)
+All Linux hosts automatically mount all available NFS shares under `/mnt/nfs/`:
+
+| Mount Point | NFS Server | Remote Path | Available On |
+|-------------|------------|-------------|--------------|
+| `/mnt/nfs/storage` | alienware.home.urandom.io | `/export/storage` | All Linux hosts except alienware |
+| `/mnt/nfs/data` | alienware.home.urandom.io | `/export/data` | All Linux hosts except alienware |
+| `/mnt/nfs/storage-fast` | hal9000.home.urandom.io | `/export/storage-fast` | All Linux hosts except hal9000 |
+| `/mnt/nfs/n100-01` | n100-01.home.urandom.io | `/export` | All Linux hosts except n100-01 |
+| `/mnt/nfs/n100-02` | n100-02.home.urandom.io | `/export` | All Linux hosts except n100-02 |
+| `/mnt/nfs/n100-03` | n100-03.home.urandom.io | `/export` | All Linux hosts except n100-03 |
+| `/mnt/nfs/n100-04` | n100-04.home.urandom.io | `/export` | All Linux hosts except n100-04 |
+
+**Mount Options**: `noatime,noauto,x-systemd.automount,x-systemd.device-timeout=10,x-systemd.idle-timeout=600`
+
+##### macOS Hosts (Manual Configuration)
 | Host | Mount Point | NFS Server | Remote Path | Options |
 |------|-------------|------------|-------------|---------|
-| **hal9000** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
-| **sevastopol-linux** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
-| | `/mnt/storage-fast` | hal9000.home.urandom.io | `/storage-fast` | noatime, automount |
-| **n100-01** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
-| **n100-02** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
-| **n100-03** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
-| **n100-04** | `/mnt/storage` | alienware.home.urandom.io | `/storage` | noatime, automount |
-| **halcyon** (macOS) | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
-| **sevastopol** (macOS) | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+| **halcyon** | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+| **sevastopol** | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
 
 #### Storage Details
 
@@ -455,6 +464,13 @@ Current N100 nodes and their MAC addresses:
   - Mount all available NFS shares to `/Volumes/NFS-*` for Finder visibility
   - Uses macOS native automounter with `/etc/auto_nfs` configuration
   - All shares appear with NFS- prefix in Finder sidebar
+
+- **Linux NFS client configuration**:
+  - Automated via `modules/nfs-mounts.nix` module
+  - Included in both server and desktop profiles
+  - Automatically filters out self-mounts (hosts don't mount their own exports)
+  - Uses systemd mount and automount units for on-demand mounting
+  - All mounts appear under `/mnt/nfs/` with descriptive names
 
 All NFS mounts use automount with a 600-second idle timeout for better resource management.
 

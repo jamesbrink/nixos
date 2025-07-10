@@ -101,24 +101,6 @@
     };
   };
 
-  # NFS mount for shared storage
-  systemd.mounts = [
-    {
-      type = "nfs";
-      mountConfig.Options = "noatime";
-      what = "alienware.home.urandom.io:/storage";
-      where = "/mnt/storage";
-    }
-  ];
-
-  systemd.automounts = [
-    {
-      wantedBy = [ "multi-user.target" ];
-      automountConfig.TimeoutIdleSec = "600";
-      where = "/mnt/storage";
-    }
-  ];
-
   # NFS server configuration for exporting shares
   services.nfs.server = {
     enable = true;
