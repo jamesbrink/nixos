@@ -52,6 +52,9 @@
       "slack"
       "zoom"
 
+      # Security
+      "bitwarden"
+
       # Development
       "datagrip"
       "orbstack"
@@ -63,7 +66,6 @@
 
       # Utilities
       "bartender"
-      "cleanmymac"
       "little-snitch"
 
       # AI Tools
