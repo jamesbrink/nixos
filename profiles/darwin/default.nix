@@ -30,7 +30,7 @@
     # macOS defaults
     defaults = {
       NSGlobalDomain = {
-        AppleShowAllExtensions = true;
+        AppleShowAllExtensions = false;
         ApplePressAndHoldEnabled = false;
         KeyRepeat = 2;
         InitialKeyRepeat = 15;
@@ -49,7 +49,7 @@
 
       finder = {
         _FXShowPosixPathInTitle = true;
-        AppleShowAllExtensions = true;
+        AppleShowAllExtensions = false;
         FXEnableExtensionChangeWarning = false;
         QuitMenuItem = true;
         ShowPathbar = true;
