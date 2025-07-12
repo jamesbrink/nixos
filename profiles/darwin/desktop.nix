@@ -75,7 +75,7 @@
       "ollama-app"
 
       # Networking
-      "tailscale"
+      "tailscale-app"
     ];
 
     # Mac App Store apps
