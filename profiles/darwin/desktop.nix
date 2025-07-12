@@ -29,7 +29,7 @@
 
     # Productivity
     raycast
-    obsidian
+    # obsidian # GUI app - use homebrew cask instead
     # notion # Not available on darwin - use homebrew cask instead
   ];
 
@@ -77,6 +77,9 @@
 
       # Networking
       "tailscale-app"
+
+      # Productivity
+      "obsidian"
     ];
 
     # Mac App Store apps
