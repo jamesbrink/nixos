@@ -255,7 +255,7 @@
                       mkdir -p /private/tmp/nixos-config
                       rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . /private/tmp/nixos-config/
                       # macOS deployment - darwin-rebuild requires sudo
-                      sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /private/tmp/nixos-config#$HOST --impure
+                      sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /private/tmp/nixos-config#$HOST --impure --no-update-lock-file
                     else
                       rm -rf /tmp/nixos-config
                       mkdir -p /tmp/nixos-config
@@ -270,7 +270,7 @@
                       # Darwin host - use regular user
                       # Copy the flake to the remote darwin server and build there
                       rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . jamesbrink@$HOST:/private/tmp/nixos-config/
-                      ssh jamesbrink@$HOST "sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /private/tmp/nixos-config#$HOST --impure"
+                      ssh jamesbrink@$HOST "sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /private/tmp/nixos-config#$HOST --impure --no-update-lock-file"
                     else
                       # NixOS host - use root
                       # Copy the flake to the remote NixOS server and build there
