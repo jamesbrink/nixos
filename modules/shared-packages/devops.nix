@@ -18,7 +18,6 @@
     gnumake
     helm
     helm-ls
-    heroku
     incus
     infracost
     jdk

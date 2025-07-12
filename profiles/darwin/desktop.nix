@@ -72,13 +72,18 @@
       "claude" # Claude Code
       "diffusionbee"
       "ollama-app"
+
+      # Networking
+      "tailscale"
+
+      # DevOps
+      "heroku"
     ];
 
     # Mac App Store apps
     masApps = {
       "Amphetamine" = 937984704;
       "Spark" = 1176895641;
-      "Tailscale" = 1475387142;
       "Xcode" = 497799835;
     };
   };
