@@ -59,6 +59,11 @@
       trackpad = {
         Clicking = true;
         TrackpadThreeFingerDrag = true;
+        TrackpadRightClick = true;
+        ActuationStrength = 0; # 0 to enable Silent Clicking, 1 to disable
+        FirstClickThreshold = 1; # 0 for light, 1 for medium, 2 for firm
+        SecondClickThreshold = 1; # 0 for light, 1 for medium, 2 for firm
+        # Note: Natural scrolling is configured via NSGlobalDomain."com.apple.swipescrolldirection" above
       };
     };
 
