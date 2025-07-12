@@ -250,13 +250,16 @@
                   if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
                     echo "Deploying locally to $HOST..."
                     # Even for local deployments, use rsync to ensure git submodules are included
-                    rm -rf /tmp/nixos-config
-                    mkdir -p /tmp/nixos-config
-                    rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . /tmp/nixos-config/
                     if [ "$SYSTEM" = "darwin" ]; then
+                      rm -rf /private/tmp/nixos-config
+                      mkdir -p /private/tmp/nixos-config
+                      rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . /private/tmp/nixos-config/
                       # macOS deployment - darwin-rebuild requires sudo
-                      sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /tmp/nixos-config#$HOST --impure
+                      sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /private/tmp/nixos-config#$HOST --impure
                     else
+                      rm -rf /tmp/nixos-config
+                      mkdir -p /tmp/nixos-config
+                      rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . /tmp/nixos-config/
                       # NixOS deployment
                       sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake /tmp/nixos-config#$HOST --verbose --impure
                     fi
@@ -266,8 +269,8 @@
                     if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
                       # Darwin host - use regular user
                       # Copy the flake to the remote darwin server and build there
-                      rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . jamesbrink@$HOST:/tmp/nixos-config/
-                      ssh jamesbrink@$HOST "sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /tmp/nixos-config#$HOST --impure"
+                      rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . jamesbrink@$HOST:/private/tmp/nixos-config/
+                      ssh jamesbrink@$HOST "sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /private/tmp/nixos-config#$HOST --impure"
                     else
                       # NixOS host - use root
                       # Copy the flake to the remote NixOS server and build there
@@ -322,9 +325,9 @@
                     if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
                       # Darwin host - use regular user
                       # Copy the flake to the remote darwin server and test there
-                      rsync -avz --exclude '.git' --exclude 'result' . jamesbrink@$HOST:/tmp/nixos-config/
+                      rsync -avz --exclude '.git' --exclude 'result' . jamesbrink@$HOST:/private/tmp/nixos-config/
                       echo "Note: darwin doesn't support dry-activate. Building configuration instead..."
-                      ssh jamesbrink@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$HOST.system --impure"
+                      ssh jamesbrink@$HOST "cd /private/tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$HOST.system --impure"
                     else
                       # NixOS host - use root
                       # Copy the flake to the remote NixOS server and test there
