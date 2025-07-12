@@ -331,6 +331,43 @@ If you see "can't find terminal definition for xterm-ghostty":
 
 **Note**: Secrets commands now support both `~/.ssh/id_rsa` and `~/.ssh/id_ed25519` keys, preferring `id_rsa` when available.
 
+### Windows 11 VM Management
+A Windows 11 development VM module is available for running Windows on Linux hosts with KVM/QEMU.
+
+#### Configuration
+Add to your host configuration:
+```nix
+services.windows11-vm = {
+  enable = true;
+  memory = 16;      # GB of RAM
+  vcpus = 12;       # Number of vCPUs
+  diskSize = "100G";
+  owner = "jamesbrink";
+  autostart = false;
+};
+```
+
+#### VM Management Commands
+- `win11-vm start`: Start the Windows 11 VM
+- `win11-vm stop`: Gracefully shutdown the VM
+- `win11-vm force-stop`: Force stop the VM
+- `win11-vm status`: Check VM status
+- `win11-vm console`: Connect to VM console (SPICE)
+
+#### Features
+- **TPM 2.0 and UEFI**: Full Windows 11 compatibility
+- **Nested virtualization**: Run Hyper-V, WSL2, Docker Desktop inside
+- **SATA disk**: No driver issues during installation
+- **VirtIO drivers**: Included for post-install optimization
+- **Bridge networking**: Connected to existing br0
+- **SPICE graphics**: Enhanced remote desktop experience
+
+#### Installation Notes
+1. Windows 11 ISO must be placed at `/var/lib/libvirt/images/Win11_24H2_English_x64.iso`
+2. VirtIO drivers are automatically downloaded
+3. Main disk uses SATA interface for easy installation
+4. After Windows installation, install VirtIO drivers from D: drive
+
 ### Adding a New Host to Secrets
 
 #### Quick Method (using built-in commands):

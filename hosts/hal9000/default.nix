@@ -25,6 +25,7 @@
     ../../modules/services/tftp-server.nix
     ../../modules/services/netboot-configs.nix
     ../../modules/services/netboot-autochain.nix
+    ../../modules/services/windows11-vm.nix
     # ../../modules/services/netboot-server.nix  # Replaced by tftp-server.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
@@ -110,6 +111,7 @@
     "d /storage-fast 0775 root users"
     "d /mnt/storage 0775 root users"
     "d /var/lib/libvirt/images 0775 root libvirtd"
+    "d /storage-fast/vms 0775 jamesbrink libvirtd"
     "d ${config.users.users.jamesbrink.home}/.local/share/rustdesk 0755 jamesbrink users"
   ];
 
@@ -1105,4 +1107,15 @@
 
   # Keep nginx serving netboot images on port 8079
   # (configured in nginx.nix)
+
+  # Windows 11 Development VM
+  services.windows11-vm = {
+    enable = true;
+    memory = 16; # 16GB RAM
+    vcpus = 12; # 12 vCPUs (6 cores with 2 threads)
+    diskSize = "100G";
+    diskPath = "/storage-fast/vms/win11-dev.qcow2";
+    owner = "jamesbrink";
+    autostart = false; # Don't autostart, let user control it
+  };
 }
