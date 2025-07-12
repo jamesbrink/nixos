@@ -102,6 +102,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."heroku-key" = {
+    file = "${secretsPath}/jamesbrink/heroku-key.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
   # Darwin-specific activation script for AWS config and GitHub token
   system.activationScripts.postActivation.text = lib.mkAfter ''
     echo "Setting up AWS configuration for jamesbrink..."

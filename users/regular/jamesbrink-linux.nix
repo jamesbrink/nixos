@@ -170,6 +170,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."heroku-key" = {
+    file = "${effectiveSecretsPath}/jamesbrink/heroku-key.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
   # Linux-specific systemd services
   systemd.services.aws-config-setup = {
     description = "Setup AWS configuration files";

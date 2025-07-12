@@ -148,6 +148,7 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 
 ## Important Notes
 
+- **Email Configuration**: Always use `brink.james@gmail.com` for any email configuration in this codebase
 - All deployment commands automatically handle local vs remote execution
 - Remote deployments use rsync to copy flake before building
 - The development shell includes all necessary tools for maintenance

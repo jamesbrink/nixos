@@ -356,5 +356,21 @@ in
           ];
         };
       };
+
+      # Heroku CLI configuration with authentication
+      home.activation.setupHeroku = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        HEROKU_KEY_PATH="/run/agenix/heroku-key"
+        if [ -f "$HEROKU_KEY_PATH" ]; then
+          cat > ${homeDir}/.netrc <<EOF
+        machine api.heroku.com
+          login brink.james@gmail.com
+          password $(cat "$HEROKU_KEY_PATH")
+        machine git.heroku.com
+          login brink.james@gmail.com
+          password $(cat "$HEROKU_KEY_PATH")
+        EOF
+          chmod 600 ${homeDir}/.netrc
+        fi
+      '';
     };
 }
