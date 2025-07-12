@@ -9,6 +9,7 @@
   imports = [
     ./default.nix
     ../../modules/claude-desktop.nix
+    ../../modules/darwin/file-sharing.nix
   ];
 
   # Desktop-specific packages
@@ -84,5 +85,14 @@
       "Spark" = 1176895641;
       "Xcode" = 497799835;
     };
+  };
+
+  # Enable file sharing on all Darwin desktop systems
+  services.file-sharing = {
+    enable = true;
+    sharedFolders = [
+      "/Users/Shared"
+      "/Users/jamesbrink/Public"
+    ];
   };
 }
