@@ -38,6 +38,7 @@
     brews = [
       "node" # Node.js (provides npm and npx)
       "uv" # Python package manager and runner (provides uvx)
+      "heroku" # Heroku CLI
     ];
 
     # GUI applications
@@ -75,9 +76,6 @@
 
       # Networking
       "tailscale"
-
-      # DevOps
-      "heroku"
     ];
 
     # Mac App Store apps
