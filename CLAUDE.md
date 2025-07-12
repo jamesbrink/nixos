@@ -159,6 +159,7 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 - Alacritty is installed via Nix packages (not Homebrew) on Darwin
 - Terminal applications use MesloLGS Nerd Font (not "MesloLGS NF")
 - The `thefuck` package has been replaced with `pay-respects` (aliases: `fuck`, `pr`)
+- **NEVER commit changes unless explicitly asked by the user** - only stage changes and wait for user approval
 
 ## Package Configuration Notes
 

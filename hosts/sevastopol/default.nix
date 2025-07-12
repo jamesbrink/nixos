@@ -50,6 +50,9 @@
   # Time zone
   time.timeZone = "America/Phoenix";
 
+  # Dock auto-hide configuration
+  system.defaults.dock.autohide = lib.mkForce true;
+
   # Additional Homebrew packages specific to this host
   homebrew = {
     brews = [
