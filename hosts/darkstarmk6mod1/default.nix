@@ -94,7 +94,7 @@
       "iterm2"
       "jdiskreport"
       "microsoft-remote-desktop"
-      "openzfs"
+      # "openzfs"
       "winbox"
 
       # Note: obsidian and raycast are already in profiles/darwin/desktop.nix
