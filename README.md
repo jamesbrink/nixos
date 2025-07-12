@@ -33,6 +33,7 @@ This project uses:
 ├── treefmt.toml     # Code formatting configuration
 ├── hosts/           # Host-specific configurations
 │   ├── alienware/   # Desktop workstation (NixOS)
+│   ├── darkstarmk6mod1/  # MacBook Pro 16" 2019 (Darwin)
 │   ├── hal9000/     # Main server with AI services (NixOS)
 │   ├── halcyon/     # M4 Mac (Darwin)
 │   ├── n100-01/     # Cluster node 1 (NixOS)
@@ -92,6 +93,7 @@ This project uses:
 ### Darwin (macOS) Hosts
 - **halcyon**: M4 Mac with Apple Silicon
 - **sevastopol**: Intel iMac 27" 2013 running macOS Sequoia via OCLP
+- **darkstarmk6mod1**: 2019 MacBook Pro 16" Intel
 
 ## Development Shell
 
@@ -445,6 +447,7 @@ All Linux hosts automatically mount all available NFS shares under `/mnt/nfs/`:
 |------|-------------|------------|-------------|---------|
 | **halcyon** | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
 | **sevastopol** | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+| **darkstarmk6mod1** | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
 
 #### Storage Details
 
@@ -460,7 +463,7 @@ All Linux hosts automatically mount all available NFS shares under `/mnt/nfs/`:
   - Configured for both private IP ranges (192.168.0.0/16 and 10.0.0.0/8)
   - Uses permissive permissions (777) with all_squash for easy access
 
-- **macOS hosts** (halcyon, sevastopol):
+- **macOS hosts** (halcyon, sevastopol, darkstarmk6mod1):
   - Mount all available NFS shares to `/Volumes/NFS-*` for Finder visibility
   - Uses macOS native automounter with `/etc/auto_nfs` configuration
   - All shares appear with NFS- prefix in Finder sidebar

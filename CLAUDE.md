@@ -80,8 +80,8 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 2. **Host Configurations** (`hosts/*/`):
    - Each host has its own directory with `default.nix` and hardware configuration
    - Hosts import shared profiles, modules, and user configurations
-   - Linux hosts: `hal9000` (main server with AI services), `n100-*` (cluster nodes), `alienware` (desktop), `sevastopol`
-   - macOS hosts: `halcyon` (M4 Mac)
+   - Linux hosts: `hal9000` (main server with AI services), `n100-*` (cluster nodes), `alienware` (desktop), `sevastopol-linux`
+   - macOS hosts: `halcyon` (M4 Mac), `sevastopol` (Intel iMac 2013), `darkstarmk6mod1` (Intel MacBook Pro 2019)
 
 3. **Profiles** (`profiles/*/`):
    - Reusable system profiles (desktop, server, keychron, darwin)
