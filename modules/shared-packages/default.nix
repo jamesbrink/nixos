@@ -65,6 +65,7 @@
     tree
     unzip
     vim
+    virt-viewer
     wget
     wireguard-tools
     zsh

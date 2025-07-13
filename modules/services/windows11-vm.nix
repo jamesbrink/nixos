@@ -110,7 +110,7 @@ in
             --cdrom ${cfg.windowsISO} \
             --disk /var/lib/libvirt/images/virtio-win.iso,device=cdrom,bus=sata \
             --network bridge=br0,model=virtio \
-            --graphics spice,listen=localhost \
+            --graphics spice,listen=0.0.0.0 \
             --video qxl \
             --sound ich9 \
             --channel spicevmc,target_type=virtio,name=com.redhat.spice.0 \
@@ -178,4 +178,3 @@ in
     ];
   };
 }
-
