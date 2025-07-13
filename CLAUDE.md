@@ -39,6 +39,7 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 .
 ├── hosts/                 # Host-specific configurations
 │   ├── alienware/        # Gaming desktop (Linux)
+│   ├── darkstarmk6mod1/  # MacBook Pro 16" 2019 (Darwin)
 │   ├── hal9000/          # Main server with AI services (Linux)
 │   ├── halcyon/          # M4 Mac (Darwin)
 │   ├── n100-01..04/      # Cluster nodes (Linux)
@@ -51,7 +52,12 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 │   ├── services/         # Service configurations
 │   ├── shared-packages/  # Shared package sets
 │   ├── claude-desktop.nix # Claude desktop config
-│   └── n100-disko.nix    # N100 ZFS disk configuration
+│   ├── ghostty-terminfo.nix # Ghostty terminal support
+│   ├── heroku-cli.nix    # Heroku CLI module
+│   ├── n100-disko.nix    # N100 ZFS disk configuration
+│   ├── n100-network.nix  # N100 network configuration
+│   ├── nfs-mounts.nix    # NFS client configuration
+│   └── ssh-keys.nix      # SSH key management
 ├── pkgs/                 # Custom package derivations
 │   ├── llama-cpp/        # LLaMA C++ implementation
 │   └── netboot-xyz/      # Netboot.xyz bootloader package
@@ -59,15 +65,24 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 │   ├── darwin/           # macOS base profiles
 │   ├── desktop/          # Linux desktop environments
 │   ├── keychron/         # Keyboard-specific settings
+│   ├── n100/             # N100 cluster profile
 │   └── server/           # Server configurations
+├── scripts/              # Utility scripts
+│   ├── build-netboot-images.sh  # Build netboot images
+│   └── setup-n100-macs.sh       # Document N100 MACs
 ├── secrets/              # Encrypted secrets (agenix)
 │   ├── global/           # Shared secrets
 │   └── secrets.nix       # Age recipients configuration
 ├── users/                # User configurations
 │   └── regular/          # Regular user accounts
+├── docs/                 # Documentation
+│   └── nix-darwin-trackpad-options.md
 ├── flake.nix            # Flake definition
 ├── flake.lock           # Pinned dependencies
 ├── treefmt.toml         # Code formatting config
+├── LICENSE              # MIT license
+├── README.md            # Project documentation
+├── SECRETS.md           # Secrets documentation
 └── CLAUDE.md            # This file
 ```
 
@@ -302,6 +317,13 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Ensures secrets are available as regular files during build, avoiding submodule issues
 - All deployments now use consistent `--flake /tmp/nixos-config#hostname` format
 - Successfully tested on both Darwin (halcyon, sevastopol) and Linux hosts
+
+### Shared Packages Cross-Platform Support (July 2025)
+- Reorganized `modules/shared-packages/default.nix` to properly support both Linux and Darwin
+- Moved Linux-only packages to conditional inclusion using `lib.optionals pkgs.stdenv.isLinux`
+- Fixed btop CUDA support check to handle missing nvidia config on Darwin
+- Linux-only packages now include: bitwarden-cli, fio, hdparm, inxi, iperf2, ipmitool, nfs-utils, nvme-cli, parted, sysstat, and ML packages (torch, tensorflow, etc.)
+- virt-viewer remains in shared packages as it's available on both platforms
 
 ## Secrets Management Process
 - Secrets are managed using agenix

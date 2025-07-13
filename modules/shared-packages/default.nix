@@ -12,9 +12,8 @@
     inputs.agenix.packages.${pkgs.system}.default
     bandwhich
     bat
-    bitwarden-cli
     (btop.override {
-      cudaSupport = config.hardware.nvidia.package != null;
+      cudaSupport = pkgs.stdenv.isLinux && (config.hardware.nvidia.package or null) != null;
     })
     bzip2
     cachix
@@ -23,43 +22,27 @@
     dnsutils
     fastfetch
     fd
-    fio
     git
-    hdparm
     home-manager
     htop
     httpie
-    inxi
-    iperf2
-    ipmitool
     jq
     lf
     lsof
     neofetch
     neovim
     netcat
-    nfs-utils
     nixfmt-rfc-style
     nixpkgs-fmt
-    nvme-cli
     openssh
     p7zip
-    parted
     python311Full
     python311Packages.boto3
     python311Packages.pip
     python311Packages.pynvim
-    python311Packages.torch
-    python311Packages.torchvision
-    python311Packages.torchaudio
-    python311Packages.tensorflow
-    python311Packages.huggingface-hub
-    python311Packages.llvmlite
-    python311Packages.numba
     rsync
     screen
     speedtest-cli
-    sysstat
     pay-respects
     tmux
     tree
@@ -69,5 +52,25 @@
     wget
     wireguard-tools
     zsh
+  ] ++ lib.optionals pkgs.stdenv.isLinux [
+    # Linux-only packages
+    bitwarden-cli
+    fio
+    hdparm
+    inxi
+    iperf2
+    ipmitool
+    nfs-utils
+    nvme-cli
+    parted
+    sysstat
+    # ML packages (heavy dependencies, Linux-only for now)
+    python311Packages.torch
+    python311Packages.torchvision
+    python311Packages.torchaudio
+    python311Packages.tensorflow
+    python311Packages.huggingface-hub
+    python311Packages.llvmlite
+    python311Packages.numba
   ];
 }

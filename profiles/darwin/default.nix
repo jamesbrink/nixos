@@ -6,6 +6,10 @@
 }:
 
 {
+  imports = [
+    ../../modules/shared-packages/default.nix
+  ];
+
   # Nix configuration
   nix = {
     # Disable nix-darwin from managing nix (for Determinate Nix compatibility)

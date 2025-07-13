@@ -262,11 +262,11 @@
       enable = true;
       allowedTCPPorts = [
         22
-        80      # HTTP
-        443     # HTTPS
+        80 # HTTP
+        443 # HTTPS
         3389
-        5900    # SPICE for VMs
-        5901    # Additional SPICE ports
+        5900 # SPICE for VMs
+        5901 # Additional SPICE ports
         5902
         5903
         5904
@@ -346,7 +346,6 @@
       "pool.ntp.org"
     ];
   };
-
 
   systemd.user.services.rustdesk = {
     description = "RustDesk Remote Desktop Client";
