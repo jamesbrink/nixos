@@ -40,6 +40,7 @@
       "node" # Node.js (provides npm and npx)
       "uv" # Python package manager and runner (provides uvx)
       "heroku" # Heroku CLI
+      "geckodriver" # WebDriver for Firefox
     ];
 
     # GUI applications
