@@ -176,6 +176,22 @@ in
               else
                 "sudo nixos-rebuild switch --flake /etc/nixos/#default";
             cleanup = if pkgs.stdenv.isDarwin then "nix-collect-garbage -d" else "sudo nix-collect-garbage -d";
+
+            # Restic aliases
+            backup =
+              if pkgs.stdenv.isDarwin then
+                "restic-backup backup"
+              else
+                "sudo systemctl start restic-backups-s3-backup.service";
+            snapshots = "restic snapshots";
+            restic-check = "restic check";
+            restic-restore = "restic restore";
+            restic-mount = "restic mount";
+            restic-ls = "restic ls";
+            restic-cat = "restic cat";
+            restic-diff = "restic diff";
+            restic-stats = "restic stats";
+            restic-prune = "restic forget --prune --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --keep-yearly 2";
           };
 
           history = {
@@ -206,6 +222,17 @@ in
 
             # Fix backspace key
             stty erase '^?'
+
+            # Restic environment configuration
+            if [ -f "$HOME/.config/restic/s3-env" ]; then
+              set -a
+              source "$HOME/.config/restic/s3-env"
+              set +a
+            fi
+            export RESTIC_REPOSITORY="s3:s3.us-west-2.amazonaws.com/urandom-io-backups/$(hostname -s)"
+            if [ -f "$HOME/.config/restic/password" ]; then
+              export RESTIC_PASSWORD_FILE="$HOME/.config/restic/password"
+            fi
 
             # ZSH History Configuration - Never overwrite, always append
             setopt APPEND_HISTORY          # Append to history file, don't overwrite

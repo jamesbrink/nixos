@@ -17,6 +17,7 @@
     ./nginx-netboot.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
+    ../../modules/restic-backups.nix
     ../../users/regular/jamesbrink.nix
     # ../../users/regular/strivedi.nix # Temporarily disabled for UID migration
     ../../profiles/desktop/default-stable.nix

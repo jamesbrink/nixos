@@ -17,6 +17,7 @@
     ../../profiles/desktop/default-stable.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
+    ../../modules/restic-backups.nix
     ../../users/regular/jamesbrink.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];

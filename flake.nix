@@ -1219,6 +1219,134 @@
                   fi
                 '';
               }
+
+              # Backup commands
+              {
+                name = "restic-status";
+                category = "backup";
+                help = "Check Restic backup status on all hosts";
+                command = ''
+                  echo "Checking Restic backup status on all hosts..."
+                  echo ""
+
+                  # Define all hosts
+                  LINUX_HOSTS="alienware hal9000 n100-01 n100-02 n100-03 n100-04 sevastopol-linux"
+                  DARWIN_HOSTS="halcyon sevastopol darkstarmk6mod1"
+
+                  for HOST in $LINUX_HOSTS; do
+                    echo "──────────────────────────────────────────────────────"
+                    echo "Host: $HOST (Linux)"
+                    echo "──────────────────────────────────────────────────────"
+                    
+                    # Check if host is reachable
+                    if ! ssh -o ConnectTimeout=5 -o BatchMode=yes root@$HOST echo >/dev/null 2>&1; then
+                      echo "❌ Host unreachable"
+                      echo ""
+                      continue
+                    fi
+                    
+                    # Check backup timer status
+                    ssh root@$HOST "systemctl status restic-backups-s3-backup.timer --no-pager | head -n 15" 2>&1 || echo "Timer not found"
+                    echo ""
+                  done
+
+                  for HOST in $DARWIN_HOSTS; do
+                    echo "──────────────────────────────────────────────────────"
+                    echo "Host: $HOST (Darwin)"
+                    echo "──────────────────────────────────────────────────────"
+                    
+                    # Check if host is reachable
+                    if ! ssh -o ConnectTimeout=5 -o BatchMode=yes jamesbrink@$HOST echo >/dev/null 2>&1; then
+                      echo "❌ Host unreachable"
+                      echo ""
+                      continue
+                    fi
+                    
+                    # Check launchd agent status
+                    ssh jamesbrink@$HOST "launchctl list | grep restic-backup || echo 'Backup agent not loaded'" 2>&1
+                    echo ""
+                  done
+                '';
+              }
+
+              {
+                name = "restic-run";
+                category = "backup";
+                help = "Manually trigger backup on a specific host";
+                command = ''
+                  if [ $# -eq 0 ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: restic-run <hostname>"
+                    echo "Available hosts:"
+                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                    exit 1
+                  fi
+
+                  HOST="$1"
+
+                  # Check if host is Darwin or Linux
+                  if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                    # Darwin host
+                    echo "Running backup on Darwin host $HOST..."
+                    ssh jamesbrink@$HOST "restic-backup backup"
+                  elif nix eval --json .#nixosConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+                    # Linux host
+                    echo "Running backup on Linux host $HOST..."
+                    ssh root@$HOST "systemctl start restic-backups-s3-backup.service"
+                    echo ""
+                    echo "Backup started. Check status with:"
+                    echo "  ssh root@$HOST 'journalctl -u restic-backups-s3-backup.service -f'"
+                  else
+                    echo "Error: Host '$HOST' not found in configurations"
+                    exit 1
+                  fi
+                '';
+              }
+
+              {
+                name = "restic-snapshots";
+                category = "backup";
+                help = "List snapshots for a host";
+                command = ''
+                  if [ $# -eq 0 ]; then
+                    echo "Error: You must specify a hostname."
+                    echo "Usage: restic-snapshots <hostname>"
+                    echo "Available hosts:"
+                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+                    exit 1
+                  fi
+
+                  HOST="$1"
+
+                  # Repository path
+                  REPO="s3:s3.us-west-2.amazonaws.com/urandom-io-backups/$HOST"
+
+                  echo "Listing snapshots for $HOST..."
+                  echo "Repository: $REPO"
+                  echo ""
+
+                  # Check if we have the credentials
+                  if [ ! -f "$HOME/.config/restic/s3-env" ]; then
+                    echo "Error: Restic S3 credentials not found at ~/.config/restic/s3-env"
+                    echo "Deploy to a host with Restic configured to get the credentials."
+                    exit 1
+                  fi
+
+                  if [ ! -f "$HOME/.config/restic/password" ]; then
+                    echo "Error: Restic password not found at ~/.config/restic/password"
+                    echo "Deploy to a host with Restic configured to get the password."
+                    exit 1
+                  fi
+
+                  # Load environment and run restic
+                  set -a
+                  source "$HOME/.config/restic/s3-env"
+                  set +a
+
+                  export RESTIC_PASSWORD_FILE="$HOME/.config/restic/password"
+                  ${pkgs.restic}/bin/restic -r "$REPO" snapshots
+                '';
+              }
             ];
           };
         }

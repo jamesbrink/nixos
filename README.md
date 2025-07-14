@@ -160,6 +160,60 @@ The project includes a comprehensive development shell with categorized commands
 
 **Note**: All secrets commands support both `~/.ssh/id_ed25519` and `~/.ssh/id_rsa` keys (preferring ed25519).
 
+### Backup Commands
+- `restic-status` - Check Restic backup status on all hosts
+- `restic-run <hostname>` - Manually trigger backup on a specific host
+- `restic-snapshots <hostname>` - List snapshots for a host
+
+#### Using Restic Directly
+After deployment, both the `jamesbrink` user and `root` can use restic commands without specifying repository or password:
+```bash
+# List snapshots (works for both jamesbrink and root)
+restic snapshots
+
+# Manually run a backup (Darwin)
+restic-backup backup
+
+# Manually run a backup (Linux)
+sudo systemctl start restic-backups-s3-backup.service
+# or use the alias:
+backup
+
+# Browse files in a snapshot
+restic ls latest
+restic ls <snapshot-id>
+
+# Mount snapshots as filesystem (requires FUSE)
+mkdir /tmp/restic-mount
+restic mount /tmp/restic-mount
+
+# Restore files
+restic restore latest --target /tmp/restored-files
+restic restore <snapshot-id> --target /path/to/restore --include /home/user/specific/file
+
+# Check repository integrity
+restic check
+
+# View repository statistics
+restic stats
+
+# Prune old snapshots (already aliased)
+restic-prune
+```
+
+#### Shell Aliases
+The following aliases are available for the jamesbrink user:
+- `backup`: Run backup (uses restic-backup on Darwin, systemctl on Linux)
+- `snapshots`: List snapshots
+- `restic-check`: Check repository integrity
+- `restic-restore`: Restore files
+- `restic-mount`: Mount repository
+- `restic-ls`: List files in snapshot
+- `restic-cat`: Display file contents from snapshot
+- `restic-diff`: Show differences between snapshots
+- `restic-stats`: Show repository statistics
+- `restic-prune`: Remove old snapshots according to retention policy
+
 ## Quick Start
 
 ### Enter Development Shell
@@ -431,6 +485,17 @@ Current N100 nodes and their MAC addresses:
 - ZFS for advanced storage features on main servers
 - NFS exports for shared storage across network
 - Bind mounts for service-specific storage paths
+
+### Backup System
+- Automated Restic backups to AWS S3 for all hosts
+- Each host has its own repository in S3 bucket `urandom-io-backups`
+- Linux hosts: Daily automatic backups via systemd timer
+- Darwin hosts: Daily backups at 2 AM via launchd + manual backup script
+- Default backup paths:
+  - Linux: `/etc/nixos`, `/home`, `/root`, `/var/lib`
+  - Darwin: `~/Documents`, `~/Projects`, `~/.config`, `~/.ssh`
+- Retention policy: 7 daily, 4 weekly, 12 monthly, 2 yearly snapshots
+- Compression enabled with automatic exclusion of cache/temp files
 
 ### NFS Shares Documentation
 

@@ -10,6 +10,7 @@
 {
   imports = [
     ../../modules/n100-disko.nix
+    ../../modules/restic-backups.nix
     ../../profiles/server/default.nix
     ../../profiles/desktop/default.nix
     ../../users/regular/jamesbrink.nix
