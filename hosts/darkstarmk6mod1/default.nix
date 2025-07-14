@@ -19,6 +19,22 @@
     ../../modules/shared-packages/devops-darwin.nix
   ];
 
+  # TODO: Remove this override once awscli2 tests are fixed on macOS Tahoe
+  # The python s3transfer tests fail with "AF_UNIX path too long" on macOS 26 (Tahoe)
+  # This issue only affects darkstarmk6mod1 - other Darwin hosts work fine
+  nixpkgs.overlays = [
+    (final: prev: {
+      python311Packages = prev.python311Packages.override {
+        overrides = self: super: {
+          s3transfer = super.s3transfer.overridePythonAttrs (old: {
+            doCheck = false;
+            doInstallCheck = false;
+          });
+        };
+      };
+    })
+  ];
+
   # Networking
   networking = {
     hostName = "darkstarmk6mod1";
