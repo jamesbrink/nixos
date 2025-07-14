@@ -40,7 +40,9 @@
         InitialKeyRepeat = 15;
         "com.apple.swipescrolldirection" = true;
         "com.apple.sound.beep.feedback" = 0;
-        AppleInterfaceStyleSwitchesAutomatically = true;
+        AppleInterfaceStyleSwitchesAutomatically = false;
+        # Force light mode - unset AppleInterfaceStyle means light mode
+        AppleInterfaceStyle = null;
       };
 
       dock = {
