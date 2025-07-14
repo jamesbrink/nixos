@@ -1288,7 +1288,11 @@
                   if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
                     # Darwin host
                     echo "Running backup on Darwin host $HOST..."
-                    ssh jamesbrink@$HOST "restic-backup backup"
+                    ssh jamesbrink@$HOST "restic-backup backup" || {
+                      echo "Backup failed. If this is the first run, the repository should have been auto-initialized."
+                      echo "Check the error message above for details."
+                      exit 1
+                    }
                   elif nix eval --json .#nixosConfigurations.$HOST._type 2>/dev/null >/dev/null; then
                     # Linux host
                     echo "Running backup on Linux host $HOST..."

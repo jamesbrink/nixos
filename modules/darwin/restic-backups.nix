@@ -83,6 +83,11 @@ with lib;
             ;;
           backup)
             echo "Starting backup to $RESTIC_REPOSITORY..."
+            # Check if repository exists, initialize if not
+            if ! restic snapshots &>/dev/null; then
+              echo "Repository does not exist. Initializing..."
+              restic init || { echo "Failed to initialize repository"; exit 1; }
+            fi
             eval restic backup --compression max --verbose $EXCLUDE_ARGS "''${BACKUP_PATHS[@]}"
             ;;
           snapshots)
