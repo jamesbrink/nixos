@@ -935,6 +935,7 @@
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;
     protontricks.enable = true;
+    gamescopeSession.enable = true;
   };
 
   services.resolved = {
