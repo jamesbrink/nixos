@@ -111,5 +111,34 @@ in
         mode = "0400";
       };
     };
+
+    # Create restic configuration for all users
+    system.activationScripts.setupResticForUsers = lib.stringAfter [ "users" "groups" ] ''
+      # Setup restic config for root
+      mkdir -p /root/.config/restic
+      ln -sf ${config.age.secrets."restic-password".path} /root/.config/restic/password
+      ln -sf ${config.age.secrets."restic-s3-env".path} /root/.config/restic/s3-env
+
+      # Setup restic config for regular users
+      for user in jamesbrink; do
+        if id "$user" &>/dev/null; then
+          user_home=$(eval echo ~$user)
+          if [ -d "$user_home" ]; then
+            mkdir -p "$user_home/.config/restic"
+            chown $user:users "$user_home/.config/restic"
+            
+            # Copy the files instead of symlinking to avoid permission issues
+            cp ${config.age.secrets."restic-password".path} "$user_home/.config/restic/password"
+            cp ${config.age.secrets."restic-s3-env".path} "$user_home/.config/restic/s3-env"
+            
+            # Set proper ownership and permissions
+            chown $user:users "$user_home/.config/restic/password"
+            chown $user:users "$user_home/.config/restic/s3-env"
+            chmod 0400 "$user_home/.config/restic/password"
+            chmod 0400 "$user_home/.config/restic/s3-env"
+          fi
+        fi
+      done
+    '';
   };
 }
