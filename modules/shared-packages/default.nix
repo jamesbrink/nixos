@@ -46,6 +46,7 @@
       screen
       speedtest-cli
       pay-respects
+      restic-browser
       tmux
       tree
       unzip

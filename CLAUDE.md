@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Deployment Commands
 - `deploy <hostname>`: Deploy configuration to a host (automatically detects local vs remote)
+- `deploy-all`: Deploy to all hosts in parallel with summary report (options: --quiet, --sequential, --max-jobs N, --dry-run)
 - `deploy-local <hostname>`: Build locally and deploy to a remote host (useful for low-RAM targets)
 - `deploy-test <hostname>`: Test deployment without making changes (dry-activate)
 - `build <hostname>`: Build configuration for a host without deploying
@@ -69,6 +70,7 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 │   └── server/           # Server configurations
 ├── scripts/              # Utility scripts
 │   ├── build-netboot-images.sh  # Build netboot images
+│   ├── deploy-all.sh     # Deploy to all hosts in parallel
 │   └── setup-n100-macs.sh       # Document N100 MACs
 ├── secrets/              # Encrypted secrets (agenix)
 │   ├── global/           # Shared secrets

@@ -137,6 +137,10 @@
                 name = "EDITOR";
                 value = "vim";
               }
+              {
+                name = "PRJ_ROOT";
+                eval = "$PWD";
+              }
             ];
 
             packages = with pkgs; [
@@ -407,6 +411,14 @@
                 '';
               }
 
+              {
+                name = "deploy-all";
+                category = "deployment";
+                help = "Deploy to all hosts in parallel with a summary report";
+                command = ''
+                  ${./scripts/deploy-all.sh} "$@"
+                '';
+              }
               {
                 name = "deploy-local";
                 category = "deployment";

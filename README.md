@@ -132,6 +132,7 @@ The project includes a comprehensive development shell with categorized commands
 
 ### Deployment Commands
 - `deploy <hostname>` - Deploy configuration to a host (auto-detects local/remote, Darwin/NixOS)
+- `deploy-all` - Deploy to all hosts in parallel with summary report
 - `deploy-local <hostname>` - Build locally and deploy to remote (useful for low-RAM targets)
 - `deploy-test <hostname>` - Test deployment without making changes (dry-activate)
 - `build <hostname>` - Build configuration without deploying
@@ -225,6 +226,15 @@ nix develop
 ```bash
 # Deploy to a specific host
 deploy alienware
+
+# Deploy to all hosts in parallel
+deploy-all
+
+# Deploy to all hosts with minimal output
+deploy-all --quiet
+
+# Deploy to all hosts sequentially
+deploy-all --sequential
 
 # Test deployment first
 deploy-test sevastopol
