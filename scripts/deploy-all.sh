@@ -272,7 +272,7 @@ TOTAL_DURATION=$((END_TIME - START_TIME))
 # Generate report
 echo ""
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}                 DEPLOYMENT REPORT                      ${NC}"
+echo -e "${BLUE}                 DEPLOYMENT REPORT${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
 echo ""
 
