@@ -64,6 +64,10 @@
       url = "github:homebrew/homebrew-cask";
       flake = false;
     };
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixos-unstable";
+    };
   };
 
   outputs =
@@ -84,6 +88,7 @@
       homebrew-bundle,
       homebrew-core,
       homebrew-cask,
+      zen-browser,
       ...
     }@inputs:
     let

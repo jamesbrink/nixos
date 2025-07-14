@@ -68,6 +68,8 @@
       nvme-cli
       parted
       sysstat
+      # Zen Browser (twilight version for reproducibility)
+      inputs.zen-browser.packages.${pkgs.system}.twilight
       # ML packages (heavy dependencies, Linux-only for now)
       python311Packages.torch
       python311Packages.torchvision
