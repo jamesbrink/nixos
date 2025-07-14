@@ -23,10 +23,7 @@ in
     paths = mkOption {
       type = types.listOf types.str;
       default = [
-        "/etc/nixos"
         "/home"
-        "/root"
-        "/var/lib"
       ];
       description = "Paths to backup";
     };
@@ -36,9 +33,13 @@ in
       default = [
         "/home/*/.cache"
         "/home/*/.local/share/Trash"
-        "/var/lib/docker"
-        "/var/lib/containers"
-        "/var/lib/libvirt/images"
+        "/home/*/.local/share/Steam"
+        "/home/*/Downloads"
+        "/home/*/.config/Code/Cache"
+        "/home/*/.config/Code/CachedData"
+        "/home/*/.mozilla/firefox/*/cache*"
+        "/home/*/.thunderbird/*/cache*"
+        "node_modules"
         "*.tmp"
         "*.temp"
         "*.swp"
@@ -71,7 +72,111 @@ in
 
   config = mkIf cfg.enable {
     # Ensure restic is installed
-    environment.systemPackages = [ pkgs.restic ];
+    environment.systemPackages = [
+      pkgs.restic
+
+      # Create a helper script for manual backups (matching Darwin functionality)
+      (pkgs.writeShellScriptBin "restic-backup" ''
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        # Load environment variables
+        if [ -f "$HOME/.config/restic/s3-env" ]; then
+          set -a
+          source "$HOME/.config/restic/s3-env"
+          set +a
+        else
+          echo "Error: Restic S3 environment file not found at $HOME/.config/restic/s3-env"
+          exit 1
+        fi
+
+        # Set repository based on hostname
+        export RESTIC_REPOSITORY="s3:s3.us-west-2.amazonaws.com/urandom-io-backups/$(hostname -s)"
+
+        # Load password
+        if [ -f "$HOME/.config/restic/password" ]; then
+          export RESTIC_PASSWORD_FILE="$HOME/.config/restic/password"
+        else
+          echo "Error: Restic password file not found at $HOME/.config/restic/password"
+          exit 1
+        fi
+
+        # Default paths to backup (matching the service configuration)
+        BACKUP_PATHS=(
+          ${lib.concatMapStringsSep " " (path: ''"${path}"'') cfg.paths}
+        )
+
+        # Exclude patterns
+        EXCLUDE_PATTERNS=(
+          ${lib.concatMapStringsSep " " (pattern: ''"${pattern}"'') cfg.exclude}
+        )
+
+        # Build exclude arguments
+        EXCLUDE_ARGS=""
+        for pattern in "''${EXCLUDE_PATTERNS[@]}"; do
+          EXCLUDE_ARGS="$EXCLUDE_ARGS --exclude=\"$pattern\""
+        done
+
+        case "''${1:-}" in
+          init)
+            echo "Initializing Restic repository..."
+            restic init
+            ;;
+          backup)
+            echo "Starting backup to $RESTIC_REPOSITORY..."
+            # Check if repository exists, initialize if not
+            if ! restic snapshots &>/dev/null; then
+              echo "Repository does not exist. Initializing..."
+              restic init || { echo "Failed to initialize repository"; exit 1; }
+            fi
+            eval restic backup --compression max --verbose $EXCLUDE_ARGS "''${BACKUP_PATHS[@]}"
+            ;;
+          snapshots)
+            restic snapshots
+            ;;
+          check)
+            restic check
+            ;;
+          prune)
+            restic forget --prune ${lib.concatStringsSep " " cfg.pruneOpts}
+            ;;
+          restore)
+            if [ -z "''${2:-}" ]; then
+              echo "Usage: restic-backup restore <snapshot-id> [target-path]"
+              exit 1
+            fi
+            TARGET="''${3:-restored-files}"
+            restic restore "''${2}" --target "$TARGET"
+            ;;
+          status)
+            echo "Systemd backup service status:"
+            systemctl status restic-backups-s3-backup.service || true
+            echo ""
+            echo "Timer status:"
+            systemctl status restic-backups-s3-backup.timer || true
+            ;;
+          logs)
+            journalctl -u restic-backups-s3-backup.service --no-pager -n 50
+            ;;
+          *)
+            echo "Usage: restic-backup {init|backup|snapshots|check|prune|restore|status|logs}"
+            echo ""
+            echo "Commands:"
+            echo "  init       - Initialize a new repository"
+            echo "  backup     - Run a manual backup"
+            echo "  snapshots  - List snapshots"
+            echo "  check      - Check repository integrity"
+            echo "  prune      - Remove old snapshots according to policy"
+            echo "  restore    - Restore files from a snapshot"
+            echo "  status     - Show systemd service and timer status"
+            echo "  logs       - Show recent backup logs"
+            echo ""
+            echo "Note: Automatic backups run via systemd timer (${cfg.timerConfig.OnCalendar})"
+            exit 1
+            ;;
+        esac
+      '')
+    ];
 
     # Configure the backup job
     services.restic.backups = {

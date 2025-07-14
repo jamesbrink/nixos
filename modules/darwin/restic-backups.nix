@@ -17,6 +17,45 @@ with lib;
         default = true;
         description = "Enable Restic backup tools on Darwin";
       };
+
+      paths = mkOption {
+        type = types.listOf types.str;
+        default = [
+          "$HOME"
+        ];
+        description = "Paths to backup";
+      };
+
+      exclude = mkOption {
+        type = types.listOf types.str;
+        default = [
+          "*.cache"
+          "*.trash"
+          "node_modules"
+          ".DS_Store"
+          "*.tmp"
+          "*.temp"
+          "*.swp"
+          "$HOME/Library/Caches"
+          "$HOME/Library/Logs"
+          "$HOME/Library/Application Support/Steam"
+          "$HOME/.Trash"
+          "$HOME/.cache"
+          "$HOME/.local/share/Trash"
+        ];
+        description = "Patterns to exclude from backup";
+      };
+
+      pruneOpts = mkOption {
+        type = types.listOf types.str;
+        default = [
+          "--keep-daily 7"
+          "--keep-weekly 4"
+          "--keep-monthly 12"
+          "--keep-yearly 2"
+        ];
+        description = "Restic prune options";
+      };
     };
   };
 
@@ -51,23 +90,14 @@ with lib;
           exit 1
         fi
 
-        # Default paths to backup
+        # Default paths to backup (from configuration)
         BACKUP_PATHS=(
-          "$HOME/Documents"
-          "$HOME/Projects"
-          "$HOME/.config"
-          "$HOME/.ssh"
+          ${lib.concatMapStringsSep " " (path: ''"${path}"'') config.programs.restic-backups.paths}
         )
 
-        # Exclude patterns
+        # Exclude patterns (from configuration)
         EXCLUDE_PATTERNS=(
-          "*.cache"
-          "*.trash"
-          "node_modules"
-          ".DS_Store"
-          "*.tmp"
-          "*.temp"
-          "*.swp"
+          ${lib.concatMapStringsSep " " (pattern: ''"${pattern}"'') config.programs.restic-backups.exclude}
         )
 
         # Build exclude arguments
@@ -97,7 +127,7 @@ with lib;
             restic check
             ;;
           prune)
-            restic forget --prune --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --keep-yearly 2
+            restic forget --prune ${lib.concatStringsSep " " config.programs.restic-backups.pruneOpts}
             ;;
           restore)
             if [ -z "''${2:-}" ]; then
@@ -107,16 +137,35 @@ with lib;
             TARGET="''${3:-restored-files}"
             restic restore "''${2}" --target "$TARGET"
             ;;
+          status)
+            echo "Launchd backup agent status:"
+            launchctl list | grep restic-backup || echo "restic-backup agent not found"
+            echo ""
+            echo "Log files:"
+            echo "  stdout: /tmp/restic-backup.log"
+            echo "  stderr: /tmp/restic-backup.err"
+            ;;
+          logs)
+            echo "=== Recent stdout logs ==="
+            tail -n 50 /tmp/restic-backup.log 2>/dev/null || echo "No stdout logs found"
+            echo ""
+            echo "=== Recent stderr logs ==="
+            tail -n 50 /tmp/restic-backup.err 2>/dev/null || echo "No stderr logs found"
+            ;;
           *)
-            echo "Usage: restic-backup {init|backup|snapshots|check|prune|restore}"
+            echo "Usage: restic-backup {init|backup|snapshots|check|prune|restore|status|logs}"
             echo ""
             echo "Commands:"
             echo "  init       - Initialize a new repository"
-            echo "  backup     - Run a backup"
+            echo "  backup     - Run a manual backup"
             echo "  snapshots  - List snapshots"
             echo "  check      - Check repository integrity"
             echo "  prune      - Remove old snapshots according to policy"
             echo "  restore    - Restore files from a snapshot"
+            echo "  status     - Show launchd agent status"
+            echo "  logs       - Show recent backup logs"
+            echo ""
+            echo "Note: Automatic backups run daily at 2:00 AM via launchd"
             exit 1
             ;;
         esac

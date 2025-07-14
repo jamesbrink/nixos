@@ -81,7 +81,10 @@ let
   filteredShares = builtins.filter (
     share:
     # Don't mount exports from ourselves
-    share.server != "${config.networking.hostName}.${config.networking.domain or "home.urandom.io"}"
+    let
+      domain = if config.networking.domain != null then config.networking.domain else "home.urandom.io";
+    in
+    share.server != "${config.networking.hostName}.${domain}"
   ) nfsShares;
 in
 {
