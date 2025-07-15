@@ -39,3 +39,10 @@ includes = ["*.nix"]
 command = "prettier"
 options = ["--write"]
 includes = ["*.html", "*.css", "*.js", "*.json"]
+
+# Shellcheck is available but not used as a formatter
+# Run shellcheck manually with: shellcheck scripts/*.sh
+# [formatter.shellcheck]
+# command = "shellcheck"
+# options = ["-x", "-e", "SC1091,SC2029"]
+# includes = ["*.sh"]

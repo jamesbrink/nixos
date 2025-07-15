@@ -158,6 +158,7 @@
               age # For secrets encryption
               (pkgs.callPackage "${inputs.agenix}/pkgs/agenix.nix" { }) # agenix from flake input
               nixos-anywhere # For initial deployments with disko
+              shellcheck # For shell script linting
 
               # Neovim with Nix language support
               (neovim.override {
@@ -234,119 +235,14 @@
                 name = "deploy";
                 category = "deployment";
                 help = "Deploy the configuration to a target host";
-                command = ''
-                  # Check if argument is provided
-                  if [ $# -eq 0 ]; then
-                    HOST=""
-                  else
-                    HOST="$1"
-                  fi
-                  if [ -z "$HOST" ]; then
-                    echo "Error: You must specify a hostname."
-                    echo "Usage: deploy <hostname>"
-                    echo "Available hosts:"
-                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
-                    exit 1
-                  fi
-
-                  HOSTNAME=$(hostname | cut -d. -f1 | tr '[:upper:]' '[:lower:]')
-                  SYSTEM=$(uname -s | tr '[:upper:]' '[:lower:]')
-                  HOST_LOWER=$(echo "$HOST" | tr '[:upper:]' '[:lower:]')
-
-                  echo "Deploying configuration to $HOST..."
-
-                  # Always use rsync to ensure submodules are included
-                  if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
-                    echo "Deploying locally to $HOST..."
-                    # Even for local deployments, use rsync to ensure git submodules are included
-                    if [ "$SYSTEM" = "darwin" ]; then
-                      rm -rf /private/tmp/nixos-config
-                      mkdir -p /private/tmp/nixos-config
-                      rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . /private/tmp/nixos-config/
-                      # macOS deployment - darwin-rebuild requires sudo
-                      sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /private/tmp/nixos-config#$HOST --impure --no-update-lock-file
-                    else
-                      rm -rf /tmp/nixos-config
-                      mkdir -p /tmp/nixos-config
-                      rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . /tmp/nixos-config/
-                      # NixOS deployment
-                      sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake /tmp/nixos-config#$HOST --verbose --impure
-                    fi
-                  else
-                    echo "Deploying remotely to $HOST..."
-                    # Check if host is darwin or linux by checking flake configuration
-                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
-                      # Darwin host - use regular user
-                      # Copy the flake to the remote darwin server and build there
-                      rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . jamesbrink@$HOST:/private/tmp/nixos-config/
-                      ssh jamesbrink@$HOST "sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /private/tmp/nixos-config#$HOST --impure --no-update-lock-file"
-                    else
-                      # NixOS host - use root
-                      # Copy the flake to the remote NixOS server and build there
-                      rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . root@$HOST:/tmp/nixos-config/
-                      ssh root@$HOST "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake /tmp/nixos-config#$HOST --verbose --impure"
-                    fi
-                  fi
-
-                  echo "Deployment to $HOST complete!"
-                '';
+                command = "${./scripts/deploy.sh} $@";
               }
 
               {
                 name = "deploy-test";
                 category = "deployment";
                 help = "Test the deployment without making changes";
-                command = ''
-                  # Check if argument is provided
-                  if [ $# -eq 0 ]; then
-                    HOST=""
-                  else
-                    HOST="$1"
-                  fi
-                  if [ -z "$HOST" ]; then
-                    echo "Error: You must specify a hostname."
-                    echo "Usage: deploy-test <hostname>"
-                    echo "Available hosts:"
-                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
-                    exit 1
-                  fi
-
-                  HOSTNAME=$(hostname | cut -d. -f1 | tr '[:upper:]' '[:lower:]')
-                  SYSTEM=$(uname -s | tr '[:upper:]' '[:lower:]')
-                  HOST_LOWER=$(echo "$HOST" | tr '[:upper:]' '[:lower:]')
-
-                  echo "Testing deployment to $HOST..."
-
-                  # Check if we're on the target host
-                  if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
-                    echo "Testing locally on $HOST..."
-                    if [ "$SYSTEM" = "darwin" ]; then
-                      # macOS dry-run (darwin doesn't have dry-activate)
-                      echo "Note: darwin doesn't support dry-activate. Building configuration instead..."
-                      NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$HOST.system --impure
-                    else
-                      # NixOS dry-run
-                      sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$HOST --impure
-                    fi
-                  else
-                    echo "Testing remotely on $HOST..."
-                    # Check if host is darwin or linux by checking flake configuration
-                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
-                      # Darwin host - use regular user
-                      # Copy the flake to the remote darwin server and test there
-                      rsync -avz --exclude '.git' --exclude 'result' . jamesbrink@$HOST:/private/tmp/nixos-config/
-                      echo "Note: darwin doesn't support dry-activate. Building configuration instead..."
-                      ssh jamesbrink@$HOST "cd /private/tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$HOST.system --impure"
-                    else
-                      # NixOS host - use root
-                      # Copy the flake to the remote NixOS server and test there
-                      rsync -avz --exclude '.git' --exclude 'result' . root@$HOST:/tmp/nixos-config/
-                      ssh root@$HOST "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$HOST --impure"
-                    fi
-                  fi
-
-                  echo "Deployment test for $HOST complete!"
-                '';
+                command = "${./scripts/deploy-test.sh} $@";
               }
 
               {
@@ -428,103 +324,7 @@
                 name = "deploy-local";
                 category = "deployment";
                 help = "Build locally and deploy to a remote host (useful for low-RAM targets)";
-                command = ''
-                  # Check if argument is provided
-                  if [ $# -eq 0 ]; then
-                    HOST=""
-                  else
-                    HOST="$1"
-                  fi
-                  if [ -z "$HOST" ]; then
-                    echo "Error: You must specify a hostname."
-                    echo "Usage: deploy-local <hostname>"
-                    echo "Available hosts:"
-                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
-                    exit 1
-                  fi
-
-                  HOSTNAME=$(hostname | cut -d. -f1 | tr '[:upper:]' '[:lower:]')
-                  HOST_LOWER=$(echo "$HOST" | tr '[:upper:]' '[:lower:]')
-
-                  # Check if we're trying to deploy to ourselves
-                  if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
-                    echo "Error: deploy-local is for remote hosts only. Use 'deploy' for local deployment."
-                    exit 1
-                  fi
-
-                  # Check if host is Darwin or NixOS
-                  if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
-                    # Darwin deployment
-                    echo "Building darwin configuration for $HOST locally..."
-                    NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#darwinConfigurations.$HOST.system
-                    if [ $? -ne 0 ]; then
-                      echo "Build failed! Aborting deployment."
-                      exit 1
-                    fi
-                    
-                    echo "Build complete! Copying closure to $HOST..."
-                    nix-copy-closure --to jamesbrink@$HOST ./result
-                    
-                    if [ $? -ne 0 ]; then
-                      echo "Failed to copy closure to $HOST! Aborting deployment."
-                      exit 1
-                    fi
-                    
-                    echo "Switching to new configuration on $HOST..."
-                    STORE_PATH=$(readlink -f ./result)
-                    ssh jamesbrink@$HOST "sudo $STORE_PATH/sw/bin/darwin-rebuild switch --flake .#$HOST"
-                    
-                    if [ $? -eq 0 ]; then
-                      echo "Deployment to $HOST complete!"
-                    else
-                      echo "Failed to switch configuration on $HOST!"
-                      exit 1
-                    fi
-                  else
-                    # NixOS deployment
-                    # Check if we already have a build result
-                    if [ -L ./result ] && [ -e ./result ]; then
-                      # Verify this result is for the correct host (macOS-compatible grep)
-                      RESULT_HOST=$(readlink ./result | sed -n 's/.*nixos-system-\([^-]*\).*/\1/p' || echo "unknown")
-                      if [ "$RESULT_HOST" = "$HOST" ]; then
-                        echo "Found existing build result for $HOST, using it..."
-                      else
-                        echo "Existing build result is for '$RESULT_HOST', not '$HOST'. Building fresh..."
-                        NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
-                        if [ $? -ne 0 ]; then
-                          echo "Build failed! Aborting deployment."
-                          exit 1
-                        fi
-                      fi
-                    else
-                      echo "No existing build result found. Building configuration for $HOST locally..."
-                      NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
-                      if [ $? -ne 0 ]; then
-                        echo "Build failed! Aborting deployment."
-                        exit 1
-                      fi
-                    fi
-
-                    echo "Build complete! Copying closure to $HOST..."
-                    nix-copy-closure --to root@$HOST ./result
-
-                    if [ $? -ne 0 ]; then
-                      echo "Failed to copy closure to $HOST! Aborting deployment."
-                      exit 1
-                    fi
-
-                    echo "Switching to new configuration on $HOST..."
-                    STORE_PATH=$(readlink -f ./result)
-                    ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --set $STORE_PATH && /nix/var/nix/profiles/system/bin/switch-to-configuration switch"
-
-                    if [ $? -eq 0 ]; then
-                      echo "Deployment to $HOST complete!"
-                    else
-                      echo "Failed to switch configuration on $HOST!"
-                      exit 1
-                    fi
-                  fi
-                '';
+                command = "${./scripts/deploy-local.sh} $@";
               }
 
               {
@@ -545,109 +345,14 @@
                 name = "health-check";
                 category = "maintenance";
                 help = "Check the health of a system";
-                command = ''
-                  # Check if argument is provided
-                  if [ $# -eq 0 ]; then
-                    HOST=""
-                  else
-                    HOST="$1"
-                  fi
-                  if [ -z "$HOST" ]; then
-                    echo "Error: You must specify a hostname."
-                    echo "Usage: health-check <hostname>"
-                    echo "Available hosts:"
-                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
-                    exit 1
-                  fi
-
-                  HOSTNAME=$(hostname)
-
-                  echo "Checking system health on $HOST..."
-
-                  if [ "$HOSTNAME" = "$HOST" ]; then
-                    # Local health check
-                    echo "\nDisk usage on $HOST:"
-                    df -h | grep -v tmpfs
-                    echo "\nMemory usage on $HOST:"
-                    free -h
-                    echo "\nSystem load on $HOST:"
-                    uptime
-                    echo "\nFailed services on $HOST:"
-                    systemctl --failed
-                    echo "\nJournal errors on $HOST (last 10):"
-                    journalctl -p 3 -xn 10
-                  else
-                    # Remote health check
-                    # Check if host is darwin or linux by checking flake configuration
-                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
-                      # Darwin host - use regular user with sudo where needed
-                      echo "\nDisk usage on $HOST:"
-                      ssh jamesbrink@$HOST "df -h | grep -v tmpfs"
-                      echo "\nMemory usage on $HOST:"
-                      ssh jamesbrink@$HOST "vm_stat | perl -ne '/page size of (\d+)/ and \$size=\$1; /Pages\s+([^:]+)[^\d]+(\d+)/ and printf(\"%-20s %8.2f GB\\n\", \"\$1:\", \$2 * \$size / 1073741824);'"
-                      echo "\nSystem load on $HOST:"
-                      ssh jamesbrink@$HOST "uptime"
-                      echo "\nSystem services on $HOST:"
-                      ssh jamesbrink@$HOST "sudo launchctl list | grep -E '(com.apple|org.nixos)' | head -20"
-                    else
-                      # NixOS host - use root
-                      echo "\nDisk usage on $HOST:"
-                      ssh root@$HOST "df -h | grep -v tmpfs"
-                      echo "\nMemory usage on $HOST:"
-                      ssh root@$HOST "free -h"
-                      echo "\nSystem load on $HOST:"
-                      ssh root@$HOST "uptime"
-                      echo "\nFailed services on $HOST:"
-                      ssh root@$HOST "systemctl --failed"
-                      echo "\nJournal errors on $HOST (last 10):"
-                      ssh root@$HOST "journalctl -p 3 -xn 10"
-                    fi
-                  fi
-
-                  echo "\nHealth check for $HOST complete."
-                '';
+                command = "${./scripts/health-check.sh} $@";
               }
 
               {
                 name = "nix-gc";
                 category = "maintenance";
                 help = "Run garbage collection to free up disk space";
-                command = ''
-                  # Check if argument is provided
-                  if [ $# -eq 0 ]; then
-                    HOST=""
-                  else
-                    HOST="$1"
-                  fi
-                  if [ -z "$HOST" ]; then
-                    echo "Error: You must specify a hostname."
-                    echo "Usage: nix-gc <hostname>"
-                    echo "Available hosts:"
-                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
-                    exit 1
-                  fi
-
-                  HOSTNAME=$(hostname)
-
-                  echo "Running garbage collection on $HOST..."
-
-                  if [ "$HOSTNAME" = "$HOST" ]; then
-                    # Local garbage collection
-                    sudo nix-collect-garbage -d
-                  else
-                    # Remote garbage collection
-                    # Check if host is darwin or linux by checking flake configuration
-                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
-                      # Darwin host - use regular user with sudo
-                      ssh jamesbrink@$HOST "sudo nix-collect-garbage -d"
-                    else
-                      # NixOS host - use root
-                      ssh root@$HOST "nix-collect-garbage -d"
-                    fi
-                  fi
-
-                  echo "Garbage collection on $HOST complete!"
-                '';
+                command = "${./scripts/nix-gc.sh} $@";
               }
 
               {
@@ -664,163 +369,28 @@
                 name = "show-generations";
                 category = "maintenance";
                 help = "Show NixOS generations on a host";
-                command = ''
-                  # Check if argument is provided
-                  if [ $# -eq 0 ]; then
-                    HOST=""
-                  else
-                    HOST="$1"
-                  fi
-                  if [ -z "$HOST" ]; then
-                    echo "Error: You must specify a hostname."
-                    echo "Usage: show-generations <hostname>"
-                    echo "Available hosts:"
-                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
-                    exit 1
-                  fi
-
-                  HOSTNAME=$(hostname)
-
-                  if [ "$HOSTNAME" = "$HOST" ]; then
-                    # Local generations
-                    echo "System generations on $HOST:"
-                    sudo nix-env -p /nix/var/nix/profiles/system --list-generations
-                  else
-                    # Remote generations
-                    # Check if host is darwin or linux by checking flake configuration
-                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
-                      # Darwin host - use regular user with sudo
-                      echo "Darwin generations on $HOST:"
-                      ssh jamesbrink@$HOST "sudo nix-env -p /nix/var/nix/profiles/system --list-generations"
-                    else
-                      # NixOS host - use root
-                      echo "NixOS generations on $HOST:"
-                      ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --list-generations"
-                    fi
-                  fi
-                '';
+                command = "${./scripts/show-generations.sh} $@";
               }
 
               {
                 name = "rollback";
                 category = "maintenance";
                 help = "Rollback to the previous generation on a host";
-                command = ''
-                  # Check if argument is provided
-                  if [ $# -eq 0 ]; then
-                    HOST=""
-                  else
-                    HOST="$1"
-                  fi
-                  if [ -z "$HOST" ]; then
-                    echo "Error: You must specify a hostname."
-                    echo "Usage: rollback <hostname>"
-                    echo "Available hosts:"
-                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
-                    exit 1
-                  fi
-
-                  HOSTNAME=$(hostname)
-
-                  echo "Rolling back to previous generation on $HOST..."
-
-                  if [ "$HOSTNAME" = "$HOST" ]; then
-                    # Local rollback
-                    SYSTEM=$(uname -s | tr '[:upper:]' '[:lower:]')
-                    if [ "$SYSTEM" = "darwin" ]; then
-                      # macOS rollback
-                      sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- --rollback switch --impure
-                    else
-                      # NixOS rollback
-                      sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild --rollback switch --impure
-                    fi
-                  else
-                    # Remote rollback
-                    # Check if host is darwin or linux by checking flake configuration
-                    if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
-                      # Darwin host - use regular user with sudo
-                      ssh jamesbrink@$HOST "sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- --rollback switch --impure"
-                    else
-                      # NixOS host - use root
-                      ssh root@$HOST "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild --rollback switch --impure"
-                    fi
-                  fi
-
-                  echo "Rollback on $HOST complete!"
-                '';
+                command = "${./scripts/rollback.sh} $@";
               }
 
               {
                 name = "secrets-edit";
                 category = "secrets";
                 help = "Edit a secret file";
-                command = ''
-                  if [ $# -eq 0 ]; then
-                    echo "Error: You must specify a secret file to edit."
-                    echo "Usage: secrets-edit <secret-name>"
-                    echo "Example: secrets-edit global/claude-desktop-config"
-                    echo "         secrets-edit hal9000/syncthing-password"
-                    echo ""
-                    echo "Note: Do NOT include the 'secrets/' prefix"
-                    exit 1
-                  fi
-
-                  SECRET_PATH="$1"
-
-                  # Remove 'secrets/' prefix if present 
-                  SECRET_PATH="''${SECRET_PATH#secrets/}"
-
-                  # Remove '.age' suffix if present
-                  SECRET_PATH="''${SECRET_PATH%.age}"
-
-                  # The actual file path
-                  SECRET_FILE="$SECRET_PATH.age"
-
-                  # Change to secrets directory for proper path resolution
-                  cd secrets
-
-                  if [ ! -f "$SECRET_FILE" ]; then
-                    echo "Creating new secret: $SECRET_FILE"
-                    mkdir -p "$(dirname "$SECRET_FILE")"
-                  fi
-
-                  # Use proper agenix syntax - use ed25519 by default
-                  if [ -f ~/.ssh/id_ed25519 ]; then
-                    IDENTITY_FILE=~/.ssh/id_ed25519
-                  elif [ -f ~/.ssh/id_rsa ]; then
-                    IDENTITY_FILE=~/.ssh/id_rsa
-                  else
-                    echo "Error: No SSH identity file found (~/.ssh/id_ed25519 or ~/.ssh/id_rsa)"
-                    exit 1
-                  fi
-
-                  RULES=./secrets.nix EDITOR="''${EDITOR:-vim}" agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE"
-                  cd ..
-                '';
+                command = "${./scripts/secrets-edit.sh} $@";
               }
 
               {
                 name = "secrets-rekey";
                 category = "secrets";
                 help = "Re-encrypt all secrets with current recipients";
-                command = ''
-                  echo "Re-encrypting all secrets..."
-                  cd secrets
-
-                  # Use id_ed25519 by default, fall back to id_rsa
-                  if [ -f ~/.ssh/id_ed25519 ]; then
-                    IDENTITY_FILE=~/.ssh/id_ed25519
-                  elif [ -f ~/.ssh/id_rsa ]; then
-                    IDENTITY_FILE=~/.ssh/id_rsa
-                  else
-                    echo "Error: No SSH identity file found (~/.ssh/id_ed25519 or ~/.ssh/id_rsa)"
-                    exit 1
-                  fi
-
-                  RULES=./secrets.nix agenix -r -i "$IDENTITY_FILE"
-                  cd ..
-                  echo "All secrets have been re-encrypted"
-                '';
+                command = "${./scripts/secrets-rekey.sh} $@";
               }
 
               {
@@ -837,42 +407,7 @@
                 name = "secrets-verify";
                 category = "secrets";
                 help = "Verify all secrets can be decrypted";
-                command = ''
-                  echo "Verifying all secrets..."
-                  FAILED=0
-
-                  # Use id_ed25519 by default, fall back to id_rsa
-                  if [ -f ~/.ssh/id_ed25519 ]; then
-                    IDENTITY_FILE=~/.ssh/id_ed25519
-                  elif [ -f ~/.ssh/id_rsa ]; then
-                    IDENTITY_FILE=~/.ssh/id_rsa
-                  else
-                    echo "Error: No SSH identity file found (~/.ssh/id_ed25519 or ~/.ssh/id_rsa)"
-                    exit 1
-                  fi
-
-                  for secret in $(find secrets -name "*.age" -type f | sort); do
-                    echo -n "Checking $secret... "
-                    # Extract the path relative to secrets/
-                    SECRET_PATH="''${secret#secrets/}"
-                    SECRET_PATH="''${SECRET_PATH%.age}"
-                    
-                    # We need to cd into secrets directory because agenix expects paths relative to rules file
-                    if (cd secrets && RULES=./secrets.nix agenix -d "$SECRET_PATH.age" -i "$IDENTITY_FILE" > /dev/null 2>&1); then
-                      echo "✓"
-                    else
-                      echo "✗ FAILED"
-                      FAILED=$((FAILED + 1))
-                    fi
-                  done
-
-                  if [ $FAILED -eq 0 ]; then
-                    echo "All secrets verified successfully!"
-                  else
-                    echo "WARNING: $FAILED secrets failed verification"
-                    exit 1
-                  fi
-                '';
+                command = "${./scripts/secrets-verify.sh} $@";
               }
 
               {
@@ -890,31 +425,7 @@
                 name = "secrets-add-host";
                 category = "secrets";
                 help = "Add a new host to secrets recipients";
-                command = ''
-                  if [ $# -eq 0 ]; then
-                    echo "Error: You must specify a hostname."
-                    echo "Usage: secrets-add-host <hostname>"
-                    exit 1
-                  fi
-
-                  HOST="$1"
-                  echo "Getting SSH host key for $HOST..."
-
-                  # Try to get the host key
-                  KEY=$(ssh-keyscan -t ed25519 "$HOST" 2>/dev/null | grep -v "^#" | head -1)
-
-                  if [ -z "$KEY" ]; then
-                    echo "Error: Could not retrieve SSH key for $HOST"
-                    exit 1
-                  fi
-
-                  echo "Found key: $KEY"
-                  echo ""
-                  echo "Add this to secrets/secrets.nix in the host keys section:"
-                  echo "  $HOST = \"$(echo "$KEY" | cut -d' ' -f2-3)\";"
-                  echo ""
-                  echo "Then run 'secrets-rekey' to re-encrypt all secrets"
-                '';
+                command = "${./scripts/secrets-add-host.sh} $@";
               }
 
               # ───────────────────────────────────────────────────────
@@ -944,297 +455,21 @@
                 name = "deploy-n100";
                 category = "netboot";
                 help = "Initial deployment to N100 node using nixos-anywhere (creates ZFS volumes). Use NIXOS_ANYWHERE_NOCONFIRM=1 to skip confirmation";
-                command = ''
-                  if [ $# -eq 0 ]; then
-                    echo "Error: You must specify an N100 hostname."
-                    echo "Usage: deploy-n100 <n100-hostname>"
-                    echo "Available N100 hosts: n100-01, n100-02, n100-03, n100-04"
-                    echo ""
-                    echo "This command performs initial deployment including:"
-                    echo "  - Creating ZFS volumes with disko"
-                    echo "  - Installing NixOS configuration"
-                    echo "  - Setting up encrypted secrets"
-                    echo ""
-                    echo "Prerequisites:"
-                    echo "  - N100 node must be booted into netboot installer"
-                    echo "  - SSH access to root@nixos-installer must be available"
-                    echo ""
-                    echo "Environment variables:"
-                    echo "  NIXOS_ANYWHERE_NOCONFIRM=1  Skip confirmation prompt"
-                    echo "  TARGET_HOST_OVERRIDE=<ip>   Override target host IP/hostname"
-                    echo ""
-                    echo "Examples:"
-                    echo "  deploy-n100 n100-04"
-                    echo "  NIXOS_ANYWHERE_NOCONFIRM=1 deploy-n100 n100-04"
-                    echo "  TARGET_HOST_OVERRIDE=10.70.100.204 deploy-n100 n100-04"
-                    exit 1
-                  fi
-
-                  HOST="$1"
-
-                  # Validate it's an N100 host
-                  if ! echo "$HOST" | grep -q "^n100-0[1-4]$"; then
-                    echo "Error: Invalid N100 hostname. Must be n100-01, n100-02, n100-03, or n100-04"
-                    exit 1
-                  fi
-
-                  # Try to determine the target host
-                  TARGET_HOST=""
-
-                  # First try the hostname directly (in case it has the right IP)
-                  echo "Checking if $HOST is running the installer..."
-                  if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$HOST" "test -f /etc/is-installer" 2>/dev/null; then
-                    TARGET_HOST="$HOST"
-                    echo "Found installer at $HOST"
-                  # Then try nixos-installer
-                  elif ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@nixos-installer "test -f /etc/is-installer" 2>/dev/null; then
-                    TARGET_HOST="nixos-installer"
-                    echo "Found installer at nixos-installer"
-                  else
-                    echo "Error: Cannot reach installer. Make sure:"
-                    echo "  1. N100 node is booted into netboot installer"
-                    echo "  2. You can SSH to either root@$HOST or root@nixos-installer"
-                    echo ""
-                    echo "If the installer is at a different IP, you can specify it:"
-                    echo "  TARGET_HOST=<ip-address> deploy-n100 $HOST"
-                    exit 1
-                  fi
-
-                  # Allow override via environment variable
-                  if [ -n "''${TARGET_HOST_OVERRIDE:-}" ]; then
-                    TARGET_HOST="$TARGET_HOST_OVERRIDE"
-                    echo "Using override target: $TARGET_HOST"
-                  fi
-
-                  echo "Starting initial deployment to $HOST..."
-                  echo "This will:"
-                  echo "  - Create ZFS volumes according to disko configuration"
-                  echo "  - Install NixOS configuration"
-                  echo "  - Configure encrypted secrets"
-                  echo ""
-
-                  # Check if we're in non-interactive mode or auto-confirm
-                  if [ "''${NIXOS_ANYWHERE_NOCONFIRM:-}" = "1" ] || [ "''${CI:-}" = "true" ]; then
-                    echo "Auto-confirming deployment (NIXOS_ANYWHERE_NOCONFIRM=1 or CI=true)"
-                  else
-                    read -p "Continue? (y/N) " -n 1 -r
-                    echo
-                    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                      echo "Deployment cancelled."
-                      exit 0
-                    fi
-                  fi
-
-                  # Run nixos-anywhere
-                  echo "Running nixos-anywhere..."
-                  echo "Target: root@$TARGET_HOST"
-                  echo "Configuration: $HOST"
-                  echo ""
-
-                  NIXPKGS_ALLOW_UNFREE=1 nixos-anywhere \
-                    --impure \
-                    --flake ".#$HOST" \
-                    --target-host "root@$TARGET_HOST" \
-                    --build-on-remote \
-                    --option experimental-features "nix-command flakes" \
-                    --print-build-logs
-
-                  if [ $? -eq 0 ]; then
-                    echo ""
-                    echo "Initial deployment to $HOST complete!"
-                    echo "The system should reboot into the installed NixOS."
-                    echo ""
-                    echo "Next steps:"
-                    echo "  1. Wait for the system to reboot"
-                    echo "  2. SSH to root@$HOST"
-                    echo "  3. Run further deployments with: deploy $HOST"
-                  else
-                    echo ""
-                    echo "Deployment failed! Check the error messages above."
-                    exit 1
-                  fi
-                '';
+                command = "${./scripts/deploy-n100.sh} $@";
               }
 
               {
                 name = "deploy-n100-local";
                 category = "netboot";
                 help = "Initial deployment to N100 node using nixos-anywhere with local build (for resource-constrained targets)";
-                command = ''
-                  if [ $# -eq 0 ]; then
-                    echo "Error: You must specify an N100 hostname."
-                    echo "Usage: deploy-n100-local <n100-hostname>"
-                    echo "Available N100 hosts: n100-01, n100-02, n100-03, n100-04"
-                    echo ""
-                    echo "This command performs initial deployment with local building including:"
-                    echo "  - Building the configuration locally (not on the N100)"
-                    echo "  - Creating ZFS volumes with disko"
-                    echo "  - Installing NixOS configuration"
-                    echo "  - Setting up encrypted secrets"
-                    echo ""
-                    echo "Prerequisites:"
-                    echo "  - N100 node must be booted into netboot installer"
-                    echo "  - SSH access to root@nixos-installer must be available"
-                    echo ""
-                    echo "Environment variables:"
-                    echo "  NIXOS_ANYWHERE_NOCONFIRM=1  Skip confirmation prompt"
-                    echo "  TARGET_HOST_OVERRIDE=<ip>   Override target host IP/hostname"
-                    exit 1
-                  fi
-
-                  HOST="$1"
-
-                  # Validate it's an N100 host
-                  if ! echo "$HOST" | grep -q "^n100-0[1-4]$"; then
-                    echo "Error: Invalid N100 hostname. Must be n100-01, n100-02, n100-03, or n100-04"
-                    exit 1
-                  fi
-
-                  # Try to determine the target host
-                  TARGET_HOST=""
-
-                  # First try the hostname directly (in case it has the right IP)
-                  echo "Checking if $HOST is running the installer..."
-                  if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$HOST" "test -f /etc/is-installer" 2>/dev/null; then
-                    TARGET_HOST="$HOST"
-                    echo "Found installer at $HOST"
-                  # Then try nixos-installer
-                  elif ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@nixos-installer "test -f /etc/is-installer" 2>/dev/null; then
-                    TARGET_HOST="nixos-installer"
-                    echo "Found installer at nixos-installer"
-                  else
-                    echo "Error: Cannot reach installer. Make sure:"
-                    echo "  1. N100 node is booted into netboot installer"
-                    echo "  2. You can SSH to either root@$HOST or root@nixos-installer"
-                    echo ""
-                    echo "If the installer is at a different IP, you can specify it:"
-                    echo "  TARGET_HOST_OVERRIDE=<ip-address> deploy-n100-local $HOST"
-                    exit 1
-                  fi
-
-                  # Allow override via environment variable
-                  if [ -n "''${TARGET_HOST_OVERRIDE:-}" ]; then
-                    TARGET_HOST="$TARGET_HOST_OVERRIDE"
-                    echo "Using override target: $TARGET_HOST"
-                  fi
-
-                  echo "Starting initial deployment to $HOST with local build..."
-                  echo "This will:"
-                  echo "  - Build the configuration locally"
-                  echo "  - Create ZFS volumes according to disko configuration"
-                  echo "  - Install NixOS configuration"
-                  echo "  - Configure encrypted secrets"
-                  echo ""
-
-                  # Check if we're in non-interactive mode or auto-confirm
-                  if [ "''${NIXOS_ANYWHERE_NOCONFIRM:-}" = "1" ] || [ "''${CI:-}" = "true" ]; then
-                    echo "Auto-confirming deployment (NIXOS_ANYWHERE_NOCONFIRM=1 or CI=true)"
-                  else
-                    read -p "Continue? (y/N) " -n 1 -r
-                    echo
-                    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                      echo "Deployment cancelled."
-                      exit 0
-                    fi
-                  fi
-
-                  # Run nixos-anywhere with local build
-                  echo "Running nixos-anywhere with local build..."
-                  echo "Target: root@$TARGET_HOST"
-                  echo "Configuration: $HOST"
-                  echo ""
-
-                  NIXPKGS_ALLOW_UNFREE=1 nixos-anywhere \
-                    --impure \
-                    --flake ".#$HOST" \
-                    --target-host "root@$TARGET_HOST" \
-                    --option experimental-features "nix-command flakes" \
-                    --print-build-logs
-
-                  if [ $? -eq 0 ]; then
-                    echo ""
-                    echo "Initial deployment to $HOST complete!"
-                    echo "The system should reboot into the installed NixOS."
-                    echo ""
-                    echo "Next steps:"
-                    echo "  1. Wait for the system to reboot"
-                    echo "  2. SSH to root@$HOST"
-                    echo "  3. Run further deployments with: deploy-local $HOST"
-                  else
-                    echo ""
-                    echo "Deployment failed! Check the error messages above."
-                    exit 1
-                  fi
-                '';
+                command = "${./scripts/deploy-n100-local.sh} $@";
               }
 
               {
                 name = "secrets-print";
                 category = "secrets";
                 help = "Decrypt and print a secret (for testing/debugging)";
-                command = ''
-                  if [ $# -eq 0 ]; then
-                    echo "Error: You must specify a secret file to print."
-                    echo "Usage: secrets-print <secret-name>"
-                    echo "Example: secrets-print global/claude-desktop-config"
-                    echo "         secrets-print hal9000/syncthing-password"
-                    echo ""
-                    echo "Available secrets:"
-                    find secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
-                    exit 1
-                  fi
-
-                  SECRET_PATH="$1"
-
-                  # Remove 'secrets/' prefix if present 
-                  SECRET_PATH="''${SECRET_PATH#secrets/}"
-
-                  # Remove '.age' suffix if present
-                  SECRET_PATH="''${SECRET_PATH%.age}"
-
-                  # The actual file path
-                  SECRET_FILE="secrets/$SECRET_PATH.age"
-
-                  if [ ! -f "$SECRET_FILE" ]; then
-                    echo "Error: Secret file not found: $SECRET_PATH"
-                    echo ""
-                    echo "Available secrets:"
-                    find secrets -name "*.age" -type f | sort | sed 's|^secrets/||; s|\.age$||'
-                    exit 1
-                  fi
-
-                  # Check for identity file
-                  IDENTITY_FILE=""
-                  if [ -f ~/.ssh/id_ed25519 ]; then
-                    IDENTITY_FILE="$HOME/.ssh/id_ed25519"
-                  elif [ -f ~/.ssh/id_rsa ]; then
-                    IDENTITY_FILE="$HOME/.ssh/id_rsa"
-                  else
-                    echo "Error: No SSH identity file found (~/.ssh/id_ed25519 or ~/.ssh/id_rsa)"
-                    exit 1
-                  fi
-
-                  echo "Decrypting $SECRET_FILE..."
-                  echo "────────────────────────────────────────────────────────"
-
-                  # Decrypt and capture output
-                  # We need to cd into secrets directory because agenix expects paths relative to rules file
-                  DECRYPTED_CONTENT=$(cd secrets && RULES=./secrets.nix agenix -d "$SECRET_PATH.age" -i "$IDENTITY_FILE" 2>&1)
-                  DECRYPT_STATUS=$?
-
-                  if [ $DECRYPT_STATUS -eq 0 ]; then
-                    echo "$DECRYPTED_CONTENT"
-                    echo "────────────────────────────────────────────────────────"
-                    echo "Secret decrypted successfully!"
-                  else
-                    echo "────────────────────────────────────────────────────────"
-                    echo "Error: Failed to decrypt secret. Make sure you have access to this secret."
-                    echo "This usually means your SSH key is not listed as a recipient for this secret."
-                    echo ""
-                    echo "Error details: $DECRYPTED_CONTENT"
-                    exit 1
-                  fi
-                '';
+                command = "${./scripts/secrets-print.sh} $@";
               }
 
               # Backup commands
@@ -1242,131 +477,21 @@
                 name = "restic-status";
                 category = "backup";
                 help = "Check Restic backup status on all hosts";
-                command = ''
-                  echo "Checking Restic backup status on all hosts..."
-                  echo ""
-
-                  # Define all hosts
-                  LINUX_HOSTS="alienware hal9000 n100-01 n100-02 n100-03 n100-04 sevastopol-linux"
-                  DARWIN_HOSTS="halcyon sevastopol darkstarmk6mod1"
-
-                  for HOST in $LINUX_HOSTS; do
-                    echo "──────────────────────────────────────────────────────"
-                    echo "Host: $HOST (Linux)"
-                    echo "──────────────────────────────────────────────────────"
-                    
-                    # Check if host is reachable
-                    if ! ssh -o ConnectTimeout=5 -o BatchMode=yes root@$HOST echo >/dev/null 2>&1; then
-                      echo "❌ Host unreachable"
-                      echo ""
-                      continue
-                    fi
-                    
-                    # Check backup timer status
-                    ssh root@$HOST "systemctl status restic-backups-s3-backup.timer --no-pager | head -n 15" 2>&1 || echo "Timer not found"
-                    echo ""
-                  done
-
-                  for HOST in $DARWIN_HOSTS; do
-                    echo "──────────────────────────────────────────────────────"
-                    echo "Host: $HOST (Darwin)"
-                    echo "──────────────────────────────────────────────────────"
-                    
-                    # Check if host is reachable
-                    if ! ssh -o ConnectTimeout=5 -o BatchMode=yes jamesbrink@$HOST echo >/dev/null 2>&1; then
-                      echo "❌ Host unreachable"
-                      echo ""
-                      continue
-                    fi
-                    
-                    # Check launchd agent status
-                    ssh jamesbrink@$HOST "launchctl list | grep restic-backup || echo 'Backup agent not loaded'" 2>&1
-                    echo ""
-                  done
-                '';
+                command = "${./scripts/restic-status.sh} $@";
               }
 
               {
                 name = "restic-run";
                 category = "backup";
                 help = "Manually trigger backup on a specific host";
-                command = ''
-                  if [ $# -eq 0 ]; then
-                    echo "Error: You must specify a hostname."
-                    echo "Usage: restic-run <hostname>"
-                    echo "Available hosts:"
-                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
-                    exit 1
-                  fi
-
-                  HOST="$1"
-
-                  # Check if host is Darwin or Linux
-                  if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
-                    # Darwin host
-                    echo "Running backup on Darwin host $HOST..."
-                    ssh jamesbrink@$HOST "restic-backup backup" || {
-                      echo "Backup failed. If this is the first run, the repository should have been auto-initialized."
-                      echo "Check the error message above for details."
-                      exit 1
-                    }
-                  elif nix eval --json .#nixosConfigurations.$HOST._type 2>/dev/null >/dev/null; then
-                    # Linux host
-                    echo "Running backup on Linux host $HOST..."
-                    ssh root@$HOST "systemctl start restic-backups-s3-backup.service"
-                    echo ""
-                    echo "Backup started. Check status with:"
-                    echo "  ssh root@$HOST 'journalctl -u restic-backups-s3-backup.service -f'"
-                  else
-                    echo "Error: Host '$HOST' not found in configurations"
-                    exit 1
-                  fi
-                '';
+                command = "${./scripts/restic-run.sh} $@";
               }
 
               {
                 name = "restic-snapshots";
                 category = "backup";
                 help = "List snapshots for a host";
-                command = ''
-                  if [ $# -eq 0 ]; then
-                    echo "Error: You must specify a hostname."
-                    echo "Usage: restic-snapshots <hostname>"
-                    echo "Available hosts:"
-                    find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
-                    exit 1
-                  fi
-
-                  HOST="$1"
-
-                  # Repository path
-                  REPO="s3:s3.us-west-2.amazonaws.com/urandom-io-backups/$HOST"
-
-                  echo "Listing snapshots for $HOST..."
-                  echo "Repository: $REPO"
-                  echo ""
-
-                  # Check if we have the credentials
-                  if [ ! -f "$HOME/.config/restic/s3-env" ]; then
-                    echo "Error: Restic S3 credentials not found at ~/.config/restic/s3-env"
-                    echo "Deploy to a host with Restic configured to get the credentials."
-                    exit 1
-                  fi
-
-                  if [ ! -f "$HOME/.config/restic/password" ]; then
-                    echo "Error: Restic password not found at ~/.config/restic/password"
-                    echo "Deploy to a host with Restic configured to get the password."
-                    exit 1
-                  fi
-
-                  # Load environment and run restic
-                  set -a
-                  source "$HOME/.config/restic/s3-env"
-                  set +a
-
-                  export RESTIC_PASSWORD_FILE="$HOME/.config/restic/password"
-                  ${pkgs.restic}/bin/restic -r "$REPO" snapshots
-                '';
+                command = "RESTIC_PATH=${pkgs.restic}/bin/restic ${./scripts/restic-snapshots.sh} $@";
               }
             ];
           };
