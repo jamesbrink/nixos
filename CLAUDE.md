@@ -203,6 +203,12 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 - **Linux**: Installed via `jetbrains.datagrip` package in `users/regular/jamesbrink-linux.nix`
 - Available on all systems where jamesbrink user is configured
 
+### Tailscale VPN
+- **Darwin**: Installed via Homebrew cask as `tailscale-app` in `profiles/darwin/desktop.nix`
+- **Linux**: Installed via Nix package `tailscale` in both server and desktop profiles
+- **Important**: On Darwin, tailscale must NOT be installed via Nix packages to avoid conflicts
+- The tailscale package is explicitly removed from `modules/shared-packages/devops-darwin.nix`
+
 ## Known Issues and Solutions
 
 ### Alacritty Terminal Definition Error

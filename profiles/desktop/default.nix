@@ -25,6 +25,8 @@
     gnome-session
     bitwarden
     nerd-fonts.fira-code
+    # Networking
+    tailscale
   ];
 
   services = {

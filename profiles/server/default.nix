@@ -28,5 +28,8 @@
     # Security
     git-crypt
     git-secrets
+
+    # Networking
+    tailscale
   ];
 }

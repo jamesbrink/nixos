@@ -31,7 +31,7 @@
     shellcheck
     sshpass
     starship
-    tailscale
+    # tailscale # Use homebrew cask instead (tailscale-app)
     talosctl
     terraform-docs
     terraform-lsp
