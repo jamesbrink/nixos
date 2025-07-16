@@ -33,6 +33,9 @@
 
   nixpkgs.config = {
     allowUnfree = true;
+    permittedInsecurePackages = [
+      "qtwebkit-5.212.0-alpha4"
+    ];
   };
 
   # services.keychron-keyboard = {
@@ -901,6 +904,7 @@
     OVMF
     pgbackrest
     pgweb
+    pixinsight
     podman
     samba4Full
     spice

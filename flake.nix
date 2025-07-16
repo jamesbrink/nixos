@@ -100,6 +100,7 @@
           allowUnfree = true;
         };
         overlays = [
+          (import ./overlays/pixinsight.nix)
           (final: prev: {
             unstablePkgs = import nixos-unstable {
               inherit system;
@@ -472,6 +473,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                (import ./overlays/pixinsight.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
@@ -500,6 +502,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                (import ./overlays/pixinsight.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
@@ -528,6 +531,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                (import ./overlays/pixinsight.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
@@ -569,6 +573,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                (import ./overlays/pixinsight.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
@@ -601,6 +606,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                (import ./overlays/pixinsight.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
@@ -641,6 +647,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                (import ./overlays/pixinsight.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
@@ -692,6 +699,7 @@
             {
               nixpkgs.config.allowUnfree = true;
               nixpkgs.overlays = [
+                (import ./overlays/pixinsight.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "aarch64-darwin";
@@ -737,6 +745,7 @@
             {
               nixpkgs.config.allowUnfree = true;
               nixpkgs.overlays = [
+                (import ./overlays/pixinsight.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-darwin";
@@ -783,6 +792,7 @@
             {
               nixpkgs.config.allowUnfree = true;
               nixpkgs.overlays = [
+                (import ./overlays/pixinsight.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-darwin";

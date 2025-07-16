@@ -1,0 +1,43 @@
+{
+  "env": {
+    "CLAUDE_BASH_COMMAND_TIMEOUT": "30000",
+    "CLAUDE_BASH_COMMAND_MAX_TIMEOUT": "600000"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(nix develop:*)",
+      "Bash(nix flake lock:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(grep:*)",
+      "Bash(deploy alienware)",
+      "Bash(mkdir:*)",
+      "Bash(git clone:*)",
+      "Bash(nix run:*)",
+      "Bash(ls:*)",
+      "Bash(touch:*)",
+      "Bash(rm:*)",
+      "Bash(git restore:*)",
+      "Bash(ssh:*)",
+      "Bash(agenix:*)",
+      "Bash(RULES=../nix-secrets/secrets.nix agenix -r -i ~/.ssh/id_ed25519)",
+      "Bash(git -C ../nix-secrets add -A)",
+      "Bash(git -C ../nix-secrets status)",
+      "Bash(git -C ../nix-secrets commit -m \"Add sevastopol host to age recipients\")",
+      "Bash(git -C ../nix-secrets push)",
+      "Bash(scp:*)",
+      "Bash(git rm:*)",
+      "Bash(git checkout:*)",
+      "Bash(git -C tmp/nixos-old checkout m4)",
+      "Bash(git -C tmp/nixos-old branch --show-current)",
+      "Bash(rg:*)",
+      "Bash(find:*)",
+      "Bash(chmod:*)"
+    ],
+    "deny": []
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["nixos"]
+}
