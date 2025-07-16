@@ -71,7 +71,24 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 ├── scripts/              # Utility scripts
 │   ├── build-netboot-images.sh  # Build netboot images
 │   ├── deploy-all.sh     # Deploy to all hosts in parallel
-│   └── setup-n100-macs.sh       # Document N100 MACs
+│   ├── deploy-local.sh   # Build locally and deploy remotely
+│   ├── deploy-n100-local.sh # Initial N100 deployment (local build)
+│   ├── deploy-n100.sh    # Initial N100 deployment
+│   ├── deploy-test.sh    # Test deployment (dry-run)
+│   ├── deploy.sh         # Deploy configuration to host
+│   ├── health-check.sh   # Check system health
+│   ├── nix-gc.sh         # Run garbage collection
+│   ├── restic-run.sh     # Manually trigger backup
+│   ├── restic-snapshots.sh # List backup snapshots
+│   ├── restic-status.sh  # Check backup status
+│   ├── rollback.sh       # Rollback to previous generation
+│   ├── secrets-add-host.sh # Add host to secrets
+│   ├── secrets-edit.sh   # Edit encrypted secrets
+│   ├── secrets-print.sh  # Decrypt and print secret
+│   ├── secrets-rekey.sh  # Re-encrypt all secrets
+│   ├── secrets-verify.sh # Verify secrets integrity
+│   ├── setup-n100-macs.sh # Document N100 MACs
+│   └── show-generations.sh # Show system generations
 ├── secrets/              # Encrypted secrets (agenix)
 │   ├── global/           # Shared secrets
 │   └── secrets.nix       # Age recipients configuration
@@ -326,6 +343,14 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Fixed btop CUDA support check to handle missing nvidia config on Darwin
 - Linux-only packages now include: bitwarden-cli, fio, hdparm, inxi, iperf2, ipmitool, nfs-utils, nvme-cli, parted, sysstat, and ML packages (torch, tensorflow, etc.)
 - virt-viewer remains in shared packages as it's available on both platforms
+
+### DevShell Command Script Extraction (July 2025)
+- Extracted all complex shell commands from `flake.nix` into individual scripts in `scripts/`
+- Added 18 new shell scripts for deployment, maintenance, secrets, and backup commands
+- Updated `flake.nix` to reference scripts instead of inline shell code, reducing file size significantly
+- Added shellcheck to devShell packages and treefmt configuration for shell script linting
+- All scripts maintain identical functionality while being standalone executables
+- Scripts use proper error handling with `set -euo pipefail` and clear parameter validation
 
 ## Secrets Management Process
 - Secrets are managed using agenix

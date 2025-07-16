@@ -90,7 +90,25 @@ This project uses:
 ├── README.md        # This file
 ├── scripts/         # Utility scripts
 │   ├── build-netboot-images.sh  # Build netboot images
-│   └── setup-n100-macs.sh       # Document N100 MACs
+│   ├── deploy-all.sh            # Deploy to all hosts in parallel
+│   ├── deploy-local.sh          # Build locally, deploy remotely
+│   ├── deploy-n100-local.sh     # Initial N100 deployment (local build)
+│   ├── deploy-n100.sh           # Initial N100 deployment
+│   ├── deploy-test.sh           # Test deployment (dry-run)
+│   ├── deploy.sh                # Deploy configuration to host
+│   ├── health-check.sh          # Check system health
+│   ├── nix-gc.sh                # Run garbage collection
+│   ├── restic-run.sh            # Manually trigger backup
+│   ├── restic-snapshots.sh      # List backup snapshots
+│   ├── restic-status.sh         # Check backup status
+│   ├── rollback.sh              # Rollback to previous generation
+│   ├── secrets-add-host.sh      # Add host to secrets
+│   ├── secrets-edit.sh          # Edit encrypted secrets
+│   ├── secrets-print.sh         # Decrypt and print secret
+│   ├── secrets-rekey.sh         # Re-encrypt all secrets
+│   ├── secrets-verify.sh        # Verify secrets integrity
+│   ├── setup-n100-macs.sh       # Document N100 MACs
+│   └── show-generations.sh      # Show system generations
 ├── SECRETS.md       # Secrets management documentation
 ├── treefmt.toml     # Code formatting configuration
 └── users/           # User configurations
@@ -590,6 +608,13 @@ All NFS mounts use automount with a 600-second idle timeout for better resource 
 - Automatic dock configuration and management
 - Support for both Intel and Apple Silicon Macs
 - Seamless integration with existing NixOS infrastructure
+
+### Modular Shell Scripts
+- All complex devShell commands extracted into standalone scripts in `scripts/`
+- 18 shell scripts for deployment, maintenance, secrets, and backup operations
+- Scripts maintain identical functionality while being easier to test and maintain
+- Shellcheck integration for shell script linting and validation
+- Proper error handling with `set -euo pipefail` in all scripts
 
 ## Troubleshooting
 

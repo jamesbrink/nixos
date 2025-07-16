@@ -382,6 +382,288 @@ in
             "${homeDir}/.ssh/config_external"
           ];
         };
+
+        neovim = {
+          enable = true;
+          defaultEditor = true;
+          viAlias = true;
+          vimAlias = true;
+          vimdiffAlias = true;
+
+          # Language server support
+          withNodeJs = true;
+          withPython3 = true;
+          withRuby = false;
+
+          # Core plugins for functionality
+          plugins = with pkgs.vimPlugins; [
+            # UI and themes
+            vim-airline
+            vim-airline-themes
+            vim-startify
+
+            # Core functionality
+            vim-sensible
+            vim-surround
+            vim-commentary
+            vim-repeat
+            vim-fugitive
+            vim-gitgutter
+            vim-tmux-navigator
+
+            # File navigation
+            telescope-nvim
+            plenary-nvim
+
+            # Language support
+            ansible-vim
+            nvim-sops
+            vim-terraform
+            vim-markdown
+            vim-nix
+
+            # LSP and completion
+            nvim-lspconfig
+            nvim-cmp
+            cmp-nvim-lsp
+            cmp-buffer
+            cmp-path
+            cmp-cmdline
+            luasnip
+            cmp_luasnip
+
+            # Treesitter for better syntax highlighting
+            (nvim-treesitter.withPlugins (p: [
+              p.python
+              p.bash
+              p.lua
+              p.vim
+              p.vimdoc
+              p.markdown
+              p.terraform
+              p.hcl
+              p.json
+              p.yaml
+              p.toml
+              p.nix
+            ]))
+
+            # Quality of life
+            vim-lastplace
+            vim-smoothie
+            indent-blankline-nvim
+            which-key-nvim
+          ];
+
+          extraConfig = ''
+            "" General
+            set number
+            set history=1000
+            set nocompatible
+            set modelines=0
+            set encoding=utf-8
+            set scrolloff=3
+            set showmode
+            set showcmd
+            set hidden
+            set wildmenu
+            set wildmode=list:longest
+            set cursorline
+            set ttyfast
+            set nowrap
+            set ruler
+            set backspace=indent,eol,start
+            set laststatus=2
+            " set clipboard=autoselect
+
+            " Dir stuff
+            set nobackup
+            set nowritebackup
+            set noswapfile
+            set backupdir=~/.config/vim/backups
+            set directory=~/.config/vim/swap
+
+            " Relative line numbers for easy movement
+            set relativenumber
+            set rnu
+
+            "" Whitespace rules
+            set tabstop=8
+            set shiftwidth=2
+            set softtabstop=2
+            set expandtab
+
+            "" Searching
+            set incsearch
+            set gdefault
+
+            "" Statusbar
+            set nocompatible " Disable vi-compatibility
+            set laststatus=2 " Always show the statusline
+            let g:airline_theme='bubblegum'
+            let g:airline_powerline_fonts = 1
+
+            "" Local keys and such
+            let mapleader=","
+            let maplocalleader=" "
+
+            "" Change cursor on mode
+            :autocmd InsertEnter * set cul
+            :autocmd InsertLeave * set nocul
+
+            "" File-type highlighting and configuration
+            syntax on
+            filetype on
+            filetype plugin on
+            filetype indent on
+
+            "" Paste from clipboard
+            nnoremap <Leader>, "+gP
+
+            "" Copy from clipboard
+            xnoremap <Leader>. "+y
+
+            "" Move cursor by display lines when wrapping
+            nnoremap j gj
+            nnoremap k gk
+
+            "" Map leader-q to quit out of window
+            nnoremap <leader>q :q<cr>
+
+            "" Move around split
+            nnoremap <C-h> <C-w>h
+            nnoremap <C-j> <C-w>j
+            nnoremap <C-k> <C-w>k
+            nnoremap <C-l> <C-w>l
+
+            "" Easier to yank entire line
+            nnoremap Y y$
+
+            "" Move buffers
+            nnoremap <tab> :bnext<cr>
+            nnoremap <S-tab> :bprev<cr>
+
+            "" Like a boss, sudo AFTER opening the file to write
+            cmap w!! w !sudo tee % >/dev/null
+
+            let g:startify_lists = [
+              \ { 'type': 'dir',       'header': ['   Current Directory '. getcwd()] },
+              \ { 'type': 'sessions',  'header': ['   Sessions']       },
+              \ { 'type': 'bookmarks', 'header': ['   Bookmarks']      }
+              \ ]
+
+            let g:startify_bookmarks = [
+              \ '~/.local/share/src',
+              \ ]
+
+            let g:airline_theme='bubblegum'
+            let g:airline_powerline_fonts = 1
+
+            "" Telescope bindings (updating from old config)
+            nnoremap <leader>ff <cmd>Telescope find_files<cr>
+            nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+            nnoremap <leader>fb <cmd>Telescope buffers<cr>
+            nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+          '';
+
+          extraLuaConfig = ''
+            -- LSP Configuration
+            local lspconfig = require('lspconfig')
+            local capabilities = require('cmp_nvim_lsp').default_capabilities()
+
+            -- Python LSP
+            lspconfig.pyright.setup{
+              capabilities = capabilities,
+            }
+
+            -- Bash LSP
+            lspconfig.bashls.setup{
+              capabilities = capabilities,
+            }
+
+            -- Terraform LSP
+            lspconfig.terraformls.setup{
+              capabilities = capabilities,
+            }
+
+            -- Markdown LSP
+            lspconfig.marksman.setup{
+              capabilities = capabilities,
+            }
+
+            -- Nix LSP
+            lspconfig.nil_ls.setup{
+              capabilities = capabilities,
+              settings = {
+                ['nil'] = {
+                  formatting = {
+                    command = { "nixfmt" },
+                  },
+                },
+              },
+            }
+
+            -- Completion setup
+            local cmp = require('cmp')
+            local luasnip = require('luasnip')
+
+            cmp.setup({
+              snippet = {
+                expand = function(args)
+                  luasnip.lsp_expand(args.body)
+                end,
+              },
+              mapping = cmp.mapping.preset.insert({
+                ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+                ['<C-f>'] = cmp.mapping.scroll_docs(4),
+                ['<C-Space>'] = cmp.mapping.complete(),
+                ['<C-e>'] = cmp.mapping.abort(),
+                ['<CR>'] = cmp.mapping.confirm({ select = true }),
+                ['<Tab>'] = cmp.mapping(function(fallback)
+                  if cmp.visible() then
+                    cmp.select_next_item()
+                  elseif luasnip.expand_or_jumpable() then
+                    luasnip.expand_or_jump()
+                  else
+                    fallback()
+                  end
+                end, { 'i', 's' }),
+                ['<S-Tab>'] = cmp.mapping(function(fallback)
+                  if cmp.visible() then
+                    cmp.select_prev_item()
+                  elseif luasnip.jumpable(-1) then
+                    luasnip.jump(-1)
+                  else
+                    fallback()
+                  end
+                end, { 'i', 's' }),
+              }),
+              sources = cmp.config.sources({
+                { name = 'nvim_lsp' },
+                { name = 'luasnip' },
+              }, {
+                { name = 'buffer' },
+                { name = 'path' },
+              })
+            })
+
+            -- Treesitter configuration
+            require('nvim-treesitter.configs').setup {
+              highlight = {
+                enable = true,
+              },
+              indent = {
+                enable = true,
+              },
+            }
+
+            -- Indent blankline
+            require("ibl").setup()
+
+            -- Which-key
+            require("which-key").setup()
+          '';
+        };
       };
 
       # Heroku CLI configuration with authentication

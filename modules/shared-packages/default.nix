@@ -38,10 +38,17 @@
       nixpkgs-fmt
       openssh
       p7zip
+      # Language servers for Neovim
+      nodePackages.bash-language-server
+      pyright
+      terraform-ls
+      marksman
+      nil
       python311Full
       python311Packages.boto3
       python311Packages.pip
       python311Packages.pynvim
+      ripgrep
       rsync
       screen
       speedtest-cli
@@ -54,6 +61,7 @@
       virt-viewer
       wget
       wireguard-tools
+      yarn
       zsh
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [

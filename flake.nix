@@ -140,7 +140,7 @@
               }
               {
                 name = "EDITOR";
-                value = "vim";
+                value = "nvim";
               }
               {
                 name = "PRJ_ROOT";
@@ -159,53 +159,6 @@
               (pkgs.callPackage "${inputs.agenix}/pkgs/agenix.nix" { }) # agenix from flake input
               nixos-anywhere # For initial deployments with disko
               shellcheck # For shell script linting
-
-              # Neovim with Nix language support
-              (neovim.override {
-                viAlias = true;
-                vimAlias = true;
-                configure = {
-                  customRC = ''
-                    " Enable syntax highlighting
-                    syntax on
-                    filetype plugin indent on
-
-                    " Better defaults
-                    set number
-                    set relativenumber
-                    set expandtab
-                    set shiftwidth=2
-                    set tabstop=2
-                    set smartindent
-                    set ignorecase
-                    set smartcase
-                    set hlsearch
-                    set incsearch
-
-                    " Enable mouse support
-                    set mouse=a
-
-                    " Better colors for terminal
-                    set termguicolors
-
-                    " Nix file type settings
-                    autocmd FileType nix setlocal shiftwidth=2 tabstop=2 expandtab
-                  '';
-                  packages.myVimPackage = with pkgs.vimPlugins; {
-                    start = [
-                      vim-nix # Nix syntax highlighting
-                      nvim-treesitter # Better syntax highlighting
-                      vim-sensible # Sensible defaults
-                      vim-fugitive # Git integration
-                      vim-surround # Surrounding text objects
-                      vim-commentary # Easy commenting
-                    ];
-                  };
-                };
-              })
-
-              # Nix language server
-              nil
             ];
 
             commands = [
