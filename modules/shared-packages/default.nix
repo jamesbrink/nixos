@@ -63,6 +63,12 @@
       wireguard-tools
       yarn
       zsh
+      # Additional development and utility tools
+      act
+      code2prompt
+      llm
+      nushell
+      slack-cli
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # Linux-only packages
@@ -76,6 +82,9 @@
       nvme-cli
       parted
       sysstat
+      # GUI applications (Linux-only, macOS uses Homebrew casks)
+      meld
+      wireshark
       # Zen Browser (twilight version for reproducibility)
       inputs.zen-browser.packages.${pkgs.system}.twilight
       # ML packages (heavy dependencies, Linux-only for now)

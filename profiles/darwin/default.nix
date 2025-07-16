@@ -8,6 +8,7 @@
 {
   imports = [
     ../../modules/shared-packages/default.nix
+    ../../modules/darwin/local-hosts.nix
   ];
 
   # Nix configuration

@@ -5,7 +5,7 @@ echo "Checking Restic backup status on all hosts..."
 echo ""
 
 # Define all hosts
-LINUX_HOSTS="alienware hal9000 n100-01 n100-02 n100-03 n100-04 sevastopol-linux"
+LINUX_HOSTS="alienware hal9000 n100-01 n100-02 n100-03 n100-04"
 DARWIN_HOSTS="halcyon sevastopol darkstarmk6mod1"
 
 for HOST in $LINUX_HOSTS; do

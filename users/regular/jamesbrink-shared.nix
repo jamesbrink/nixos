@@ -361,7 +361,7 @@ in
               
               if [[ "$host" == "all" ]]; then
                 echo "Setting up Ghostty terminfo on all configured hosts..."
-                local hosts=(alienware hal9000 n100-01 n100-02 n100-03 n100-04 sevastopol-linux halcyon sevastopol)
+                local hosts=(alienware hal9000 n100-01 n100-02 n100-03 n100-04 halcyon sevastopol darkstarmk6mod1)
                 for h in ''${hosts[@]}; do
                   setup_single_host "$h"
                 done

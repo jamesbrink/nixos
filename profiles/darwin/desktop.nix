@@ -70,6 +70,11 @@
       # Utilities
       "bartender"
       "little-snitch"
+      "balenaetcher"
+
+      # Development Tools
+      "meld"
+      "wireshark"
 
       # AI Tools
       "claude" # Claude Code
