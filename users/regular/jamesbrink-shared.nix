@@ -29,9 +29,14 @@ in
         source = ./ssh/config.d/00-local-hosts;
       };
 
-      home.sessionVariables = lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
-        SSH_AUTH_SOCK = "/run/user/$(id -u)/ssh-agent";
-      };
+      home.sessionVariables =
+        {
+          CLAUDE_BASH_COMMAND_TIMEOUT = "30000";
+          CLAUDE_BASH_COMMAND_MAX_TIMEOUT = "600000";
+        }
+        // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
+          SSH_AUTH_SOCK = "/run/user/$(id -u)/ssh-agent";
+        };
 
       programs = {
         starship = {

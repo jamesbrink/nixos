@@ -34,8 +34,7 @@ This project uses:
 │   ├── n100-02/     # Cluster node 2 (NixOS)
 │   ├── n100-03/     # Cluster node 3 (NixOS)
 │   ├── n100-04/     # Cluster node 4 (NixOS)
-│   ├── sevastopol/  # Intel iMac 27" 2013 (Darwin)
-│   └── sevastopol-linux/  # Intel iMac dual-boot (NixOS)
+│   └── sevastopol/  # Intel iMac 27" 2013 (Darwin)
 ├── LICENSE          # MIT License
 ├── modules/         # Shared modules and services
 │   ├── claude-desktop.nix  # Claude desktop config deployment
@@ -129,7 +128,6 @@ This project uses:
 - **alienware**: Desktop workstation with NVIDIA GPU support
 - **hal9000**: Main server running AI services (Ollama, ComfyUI, etc.)
 - **n100-01, n100-02, n100-03, n100-04**: Intel N100 cluster nodes
-- **sevastopol-linux**: Intel iMac 27" 2013 dual-boot (Linux side)
 
 ### Darwin (macOS) Hosts
 - **halcyon**: M4 Mac with Apple Silicon
