@@ -44,10 +44,11 @@
       terraform-ls
       marksman
       nil
-      python311Full
-      python311Packages.boto3
-      python311Packages.pip
-      python311Packages.pynvim
+      python313Full
+      python313Packages.boto3
+      python313Packages.markitdown
+      python313Packages.pip
+      python313Packages.pynvim
       ripgrep
       rsync
       screen
@@ -88,12 +89,13 @@
       # Zen Browser (twilight version for reproducibility)
       inputs.zen-browser.packages.${pkgs.system}.twilight
       # ML packages (heavy dependencies, Linux-only for now)
-      python311Packages.torch
-      python311Packages.torchvision
-      python311Packages.torchaudio
-      python311Packages.tensorflow
-      python311Packages.huggingface-hub
-      python311Packages.llvmlite
-      python311Packages.numba
+      # Note: Some ML packages don't support Python 3.13 yet, using 3.12 for those
+      python313Packages.torch
+      python313Packages.torchvision
+      python313Packages.torchaudio
+      python312Packages.tensorflow # TensorFlow doesn't support Python 3.13 yet
+      python313Packages.huggingface-hub
+      python313Packages.llvmlite
+      python313Packages.numba
     ];
 }

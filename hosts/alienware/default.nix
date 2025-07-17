@@ -399,9 +399,9 @@
     # Development tools not in shared packages
     cmake
     gcc
-    python311Packages.boto3
-    python311Packages.pip
-    python311Packages.pynvim
+    python313Packages.boto3
+    python313Packages.pip
+    python313Packages.pynvim
     rustfmt
     rustup
 

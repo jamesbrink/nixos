@@ -24,7 +24,7 @@
   # This issue only affects darkstarmk6mod1 - other Darwin hosts work fine
   nixpkgs.overlays = [
     (final: prev: {
-      python311Packages = prev.python311Packages.override {
+      python313Packages = prev.python313Packages.override {
         overrides = self: super: {
           s3transfer = super.s3transfer.overridePythonAttrs (old: {
             doCheck = false;
