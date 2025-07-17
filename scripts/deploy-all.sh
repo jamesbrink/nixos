@@ -196,24 +196,28 @@ if [ -n "$SKIP_HOSTS" ]; then
 fi
 
 echo -e "${GREEN}Found $TOTAL_HOSTS hosts${FILTER_MSG}:${NC}"
+# shellcheck disable=SC2001
 echo "$ALL_HOSTS" | sed 's/^/  - /'
 echo ""
 
 # Create temporary directory for logs
 LOG_DIR=$(mktemp -d)
-trap "rm -rf $LOG_DIR" EXIT
+trap 'rm -rf $LOG_DIR' EXIT
 
 # Function to deploy a single host
 deploy_host() {
     local host=$1
     local log_file="$LOG_DIR/${host}.log"
-    local start_time=$(date +%s)
+    local start_time
+    start_time=$(date +%s)
     
     echo -e "${BLUE}[$(date +%H:%M:%S)] Starting deployment to ${host}...${NC}"
     
     # Get current hostname
-    local HOSTNAME=$(hostname -s | tr '[:upper:]' '[:lower:]')
-    local HOST_LOWER=$(echo "$host" | tr '[:upper:]' '[:lower:]')
+    local HOSTNAME
+    HOSTNAME=$(hostname -s | tr '[:upper:]' '[:lower:]')
+    local HOST_LOWER
+    HOST_LOWER=$(echo "$host" | tr '[:upper:]' '[:lower:]')
     
     # Prepare deployment directory
     local TEMP_DIR=""
@@ -279,12 +283,14 @@ deploy_host() {
     # Run deployment
     echo "Running: $deploy_cmd" >> "$log_file"
     if eval "$deploy_cmd" >> "$log_file" 2>&1; then
-        local end_time=$(date +%s)
+        local end_time
+        end_time=$(date +%s)
         local duration=$((end_time - start_time))
         echo -e "${GREEN}[$(date +%H:%M:%S)] ✓ ${host} deployed successfully (${duration}s)${NC}"
         echo "SUCCESS:${duration}" > "${log_file}.status"
     else
-        local end_time=$(date +%s)
+        local end_time
+        end_time=$(date +%s)
         local duration=$((end_time - start_time))
         echo -e "${RED}[$(date +%H:%M:%S)] ✗ ${host} deployment failed (${duration}s)${NC}"
         echo "FAILED:${duration}" > "${log_file}.status"
@@ -348,13 +354,13 @@ while IFS= read -r host; do
     if [ -f "$LOG_DIR/${host}.log.status" ]; then
         STATUS=$(cat "$LOG_DIR/${host}.log.status")
         if [[ $STATUS == SUCCESS:* ]]; then
-            ((SUCCESS_COUNT++))
+            SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
         else
-            ((FAILED_COUNT++))
+            FAILED_COUNT=$((FAILED_COUNT + 1))
             FAILED_HOSTS="${FAILED_HOSTS}${host}\n"
         fi
     else
-        ((FAILED_COUNT++))
+        FAILED_COUNT=$((FAILED_COUNT + 1))
         FAILED_HOSTS="${FAILED_HOSTS}${host} (no status)\n"
     fi
 done <<< "$ALL_HOSTS"
@@ -388,6 +394,9 @@ while IFS= read -r host; do
         printf "%-20s ${RED}%-10s${NC} -\n" "$host" "NO STATUS"
     fi
 done <<< "$ALL_HOSTS" | sort
+
+echo ""
+echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
 
 # Show failed hosts with log locations
 if [ "$FAILED_COUNT" -gt 0 ]; then
