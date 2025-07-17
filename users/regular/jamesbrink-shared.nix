@@ -277,6 +277,11 @@ in
               source ~/.config/environment.d/github-token.sh
             fi
 
+            # Source Infracost API key if available
+            if [[ -f ~/.config/environment.d/infracost-api-key.sh ]]; then
+              source ~/.config/environment.d/infracost-api-key.sh
+            fi
+
             ##############
             # AWS Settings
             ##############

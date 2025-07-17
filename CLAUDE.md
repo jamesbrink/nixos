@@ -295,6 +295,16 @@ If you see "can't find terminal definition for xterm-ghostty":
 
 ## Recent Architecture Changes
 
+### Infracost API Key Integration (July 2025)
+
+- Added Infracost API key as an encrypted secret using agenix
+- Configured automatic environment variable setup for both Linux and Darwin
+- Linux: Uses systemd service `infracost-token-setup` to create environment file
+- Darwin: Uses activation script to create environment file
+- Environment file created at `~/.config/environment.d/infracost-api-key.sh`
+- Automatically sourced in zsh configuration for all interactive shells
+- Secret stored at `secrets/global/infracost/api-key.age`
+
 ### Claude Desktop Configuration (June 2025)
 
 - Added automatic deployment of Claude desktop configuration across all hosts

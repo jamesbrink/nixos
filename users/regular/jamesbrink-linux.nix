@@ -177,6 +177,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."infracost-api-key" = {
+    file = "${effectiveSecretsPath}/global/infracost/api-key.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
   # Linux-specific systemd services
   systemd.services.aws-config-setup = {
     description = "Setup AWS configuration files";
@@ -213,6 +220,26 @@ in
       })\"" > /home/jamesbrink/.config/environment.d/github-token.sh
       chmod 600 /home/jamesbrink/.config/environment.d/github-token.sh
       chown jamesbrink:users /home/jamesbrink/.config/environment.d/github-token.sh
+    '';
+  };
+
+  systemd.services.infracost-token-setup = {
+    description = "Setup Infracost API key environment";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+      # Read the Infracost API key and create a shell source file
+      mkdir -p /home/jamesbrink/.config/environment.d
+      echo "export INFRACOST_API_KEY=\"$(cat ${
+        config.age.secrets."infracost-api-key".path
+      })\"" > /home/jamesbrink/.config/environment.d/infracost-api-key.sh
+      chmod 600 /home/jamesbrink/.config/environment.d/infracost-api-key.sh
+      chown jamesbrink:users /home/jamesbrink/.config/environment.d/infracost-api-key.sh
     '';
   };
 

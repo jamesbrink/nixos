@@ -109,6 +109,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."infracost-api-key" = {
+    file = "${secretsPath}/global/infracost/api-key.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
   # Darwin-specific activation script for AWS config and GitHub token
   system.activationScripts.postActivation.text = lib.mkAfter ''
     echo "Setting up AWS configuration for jamesbrink..."
@@ -139,5 +146,20 @@ in
       chmod 600 /Users/jamesbrink/.config/environment.d/github-token.sh
     "
     echo "GitHub token environment deployed to /Users/jamesbrink/.config/environment.d/"
+
+    echo "Setting up Infracost API key environment for jamesbrink..."
+    # Run as the user with sudo
+    sudo -u jamesbrink bash -c "
+      mkdir -p /Users/jamesbrink/.config/environment.d
+      
+      # Create Infracost API key environment file
+      echo 'export INFRACOST_API_KEY=\"\$(cat ${
+        config.age.secrets."infracost-api-key".path
+      })\"' > /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
+      
+      # Fix permissions
+      chmod 600 /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
+    "
+    echo "Infracost API key environment deployed to /Users/jamesbrink/.config/environment.d/"
   '';
 }
