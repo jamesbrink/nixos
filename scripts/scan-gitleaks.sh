@@ -103,11 +103,10 @@ paths = [
     '''flake\.lock$'''
 ]
 
-# Additional custom rules can be added here
-[[rules]]
-description = "Nix store paths"
-regex = '''/nix/store/[a-z0-9]{32}-'''
-allowlist = true
+# Ignore common Nix patterns
+regexes = [
+    '''/nix/store/[a-z0-9]{32}-'''
+]
 EOF
     trap "rm -f $CONFIG_FILE" EXIT
 fi

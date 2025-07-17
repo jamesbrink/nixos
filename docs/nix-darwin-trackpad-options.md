@@ -42,7 +42,7 @@ These options are under `system.defaults.NSGlobalDomain.*`:
       TrackpadThreeFingerDrag = true; # Enable three finger drag
       TrackpadThreeFingerTapGesture = 2; # Three finger tap for data detectors
     };
-    
+
     NSGlobalDomain = {
       "com.apple.trackpad.enableSecondaryClick" = true;
       "com.apple.trackpad.forceClick" = true;

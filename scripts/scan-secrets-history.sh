@@ -86,20 +86,23 @@ echo
 
 print_color "$GREEN" "Scanning git history..."
 
+# Create temporary exclude file
+EXCLUDE_FILE=$(mktemp)
+trap "rm -f $EXCLUDE_FILE" EXIT
+cat > "$EXCLUDE_FILE" << 'EOF'
+secrets/
+nix-secrets/
+nixos-old/
+.git/
+result
+result-*
+EOF
+
 # Run TruffleHog with full history scan
-trufflehog git $GIT_CMD \
+if trufflehog git $GIT_CMD \
     --branch="$BRANCH" \
     --only-verified \
-    --no-update \
-    --exclude-paths=secrets/ \
-    --exclude-paths=nix-secrets/ \
-    --exclude-paths=nixos-old/ \
-    --exclude-paths=.git/ \
-    --exclude-paths=result \
-    --exclude-paths=result-*
-
-# Check exit code
-if [ $? -eq 0 ]; then
+    --exclude-paths="$EXCLUDE_FILE"; then
     print_color "$GREEN" "✓ History scan completed successfully"
 else
     print_color "$RED" "✗ Potential secrets found in git history!"

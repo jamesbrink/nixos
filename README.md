@@ -5,6 +5,7 @@ This repository contains my personal NixOS configurations managed through the Ni
 ## Overview
 
 This project uses:
+
 - Nix Flakes for reproducible builds and dependency management
 - Multi-host configuration supporting both NixOS and Darwin (macOS)
 - NixOS 25.05 (stable) and unstable channels
@@ -125,11 +126,13 @@ This project uses:
 ## Hosts
 
 ### NixOS Hosts
+
 - **alienware**: Desktop workstation with NVIDIA GPU support
 - **hal9000**: Main server running AI services (Ollama, ComfyUI, etc.)
 - **n100-01, n100-02, n100-03, n100-04**: Intel N100 cluster nodes
 
 ### Darwin (macOS) Hosts
+
 - **halcyon**: M4 Mac with Apple Silicon
 - **sevastopol**: Intel iMac 27" 2013 running macOS Sequoia via OCLP
 - **darkstarmk6mod1**: 2019 MacBook Pro 16" Intel
@@ -137,16 +140,19 @@ This project uses:
 ## Development Shell
 
 The project includes a comprehensive development shell with categorized commands. The shell includes:
+
 - Neovim with Nix syntax highlighting and language server (nil)
 - Git, direnv, and other development tools
 - All deployment and maintenance commands listed below
 - EDITOR environment variable set to vim
 
 ### Development Commands
+
 - `format` - Format all files using treefmt (nixfmt for .nix, prettier for web files)
 - `check` - Check Nix expressions for errors (runs `nix flake check --impure`)
 
 ### Deployment Commands
+
 - `deploy <hostname>` - Deploy configuration to a host (auto-detects local/remote, Darwin/NixOS)
 - `deploy-all` - Deploy to all hosts in parallel with summary report
 - `deploy-local <hostname>` - Build locally and deploy to remote (useful for low-RAM targets)
@@ -156,6 +162,7 @@ The project includes a comprehensive development shell with categorized commands
 - `update-input <input>` - Update a specific flake input
 
 ### Maintenance Commands
+
 - `show-hosts` - List all available hosts
 - `health-check <hostname>` - Check system health (disk, memory, services, errors)
 - `nix-gc <hostname>` - Run garbage collection on a host
@@ -163,10 +170,12 @@ The project includes a comprehensive development shell with categorized commands
 - `rollback <hostname>` - Roll back to the previous generation
 
 ### Netboot Commands
+
 - `scripts/build-netboot-images.sh` - Build N100 installer and rescue images
 - `scripts/setup-n100-macs.sh` - Document N100 MAC addresses for netboot configuration
 
 ### Secrets Commands
+
 - `secrets-edit <path>` - Create or edit a secret (e.g., `secrets-edit jamesbrink/syncthing-password`)
 - `secrets-list` - List all available secrets
 - `secrets-rekey` - Re-encrypt all secrets with current recipients
@@ -178,12 +187,15 @@ The project includes a comprehensive development shell with categorized commands
 **Note**: All secrets commands support both `~/.ssh/id_ed25519` and `~/.ssh/id_rsa` keys (preferring ed25519).
 
 ### Backup Commands
+
 - `restic-status` - Check Restic backup status on all hosts
 - `restic-run <hostname>` - Manually trigger backup on a specific host
 - `restic-snapshots <hostname>` - List snapshots for a host
 
 #### Using Restic Directly
+
 After deployment, both the `jamesbrink` user and `root` can use restic commands without specifying repository or password:
+
 ```bash
 # List snapshots (works for both jamesbrink and root)
 restic snapshots
@@ -219,7 +231,9 @@ restic-prune
 ```
 
 #### Shell Aliases
+
 The following aliases are available for the jamesbrink user:
+
 - `backup`: Run backup (uses restic-backup on Darwin, systemctl on Linux)
 - `snapshots`: List snapshots
 - `restic-check`: Check repository integrity
@@ -234,11 +248,13 @@ The following aliases are available for the jamesbrink user:
 ## Quick Start
 
 ### Enter Development Shell
+
 ```bash
 nix develop
 ```
 
 ### Deploy to a Host
+
 ```bash
 # Deploy to a specific host
 deploy alienware
@@ -262,11 +278,13 @@ build hal9000
 ### Adding a New NixOS Host
 
 1. Generate hardware configuration on the target machine:
+
    ```bash
    nixos-generate-config --dir /tmp/config
    ```
 
 2. Create host directory and copy configuration:
+
    ```bash
    mkdir hosts/newhostname
    cp /tmp/config/* hosts/newhostname/
@@ -275,6 +293,7 @@ build hal9000
 3. Update `hosts/newhostname/default.nix` to follow project patterns
 
 4. Add host to `flake.nix`:
+
    ```nix
    newhostname = nixpkgs.lib.nixosSystem {
      system = "x86_64-linux";
@@ -296,11 +315,13 @@ build hal9000
 ### Adding a New Darwin Host
 
 1. Create host directory:
+
    ```bash
    mkdir hosts/newhostname
    ```
 
 2. Copy from an existing Darwin host as template:
+
    ```bash
    cp hosts/halcyon/default.nix hosts/newhostname/
    cp hosts/halcyon/hardware.nix hosts/newhostname/
@@ -309,6 +330,7 @@ build hal9000
 3. Update hostname in `hosts/newhostname/default.nix`
 
 4. Add host to `flake.nix` under `darwinConfigurations`:
+
    ```nix
    newhostname = darwin.lib.darwinSystem {
      system = "aarch64-darwin"; # or "x86_64-darwin" for Intel
@@ -339,16 +361,19 @@ build hal9000
 For first-time deployment to a Darwin host, you need to configure passwordless sudo:
 
 1. SSH into the Darwin host:
+
    ```bash
    ssh jamesbrink@hostname
    ```
 
 2. Create a sudoers file for your user:
+
    ```bash
    sudo visudo -f /etc/sudoers.d/jamesbrink
    ```
 
 3. Add this line:
+
    ```
    jamesbrink ALL=(ALL) NOPASSWD: ALL
    ```
@@ -356,6 +381,7 @@ For first-time deployment to a Darwin host, you need to configure passwordless s
 4. Save and exit (`:wq` in vi)
 
 5. Fix file permissions:
+
    ```bash
    sudo chmod 440 /etc/sudoers.d/jamesbrink
    ```
@@ -370,6 +396,7 @@ After this, remote deployments will work without password prompts.
 ## Secrets Management
 
 Secrets are managed using agenix and stored in a separate private repository as a git submodule:
+
 - Repository: `git@github.com:jamesbrink/nix-secrets.git` (submodule at `./secrets/`)
 - Each host's SSH key must be added to `secrets/secrets.nix`
 - Re-encrypt secrets after adding new recipients: `secrets-rekey`
@@ -381,6 +408,7 @@ Secrets are managed using agenix and stored in a separate private repository as 
 The repository includes a complete netboot infrastructure for provisioning N100 cluster nodes via PXE boot.
 
 ### Prerequisites
+
 - HAL9000 server with the netboot configuration deployed
 - N100 machines configured for PXE boot in BIOS
 - Network connectivity between N100 nodes and HAL9000
@@ -390,16 +418,19 @@ The repository includes a complete netboot infrastructure for provisioning N100 
 For first-time deployment of N100 nodes:
 
 1. **Deploy HAL9000 first** to enable netboot services:
+
    ```bash
    deploy hal9000
    ```
 
 2. **Build and deploy netboot images**:
+
    ```bash
    scripts/build-netboot-images.sh
    ```
 
 3. **For initial installation** using nixos-anywhere (resource-constrained N100s):
+
    ```bash
    deploy-n100-local n100-01  # Builds locally, deploys remotely
    deploy-n100-local n100-02
@@ -413,6 +444,7 @@ For first-time deployment of N100 nodes:
    ```
 
 ### Key Components
+
 - **TFTP Server**: Serves hostname-based iPXE scripts (port 69)
 - **Nginx HTTP Server**: Serves kernel/initrd images and MAC-based configs (port 8079)
 - **Disko**: Declarative disk partitioning with ZFS support (see `modules/n100-disko.nix`)
@@ -423,20 +455,25 @@ For first-time deployment of N100 nodes:
 ### Setting Up Netboot
 
 1. **Deploy Netboot Server on HAL9000**
+
    ```bash
    deploy hal9000
    ```
+
    This enables TFTP server for PXE booting and configures nginx to serve netboot images.
 
 2. **Build and Deploy Netboot Images**
+
    ```bash
    nix develop -c netboot-build
    # or directly:
    ./scripts/build-netboot-images.sh
    ```
+
    This builds installer and rescue images with ZFS support and deploys them to HAL9000.
 
 3. **Configure N100 BIOS for PXE Boot**
+
    - Enter BIOS (F2 or DEL during boot)
    - Enable network boot/PXE boot
    - Set network boot as first boot priority
@@ -449,6 +486,7 @@ For first-time deployment of N100 nodes:
    - The script detects hostname, uses disko to configure ZFS, and installs NixOS
 
 ### Network Boot Process
+
 ```
 N100 → DHCP Request → MikroTik Router
      ← IP + next-server (HAL9000) + netboot.xyz.efi ←
@@ -459,6 +497,7 @@ N100 → DHCP Request → MikroTik Router
 ```
 
 ### Netboot URLs
+
 - **Netboot Server**: `http://hal9000.home.urandom.io:8079/` or `http://netboot.home.urandom.io:8079/`
 - **Auto-chain Script**: `http://hal9000.home.urandom.io:8079/custom/autochain.ipxe` (for netboot.xyz integration)
 - **Boot Files**: `http://hal9000.home.urandom.io:8079/boot/` (MAC-based iPXE scripts)
@@ -467,25 +506,31 @@ N100 → DHCP Request → MikroTik Router
 - **Access restricted to**: `10.70.100.0/24` and `100.64.0.0/10` networks
 
 ### Automatic N100 Installation
+
 The netboot infrastructure supports fully automatic installation:
+
 1. **MAC-based boot files**: `01-e0-51-d8-XX-XX-XX.ipxe` files automatically load for N100 nodes
 2. **Auto-chain with netboot.xyz**: Configure netboot.xyz to use custom URL `http://hal9000:8079/custom/autochain.ipxe`
 3. **Automatic detection**: Script checks MAC address and auto-boots NixOS installer with `autoinstall=true`
 4. **Unattended install**: Installer automatically partitions disk with ZFS and installs NixOS
 
 ### Troubleshooting Netboot
+
 - **PXE not working**: Check BIOS settings and network connectivity
 - **Installation fails**: Boot rescue mode, check with `lsblk` and `journalctl`
 - **SSH access**: Use `ssh root@n100-XX` (keys pre-configured)
 
 ### N100 Cluster Nodes
+
 Current N100 nodes and their MAC addresses:
+
 - **n100-01**: `e0:51:d8:12:ba:97` (IP: 10.70.100.201)
 - **n100-02**: `e0:51:d8:13:04:50` (IP: 10.70.100.202)
 - **n100-03**: `e0:51:d8:13:4e:91` (IP: 10.70.100.203)
 - **n100-04**: `e0:51:d8:15:46:4e` (IP: 10.70.100.204)
 
 ### Adding New N100 Nodes
+
 1. Generate hostId: `head -c 8 /dev/urandom | od -A n -t x8`
 2. Create host configuration in `hosts/n100-XX/`
 3. Add to secrets recipients if needed
@@ -498,21 +543,25 @@ Current N100 nodes and their MAC addresses:
 ## Key Features
 
 ### Channel Management
+
 - Stable channel (nixos-25.05) as default
 - Unstable overlay available via `pkgs.unstablePkgs`
 - Per-host channel selection based on requirements
 
 ### Container Services
+
 - Podman for containerized services
 - Custom AI service stack with automatic updates
 - Network isolation with podman networks
 
 ### Storage Architecture
+
 - ZFS for advanced storage features on main servers
 - NFS exports for shared storage across network
 - Bind mounts for service-specific storage paths
 
 ### Backup System
+
 - Automated Restic backups to AWS S3 for all hosts
 - Each host has its own repository in S3 bucket `urandom-io-backups`
 - Linux hosts: Daily automatic backups via systemd timer
@@ -527,57 +576,61 @@ Current N100 nodes and their MAC addresses:
 
 #### NFS Exports (Server Side)
 
-| Host | Export Path | Allowed Networks | Options |
-|------|-------------|------------------|---------|
-| **alienware** | `/export` | 10.70.100.0/24 | rw, fsid=0, no_subtree_check |
-| | `/export/storage` | 10.70.100.0/24 | rw, nohide, insecure, no_subtree_check |
-| | `/export/data` | 10.70.100.0/24 | rw, nohide, insecure, no_subtree_check |
-| **hal9000** | `/export` | 10.70.100.0/24, 100.64.0.0/10 | rw, fsid=0, no_subtree_check |
-| | `/export/storage-fast` | 10.70.100.0/24, 100.64.0.0/10 | rw, nohide, insecure, no_subtree_check |
-| **n100-01** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
-| **n100-02** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
-| **n100-03** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
-| **n100-04** | `/export` | 192.168.0.0/16, 10.0.0.0/8 | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
+| Host          | Export Path            | Allowed Networks              | Options                                                                                      |
+| ------------- | ---------------------- | ----------------------------- | -------------------------------------------------------------------------------------------- |
+| **alienware** | `/export`              | 10.70.100.0/24                | rw, fsid=0, no_subtree_check                                                                 |
+|               | `/export/storage`      | 10.70.100.0/24                | rw, nohide, insecure, no_subtree_check                                                       |
+|               | `/export/data`         | 10.70.100.0/24                | rw, nohide, insecure, no_subtree_check                                                       |
+| **hal9000**   | `/export`              | 10.70.100.0/24, 100.64.0.0/10 | rw, fsid=0, no_subtree_check                                                                 |
+|               | `/export/storage-fast` | 10.70.100.0/24, 100.64.0.0/10 | rw, nohide, insecure, no_subtree_check                                                       |
+| **n100-01**   | `/export`              | 192.168.0.0/16, 10.0.0.0/8    | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
+| **n100-02**   | `/export`              | 192.168.0.0/16, 10.0.0.0/8    | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
+| **n100-03**   | `/export`              | 192.168.0.0/16, 10.0.0.0/8    | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
+| **n100-04**   | `/export`              | 192.168.0.0/16, 10.0.0.0/8    | rw, sync, no_subtree_check, no_root_squash, insecure, all_squash (anonuid=1000, anongid=100) |
 
 #### NFS Mounts (Client Side)
 
 ##### Linux Hosts (Automated via `modules/nfs-mounts.nix`)
+
 All Linux hosts automatically mount all available NFS shares under `/mnt/nfs/`:
 
-| Mount Point | NFS Server | Remote Path | Available On |
-|-------------|------------|-------------|--------------|
-| `/mnt/nfs/storage` | alienware.home.urandom.io | `/export/storage` | All Linux hosts except alienware |
-| `/mnt/nfs/data` | alienware.home.urandom.io | `/export/data` | All Linux hosts except alienware |
-| `/mnt/nfs/storage-fast` | hal9000.home.urandom.io | `/export/storage-fast` | All Linux hosts except hal9000 |
-| `/mnt/nfs/n100-01` | n100-01.home.urandom.io | `/export` | All Linux hosts except n100-01 |
-| `/mnt/nfs/n100-02` | n100-02.home.urandom.io | `/export` | All Linux hosts except n100-02 |
-| `/mnt/nfs/n100-03` | n100-03.home.urandom.io | `/export` | All Linux hosts except n100-03 |
-| `/mnt/nfs/n100-04` | n100-04.home.urandom.io | `/export` | All Linux hosts except n100-04 |
+| Mount Point             | NFS Server                | Remote Path            | Available On                     |
+| ----------------------- | ------------------------- | ---------------------- | -------------------------------- |
+| `/mnt/nfs/storage`      | alienware.home.urandom.io | `/export/storage`      | All Linux hosts except alienware |
+| `/mnt/nfs/data`         | alienware.home.urandom.io | `/export/data`         | All Linux hosts except alienware |
+| `/mnt/nfs/storage-fast` | hal9000.home.urandom.io   | `/export/storage-fast` | All Linux hosts except hal9000   |
+| `/mnt/nfs/n100-01`      | n100-01.home.urandom.io   | `/export`              | All Linux hosts except n100-01   |
+| `/mnt/nfs/n100-02`      | n100-02.home.urandom.io   | `/export`              | All Linux hosts except n100-02   |
+| `/mnt/nfs/n100-03`      | n100-03.home.urandom.io   | `/export`              | All Linux hosts except n100-03   |
+| `/mnt/nfs/n100-04`      | n100-04.home.urandom.io   | `/export`              | All Linux hosts except n100-04   |
 
 **Mount Options**: `noatime,noauto,x-systemd.automount,x-systemd.device-timeout=10,x-systemd.idle-timeout=600`
 
 ##### macOS Hosts (Manual Configuration)
-| Host | Mount Point | NFS Server | Remote Path | Options |
-|------|-------------|------------|-------------|---------|
-| **halcyon** | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
-| **sevastopol** | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
-| **darkstarmk6mod1** | `/Volumes/NFS-*` | Various | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+
+| Host                | Mount Point      | NFS Server | Remote Path           | Options                                                     |
+| ------------------- | ---------------- | ---------- | --------------------- | ----------------------------------------------------------- |
+| **halcyon**         | `/Volumes/NFS-*` | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+| **sevastopol**      | `/Volumes/NFS-*` | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+| **darkstarmk6mod1** | `/Volumes/NFS-*` | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
 
 #### Storage Details
 
 - **alienware** exports:
   - `/export/storage` → 8TB USB drive mounted at `/mnt/storage`
   - `/export/data` → Second internal drive mounted at `/mnt/data`
-  
 - **hal9000** exports:
+
   - `/export/storage-fast` → ZFS pool mounted at `/storage-fast`
 
 - **n100 cluster** exports:
+
   - Each node exports `/export` directory for local network sharing
   - Configured for both private IP ranges (192.168.0.0/16 and 10.0.0.0/8)
   - Uses permissive permissions (777) with all_squash for easy access
 
 - **macOS hosts** (halcyon, sevastopol, darkstarmk6mod1):
+
   - Mount all available NFS shares to `/Volumes/NFS-*` for Finder visibility
   - Uses macOS native automounter with `/etc/auto_nfs` configuration
   - All shares appear with NFS- prefix in Finder sidebar
@@ -592,6 +645,7 @@ All Linux hosts automatically mount all available NFS shares under `/mnt/nfs/`:
 All NFS mounts use automount with a 600-second idle timeout for better resource management.
 
 ### Claude Desktop Configuration
+
 - Automatic deployment of Claude desktop settings for the jamesbrink user
 - Configuration stored as encrypted agenix secret (`secrets/global/claude-desktop-config.age`)
 - Deploys to platform-specific locations:
@@ -601,6 +655,7 @@ All NFS mounts use automount with a 600-second idle timeout for better resource 
 - Includes MCP server configurations for various AI and development tools
 
 ### Darwin (macOS) Support
+
 - Full nix-darwin integration for declarative macOS configuration
 - Homebrew integration via nix-homebrew for GUI applications
 - Automatic dock configuration and management
@@ -608,6 +663,7 @@ All NFS mounts use automount with a 600-second idle timeout for better resource 
 - Seamless integration with existing NixOS infrastructure
 
 ### Modular Shell Scripts
+
 - All complex devShell commands extracted into standalone scripts in `scripts/`
 - 18 shell scripts for deployment, maintenance, secrets, and backup operations
 - Scripts maintain identical functionality while being easier to test and maintain
@@ -619,10 +675,12 @@ All NFS mounts use automount with a 600-second idle timeout for better resource 
 ### Common Issues
 
 1. **Hash Mismatch Errors**
+
    - Update the affected input: `update-input <input-name>`
    - Or update all inputs: `update`
 
 2. **Git Not Found on Fresh Install**
+
    - The target system needs git installed to fetch secrets
    - Consider manual bootstrap or temporary secrets bypass
 

@@ -69,6 +69,7 @@ deploy hostname
 ### Location
 
 The custom PixInsight package is located at:
+
 - Package definition: `pkgs/pixinsight/package.nix`
 - Overlay: `overlays/pixinsight.nix`
 
@@ -82,6 +83,7 @@ The custom PixInsight package is located at:
 ### Technical Details
 
 The package:
+
 - Uses `requireFile` to handle the commercial download requirement
 - Patches the installer to work with Nix's filesystem layout
 - Removes plugin signatures that cause issues outside of `/opt`

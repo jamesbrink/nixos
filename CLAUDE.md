@@ -5,10 +5,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Development Commands
+
 - `format`: Format all files using treefmt (`nixfmt` for .nix, `prettier` for HTML/CSS/JS/JSON)
 - `check`: Check Nix expressions for errors (runs `nix flake check --impure`)
 
 ### Deployment Commands
+
 - `deploy <hostname>`: Deploy configuration to a host (automatically detects local vs remote)
 - `deploy-all`: Deploy to all hosts in parallel with summary report (options: --quiet, --sequential, --max-jobs N, --dry-run)
 - `deploy-local <hostname>`: Build locally and deploy to a remote host (useful for low-RAM targets)
@@ -19,6 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `deploy-n100-local <n100-hostname>`: Initial deployment using nixos-anywhere with local build (for resource-constrained N100s)
 
 ### Maintenance Commands
+
 - `show-hosts`: List all available hosts
 - `health-check <hostname>`: Check system health (disk, memory, services, errors)
 - `nix-gc <hostname>`: Run garbage collection on a host
@@ -26,6 +29,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `rollback <hostname>`: Roll back to the previous generation
 
 ### Netboot Commands
+
 - `scripts/build-netboot-images.sh`: Build N100 installer and rescue images
 - `scripts/setup-n100-macs.sh`: Document N100 MAC addresses for netboot
 - Test auto-chain: `curl http://hal9000:8079/custom/autochain.ipxe`
@@ -34,6 +38,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## High-Level Architecture
 
 ### Repository Structure
+
 The codebase follows a modular NixOS/nix-darwin flake structure with clear separation of concerns:
 
 ```
@@ -105,24 +110,28 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 ```
 
 1. **Flake Configuration** (`flake.nix`):
+
    - Defines all external inputs (nixpkgs stable/unstable, home-manager, agenix, vscode-server, darwin, nix-homebrew)
    - Configures development shell with all deployment and maintenance commands
    - Defines NixOS configurations for Linux hosts and darwinConfigurations for macOS hosts
    - Supports both x86_64-linux and aarch64-darwin (Apple Silicon) architectures
 
 2. **Host Configurations** (`hosts/*/`):
+
    - Each host has its own directory with `default.nix` and hardware configuration
    - Hosts import shared profiles, modules, and user configurations
    - Linux hosts: `hal9000` (main server with AI services), `n100-*` (cluster nodes), `alienware` (desktop)
    - macOS hosts: `halcyon` (M4 Mac), `sevastopol` (Intel iMac 2013), `darkstarmk6mod1` (Intel MacBook Pro 2019)
 
 3. **Profiles** (`profiles/*/`):
+
    - Reusable system profiles (desktop, server, keychron, darwin)
    - Linux desktop profile includes GNOME, development tools, and remote access
    - Darwin profiles include macOS-specific settings, Homebrew integration, and dock management
    - Profiles can have stable and unstable variants
 
 4. **Modules** (`modules/*/`):
+
    - Custom services (ai-starter-kit for n8n/qdrant/postgres integration)
    - Shared package sets (default.nix, devops.nix)
    - Darwin-specific modules (dock management, Homebrew packages)
@@ -138,16 +147,19 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 ### Key Architectural Patterns
 
 1. **Channel Management**:
+
    - Stable channel (nixos-25.05) as default
    - Unstable overlay available via `pkgs.unstablePkgs`
    - Per-host channel selection based on requirements
 
 2. **Secrets Management**:
+
    - Uses agenix for encrypted secrets
    - Secrets stored in separate private repository
    - Age identity from host SSH keys
 
 3. **Container Services**:
+
    - Podman for containerized services (PostgreSQL, Ollama, ComfyUI, etc.)
    - Custom AI service stack with automatic updates
    - Network isolation with podman networks
@@ -199,11 +211,13 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 ## Package Configuration Notes
 
 ### DataGrip Database IDE
+
 - **Darwin**: Installed via Homebrew cask in `profiles/darwin/desktop.nix`
 - **Linux**: Installed via `jetbrains.datagrip` package in `users/regular/jamesbrink-linux.nix`
 - Available on all systems where jamesbrink user is configured
 
 ### Tailscale VPN
+
 - **Darwin**: Installed via Homebrew cask as `tailscale-app` in `profiles/darwin/desktop.nix`
 - **Linux**: Installed via Nix package `tailscale` in both server and desktop profiles
 - **Important**: On Darwin, tailscale must NOT be installed via Nix packages to avoid conflicts
@@ -212,18 +226,23 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 ## Known Issues and Solutions
 
 ### Alacritty Terminal Definition Error
+
 If you see "can't find terminal definition for alacritty":
+
 - The terminfo file is manually installed to `~/.terminfo/a/alacritty`
 - Future deployments will automatically handle this via activation scripts
 - Terminal applications should use `TERM=alacritty` (not xterm-256color)
 
 ### Ollama Installation on macOS
+
 - Ollama is installed via Homebrew cask as `ollama-app` (not `ollama`)
 - The CLI is automatically linked to `/opt/homebrew/bin/ollama`
 - Start the Ollama app from Applications before using the CLI
 
 ### Ghostty Terminal Definition Error
+
 If you see "can't find terminal definition for xterm-ghostty":
+
 - **Linux hosts**: The `ghostty-terminfo` module is automatically enabled via user configuration
 - **SSH connections**: Use `ghostty-ssh-setup <hostname>` to copy terminfo to remote hosts
 - **Sudo environments**: TERMINFO variables are preserved automatically
@@ -231,11 +250,13 @@ If you see "can't find terminal definition for xterm-ghostty":
 - The zsh configuration includes automatic detection and fallback for Ghostty
 
 ## Workflow Recommendations
+
 - Always use `deploy-test` over `build` when on macOS
 
 ## Recent Architecture Changes
 
 ### Claude Desktop Configuration (June 2025)
+
 - Added automatic deployment of Claude desktop configuration across all hosts
 - Configuration is stored as an encrypted secret using agenix
 - Deploys to `/Library/Application Support/Claude/` on Darwin hosts
@@ -243,12 +264,14 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Uses activation scripts with proper platform-specific handling
 
 ### Agenix Integration Improvements (June 2025)
+
 - Fixed agenix package to use flake input directly, avoiding Nix builds from source
 - Updated all secrets commands to support both id_rsa and id_ed25519 SSH keys
 - Improved secrets path structure in secrets.nix for better clarity
 - Enhanced secrets commands with better error handling and path normalization
 
 ### User Module Refactoring (December 2024)
+
 - Refactored user modules to fix infinite recursion issues
 - Split user configurations into platform-specific files:
   - `jamesbrink.nix`: Linux-only wrapper that imports `jamesbrink-linux.nix`
@@ -262,12 +285,14 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Improved cross-platform compatibility with proper platform detection
 
 ### Secrets Path Handling in User Modules (July 2025)
+
 - Fixed AWS secrets path resolution issues during remote deployments
 - User modules now accept `secretsPath` as a function argument with fallback logic
 - Ensures secrets can be found regardless of whether building locally or remotely
 - AWS secrets are configured in `users/regular/jamesbrink-linux.nix` with proper path handling
 
 ### Darwin (macOS) Support
+
 - Full support for Apple Silicon Macs (tested on M4)
 - Integration with Homebrew for GUI applications via nix-homebrew
 - Custom dock management module for automatic dock configuration
@@ -275,6 +300,7 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Platform-specific service configurations
 
 ### Alacritty Terminal Fixes (July 2025)
+
 - Fixed "can't find terminal definition for alacritty" errors on Darwin
 - Changed Alacritty TERM from "alacritty" to "xterm-256color" for compatibility
 - Added zsh initialization to handle terminfo lookup and backspace key fixes
@@ -282,6 +308,7 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Removed non-functional terminfo activation script
 
 ### SSH Keys Management (July 2025)
+
 - Added centralized SSH key management via `modules/ssh-keys.nix`
 - All authorized SSH keys are defined in `secrets/secrets.nix` and deployed to all hosts
 - Root user gets all SSH keys automatically on all Linux and Darwin hosts
@@ -290,6 +317,7 @@ If you see "can't find terminal definition for xterm-ghostty":
 - SSH keys module imported in server and desktop profiles, plus Darwin hosts
 
 ### N100 Netboot Infrastructure (July 2025)
+
 - Implemented complete PXE netboot infrastructure for N100 cluster nodes
 - **Updated to netboot.xyz v2.0.87** with custom package in `pkgs/netboot-xyz/`
 - Added disko support to netboot installer for declarative ZFS partitioning
@@ -319,6 +347,7 @@ If you see "can't find terminal definition for xterm-ghostty":
   - n100-04: `e0:51:d8:15:46:4e`
 
 ### SSH Configuration Management (July 2025)
+
 - Added automatic SSH configuration for local hosts and private IP ranges
 - Created `users/regular/ssh/config.d/00-local-hosts` with StrictHostKeyChecking disabled
 - Configured for all NixOS/Darwin hosts (both hostname and FQDN)
@@ -328,12 +357,14 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Applied to both Linux and Darwin hosts via jamesbrink-shared.nix
 
 ### Home-Manager Unfree Package Fix (July 2025)
+
 - Fixed nixos-anywhere deployment failures due to unfree packages
 - Added `nixpkgs.config.allowUnfree = true` to home-manager user configuration
 - Ensures Discord and other unfree packages can be installed during deployment
 - deploy-n100 command includes --impure flag for environment variable access
 
 ### Secrets and Git Submodule Handling (July 2025)
+
 - Fixed issue where git submodules (secrets) were not included in path-based flake inputs
 - Implemented rsync-based deployment for both local and remote hosts
 - Deploy command now always copies files to `/tmp/nixos-config/` before building
@@ -343,6 +374,7 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Successfully tested on both Darwin (halcyon, sevastopol) and Linux hosts
 
 ### Shared Packages Cross-Platform Support (July 2025)
+
 - Reorganized `modules/shared-packages/default.nix` to properly support both Linux and Darwin
 - Moved Linux-only packages to conditional inclusion using `lib.optionals pkgs.stdenv.isLinux`
 - Fixed btop CUDA support check to handle missing nvidia config on Darwin
@@ -350,6 +382,7 @@ If you see "can't find terminal definition for xterm-ghostty":
 - virt-viewer remains in shared packages as it's available on both platforms
 
 ### DevShell Command Script Extraction (July 2025)
+
 - Extracted all complex shell commands from `flake.nix` into individual scripts in `scripts/`
 - Added 18 new shell scripts for deployment, maintenance, secrets, and backup commands
 - Updated `flake.nix` to reference scripts instead of inline shell code, reducing file size significantly
@@ -358,12 +391,14 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Scripts use proper error handling with `set -euo pipefail` and clear parameter validation
 
 ## Secrets Management Process
+
 - Secrets are managed using agenix
 - Stored as a git submodule in `secrets/` (private repository)
 - Each host's SSH key must be added as a recipient in `secrets/secrets.nix`
 - Re-encrypt secrets after adding new recipients using `secrets-rekey` command
 
 ### Secrets Path Resolution
+
 - The secrets input is defined as `path:./secrets` in the flake
 - During local builds, `secretsPath` is set to `${inputs.secrets}` which resolves to the nix store path
 - During remote deployments, the flake and secrets are copied to `/tmp/nixos-config/` on the target host
@@ -375,6 +410,7 @@ If you see "can't find terminal definition for xterm-ghostty":
 - The double `secrets` in the path is intentional: `secretsPath` points to the repository root, and `secrets/` is the subdirectory containing encrypted files
 
 ### Secrets Management Commands
+
 - `secrets-edit <path>`: Create or edit a secret (e.g., `secrets-edit jamesbrink/syncthing-password`)
 - `secrets-list`: List all available secrets
 - `secrets-rekey`: Re-encrypt all secrets with current recipients
@@ -386,10 +422,13 @@ If you see "can't find terminal definition for xterm-ghostty":
 **Note**: Secrets commands now support both `~/.ssh/id_rsa` and `~/.ssh/id_ed25519` keys, preferring `id_rsa` when available.
 
 ### Windows 11 VM Management
+
 A Windows 11 development VM module is available for running Windows on Linux hosts with KVM/QEMU.
 
 #### Configuration
+
 Add to your host configuration:
+
 ```nix
 services.windows11-vm = {
   enable = true;
@@ -402,6 +441,7 @@ services.windows11-vm = {
 ```
 
 #### VM Management Commands
+
 - `win11-vm start`: Start the Windows 11 VM
 - `win11-vm stop`: Gracefully shutdown the VM
 - `win11-vm force-stop`: Force stop the VM
@@ -409,6 +449,7 @@ services.windows11-vm = {
 - `win11-vm console`: Connect to VM console (SPICE)
 
 #### Features
+
 - **TPM 2.0 and UEFI**: Full Windows 11 compatibility
 - **Nested virtualization**: Run Hyper-V, WSL2, Docker Desktop inside
 - **SATA disk**: No driver issues during installation
@@ -417,6 +458,7 @@ services.windows11-vm = {
 - **SPICE graphics**: Enhanced remote desktop experience
 
 #### Installation Notes
+
 1. Windows 11 ISO must be placed at `/var/lib/libvirt/images/Win11_24H2_English_x64.iso`
 2. VirtIO drivers are automatically downloaded
 3. Main disk uses SATA interface for easy installation
@@ -425,6 +467,7 @@ services.windows11-vm = {
 ### Adding a New Host to Secrets
 
 #### Quick Method (using built-in commands):
+
 1. Run `secrets-add-host <hostname>` to get the host's SSH key
 2. Add the key to `secrets/secrets.nix` in the host keys section
 3. Add the host to all relevant `publicKeys` arrays
@@ -432,17 +475,21 @@ services.windows11-vm = {
 5. Commit and push changes in the secrets submodule
 
 #### Manual Method (for advanced cases):
+
 1. Clone the secrets repository if working outside the submodule:
+
    ```bash
    git clone git@github.com:jamesbrink/nix-secrets.git ../nix-secrets
    ```
 
 2. Get the new host's SSH public key:
+
    ```bash
    ssh-keyscan -t ed25519 <hostname>
    ```
 
 3. Add the host key to `secrets.nix`:
+
    ```nix
    hostname = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...";
    ```
@@ -450,15 +497,17 @@ services.windows11-vm = {
 4. Add the new host to all `publicKeys` arrays in `secrets.nix`
 
 5. Re-encrypt all secrets with the new recipient:
+
    ```bash
    # If using the built-in command:
    secrets-rekey
-   
+
    # Or manually with agenix:
    RULES=../nix-secrets/secrets.nix agenix -r -i ~/.ssh/id_ed25519
    ```
 
 6. Commit and push changes:
+
    ```bash
    git -C ../nix-secrets add -A
    git -C ../nix-secrets commit -m "Add <hostname> to age recipients"
@@ -471,11 +520,13 @@ services.windows11-vm = {
    ```
 
 ### Editing Existing Secrets
+
 - To edit a secret: `secrets-edit <path>` or manually: `agenix -e <secret-file>`
 - To create a new secret: `secrets-edit <new-path>` or manually: `agenix -e <new-secret-file>`
 - Always commit and push changes to the secrets repository
 
 ### Security Notes
+
 - Never commit plaintext secrets to the repository
 - The secrets submodule is private and should remain so (Repository: `git@github.com:jamesbrink/nix-secrets.git`)
 - Syncthing passwords are now managed at the host level, not in user configs
@@ -483,5 +534,6 @@ services.windows11-vm = {
 - Never add local-only files to the repo (CLAUDE.local.md, settings.local.json)
 
 ### Development Best Practices
+
 - Always use `deploy-test` before `deploy` on production systems
 - Keep sensitive information in encrypted secrets only

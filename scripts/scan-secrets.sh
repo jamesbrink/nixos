@@ -73,20 +73,29 @@ else
 fi
 echo
 
-# Build exclude arguments
-EXCLUDE_ARGS=""
+# Create temporary exclude file
+EXCLUDE_FILE=$(mktemp)
+trap "rm -f $EXCLUDE_FILE" EXIT
+
+# Write exclude patterns to file
 IFS=',' read -ra EXCLUDES <<< "$EXCLUDE_PATHS"
 for path in "${EXCLUDES[@]}"; do
-    EXCLUDE_ARGS="$EXCLUDE_ARGS --exclude-paths=$path"
+    echo "$path" >> "$EXCLUDE_FILE"
 done
+
+# Build exclude arguments
+EXCLUDE_ARGS=""
+if [ -s "$EXCLUDE_FILE" ]; then
+    EXCLUDE_ARGS="--exclude-paths=$EXCLUDE_FILE"
+fi
 
 # Run TruffleHog based on mode
 if [ "$MODE" == "git" ]; then
     print_color "$GREEN" "Scanning git history..."
-    trufflehog git file://"$TARGET" $ONLY_VERIFIED $EXCLUDE_ARGS --no-update
+    trufflehog git file://"$TARGET" $ONLY_VERIFIED $EXCLUDE_ARGS
 else
     print_color "$GREEN" "Scanning filesystem..."
-    trufflehog filesystem "$TARGET" $ONLY_VERIFIED $EXCLUDE_ARGS --no-update
+    trufflehog filesystem "$TARGET" $ONLY_VERIFIED $EXCLUDE_ARGS
 fi
 
 # Check exit code
