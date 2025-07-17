@@ -7,6 +7,7 @@ result-*
 
 # Nix store paths
 .nixpkgs
+install-bootloader
 
 # System specific
 .direnv/

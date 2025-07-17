@@ -1,0 +1,75 @@
+# Pre-commit hooks configuration
+# Install hooks: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Nix formatting
+  - repo: local
+    hooks:
+      - id: nixfmt
+        name: Format Nix files
+        entry: nixfmt-rfc-style
+        language: system
+        files: '\.nix$'
+        pass_filenames: true
+
+  # Shell script linting
+  - repo: local
+    hooks:
+      - id: shellcheck
+        name: Lint shell scripts
+        entry: shellcheck
+        language: system
+        types: [shell]
+        exclude: '^(install-bootloader|result|result-).*'
+
+  # JSON/YAML/Markdown formatting
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Format JSON/YAML/Markdown
+        entry: prettier --write
+        language: system
+        types_or: [json, yaml, markdown]
+        exclude: '^(flake\.lock|secrets/|nix-secrets/|nixos-old/).*'
+
+  # Secret scanning with TruffleHog
+  - repo: local
+    hooks:
+      - id: trufflehog
+        name: TruffleHog secret scan
+        entry: bash -c 'trufflehog filesystem --only-verified --no-update --exclude-paths=secrets/ --exclude-paths=nix-secrets/ --exclude-paths=nixos-old/ --exclude-paths=.git/ --exclude-paths=result --exclude-paths=result-* "$@"' --
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # Secret scanning with GitLeaks
+  - repo: local
+    hooks:
+      - id: gitleaks
+        name: GitLeaks secret scan
+        entry: bash scripts/scan-gitleaks.sh --protect
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # Check for large files
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=5000']
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-executables-have-shebangs
+      - id: end-of-file-fixer
+        exclude: '^(secrets/|nix-secrets/|nixos-old/).*'
+      - id: trailing-whitespace
+        exclude: '^(secrets/|nix-secrets/|nixos-old/).*'
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+        exclude: '^(secrets/|nix-secrets/|nixos-old/).*'
+
+# Global excludes
+exclude: '^(result|result-.*|\.direnv|build/|secrets/.*\.age|nix-secrets/|nixos-old/).*'

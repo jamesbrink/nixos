@@ -38,7 +38,7 @@ includes = ["*.nix"]
 [formatter.prettier]
 command = "prettier"
 options = ["--write"]
-includes = ["*.html", "*.css", "*.js", "*.json"]
+includes = ["*.html", "*.css", "*.js", "*.json", "*.yaml", "*.yml"]
 
 # Shellcheck is available but not used as a formatter
 # Run shellcheck manually with: shellcheck scripts/*.sh

@@ -160,6 +160,9 @@
               (pkgs.callPackage "${inputs.agenix}/pkgs/agenix.nix" { }) # agenix from flake input
               nixos-anywhere # For initial deployments with disko
               shellcheck # For shell script linting
+              trufflehog # For secret scanning
+              gitleaks # For git-aware secret scanning
+              pre-commit # For git hooks management
             ];
 
             commands = [
@@ -424,6 +427,78 @@
                 category = "secrets";
                 help = "Decrypt and print a secret (for testing/debugging)";
                 command = "${./scripts/secrets-print.sh} $@";
+              }
+
+              # ───────────────────────────────────────────────────────
+              # SECURITY COMMANDS - For scanning and security checks
+              # ───────────────────────────────────────────────────────
+              {
+                name = "scan-secrets";
+                category = "security";
+                help = "Scan for secrets in the repository (use --help for options)";
+                command = "${./scripts/scan-secrets.sh} $@";
+              }
+
+              {
+                name = "scan-secrets-history";
+                category = "security";
+                help = "Deep scan git history for secrets (use --help for options)";
+                command = "${./scripts/scan-secrets-history.sh} $@";
+              }
+
+              {
+                name = "scan-secrets-pre-commit";
+                category = "security";
+                help = "Pre-commit hook to scan staged files for secrets";
+                command = "${./scripts/scan-secrets-pre-commit.sh} $@";
+              }
+
+              {
+                name = "scan-gitleaks";
+                category = "security";
+                help = "Scan for secrets using GitLeaks (use --help for options)";
+                command = "${./scripts/scan-gitleaks.sh} $@";
+              }
+
+              {
+                name = "security-audit";
+                category = "security";
+                help = "Run a full security audit (all scanners)";
+                command = ''
+                  echo "Running full security audit..."
+                  echo
+                  echo "1. TruffleHog filesystem scan..."
+                  ${./scripts/scan-secrets.sh} --filesystem
+                  echo
+                  echo "2. TruffleHog history scan..."
+                  ${./scripts/scan-secrets-history.sh}
+                  echo
+                  echo "3. GitLeaks repository scan..."
+                  ${./scripts/scan-gitleaks.sh}
+                  echo
+                  echo "Security audit complete!"
+                '';
+              }
+
+              {
+                name = "pre-commit-install";
+                category = "security";
+                help = "Install pre-commit hooks for formatting and security";
+                command = ''
+                  echo "Installing pre-commit hooks..."
+                  pre-commit install
+                  echo "Pre-commit hooks installed successfully!"
+                  echo
+                  echo "Hooks will run automatically on git commit."
+                  echo "To run manually: pre-commit run --all-files"
+                '';
+              }
+
+              {
+                name = "pre-commit-run";
+                category = "security";
+                help = "Run all pre-commit hooks manually";
+                command = "pre-commit run --all-files";
               }
 
               # Backup commands
