@@ -156,7 +156,7 @@ Enter the development shell with `nix develop` to access all deployment and main
 ### Deployment Commands
 
 - `deploy <hostname>` - Deploy configuration to a host (auto-detects local/remote, Darwin/NixOS)
-- `deploy-all` - Deploy to all hosts in parallel with summary report
+- `deploy-all` - Deploy to all hosts in parallel with summary report (options: --quiet, --sequential, --max-jobs N, --dry-run, --skip HOSTS, --darwin-only, --linux-only)
 - `deploy-local <hostname>` - Build locally and deploy to remote (useful for low-RAM targets)
 - `deploy-test <hostname>` - Test deployment without making changes (dry-activate)
 - `build <hostname>` - Build configuration without deploying
@@ -278,6 +278,18 @@ deploy-all --quiet
 
 # Deploy to all hosts sequentially
 deploy-all --sequential
+
+# Deploy only to Darwin (macOS) hosts
+deploy-all --darwin-only
+
+# Deploy only to Linux (NixOS) hosts
+deploy-all --linux-only
+
+# Skip specific hosts during deployment
+deploy-all --skip hal9000,n100-04
+
+# Combine options: deploy to Linux hosts except alienware
+deploy-all --linux-only --skip alienware
 
 # Test deployment first
 deploy-test sevastopol
