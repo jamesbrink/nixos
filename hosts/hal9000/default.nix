@@ -27,6 +27,7 @@
     ../../modules/services/netboot-configs.nix
     ../../modules/services/netboot-autochain.nix
     ../../modules/services/windows11-vm.nix
+    ../../modules/services/samba-server.nix
     # ../../modules/services/netboot-server.nix  # Replaced by tftp-server.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
@@ -111,6 +112,7 @@
 
   # Create mount points with appropriate permissions
   systemd.tmpfiles.rules = [
+    "d /export 0755 root root"
     "d /mnt 0775 root users"
     "d /storage-fast 0775 root users"
     "d /mnt/storage 0775 root users"
@@ -279,6 +281,8 @@
         4045 # NFS lockd
         4046 # NFS mountd
         4047 # NFS statd
+        139 # NetBIOS Session Service
+        445 # SMB/CIFS
         3389
         5900 # SPICE for VMs
         5901 # Additional SPICE ports
@@ -288,16 +292,21 @@
       ];
       allowedUDPPorts = [
         111 # RPC portmapper
+        137 # NetBIOS Name Service
+        138 # NetBIOS Datagram Service
         2049 # NFS
         4045 # NFS lockd
         4046 # NFS mountd
         4047 # NFS statd
+        5353 # mDNS/Bonjour for macOS discovery
       ];
       interfaces = {
         br0 = {
           allowedTCPPorts = [
             22
             111 # RPC portmapper
+            139 # NetBIOS Session Service
+            445 # SMB/CIFS
             2049 # NFS
             4045 # NFS lockd
             4046 # NFS mountd
@@ -306,10 +315,13 @@
           ];
           allowedUDPPorts = [
             111 # RPC portmapper
+            137 # NetBIOS Name Service
+            138 # NetBIOS Datagram Service
             2049 # NFS
             4045 # NFS lockd
             4046 # NFS mountd
             4047 # NFS statd
+            5353 # mDNS/Bonjour for macOS discovery
           ];
         };
       };
@@ -1160,5 +1172,67 @@
     diskPath = "/storage-fast/vms/win11-dev.qcow2";
     owner = "jamesbrink";
     autostart = false; # Don't autostart, let user control it
+  };
+
+  # Samba server configuration - sharing same paths as NFS
+  services.samba-server = {
+    enable = true;
+    workgroup = "WORKGROUP";
+    serverString = "HAL9000 Samba Server";
+    enableWSDD = true; # Enable Windows 10/11 network discovery
+
+    shares = {
+      # Local hal9000 shares only
+      export = {
+        path = "/export";
+        comment = "HAL9000 export root";
+        browseable = true;
+        readOnly = false;
+        validUsers = [ "jamesbrink" ];
+        createMask = "0664";
+        directoryMask = "0775";
+      };
+      storage-fast = {
+        path = "/storage-fast";
+        comment = "Fast storage array";
+        browseable = true;
+        readOnly = false;
+        validUsers = [ "jamesbrink" ];
+        createMask = "0664";
+        directoryMask = "0775";
+      };
+    };
+  };
+
+  # Avahi for macOS discovery (Bonjour)
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true; # Enable mDNS name resolution
+    publish = {
+      enable = true;
+      addresses = true;
+      domain = true;
+      hinfo = true;
+      userServices = true;
+      workstation = true;
+    };
+    extraServiceFiles = {
+      smb = ''
+        <?xml version="1.0" standalone='no'?>
+        <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+        <service-group>
+          <name replace-wildcards="yes">%h</name>
+          <service>
+            <type>_smb._tcp</type>
+            <port>445</port>
+          </service>
+          <service>
+            <type>_device-info._tcp</type>
+            <port>0</port>
+            <txt-record>model=RackMac</txt-record>
+          </service>
+        </service-group>
+      '';
+    };
   };
 }

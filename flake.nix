@@ -337,6 +337,13 @@
               }
 
               {
+                name = "samba-add-user";
+                category = "maintenance";
+                help = "Add or update a Samba user password";
+                command = "${./scripts/samba-add-user.sh} $@";
+              }
+
+              {
                 name = "secrets-edit";
                 category = "secrets";
                 help = "Edit a secret file";
