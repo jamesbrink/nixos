@@ -35,6 +35,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Test auto-chain: `curl http://hal9000:8079/custom/autochain.ipxe`
 - View boot files: `curl http://hal9000:8079/boot/`
 
+### Security Commands
+
+- `scan-secrets`: Scan for secrets using TruffleHog (use `--help` for options)
+  - `--filesystem`: Scan filesystem instead of git history
+  - `--all`: Show all potential secrets, not just verified ones
+- `scan-secrets-history`: Deep scan git history for secrets
+  - `--since COMMIT`: Scan from specific commit
+  - `--max-depth N`: Limit scan depth
+- `scan-gitleaks`: Scan using GitLeaks (use `--help` for options)
+  - `--protect`: Scan uncommitted changes only
+  - `--baseline`: Generate baseline for existing issues
+- `security-audit`: Run comprehensive security audit with all scanners
+- `pre-commit-install`: Install git hooks for formatting and security
+- `pre-commit-run`: Run all pre-commit hooks manually
+
 ## High-Level Architecture
 
 ### Repository Structure
@@ -190,6 +205,31 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 5. Use `deploy-test <hostname>` to dry-run deployment
 6. Use `deploy <hostname>` to apply changes
 7. If issues occur, use `rollback <hostname>` to revert
+
+## Security Scanning
+
+The repository includes comprehensive security scanning tools to prevent accidental exposure of secrets:
+
+### Pre-commit Hooks
+
+Run `pre-commit-install` once to set up automatic security checks on every commit:
+
+- **Formatting**: Automatically formats Nix, JSON, YAML, and Markdown files
+- **Secret Scanning**: Uses both TruffleHog and GitLeaks to detect potential secrets
+- **File Checks**: Prevents commits of large files (>5MB)
+
+### Manual Security Scans
+
+- `scan-secrets`: Quick scan using TruffleHog (verified secrets only by default)
+- `scan-gitleaks`: Git-aware scanning with GitLeaks
+- `security-audit`: Comprehensive scan using all available tools
+- `scan-secrets-history`: Deep historical scan of git commits
+
+### Security Notes
+
+- The netboot installer includes a hardcoded SSH host key for consistent fingerprints (intentional)
+- PostgreSQL passwords in `hal9000` configuration should be migrated to encrypted secrets
+- All actual secrets are properly encrypted with agenix in the `secrets/` submodule
 
 ## Important Notes
 

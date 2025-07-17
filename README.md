@@ -16,6 +16,8 @@ This project uses:
 - Homebrew integration via nix-homebrew for macOS GUI applications
 - Modular configuration structure for better maintainability
 - Claude Desktop and other AI development tools
+- Comprehensive security scanning with TruffleHog and GitLeaks
+- Pre-commit hooks for code formatting and secret detection
 
 ## Project Structure
 
@@ -185,6 +187,15 @@ The project includes a comprehensive development shell with categorized commands
 - `secrets-print <path>` - Decrypt and print a secret (for testing/debugging)
 
 **Note**: All secrets commands support both `~/.ssh/id_ed25519` and `~/.ssh/id_rsa` keys (preferring ed25519).
+
+### Security Commands
+
+- `scan-secrets` - Scan for secrets using TruffleHog (use `--help` for options)
+- `scan-secrets-history` - Deep scan git history for secrets
+- `scan-gitleaks` - Scan using GitLeaks (use `--help` for options)
+- `security-audit` - Run comprehensive security audit with all scanners
+- `pre-commit-install` - Install git hooks for formatting and security
+- `pre-commit-run` - Run all pre-commit hooks manually
 
 ### Backup Commands
 
@@ -694,6 +705,31 @@ All NFS mounts use automount with a 600-second idle timeout for better resource 
 - Run `format` before committing changes
 - Use `deploy-test` before actual deployment
 - Check CLAUDE.md for AI-assisted development guidelines
+
+## Security
+
+This repository includes multiple layers of security to prevent accidental exposure of secrets:
+
+### Pre-commit Hooks
+
+Run `pre-commit-install` once to automatically enable:
+
+- **Code Formatting**: Automatic formatting of Nix, JSON, YAML, and Markdown files
+- **Secret Detection**: Both TruffleHog and GitLeaks scan for potential secrets before commit
+- **File Size Limits**: Prevents commits of files larger than 5MB
+
+### Security Scanning Tools
+
+- **TruffleHog**: Detects verified secrets in git history and filesystem
+- **GitLeaks**: Git-aware secret scanner with custom rules for Nix repositories
+- **Comprehensive Audits**: `security-audit` runs all scanners in sequence
+
+### Best Practices
+
+- All sensitive data is encrypted using agenix in the `secrets/` submodule
+- Secrets are never committed to the main repository
+- Host-specific SSH keys control access to encrypted secrets
+- Regular security audits using `security-audit` command
 
 ## License
 
