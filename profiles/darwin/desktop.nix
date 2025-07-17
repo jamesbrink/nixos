@@ -105,4 +105,28 @@
       "/Users/jamesbrink/Public"
     ];
   };
+
+  # Set Aerial as the default screensaver on all Darwin desktop systems
+  system.defaults.CustomUserPreferences = {
+    "com.apple.screensaver" = {
+      moduleDict = {
+        moduleName = "Aerial";
+        path = "/Library/Screen Savers/Aerial.saver";
+        type = 0;
+      };
+    };
+  };
+
+  # Activation script to ensure Aerial is set as the screensaver
+  system.activationScripts.userActivation.text = ''
+    echo "Setting Aerial as the default screensaver..."
+
+    # Set Aerial as the default screensaver for the user
+    # Since activation runs as root, we need to use sudo -u
+    sudo -u jamesbrink /usr/bin/defaults -currentHost write com.apple.screensaver modulePath -string "/Library/Screen Savers/Aerial.saver"
+    sudo -u jamesbrink /usr/bin/defaults -currentHost write com.apple.screensaver moduleName -string "Aerial"
+    sudo -u jamesbrink /usr/bin/defaults -currentHost write com.apple.screensaver moduleDict -dict moduleName Aerial path "/Library/Screen Savers/Aerial.saver" type 0
+
+    echo "Aerial screensaver configuration complete."
+  '';
 }
