@@ -68,6 +68,7 @@
       "vlc"
 
       # Utilities
+      "aerial"
       "bartender"
       "little-snitch"
       "balenaetcher"

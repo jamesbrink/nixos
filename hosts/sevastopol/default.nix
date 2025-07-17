@@ -95,7 +95,6 @@
       "microsoft-edge"
 
       # System Tools
-      "aerial"
       "iterm2"
       "jdiskreport"
       "microsoft-remote-desktop"
