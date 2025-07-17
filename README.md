@@ -23,111 +23,111 @@ This project uses:
 
 ```shell
 .
-├── CLAUDE.md                         # AI assistant guidance and documentation
-├── docs/                             # Documentation files
-│   └── nix-darwin-trackpad-options.md # macOS trackpad configuration options
-├── flake.lock                        # Locked dependencies
-├── flake.nix                         # Main flake configuration
-├── hosts/                            # Host-specific configurations
-│   ├── alienware/                    # Desktop workstation (NixOS)
-│   ├── darkstarmk6mod1/              # MacBook Pro 16" 2019 (Darwin)
-│   ├── hal9000/                      # Main server with AI services (NixOS)
-│   ├── halcyon/                      # M4 Mac (Darwin)
-│   ├── n100-01/                      # Cluster node 1 (NixOS)
-│   ├── n100-02/                      # Cluster node 2 (NixOS)
-│   ├── n100-03/                      # Cluster node 3 (NixOS)
-│   ├── n100-04/                      # Cluster node 4 (NixOS)
-│   └── sevastopol/                   # Intel iMac 27" 2013 (Darwin)
-├── LICENSE                           # MIT License
-├── modules/                          # Shared modules and services
-│   ├── claude-desktop.nix            # Claude desktop config deployment
-│   ├── darwin/                       # Darwin-specific modules
-│   │   ├── dock.nix                  # Dock configuration
-│   │   ├── file-sharing.nix          # macOS file sharing config
-│   │   └── packages.nix              # Darwin packages
-│   ├── ghostty-terminfo.nix          # Ghostty terminal support
-│   ├── heroku-cli.nix                # Heroku CLI module
-│   ├── n100-disko.nix                # N100 disk configuration
-│   ├── n100-network.nix              # N100 network configuration
-│   ├── netboot/                      # Netboot infrastructure
-│   │   ├── auto-install.sh           # Automated installation script
-│   │   ├── flake.lock                # Netboot flake lock
-│   │   ├── flake.nix                 # Netboot flake config
+├── CLAUDE.md                    # AI assistant guidance and documentation
+├── docs/                        # Documentation files
+│   └── nix-darwin-trackpad-options.md  # macOS trackpad configuration options
+├── flake.lock                   # Locked dependencies
+├── flake.nix                    # Main flake configuration
+├── hosts/                       # Host-specific configurations
+│   ├── alienware/               # Desktop workstation (NixOS)
+│   ├── darkstarmk6mod1/         # MacBook Pro 16" 2019 (Darwin)
+│   ├── hal9000/                 # Main server with AI services (NixOS)
+│   ├── halcyon/                 # M4 Mac (Darwin)
+│   ├── n100-01/                 # Cluster node 1 (NixOS)
+│   ├── n100-02/                 # Cluster node 2 (NixOS)
+│   ├── n100-03/                 # Cluster node 3 (NixOS)
+│   ├── n100-04/                 # Cluster node 4 (NixOS)
+│   └── sevastopol/              # Intel iMac 27" 2013 (Darwin)
+├── LICENSE                      # MIT License
+├── modules/                     # Shared modules and services
+│   ├── claude-desktop.nix       # Claude desktop config deployment
+│   ├── darwin/                  # Darwin-specific modules
+│   │   ├── dock.nix             # Dock configuration
+│   │   ├── file-sharing.nix     # macOS file sharing config
+│   │   └── packages.nix         # Darwin packages
+│   ├── ghostty-terminfo.nix     # Ghostty terminal support
+│   ├── heroku-cli.nix           # Heroku CLI module
+│   ├── n100-disko.nix           # N100 disk configuration
+│   ├── n100-network.nix         # N100 network configuration
+│   ├── netboot/                 # Netboot infrastructure
+│   │   ├── auto-install.sh      # Automated installation script
+│   │   ├── flake.lock           # Netboot flake lock
+│   │   ├── flake.nix            # Netboot flake config
 │   │   ├── installer-ssh-keys.nix    # SSH keys for installer
 │   │   ├── n100-installer-fixed.nix  # Fixed installer config
-│   │   └── n100-installer.nix        # Installer configuration
-│   ├── nfs-mounts.nix                # NFS client configuration
-│   ├── packages/                     # Custom package definitions
-│   │   ├── ollama/                   # Ollama AI model runner
-│   │   └── postgis-reset/            # PostGIS webhook handler
-│   ├── services/                     # Service configurations
-│   │   ├── ai-starter-kit/           # n8n/qdrant/postgres integration
-│   │   ├── netboot-autochain.nix     # Netboot auto-chain config
-│   │   ├── netboot-configs.nix       # Netboot configurations
-│   │   ├── netboot-server.nix        # Netboot server module
-│   │   ├── postgresql/               # PostgreSQL with PostGIS
-│   │   ├── tftp-server.nix           # TFTP server configuration
-│   │   └── windows11-vm.nix          # Windows 11 VM service
-│   ├── shared-packages/              # Common package sets
-│   │   ├── agenix.nix                # Age encryption tools
-│   │   ├── default.nix               # Default packages
-│   │   ├── devops-darwin.nix         # Darwin DevOps tools
-│   │   └── devops.nix                # DevOps tools
-│   └── ssh-keys.nix                  # SSH key management
-├── overlays/                         # Nix overlays
-│   └── README.md                     # Overlays documentation
-├── pkgs/                             # Custom package builds
-│   ├── llama-cpp/                    # CUDA-enabled llama.cpp
-│   └── netboot-xyz/                  # Netboot.xyz package
-├── profiles/                         # Reusable system profiles
-│   ├── darwin/                       # Darwin profiles
-│   │   ├── default.nix               # Base Darwin configuration
-│   │   └── desktop.nix               # Darwin desktop profile
-│   ├── desktop/                      # NixOS desktop environment
-│   │   ├── default-stable.nix        # Stable channel desktop
-│   │   └── default.nix               # Unstable channel desktop
-│   ├── keychron/                     # Keyboard configuration
-│   ├── n100/                         # N100 cluster profile
-│   └── server/                       # Server profile
-├── README.md                         # This file
-├── scripts/                          # Utility scripts
-│   ├── build-netboot-images.sh       # Build netboot images
-│   ├── check-large-files.sh          # Check for large files
-│   ├── deploy-all.sh                 # Deploy to all hosts in parallel
-│   ├── deploy-local.sh               # Build locally, deploy remotely
-│   ├── deploy-n100-local.sh          # Initial N100 deployment (local build)
-│   ├── deploy-n100.sh                # Initial N100 deployment
-│   ├── deploy-test.sh                # Test deployment (dry-run)
-│   ├── deploy.sh                     # Deploy configuration to host
-│   ├── health-check.sh               # Check system health
-│   ├── nix-gc.sh                     # Run garbage collection
-│   ├── restic-run.sh                 # Manually trigger backup
-│   ├── restic-snapshots.sh           # List backup snapshots
-│   ├── restic-status.sh              # Check backup status
-│   ├── rollback.sh                   # Rollback to previous generation
-│   ├── scan-gitleaks.sh              # GitLeaks secret scanner
-│   ├── scan-secrets-history.sh       # TruffleHog history scanner
-│   ├── scan-secrets-pre-commit.sh    # Pre-commit secret scanner
-│   ├── scan-secrets.sh               # TruffleHog scanner
-│   ├── secrets-add-host.sh           # Add host to secrets
-│   ├── secrets-edit.sh               # Edit encrypted secrets
-│   ├── secrets-print.sh              # Decrypt and print secret
-│   ├── secrets-rekey.sh              # Re-encrypt all secrets
-│   ├── secrets-verify.sh             # Verify secrets integrity
-│   ├── setup-n100-macs.sh            # Document N100 MACs
-│   └── show-generations.sh           # Show system generations
-├── SECRETS.md                        # Secrets management documentation
-├── treefmt.toml                      # Code formatting configuration
-└── users/                            # User configurations
+│   │   └── n100-installer.nix   # Installer configuration
+│   ├── nfs-mounts.nix           # NFS client configuration
+│   ├── packages/                # Custom package definitions
+│   │   ├── ollama/              # Ollama AI model runner
+│   │   └── postgis-reset/       # PostGIS webhook handler
+│   ├── services/                # Service configurations
+│   │   ├── ai-starter-kit/      # n8n/qdrant/postgres integration
+│   │   ├── netboot-autochain.nix # Netboot auto-chain config
+│   │   ├── netboot-configs.nix  # Netboot configurations
+│   │   ├── netboot-server.nix   # Netboot server module
+│   │   ├── postgresql/          # PostgreSQL with PostGIS
+│   │   ├── tftp-server.nix      # TFTP server configuration
+│   │   └── windows11-vm.nix     # Windows 11 VM service
+│   ├── shared-packages/         # Common package sets
+│   │   ├── agenix.nix           # Age encryption tools
+│   │   ├── default.nix          # Default packages
+│   │   ├── devops-darwin.nix    # Darwin DevOps tools
+│   │   └── devops.nix           # DevOps tools
+│   └── ssh-keys.nix             # SSH key management
+├── overlays/                    # Nix overlays
+│   └── README.md                # Overlays documentation
+├── pkgs/                        # Custom package builds
+│   ├── llama-cpp/               # CUDA-enabled llama.cpp
+│   └── netboot-xyz/             # Netboot.xyz package
+├── profiles/                    # Reusable system profiles
+│   ├── darwin/                  # Darwin profiles
+│   │   ├── default.nix          # Base Darwin configuration
+│   │   └── desktop.nix          # Darwin desktop profile
+│   ├── desktop/                 # NixOS desktop environment
+│   │   ├── default-stable.nix   # Stable channel desktop
+│   │   └── default.nix          # Unstable channel desktop
+│   ├── keychron/                # Keyboard configuration
+│   ├── n100/                    # N100 cluster profile
+│   └── server/                  # Server profile
+├── README.md                    # This file
+├── scripts/                     # Utility scripts
+│   ├── build-netboot-images.sh  # Build netboot images
+│   ├── check-large-files.sh     # Check for large files
+│   ├── deploy-all.sh            # Deploy to all hosts in parallel
+│   ├── deploy-local.sh          # Build locally, deploy remotely
+│   ├── deploy-n100-local.sh     # Initial N100 deployment (local build)
+│   ├── deploy-n100.sh           # Initial N100 deployment
+│   ├── deploy-test.sh           # Test deployment (dry-run)
+│   ├── deploy.sh                # Deploy configuration to host
+│   ├── health-check.sh          # Check system health
+│   ├── nix-gc.sh                # Run garbage collection
+│   ├── restic-run.sh            # Manually trigger backup
+│   ├── restic-snapshots.sh      # List backup snapshots
+│   ├── restic-status.sh         # Check backup status
+│   ├── rollback.sh              # Rollback to previous generation
+│   ├── scan-gitleaks.sh         # GitLeaks secret scanner
+│   ├── scan-secrets-history.sh  # TruffleHog history scanner
+│   ├── scan-secrets-pre-commit.sh # Pre-commit secret scanner
+│   ├── scan-secrets.sh          # TruffleHog scanner
+│   ├── secrets-add-host.sh      # Add host to secrets
+│   ├── secrets-edit.sh          # Edit encrypted secrets
+│   ├── secrets-print.sh         # Decrypt and print secret
+│   ├── secrets-rekey.sh         # Re-encrypt all secrets
+│   ├── secrets-verify.sh        # Verify secrets integrity
+│   ├── setup-n100-macs.sh       # Document N100 MACs
+│   └── show-generations.sh      # Show system generations
+├── SECRETS.md                   # Secrets management documentation
+├── treefmt.toml                 # Code formatting configuration
+└── users/                       # User configurations
     └── regular/
-        ├── jamesbrink-darwin.nix     # Darwin-specific config
-        ├── jamesbrink-linux.nix      # Linux-specific config
-        ├── jamesbrink-shared.nix     # Shared user config
-        ├── jamesbrink.nix            # Main user entry point
-        ├── ssh/                      # SSH configurations
-        │   └── config.d/             # SSH config directory
-        │       └── 00-local-hosts    # Local hosts config
-        └── strivedi.nix              # Additional user
+        ├── jamesbrink-darwin.nix  # Darwin-specific config
+        ├── jamesbrink-linux.nix   # Linux-specific config
+        ├── jamesbrink-shared.nix  # Shared user config
+        ├── jamesbrink.nix       # Main user entry point
+        ├── ssh/                 # SSH configurations
+        │   └── config.d/        # SSH config directory
+        │       └── 00-local-hosts # Local hosts config
+        └── strivedi.nix         # Additional user
 ```
 
 ## Hosts
