@@ -24,6 +24,9 @@ DRY_RUN=false
 PARALLEL=true
 MAX_JOBS=0  # 0 means unlimited
 QUIET=false
+SKIP_HOSTS=""
+DARWIN_ONLY=false
+LINUX_ONLY=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -43,6 +46,22 @@ while [[ $# -gt 0 ]]; do
             QUIET=true
             shift
             ;;
+        --skip)
+            if [[ -z "${2:-}" ]] || [[ "$2" =~ ^-- ]]; then
+                echo "Error: --skip requires a hostname or comma-separated list of hostnames"
+                exit 1
+            fi
+            SKIP_HOSTS="$2"
+            shift 2
+            ;;
+        --darwin-only)
+            DARWIN_ONLY=true
+            shift
+            ;;
+        --linux-only)
+            LINUX_ONLY=true
+            shift
+            ;;
         --help|-h)
             echo "Usage: $0 [OPTIONS]"
             echo ""
@@ -51,6 +70,9 @@ while [[ $# -gt 0 ]]; do
             echo "  --sequential         Deploy hosts one at a time (default: parallel)"
             echo "  --max-jobs N         Limit parallel deployments to N hosts (0=unlimited)"
             echo "  --quiet, -q          Suppress deployment output (show only status)"
+            echo "  --skip HOSTS         Skip specified hosts (comma-separated list)"
+            echo "  --darwin-only        Deploy only to Darwin (macOS) hosts"
+            echo "  --linux-only         Deploy only to Linux (NixOS) hosts"
             echo "  --help, -h           Show this help message"
             exit 0
             ;;
@@ -112,27 +134,68 @@ sevastopol"
     fi
 fi
 
-# Combine all hosts
-ALL_HOSTS=$(echo -e "$NIXOS_HOSTS\n$DARWIN_HOSTS" | sort -u | grep -v '^$' || true)
+# Check for conflicting options
+if [ "$DARWIN_ONLY" = true ] && [ "$LINUX_ONLY" = true ]; then
+    echo -e "${RED}Error: --darwin-only and --linux-only cannot be used together${NC}"
+    exit 1
+fi
+
+# Filter hosts based on platform options
+if [ "$DARWIN_ONLY" = true ]; then
+    ALL_HOSTS="$DARWIN_HOSTS"
+elif [ "$LINUX_ONLY" = true ]; then
+    ALL_HOSTS="$NIXOS_HOSTS"
+else
+    # Combine all hosts
+    ALL_HOSTS=$(echo -e "$NIXOS_HOSTS\n$DARWIN_HOSTS" | sort -u | grep -v '^$' || true)
+fi
+
+# Filter out skipped hosts
+if [ -n "$SKIP_HOSTS" ]; then
+    # Convert comma-separated list to newline-separated for easy grep
+    SKIP_PATTERN=$(echo "$SKIP_HOSTS" | tr ',' '\n' | paste -sd '|' -)
+    ALL_HOSTS=$(echo "$ALL_HOSTS" | grep -v -E "^($SKIP_PATTERN)$" || true)
+fi
 
 # Debug output
 if [ "${DEBUG:-false}" = "true" ]; then
     echo "DEBUG: NIXOS_HOSTS='$NIXOS_HOSTS'"
     echo "DEBUG: DARWIN_HOSTS='$DARWIN_HOSTS'"
+    echo "DEBUG: SKIP_HOSTS='$SKIP_HOSTS'"
     echo "DEBUG: ALL_HOSTS='$ALL_HOSTS'"
 fi
 
 if [ -z "$ALL_HOSTS" ]; then
     echo -e "${RED}No hosts found!${NC}"
-    echo -e "${YELLOW}Tip: Make sure you're in the nixos configuration directory.${NC}"
-    echo -e "${YELLOW}Current directory: $(pwd)${NC}"
+    if [ -n "$SKIP_HOSTS" ]; then
+        echo -e "${YELLOW}Note: You may have skipped all available hosts.${NC}"
+    fi
+    if [ "$DARWIN_ONLY" = true ]; then
+        echo -e "${YELLOW}Note: No Darwin hosts found or all were skipped.${NC}"
+    elif [ "$LINUX_ONLY" = true ]; then
+        echo -e "${YELLOW}Note: No Linux hosts found or all were skipped.${NC}"
+    else
+        echo -e "${YELLOW}Tip: Make sure you're in the nixos configuration directory.${NC}"
+        echo -e "${YELLOW}Current directory: $(pwd)${NC}"
+    fi
     exit 1
 fi
 
 # Count hosts
 TOTAL_HOSTS=$(echo "$ALL_HOSTS" | wc -l | tr -d ' ')
 
-echo -e "${GREEN}Found $TOTAL_HOSTS hosts:${NC}"
+# Show filter status
+FILTER_MSG=""
+if [ "$DARWIN_ONLY" = true ]; then
+    FILTER_MSG=" (Darwin hosts only)"
+elif [ "$LINUX_ONLY" = true ]; then
+    FILTER_MSG=" (Linux hosts only)"
+fi
+if [ -n "$SKIP_HOSTS" ]; then
+    FILTER_MSG="${FILTER_MSG} [skipping: $SKIP_HOSTS]"
+fi
+
+echo -e "${GREEN}Found $TOTAL_HOSTS hosts${FILTER_MSG}:${NC}"
 echo "$ALL_HOSTS" | sed 's/^/  - /'
 echo ""
 
