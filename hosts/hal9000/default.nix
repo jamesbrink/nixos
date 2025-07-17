@@ -222,11 +222,17 @@
     options = [ "bind" ];
   };
 
-  services.nfs.server.enable = true;
-  services.nfs.server.exports = ''
-    /export                 10.70.100.0/24(rw,fsid=0,no_subtree_check) 100.64.0.0/10(rw,fsid=0,no_subtree_check)
-    /export/storage-fast    10.70.100.0/24(rw,nohide,insecure,no_subtree_check) 100.64.0.0/10(rw,nohide,insecure,no_subtree_check)
-  '';
+  services.nfs.server = {
+    enable = true;
+    exports = ''
+      /export                 10.70.100.0/24(rw,fsid=0,no_subtree_check) 100.64.0.0/10(rw,fsid=0,no_subtree_check)
+      /export/storage-fast    10.70.100.0/24(rw,nohide,insecure,no_subtree_check) 100.64.0.0/10(rw,nohide,insecure,no_subtree_check)
+    '';
+    # Ensure NFS listens on all interfaces
+    lockdPort = 4045;
+    mountdPort = 4046;
+    statdPort = 4047;
+  };
 
   systemd.sleep.extraConfig = ''
     AllowSuspend=no
@@ -268,6 +274,11 @@
         22
         80 # HTTP
         443 # HTTPS
+        111 # RPC portmapper
+        2049 # NFS
+        4045 # NFS lockd
+        4046 # NFS mountd
+        4047 # NFS statd
         3389
         5900 # SPICE for VMs
         5901 # Additional SPICE ports
@@ -275,11 +286,30 @@
         5903
         5904
       ];
+      allowedUDPPorts = [
+        111 # RPC portmapper
+        2049 # NFS
+        4045 # NFS lockd
+        4046 # NFS mountd
+        4047 # NFS statd
+      ];
       interfaces = {
         br0 = {
           allowedTCPPorts = [
             22
+            111 # RPC portmapper
+            2049 # NFS
+            4045 # NFS lockd
+            4046 # NFS mountd
+            4047 # NFS statd
             3389
+          ];
+          allowedUDPPorts = [
+            111 # RPC portmapper
+            2049 # NFS
+            4045 # NFS lockd
+            4046 # NFS mountd
+            4047 # NFS statd
           ];
         };
       };
