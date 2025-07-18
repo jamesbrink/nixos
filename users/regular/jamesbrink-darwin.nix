@@ -137,10 +137,14 @@ in
     sudo -u jamesbrink bash -c "
       mkdir -p /Users/jamesbrink/.config/environment.d
       
-      # Create GitHub token environment file
-      echo 'export GITHUB_TOKEN=\"\$(cat ${
-        config.age.secrets."github-token".path
-      })\"' > /Users/jamesbrink/.config/environment.d/github-token.sh
+      # Create GitHub token environment file (check if agenix path exists first)
+      if [[ -f ${config.age.secrets."github-token".path} ]]; then
+        echo 'export GITHUB_TOKEN=\"\$(cat ${
+          config.age.secrets."github-token".path
+        })\"' > /Users/jamesbrink/.config/environment.d/github-token.sh
+      else
+        echo '# GitHub token not yet available from agenix' > /Users/jamesbrink/.config/environment.d/github-token.sh
+      fi
       
       # Fix permissions
       chmod 600 /Users/jamesbrink/.config/environment.d/github-token.sh
@@ -152,10 +156,14 @@ in
     sudo -u jamesbrink bash -c "
       mkdir -p /Users/jamesbrink/.config/environment.d
       
-      # Create Infracost API key environment file
-      echo 'export INFRACOST_API_KEY=\"\$(cat ${
-        config.age.secrets."infracost-api-key".path
-      })\"' > /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
+      # Create Infracost API key environment file (check if agenix path exists first)
+      if [[ -f ${config.age.secrets."infracost-api-key".path} ]]; then
+        echo 'export INFRACOST_API_KEY=\"\$(cat ${
+          config.age.secrets."infracost-api-key".path
+        })\"' > /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
+      else
+        echo '# Infracost API key not yet available from agenix' > /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
+      fi
       
       # Fix permissions
       chmod 600 /Users/jamesbrink/.config/environment.d/infracost-api-key.sh

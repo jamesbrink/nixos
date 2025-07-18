@@ -272,14 +272,14 @@ in
             # Always color ls and group directories
             alias ls='ls --color=auto'
 
-            # Source GitHub Token if available
+            # Source GitHub Token if available (with race condition protection)
             if [[ -f ~/.config/environment.d/github-token.sh ]]; then
-              source ~/.config/environment.d/github-token.sh
+              source ~/.config/environment.d/github-token.sh 2>/dev/null || true
             fi
 
-            # Source Infracost API key if available
+            # Source Infracost API key if available (with race condition protection)
             if [[ -f ~/.config/environment.d/infracost-api-key.sh ]]; then
-              source ~/.config/environment.d/infracost-api-key.sh
+              source ~/.config/environment.d/infracost-api-key.sh 2>/dev/null || true
             fi
 
             ##############
