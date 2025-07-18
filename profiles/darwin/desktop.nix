@@ -75,7 +75,7 @@
 
       # Development Tools
       "meld"
-      "wireshark"
+      "wireshark-app"
 
       # AI Tools
       "claude" # Claude Code
