@@ -18,6 +18,7 @@
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/devops.nix
     ../../modules/restic-backups.nix
+    ../../modules/services/samba-server.nix
     ../../users/regular/jamesbrink.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
@@ -95,6 +96,43 @@
     /export/storage   10.70.100.0/24(rw,nohide,insecure,no_subtree_check)
     /export/data      10.70.100.0/24(rw,nohide,insecure,no_subtree_check)
   '';
+
+  # Samba server configuration - sharing same paths as NFS
+  services.samba-server = {
+    enable = true;
+    workgroup = "WORKGROUP";
+    serverString = "Alienware Samba Server";
+    enableWSDD = true; # Enable Windows 10/11 network discovery
+    shares = {
+      export = {
+        path = "/export";
+        comment = "Alienware export root";
+        browseable = true;
+        readOnly = false;
+        validUsers = [ "jamesbrink" ];
+        createMask = "0664";
+        directoryMask = "0775";
+      };
+      storage = {
+        path = "/export/storage";
+        comment = "8TB USB storage";
+        browseable = true;
+        readOnly = false;
+        validUsers = [ "jamesbrink" ];
+        createMask = "0664";
+        directoryMask = "0775";
+      };
+      data = {
+        path = "/export/data";
+        comment = "Data drive";
+        browseable = true;
+        readOnly = false;
+        validUsers = [ "jamesbrink" ];
+        createMask = "0664";
+        directoryMask = "0775";
+      };
+    };
+  };
 
   # Networking configuration
   networking = {
@@ -351,8 +389,36 @@
   ];
 
   # Service discovery and VPN
-  services.avahi.publish.enable = true;
-  services.avahi.publish.userServices = true;
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true; # Enable mDNS name resolution
+    publish = {
+      enable = true;
+      addresses = true;
+      domain = true;
+      hinfo = true;
+      userServices = true;
+      workstation = true;
+    };
+    extraServiceFiles = {
+      smb = ''
+        <?xml version="1.0" standalone='no'?>
+        <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+        <service-group>
+          <name replace-wildcards="yes">%h</name>
+          <service>
+            <type>_smb._tcp</type>
+            <port>445</port>
+          </service>
+          <service>
+            <type>_device-info._tcp</type>
+            <port>0</port>
+            <txt-record>model=RackMac</txt-record>
+          </service>
+        </service-group>
+      '';
+    };
+  };
   services.tailscale.enable = true;
 
   # Steam gaming

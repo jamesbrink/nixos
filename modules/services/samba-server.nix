@@ -143,16 +143,30 @@ in
             "map to guest" = "never";
             "guest account" = "nobody";
 
-            # Protocol settings
+            # Protocol settings - Critical for macOS compatibility
             "server min protocol" = "SMB2";
+            "server max protocol" = "SMB3"; # Explicitly set max protocol
             "client min protocol" = "SMB2";
-            "server smb encrypt" = "desired";
+            "client max protocol" = "SMB3";
+            "server smb encrypt" = "if_required"; # Changed from 'desired' for better compatibility
+            "ntlm auth" = "ntlmv2-only"; # Force NTLMv2 for macOS
+            "raw NTLMv2 auth" = "yes";
 
-            # Performance settings
-            "socket options" = "TCP_NODELAY IPTOS_LOWDELAY SO_RCVBUF=524288 SO_SNDBUF=524288";
+            # Additional macOS compatibility
+            "ea support" = "yes";
+            "inherit acls" = "yes";
+            "map acl inherit" = "yes";
+
+            # Performance settings - Simplified for compatibility
+            "socket options" = "TCP_NODELAY"; # Removed buffer size overrides
             "use sendfile" = "yes";
-            "aio read size" = "16384";
-            "aio write size" = "16384";
+            "aio read size" = "1";
+            "aio write size" = "1";
+            "min receivefile size" = "16384";
+            "getwd cache" = "yes";
+            "read raw" = "yes";
+            "write raw" = "yes";
+            "strict locking" = "no";
 
             # Network restrictions
             "hosts allow" = concatStringsSep " " (cfg.allowedNetworks ++ [ "127.0.0.1" ]);
@@ -173,10 +187,11 @@ in
             "printing" = "bsd";
             "printcap name" = "/dev/null";
             "disable spoolss" = "yes";
+            "multicast dns register" = "yes"; # Help with macOS discovery
+            "unix extensions" = "no"; # Disable for better macOS compatibility
 
-            # macOS compatibility
-            "vfs objects" =
-              if cfg.enableTimeMachine then "catia fruit streams_xattr" else "catia streams_xattr";
+            # macOS compatibility - MUST be in this order
+            "vfs objects" = "catia fruit streams_xattr";
             "fruit:metadata" = "stream";
             "fruit:model" = "MacSamba";
             "fruit:veto_appledouble" = "no";
@@ -184,6 +199,12 @@ in
             "fruit:zero_file_id" = "yes";
             "fruit:wipe_intentionally_left_blank_rfork" = "yes";
             "fruit:delete_empty_adfiles" = "yes";
+            "fruit:nfs_aces" = "no";
+            "fruit:encoding" = "native";
+
+            # Additional macOS optimizations
+            "veto files" = "/._*/.DS_Store/";
+            "delete veto files" = "yes";
           };
         }
         // mapAttrs (

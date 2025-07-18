@@ -11,6 +11,7 @@
   imports = [
     ../../modules/n100-disko.nix
     ../../modules/restic-backups.nix
+    ../../modules/services/samba-server.nix
     ../../profiles/server/default.nix
     ../../profiles/desktop/default.nix
     ../../users/regular/jamesbrink.nix
@@ -110,6 +111,61 @@
       /export 192.168.0.0/16(rw,sync,no_subtree_check,no_root_squash,insecure,all_squash,anonuid=1000,anongid=100)
       /export 10.0.0.0/8(rw,sync,no_subtree_check,no_root_squash,insecure,all_squash,anonuid=1000,anongid=100)
     '';
+  };
+
+  # Samba server configuration - sharing same paths as NFS
+  services.samba-server = {
+    enable = true;
+    workgroup = "WORKGROUP";
+    serverString = "N100 Cluster Node";
+    enableWSDD = true; # Enable Windows 10/11 network discovery
+    allowedNetworks = [
+      "192.168.0.0/16"
+      "10.0.0.0/8"
+    ];
+    shares = {
+      export = {
+        path = "/export";
+        comment = "N100 shared storage";
+        browseable = true;
+        readOnly = false;
+        validUsers = [ "jamesbrink" ];
+        createMask = "0664";
+        directoryMask = "0775";
+      };
+    };
+  };
+
+  # Avahi for macOS discovery (Bonjour)
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true; # Enable mDNS name resolution
+    publish = {
+      enable = true;
+      addresses = true;
+      domain = true;
+      hinfo = true;
+      userServices = true;
+      workstation = true;
+    };
+    extraServiceFiles = {
+      smb = ''
+        <?xml version="1.0" standalone='no'?>
+        <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+        <service-group>
+          <name replace-wildcards="yes">%h</name>
+          <service>
+            <type>_smb._tcp</type>
+            <port>445</port>
+          </service>
+          <service>
+            <type>_device-info._tcp</type>
+            <port>0</port>
+            <txt-record>model=RackMac</txt-record>
+          </service>
+        </service-group>
+      '';
+    };
   };
 
   # Create the export directory with full permissions

@@ -1201,6 +1201,16 @@
         createMask = "0664";
         directoryMask = "0775";
       };
+      # Add alias without hyphen for macOS compatibility
+      storage = {
+        path = "/storage-fast";
+        comment = "Fast storage array (alias)";
+        browseable = true;
+        readOnly = false;
+        validUsers = [ "jamesbrink" ];
+        createMask = "0664";
+        directoryMask = "0775";
+      };
     };
   };
 
