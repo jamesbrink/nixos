@@ -54,14 +54,15 @@
         minimize-to-application = true;
       };
 
-      finder = {
-        _FXShowPosixPathInTitle = true;
-        AppleShowAllExtensions = false;
-        FXEnableExtensionChangeWarning = false;
-        QuitMenuItem = true;
-        ShowPathbar = true;
-        ShowStatusBar = true;
-      };
+      # TODO one of these settings is breaking network mounting of smb/nfs
+      # finder = {
+      #   _FXShowPosixPathInTitle = true;
+      #   AppleShowAllExtensions = false;
+      #   FXEnableExtensionChangeWarning = false;
+      #   QuitMenuItem = true;
+      #   ShowPathbar = true;
+      #   ShowStatusBar = true;
+      # };
 
       # Trackpad settings commented out as they seem problematic
       # trackpad = {
