@@ -23,7 +23,7 @@
       installerSystem = nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
-          ./n100-installer-fixed.nix
+          ./n100-installer.nix
           disko.nixosModules.disko
           (
             { config, pkgs, ... }:

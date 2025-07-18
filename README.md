@@ -54,7 +54,6 @@ This project uses:
 │   │   ├── flake.lock           # Netboot flake lock
 │   │   ├── flake.nix            # Netboot flake config
 │   │   ├── installer-ssh-keys.nix    # SSH keys for installer
-│   │   ├── n100-installer-fixed.nix  # Fixed installer config
 │   │   └── n100-installer.nix   # Installer configuration
 │   ├── nfs-mounts.nix           # NFS client configuration
 │   ├── packages/                # Custom package definitions

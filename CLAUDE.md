@@ -387,7 +387,7 @@ If you see "can't find terminal definition for xterm-ghostty":
 - **Fixed**: Optimized boot process - removed hardcoded non-existent interface names
 - **Fixed**: Reduced network wait timeout from 120s to 30s for faster boot
 - **Fixed**: Getty services explicitly enabled on tty1 and ttyS0 for reliable console access
-- **Fixed**: Netboot installer shutdown hang by using `n100-installer-fixed.nix` which disables serial getty
+- **Fixed**: Netboot installer shutdown hang by disabling serial getty in installer configuration
 - **Fixed**: All SSH keys from `secrets/secrets.nix` are now pre-populated in netboot images
 - **Enhanced**: N100 netboot now defaults to local disk boot with 20s timeout, falls back to network installer
 - MAC addresses configured:
