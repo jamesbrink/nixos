@@ -667,6 +667,97 @@ All Linux hosts automatically mount all available NFS shares under `/mnt/nfs/`:
 
 All NFS mounts use automount with a 600-second idle timeout for better resource management.
 
+### SMB/Samba Shares Documentation
+
+All Linux hosts in the network provide SMB/CIFS file sharing alongside NFS for better compatibility with Windows and macOS clients.
+
+#### SMB Configuration Features
+
+- **Protocol**: SMB2 to SMB3 with macOS-optimized settings
+- **Authentication**: User-based authentication (no guest access)
+- **Discovery**: Avahi/Bonjour for macOS and WSDD for Windows 10/11
+- **Networks**: Restricted to local network (10.70.100.0/24) and Tailscale (100.64.0.0/10)
+- **macOS Optimization**: Full fruit VFS module support with proper configuration
+
+#### SMB Shares by Host
+
+| Host          | Share Name   | Path            | Description                | Valid Users |
+| ------------- | ------------ | --------------- | -------------------------- | ----------- |
+| **hal9000**   | export       | /export         | HAL9000 export root        | jamesbrink  |
+|               | storage      | /storage-fast   | Fast storage array (alias) | jamesbrink  |
+|               | storage-fast | /storage-fast   | Fast storage array         | jamesbrink  |
+| **alienware** | export       | /export         | Export root directory      | jamesbrink  |
+|               | storage      | /export/storage | 8TB USB storage            | jamesbrink  |
+|               | data         | /export/data    | Data drive                 | jamesbrink  |
+| **n100-01**   | export       | /export         | N100 shared storage        | jamesbrink  |
+| **n100-02**   | export       | /export         | N100 shared storage        | jamesbrink  |
+| **n100-03**   | export       | /export         | N100 shared storage        | jamesbrink  |
+| **n100-04**   | export       | /export         | N100 shared storage        | jamesbrink  |
+
+#### Connecting to SMB Shares
+
+##### From macOS
+
+1. **Via Finder**:
+
+   - Open Finder → Network → Select host
+   - Or press Cmd+K and enter: `smb://hostname` or `smb://hostname.local`
+
+2. **Direct share access**:
+
+   - `smb://hal9000/storage`
+   - `smb://alienware/data`
+   - `smb://n100-01/export`
+
+3. **Credentials**:
+   - Username: `jamesbrink`
+   - Password: Set via `samba-add-user` command
+
+##### From Windows
+
+1. **Via File Explorer**:
+
+   - Type `\\hostname\sharename` in address bar
+   - Example: `\\hal9000\storage`
+
+2. **Network discovery**:
+   - Hosts should appear in Network neighborhood (WSDD enabled)
+
+##### From Linux
+
+```bash
+# List available shares
+smbclient -L hostname -U jamesbrink
+
+# Mount a share
+sudo mount -t cifs //hostname/sharename /mnt/point -o username=jamesbrink
+
+# Using file manager
+smb://hostname/sharename
+```
+
+#### SMB Security Features
+
+- Minimum protocol: SMB2 (SMB1 disabled for security)
+- NTLMv2 authentication only
+- Encryption available (if_required mode)
+- No anonymous/guest access allowed
+- Network access restricted to local and VPN networks
+
+#### Managing SMB Users
+
+To add or update SMB user passwords:
+
+```bash
+# On the host or via development shell
+samba-add-user [username]
+
+# If no username provided, defaults to current user
+samba-add-user
+```
+
+The `samba-add-user` script is available in the development shell and on all Linux hosts.
+
 ### Claude Desktop Configuration
 
 - Automatic deployment of Claude desktop settings for the jamesbrink user
