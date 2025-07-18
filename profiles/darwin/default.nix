@@ -72,6 +72,36 @@
         SecondClickThreshold = 1; # 0 for light, 1 for medium, 2 for firm
         # Note: Natural scrolling is configured via NSGlobalDomain."com.apple.swipescrolldirection" above
       };
+
+      # Custom trackpad gesture preferences
+      CustomUserPreferences = {
+        "com.apple.driver.AppleBluetoothMultitouch.trackpad" = {
+          # Mission Control - Swipe up with three fingers
+          TrackpadThreeFingerVertSwipeGesture = 2;
+
+          # Switch between full-screen apps - Swipe left/right with three fingers
+          TrackpadThreeFingerHorizSwipeGesture = 2;
+
+          # Notification Center - Two finger swipe from right edge
+          TrackpadTwoFingerFromRightEdgeSwipeGesture = 3;
+
+          # Show Desktop - Spread with thumb and three fingers
+          TrackpadFourFingerPinchGesture = 2;
+
+          # Launchpad - Pinch with thumb and three fingers
+          TrackpadFourFingerVertSwipeGesture = 2;
+
+          # App Exposé (currently off as shown in screenshot)
+          TrackpadThreeFingerTapGesture = 0;
+        };
+
+        # Dock gesture preferences
+        "com.apple.dock" = {
+          "showLaunchpadGestureEnabled" = true;
+          "showDesktopGestureEnabled" = true;
+          "showMissionControlGestureEnabled" = true;
+        };
+      };
     };
 
     # Keyboard settings
