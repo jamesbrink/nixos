@@ -295,6 +295,15 @@ If you see "can't find terminal definition for xterm-ghostty":
 
 ## Recent Architecture Changes
 
+### macOS NFS Automount Fix (July 2025)
+
+- Fixed Finder network browsing issues caused by automounter taking over `/Volumes`
+- Updated NFS automount configurations on all Darwin hosts to use alternative mount points:
+  - `halcyon` and `sevastopol`: NFS shares now mount to `/mnt/`
+  - `darkstarmk6mod1`: NFS shares mount to `/opt/nfs-mounts/` (due to `/mnt` being read-only)
+- Automounter no longer interferes with Finder's ability to mount SMB/NFS shares via GUI
+- All NFS shares remain accessible at their new locations while preserving native macOS functionality
+
 ### Infracost API Key Integration (July 2025)
 
 - Added Infracost API key as an encrypted secret using agenix

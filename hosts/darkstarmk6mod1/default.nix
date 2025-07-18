@@ -120,11 +120,14 @@
 
   # User configuration is now imported from the module
 
-  # NFS mounts configuration - mount directly to /Volumes for Finder visibility
+  # NFS mounts configuration - mount to /opt/nfs-mounts to avoid conflicts with Finder's /Volumes
   system.activationScripts.preActivation.text = ''
+        # Create /opt/nfs-mounts directory if it doesn't exist
+        sudo mkdir -p /opt/nfs-mounts
+        
         # Create auto_nfs file for automounter
         sudo tee /etc/auto_nfs > /dev/null <<'EOF'
-    # NFS mounts from various hosts - these will appear in /Volumes and Finder
+    # NFS mounts from various hosts
     NFS-storage         -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc alienware.home.urandom.io:/export/storage
     NFS-data            -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc alienware.home.urandom.io:/export/data  
     NFS-storage-fast    -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc hal9000.home.urandom.io:/export/storage-fast
@@ -134,14 +137,22 @@
     NFS-n100-04         -fstype=nfs,noowners,nolockd,noresvport,hard,bg,intr,rw,tcp,nfc n100-04.home.urandom.io:/export
     EOF
         
-        # Update auto_master to include our NFS mounts in /Volumes
-        if ! grep -q "/Volumes.*auto_nfs" /etc/auto_master 2>/dev/null; then
+        # Update auto_master to include our NFS mounts in /opt/nfs-mounts
+        if grep -q "/Volumes.*auto_nfs" /etc/auto_master 2>/dev/null; then
+          # Remove the problematic /Volumes entry
+          sudo sed -i "" '/\/Volumes.*auto_nfs/d' /etc/auto_master 2>/dev/null || true
+        fi
+        
+        # Remove old /mnt entry if it exists
+        if grep -q "/mnt.*auto_nfs" /etc/auto_master 2>/dev/null; then
+          sudo sed -i "" '/\/mnt.*auto_nfs/d' /etc/auto_master 2>/dev/null || true
+        fi
+        
+        if ! grep -q "/opt/nfs-mounts.*auto_nfs" /etc/auto_master 2>/dev/null; then
           # Backup existing auto_master
           sudo cp /etc/auto_master "/etc/auto_master.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
-          # Remove old /mnt entry if it exists
-          sudo sed -i "" '/\/mnt.*auto_nfs/d' /etc/auto_master 2>/dev/null || true
-          # Add our mount configuration to /Volumes
-          echo "/Volumes		/etc/auto_nfs" | sudo tee -a /etc/auto_master > /dev/null
+          # Add our mount configuration to /opt/nfs-mounts
+          echo "/opt/nfs-mounts		/etc/auto_nfs" | sudo tee -a /etc/auto_master > /dev/null
         fi
         
         # Restart automount to pick up changes

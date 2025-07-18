@@ -628,13 +628,17 @@ All Linux hosts automatically mount all available NFS shares under `/mnt/nfs/`:
 
 **Mount Options**: `noatime,noauto,x-systemd.automount,x-systemd.device-timeout=10,x-systemd.idle-timeout=600`
 
-##### macOS Hosts (Manual Configuration)
+##### macOS Hosts (Automounter Configuration)
 
-| Host                | Mount Point      | NFS Server | Remote Path           | Options                                                     |
-| ------------------- | ---------------- | ---------- | --------------------- | ----------------------------------------------------------- |
-| **halcyon**         | `/Volumes/NFS-*` | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
-| **sevastopol**      | `/Volumes/NFS-*` | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
-| **darkstarmk6mod1** | `/Volumes/NFS-*` | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+macOS hosts use the automounter to mount NFS shares. The mount points are configured to avoid conflicts with Finder's network browsing functionality:
+
+| Host                | Mount Point             | NFS Server | Remote Path           | Options                                                     |
+| ------------------- | ----------------------- | ---------- | --------------------- | ----------------------------------------------------------- |
+| **halcyon**         | `/mnt/NFS-*`            | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+| **sevastopol**      | `/mnt/NFS-*`            | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+| **darkstarmk6mod1** | `/opt/nfs-mounts/NFS-*` | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+
+**Note**: NFS shares are mounted outside of `/Volumes` to prevent conflicts with Finder's ability to mount network shares via the GUI. The automounter configuration is managed through the host-specific `system.activationScripts`.
 
 #### Storage Details
 
