@@ -14,6 +14,7 @@
       inputs.agenix.packages.${pkgs.system}.default
       bandwhich
       bat
+      bfg-repo-cleaner
       (btop.override {
         cudaSupport = pkgs.stdenv.isLinux && (config.hardware.nvidia.package or null) != null;
       })
