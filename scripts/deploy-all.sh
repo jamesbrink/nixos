@@ -200,9 +200,10 @@ echo -e "${GREEN}Found $TOTAL_HOSTS hosts${FILTER_MSG}:${NC}"
 echo "$ALL_HOSTS" | sed 's/^/  - /'
 echo ""
 
-# Create temporary directory for logs
-LOG_DIR=$(mktemp -d)
-trap 'rm -rf $LOG_DIR' EXIT
+# Create directory for logs with timestamp
+LOG_DIR="/tmp/nixos-deploy-logs-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$LOG_DIR"
+# No trap to delete logs - they will persist
 
 # Function to deploy a single host
 deploy_host() {
@@ -408,13 +409,11 @@ if [ "$FAILED_COUNT" -gt 0 ]; then
             echo -e "    Log: $LOG_DIR/${host}.log"
         fi
     done
-    
-    echo ""
-    echo -e "${YELLOW}Note: Log files will be deleted when this script exits.${NC}"
-    echo -e "${YELLOW}Press Ctrl+C now if you want to preserve the logs.${NC}"
-    read -n 1 -s -r -p "Press any key to continue and delete logs..."
-    echo ""
 fi
+
+# Always show where logs are saved
+echo ""
+echo -e "${BLUE}Deployment logs saved in: ${LOG_DIR}${NC}"
 
 # Exit with appropriate code
 if [ "$FAILED_COUNT" -gt 0 ]; then

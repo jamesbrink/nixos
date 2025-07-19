@@ -31,7 +31,7 @@ in
 
       home.sessionVariables =
         {
-          CLAUDE_BASH_COMMAND_TIMEOUT = "30000";
+          CLAUDE_BASH_COMMAND_TIMEOUT = "150000";
           CLAUDE_BASH_COMMAND_MAX_TIMEOUT = "600000";
         }
         // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {

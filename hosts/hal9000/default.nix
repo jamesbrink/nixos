@@ -289,6 +289,9 @@
         5902
         5903
         5904
+        7000 # AirPlay
+        7001 # AirPlay
+        7100 # AirPlay screen mirroring
       ];
       allowedUDPPorts = [
         111 # RPC portmapper
@@ -299,6 +302,11 @@
         4046 # NFS mountd
         4047 # NFS statd
         5353 # mDNS/Bonjour for macOS discovery
+        6000 # AirPlay screen mirroring
+        6001 # AirPlay screen mirroring
+        7000 # AirPlay
+        7001 # AirPlay
+        7011 # AirPlay control
       ];
       interfaces = {
         br0 = {
@@ -312,6 +320,9 @@
             4046 # NFS mountd
             4047 # NFS statd
             3389
+            7000 # AirPlay
+            7001 # AirPlay
+            7100 # AirPlay screen mirroring
           ];
           allowedUDPPorts = [
             111 # RPC portmapper
@@ -322,6 +333,11 @@
             4046 # NFS mountd
             4047 # NFS statd
             5353 # mDNS/Bonjour for macOS discovery
+            6000 # AirPlay screen mirroring
+            6001 # AirPlay screen mirroring
+            7000 # AirPlay
+            7001 # AirPlay
+            7011 # AirPlay control
           ];
         };
       };
@@ -955,12 +971,20 @@
     steam
     sunshine
     unstablePkgs.ollama-cuda
+    uxplay
     virt-viewer
     vulkan-tools
     winetricks
     wineWowPackages.waylandFull
     xorriso
     (import ../../modules/packages/postgis-reset { inherit pkgs; })
+    # GStreamer plugins for UxPlay
+    gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
+    gst_all_1.gst-plugins-good
+    gst_all_1.gst-plugins-bad
+    gst_all_1.gst-plugins-ugly
+    gst_all_1.gst-vaapi
   ];
 
   system.stateVersion = "25.05";
@@ -1245,4 +1269,29 @@
       '';
     };
   };
+
+  # TODO troubleshoot this
+  # UxPlay AirPlay screen mirroring service
+  # systemd.services.uxplay = {
+  #   description = "UxPlay AirPlay screen mirroring server";
+  #   after = [ "network.target" "avahi-daemon.service" ];
+  #   requires = [ "avahi-daemon.service" ];
+  #   wantedBy = [ "multi-user.target" ];
+  #   serviceConfig = {
+  #     Type = "simple";
+  #     ExecStart = "${pkgs.uxplay}/bin/uxplay -n 'HAL9000 Screen' -nh -p";
+  #     Restart = "always";
+  #     RestartSec = "10s";
+  #     User = "jamesbrink";
+  #     Group = "users";
+  #     StandardOutput = "journal";
+  #     StandardError = "journal";
+  #   };
+  #   environment = {
+  #     DISPLAY = ":0";
+  #     HOME = "/home/jamesbrink";
+  #     XDG_RUNTIME_DIR = "/run/user/1000";
+  #     GST_DEBUG = "3";
+  #   };
+  # };
 }
