@@ -108,6 +108,7 @@
   # User configuration is now imported from the module
 
   # NFS mounts configuration - mount to /mnt to avoid conflicts with Finder's /Volumes
+  # Note: On macOS, automounts appear at /System/Volumes/Data/mnt due to firmlinks
   system.activationScripts.preActivation.text = ''
         # Create /mnt directory if it doesn't exist
         sudo mkdir -p /mnt

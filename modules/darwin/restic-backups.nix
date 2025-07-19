@@ -97,6 +97,9 @@ with lib;
         #!/usr/bin/env bash
         set -euo pipefail
 
+        # Set PATH to include restic
+        export PATH="${pkgs.restic}/bin:$PATH"
+
         # Load environment variables
         if [ -f "$HOME/.config/restic/s3-env" ]; then
           set -a
@@ -205,7 +208,7 @@ with lib;
       script = ''
         # Only run if restic config exists
         if [ -f "$HOME/.config/restic/s3-env" ] && [ -f "$HOME/.config/restic/password" ]; then
-          ${pkgs.restic}/bin/restic-backup backup
+          /run/current-system/sw/bin/restic-backup backup
         fi
       '';
 
