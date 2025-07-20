@@ -61,6 +61,7 @@
       unzip
       vim
       virt-viewer
+      watch
       wget
       wireguard-tools
       yarn
