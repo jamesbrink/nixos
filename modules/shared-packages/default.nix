@@ -26,6 +26,7 @@
       fastfetch
       fd
       git
+      git-lfs
       home-manager
       htop
       httpie
