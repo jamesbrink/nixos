@@ -802,8 +802,16 @@ The `samba-add-user` script is available in the development shell and on all Lin
    - Consider manual bootstrap or temporary secrets bypass
 
 3. **SSH Key Issues**
+
    - Ensure host SSH keys are added to secrets repository
    - Verify GitHub access from the target host
+
+4. **macOS Restic Backup Permission Popups**
+   - If you see security popups for `sh` or `bash` when restic runs
+   - Solution: Grant Full Disk Access to `/bin/sh` and `/bin/bash`
+   - Steps: System Preferences → Privacy & Security → Full Disk Access → Add both binaries
+   - This is required because restic runs via launchd using shell scripts
+   - The permission warnings in logs (FileProvider, Control Center) are normal and cannot be avoided
 
 ### Development Tips
 
