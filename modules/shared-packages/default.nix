@@ -74,6 +74,8 @@
       llm
       nushell
       slack-cli
+      nodejs
+      nodePackages.pnpm
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # Linux-only packages
