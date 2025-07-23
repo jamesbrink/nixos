@@ -23,6 +23,7 @@
       dig
       direnv
       dnsutils
+      eza
       fastfetch
       fd
       git
