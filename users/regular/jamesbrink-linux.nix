@@ -118,7 +118,6 @@ in
           unstable.signal-desktop
           termius
           unstable.claude-code
-          unstable.code-cursor
           unstable.goose-cli
           unstable.windsurf
           warp-terminal
@@ -165,6 +164,20 @@ in
 
   age.secrets."github-token" = {
     file = "${effectiveSecretsPath}/jamesbrink/github-token.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
+  age.secrets."pypi-key" = {
+    file = "${effectiveSecretsPath}/jamesbrink/pypi-key.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
+  age.secrets."deadmansnitch-key" = {
+    file = "${effectiveSecretsPath}/jamesbrink/deadmansnitch-key.age";
     owner = "jamesbrink";
     group = "users";
     mode = "0600";
@@ -240,6 +253,53 @@ in
       })\"" > /home/jamesbrink/.config/environment.d/infracost-api-key.sh
       chmod 600 /home/jamesbrink/.config/environment.d/infracost-api-key.sh
       chown jamesbrink:users /home/jamesbrink/.config/environment.d/infracost-api-key.sh
+    '';
+  };
+
+  systemd.services.pypi-token-setup = {
+    description = "Setup PyPI token environment";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+            # Read the PyPI token and create a shell source file
+            mkdir -p /home/jamesbrink/.config/environment.d
+            TOKEN="$(cat ${config.age.secrets."pypi-key".path})"
+            cat > /home/jamesbrink/.config/environment.d/pypi-token.sh <<EOF
+      export PYPI_TOKEN="$TOKEN"
+      export PYPI_API_TOKEN="$TOKEN"
+      export UV_PUBLISH_TOKEN="$TOKEN"
+      export UV_PUBLISH_USERNAME="jamesbrink"
+      export POETRY_PYPI_TOKEN_PYPI="$TOKEN"
+      export TWINE_USERNAME="__token__"
+      export TWINE_PASSWORD="$TOKEN"
+      EOF
+            chmod 600 /home/jamesbrink/.config/environment.d/pypi-token.sh
+            chown jamesbrink:users /home/jamesbrink/.config/environment.d/pypi-token.sh
+    '';
+  };
+
+  systemd.services.deadmansnitch-token-setup = {
+    description = "Setup Dead Man's Snitch API key environment";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+      # Read the Dead Man's Snitch API key and create a shell source file
+      mkdir -p /home/jamesbrink/.config/environment.d
+      echo "export DEADMANSNITCH_API_KEY=\"$(cat ${
+        config.age.secrets."deadmansnitch-key".path
+      })\"" > /home/jamesbrink/.config/environment.d/deadmansnitch-api-key.sh
+      chmod 600 /home/jamesbrink/.config/environment.d/deadmansnitch-api-key.sh
+      chown jamesbrink:users /home/jamesbrink/.config/environment.d/deadmansnitch-api-key.sh
     '';
   };
 

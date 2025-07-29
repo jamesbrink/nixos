@@ -282,6 +282,16 @@ in
               source ~/.config/environment.d/infracost-api-key.sh 2>/dev/null || true
             fi
 
+            # Source PyPI Token if available (with race condition protection)
+            if [[ -f ~/.config/environment.d/pypi-token.sh ]]; then
+              source ~/.config/environment.d/pypi-token.sh 2>/dev/null || true
+            fi
+
+            # Source Dead Man's Snitch API key if available (with race condition protection)
+            if [[ -f ~/.config/environment.d/deadmansnitch-api-key.sh ]]; then
+              source ~/.config/environment.d/deadmansnitch-api-key.sh 2>/dev/null || true
+            fi
+
             ##############
             # AWS Settings
             ##############

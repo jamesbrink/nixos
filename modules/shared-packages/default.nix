@@ -6,6 +6,9 @@
   ...
 }:
 
+let
+  unstable = pkgs.unstablePkgs;
+in
 {
   environment.systemPackages =
     with pkgs;
@@ -78,6 +81,8 @@
       nodePackages.pnpm
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
+      # Code editors - Cursor on Linux (macOS uses Homebrew cask)
+      unstable.code-cursor
       # Linux-only packages
       bitwarden-cli
       fio

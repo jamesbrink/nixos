@@ -102,6 +102,20 @@ in
     mode = "0600";
   };
 
+  age.secrets."pypi-key" = {
+    file = "${secretsPath}/jamesbrink/pypi-key.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
+  age.secrets."deadmansnitch-key" = {
+    file = "${secretsPath}/jamesbrink/deadmansnitch-key.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
   age.secrets."heroku-key" = {
     file = "${secretsPath}/jamesbrink/heroku-key.age";
     owner = "jamesbrink";
@@ -118,56 +132,101 @@ in
 
   # Darwin-specific activation script for AWS config and GitHub token
   system.activationScripts.postActivation.text = lib.mkAfter ''
-    echo "Setting up AWS configuration for jamesbrink..."
-    # Run as the user with sudo
-    sudo -u jamesbrink bash -c "
-      mkdir -p /Users/jamesbrink/.aws
-      
-      # Copy the decrypted AWS config files
-      cp -f ${config.age.secrets."aws-config".path} /Users/jamesbrink/.aws/config
-      cp -f ${config.age.secrets."aws-credentials".path} /Users/jamesbrink/.aws/credentials
-      
-      # Fix permissions
-      chmod 600 /Users/jamesbrink/.aws/config /Users/jamesbrink/.aws/credentials
-    "
-    echo "AWS configuration deployed to /Users/jamesbrink/.aws/"
+        echo "Setting up AWS configuration for jamesbrink..."
+        # Run as the user with sudo
+        sudo -u jamesbrink bash -c "
+          mkdir -p /Users/jamesbrink/.aws
+          
+          # Copy the decrypted AWS config files
+          cp -f ${config.age.secrets."aws-config".path} /Users/jamesbrink/.aws/config
+          cp -f ${config.age.secrets."aws-credentials".path} /Users/jamesbrink/.aws/credentials
+          
+          # Fix permissions
+          chmod 600 /Users/jamesbrink/.aws/config /Users/jamesbrink/.aws/credentials
+        "
+        echo "AWS configuration deployed to /Users/jamesbrink/.aws/"
 
-    echo "Setting up GitHub token environment for jamesbrink..."
-    # Run as the user with sudo
-    sudo -u jamesbrink bash -c "
-      mkdir -p /Users/jamesbrink/.config/environment.d
-      
-      # Create GitHub token environment file (check if agenix path exists first)
-      if [[ -f ${config.age.secrets."github-token".path} ]]; then
-        echo 'export GITHUB_TOKEN=\"\$(cat ${
-          config.age.secrets."github-token".path
-        })\"' > /Users/jamesbrink/.config/environment.d/github-token.sh
-      else
-        echo '# GitHub token not yet available from agenix' > /Users/jamesbrink/.config/environment.d/github-token.sh
-      fi
-      
-      # Fix permissions
-      chmod 600 /Users/jamesbrink/.config/environment.d/github-token.sh
-    "
-    echo "GitHub token environment deployed to /Users/jamesbrink/.config/environment.d/"
+        echo "Setting up GitHub token environment for jamesbrink..."
+        # Run as the user with sudo
+        sudo -u jamesbrink bash -c "
+          mkdir -p /Users/jamesbrink/.config/environment.d
+          
+          # Create GitHub token environment file (check if agenix path exists first)
+          if [[ -f ${config.age.secrets."github-token".path} ]]; then
+            echo 'export GITHUB_TOKEN=\"\$(cat ${
+              config.age.secrets."github-token".path
+            })\"' > /Users/jamesbrink/.config/environment.d/github-token.sh
+          else
+            echo '# GitHub token not yet available from agenix' > /Users/jamesbrink/.config/environment.d/github-token.sh
+          fi
+          
+          # Fix permissions
+          chmod 600 /Users/jamesbrink/.config/environment.d/github-token.sh
+        "
+        echo "GitHub token environment deployed to /Users/jamesbrink/.config/environment.d/"
 
-    echo "Setting up Infracost API key environment for jamesbrink..."
-    # Run as the user with sudo
-    sudo -u jamesbrink bash -c "
-      mkdir -p /Users/jamesbrink/.config/environment.d
-      
-      # Create Infracost API key environment file (check if agenix path exists first)
-      if [[ -f ${config.age.secrets."infracost-api-key".path} ]]; then
-        echo 'export INFRACOST_API_KEY=\"\$(cat ${
-          config.age.secrets."infracost-api-key".path
-        })\"' > /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
-      else
-        echo '# Infracost API key not yet available from agenix' > /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
-      fi
-      
-      # Fix permissions
-      chmod 600 /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
-    "
-    echo "Infracost API key environment deployed to /Users/jamesbrink/.config/environment.d/"
+        echo "Setting up Infracost API key environment for jamesbrink..."
+        # Run as the user with sudo
+        sudo -u jamesbrink bash -c "
+          mkdir -p /Users/jamesbrink/.config/environment.d
+          
+          # Create Infracost API key environment file (check if agenix path exists first)
+          if [[ -f ${config.age.secrets."infracost-api-key".path} ]]; then
+            echo 'export INFRACOST_API_KEY=\"\$(cat ${
+              config.age.secrets."infracost-api-key".path
+            })\"' > /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
+          else
+            echo '# Infracost API key not yet available from agenix' > /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
+          fi
+          
+          # Fix permissions
+          chmod 600 /Users/jamesbrink/.config/environment.d/infracost-api-key.sh
+        "
+        echo "Infracost API key environment deployed to /Users/jamesbrink/.config/environment.d/"
+
+        echo "Setting up PyPI token environment for jamesbrink..."
+        # Run as the user with sudo
+        sudo -u jamesbrink bash -c "
+          mkdir -p /Users/jamesbrink/.config/environment.d
+          
+          # Create PyPI token environment file (check if agenix path exists first)
+          if [[ -f ${config.age.secrets."pypi-key".path} ]]; then
+            TOKEN=\"\$(cat ${config.age.secrets."pypi-key".path})\"
+            cat > /Users/jamesbrink/.config/environment.d/pypi-token.sh <<EOF
+    export PYPI_TOKEN=\"\$TOKEN\"
+    export PYPI_API_TOKEN=\"\$TOKEN\"
+    export UV_PUBLISH_TOKEN=\"\$TOKEN\"
+    export UV_PUBLISH_USERNAME=\"jamesbrink\"
+    export POETRY_PYPI_TOKEN_PYPI=\"\$TOKEN\"
+    export TWINE_USERNAME=\"__token__\"
+    export TWINE_PASSWORD=\"\$TOKEN\"
+    EOF
+          else
+            echo '# PyPI token not yet available from agenix' > /Users/jamesbrink/.config/environment.d/pypi-token.sh
+          fi
+          
+          # Fix permissions
+          chmod 600 /Users/jamesbrink/.config/environment.d/pypi-token.sh
+        "
+        echo "PyPI token environment deployed to /Users/jamesbrink/.config/environment.d/"
+
+        echo "Setting up Dead Man's Snitch API key environment for jamesbrink..."
+        # Run as the user with sudo
+        sudo -u jamesbrink bash -c '
+          mkdir -p /Users/jamesbrink/.config/environment.d
+          
+          # Create Dead Man'"'"'s Snitch API key environment file (check if agenix path exists first)
+          if [[ -f ${config.age.secrets."deadmansnitch-key".path} ]]; then
+            echo "export DEADMANSNITCH_API_KEY=\"\$(cat ${
+              config.age.secrets."deadmansnitch-key".path
+            })\"" > /Users/jamesbrink/.config/environment.d/deadmansnitch-api-key.sh
+          else
+            echo "# Dead Man'"'"'s Snitch API key not yet available from agenix" > /Users/jamesbrink/.config/environment.d/deadmansnitch-api-key.sh
+          fi
+          
+          # Fix permissions
+          chmod 600 /Users/jamesbrink/.config/environment.d/deadmansnitch-api-key.sh
+        '
+        echo "Dead Man's Snitch API key environment deployed to /Users/jamesbrink/.config/environment.d/"
   '';
 }

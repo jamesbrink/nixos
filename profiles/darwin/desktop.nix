@@ -59,6 +59,7 @@
       "bitwarden"
 
       # Development
+      "cursor"
       "datagrip"
       "orbstack"
       "visual-studio-code"
