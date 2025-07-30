@@ -115,6 +115,8 @@ in
         "command-not-found"
         "sudo"
       ];
+      # Prevent permission issues with completion updates
+      cacheDir = "/tmp/oh-my-zsh-cache-\${USER}";
     };
     
     # Interactive shell init (for all users including root)
@@ -313,36 +315,36 @@ in
       
       username = {
         show_always = true;
-        style_user = "bold blue";
-        style_root = "bold red";
+        style_user = "green bold";  # Default starship color
+        style_root = "red bold";
         format = "[$user]($style) ";
       };
       
       hostname = {
         ssh_only = false;
-        style = "bold green";
+        style = "dimmed green";  # Default starship color
         format = "in 🌐 [$hostname]($style) ";
       };
       
       directory = {
-        style = "bold cyan";
+        style = "cyan bold";  # Default starship color
         format = "in [$path]($style) ";
         truncation_length = 3;
         truncate_to_repo = false;
       };
       
       git_branch = {
-        style = "bold purple";
+        style = "purple bold";  # Default starship color
         format = "on [$symbol$branch]($style) ";
       };
       
       git_status = {
-        style = "bold red";
+        style = "red bold";
         format = "[$all_status$ahead_behind]($style) ";
       };
       
       aws = {
-        style = "bold blue";
+        style = "yellow bold";  # Default starship color for AWS
         format = "on ☁️  [$profile( \\($region\\))]($style) ";
         symbol = "";
       };
