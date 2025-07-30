@@ -836,20 +836,12 @@
   };
 
   programs = {
-    zsh = {
-      enable = true;
-      autosuggestions.enable = true;
-    };
+    # Removed zsh, tmux, and neovim - now in unified-shell-experience.nix
     ssh = {
       startAgent = true;
       extraConfig = ''
         AddKeysToAgent yes
       '';
-    };
-    tmux = {
-      enable = true;
-      terminal = "screen-256color";
-      historyLimit = 10000;
     };
     mosh.enable = true;
     firefox.enable = true;
@@ -857,41 +849,9 @@
       enable = true;
       binfmt = true;
     };
-    neovim = {
-      enable = true;
-      defaultEditor = true;
-      vimAlias = true;
-      viAlias = true;
-      configure = {
-        packages.myVimPackage = with pkgs.vimPlugins; {
-          start = [
-            ansible-vim
-            nvim-treesitter
-            nvim-treesitter-parsers.c
-            nvim-treesitter-parsers.lua
-            nvim-treesitter-parsers.nix
-            nvim-treesitter-parsers.terraform
-            nvim-treesitter-parsers.vimdoc
-            nvim-treesitter-parsers.python
-            nvim-treesitter-parsers.ruby
-            telescope-nvim
-            vim-terraform
-          ];
-        };
-        customRC = ''
-          syntax on
-          filetype plugin indent on
-          set title
-          set number
-          set hidden
-          set encoding=utf-8
-          set title
-        '';
-      };
-    };
   };
 
-  users.defaultUserShell = pkgs.zsh;
+  # users.defaultUserShell is now set in unified-shell-experience.nix
 
   # Allow user to bind to privileged ports
   systemd.user.extraConfig = ''

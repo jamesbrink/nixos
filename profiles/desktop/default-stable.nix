@@ -10,6 +10,7 @@
     ../../modules/ssh-keys.nix
     ../../modules/nfs-mounts.nix
     ../../modules/aws-root-config.nix
+    ../../modules/unified-shell-experience.nix
   ];
 
   environment.systemPackages = with pkgs; [

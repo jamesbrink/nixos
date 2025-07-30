@@ -67,7 +67,7 @@ in
           baseIndex = 1;
           escapeTime = 0;
           keyMode = "vi";
-          shortcut = "a";
+          shortcut = "b";
           terminal = "screen-256color";
           plugins = with pkgs.tmuxPlugins; [
             vim-tmux-navigator

@@ -297,46 +297,7 @@
   };
 
   # Shell configuration
-  environment.shells = with pkgs; [ zsh ];
-  users.defaultUserShell = pkgs.zsh;
-  programs.zsh = {
-    enable = true;
-    autosuggestions.enable = true;
-  };
-
-  # Neovim configuration
-  programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-    vimAlias = true;
-    viAlias = true;
-    configure = {
-      packages.myVimPackage = with pkgs.vimPlugins; {
-        start = [
-          ansible-vim
-          nvim-treesitter
-          nvim-treesitter-parsers.c
-          nvim-treesitter-parsers.lua
-          nvim-treesitter-parsers.nix
-          nvim-treesitter-parsers.terraform
-          nvim-treesitter-parsers.vimdoc
-          nvim-treesitter-parsers.python
-          nvim-treesitter-parsers.ruby
-          telescope-nvim
-          vim-terraform
-        ];
-      };
-      customRC = ''
-        syntax on
-        filetype plugin indent on
-        set title
-        set number
-        set hidden
-        set encoding=utf-8
-        set title
-      '';
-    };
-  };
+  # Shell, tmux, and neovim configuration now handled by unified-shell-experience.nix
 
   # SSH configuration with age secrets
   services.openssh = {
