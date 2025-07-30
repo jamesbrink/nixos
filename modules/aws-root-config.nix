@@ -9,13 +9,14 @@
 
 let
   # Handle secretsPath resolution
-  effectiveSecretsPath = if builtins.isString secretsPath then
-    secretsPath
-  else if config ? _module.args.secretsPath then
-    config._module.args.secretsPath
-  else
-    "./secrets";
-    
+  effectiveSecretsPath =
+    if builtins.isString secretsPath then
+      secretsPath
+    else if config ? _module.args.secretsPath then
+      config._module.args.secretsPath
+    else
+      "./secrets";
+
   # Determine if we're on Darwin
   isDarwin = pkgs.stdenv.isDarwin;
   rootHome = if isDarwin then "/var/root" else "/root";
@@ -34,12 +35,12 @@ lib.mkMerge [
 
     age.secrets."root-aws-credentials" = {
       file = "${effectiveSecretsPath}/jamesbrink/aws/credentials.age";
-      owner = "root";  
+      owner = "root";
       group = rootGroup;
       mode = "0600";
     };
   }
-  
+
   # Linux systemd service
   (lib.mkIf (!isDarwin) {
     systemd.services.root-aws-setup = {
@@ -58,7 +59,7 @@ lib.mkMerge [
       '';
     };
   })
-  
+
   # Darwin activation script
   (lib.mkIf isDarwin {
     system.activationScripts.rootAwsSetup.text = ''

@@ -57,7 +57,7 @@
     # - open-vm-tools (VMware, Linux-specific)
     # - openvpn3 (use homebrew)
     # - openvswitch (Linux networking)
-    # - postgis-reset (custom package, needs porting)
+    # - postgres13-reset (custom package, needs porting)
     # - restique (may have Linux dependencies)
     # - rng-tools (Linux entropy)
     # - zfs (filesystem, macOS has own implementation)

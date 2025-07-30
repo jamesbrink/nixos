@@ -1,4 +1,4 @@
-# A package for managing PostGIS database resets using ZFS snapshots
+# A package for managing PostgreSQL 13 database resets using ZFS snapshots
 {
   pkgs,
   lib ? pkgs.lib,
@@ -6,14 +6,14 @@
 
 let
   # Create the rollback script for PostgreSQL 13
-  postgis-rollback = pkgs.writeScriptBin "postgis-rollback" ''
+  postgres13-rollback = pkgs.writeScriptBin "postgres13-rollback" ''
     #!${pkgs.bash}/bin/bash
 
     # Exit on any error
     set -e
 
     echo "Killing PostgreSQL 13 container..."
-    ${pkgs.podman}/bin/podman kill postgis13 || true
+    ${pkgs.podman}/bin/podman kill postgres13 || true
     echo "Container killed"
 
     # Destroy the existing clone
@@ -25,21 +25,21 @@ let
     touch /storage-fast/quantierra/postgres13/standby.signal
 
     # Start the service back up
-    echo "Starting podman-postgis13 service..."
-    ${pkgs.systemd}/bin/systemctl start podman-postgis13.service
+    echo "Starting podman-postgres13 service..."
+    ${pkgs.systemd}/bin/systemctl start podman-postgres13.service
 
     echo "Reset complete!"
   '';
 
   # Create the rollback script for PostgreSQL 17
-  postgis17-rollback = pkgs.writeScriptBin "postgis17-rollback" ''
+  postgres17-rollback = pkgs.writeScriptBin "postgres17-rollback" ''
     #!${pkgs.bash}/bin/bash
 
     # Exit on any error
     set -e
 
     echo "Killing PostgreSQL 17 container..."
-    ${pkgs.podman}/bin/podman kill postgis17 || true
+    ${pkgs.podman}/bin/podman kill postgres17 || true
     echo "Container killed"
 
     # Roll back to the upgrade-complete snapshot
@@ -47,14 +47,14 @@ let
     ${pkgs.zfs}/bin/zfs rollback storage-fast/quantierra/postgres13-17@pg17-upgrade-complete
 
     # Start the service back up
-    echo "Starting podman-postgis17 service..."
-    ${pkgs.systemd}/bin/systemctl start podman-postgis17.service
+    echo "Starting podman-postgres17 service..."
+    ${pkgs.systemd}/bin/systemctl start podman-postgres17.service
 
     echo "Reset complete!"
   '';
 
   # Create the webhook handler script
-  webhook-handler = pkgs.writeScriptBin "webhook-postgis-reset" ''
+  webhook-handler = pkgs.writeScriptBin "webhook-postgres-reset" ''
     #!${pkgs.bash}/bin/bash
 
     # Exit on any error
@@ -66,12 +66,12 @@ let
     case "$TOKEN" in
       "reset")
         echo "PostgreSQL 13 rollback initiated"
-        ${postgis-rollback}/bin/postgis-rollback
+        ${postgres13-rollback}/bin/postgres13-rollback
         echo "PostgreSQL 13 rollback completed"
         ;;
       "reset17")
         echo "PostgreSQL 17 rollback initiated"
-        ${postgis17-rollback}/bin/postgis17-rollback
+        ${postgres17-rollback}/bin/postgres17-rollback
         echo "PostgreSQL 17 rollback completed"
         ;;
       *)
@@ -85,7 +85,7 @@ let
   # Note: The actual tokens should be provided via environment variables or secrets
   webhookConfig = ''
     [{
-      "id": "postgis-rollback",
+      "id": "postgres-rollback",
       "trigger-rule": {
         "or": [
           {
@@ -117,25 +117,25 @@ let
         }
       ],
       "command-working-directory": "/",
-      "execute-command": "/run/current-system/sw/bin/webhook-postgis-reset",
+      "execute-command": "/run/current-system/sw/bin/webhook-postgres-reset",
       "response-message": "Database reset completed successfully",
       "include-command-output-in-response": true
     }]
   '';
 
   # Create a derivation that combines all scripts and webhook config
-  postgis-reset = pkgs.symlinkJoin {
-    name = "postgis-reset";
+  postgres13-reset = pkgs.symlinkJoin {
+    name = "postgres13-reset";
     paths = [
       (pkgs.writeTextFile {
         name = "webhook-config";
         text = webhookConfig;
         destination = "/etc/webhook/hooks.json.template";
       })
-      postgis-rollback
-      postgis17-rollback
+      postgres13-rollback
+      postgres17-rollback
       webhook-handler
     ];
   };
 in
-postgis-reset
+postgres13-reset

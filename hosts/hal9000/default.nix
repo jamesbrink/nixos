@@ -245,7 +245,7 @@
 
   # PostgreSQL WAL sync service
   systemd.services.postgresql-wal-sync = {
-    description = "Sync PostgreSQL WAL files from S3";
+    description = "Sync PostgreSQL WAL files from Quantierra server";
     # Keep it disabled by default as requested
     enable = false;
     serviceConfig = {
@@ -253,12 +253,8 @@
       # Run as jamesbrink to maintain proper permissions
       User = "jamesbrink";
       Group = "users";
-      # Ensure AWS credentials are available
-      EnvironmentFile = "/home/jamesbrink/.config/environment.d/infracost-api-key.sh";
-      # Working directory
-      WorkingDirectory = "/storage-fast/quantierra";
-      # The sync command
-      ExecStart = "${pkgs.awscli2}/bin/aws s3 sync s3://quantierra-backups/postgresql-archive/ /storage-fast/quantierra/archive --profile quantierra";
+      # Use the full sync script with retention management
+      ExecStart = "/run/current-system/sw/bin/postgres13-wal-sync-full";
       # Logging
       StandardOutput = "journal";
       StandardError = "journal";
@@ -551,7 +547,7 @@
     };
     oci-containers = {
       containers = {
-        postgis13 = {
+        postgres13 = {
           image = "postgis/postgis:13-3.5";
           environment = {
             POSTGRES_USER = "postgres";
@@ -575,7 +571,7 @@
           ];
         };
 
-        # postgis17 = {
+        # postgres17 = {
         #   image = "postgis/postgis:17-3.5";
         #   user = "postgres:postgres";
         #   entrypoint = "/usr/lib/postgresql/17/bin/postgres";
@@ -976,7 +972,8 @@
     winetricks
     wineWowPackages.waylandFull
     xorriso
-    (import ../../modules/packages/postgis-reset { inherit pkgs; })
+    (import ../../modules/packages/postgres13-reset { inherit pkgs; })
+    (import ../../modules/packages/postgres13-reset/wal-sync.nix { inherit pkgs; })
     # GStreamer plugins for UxPlay
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-base
@@ -1023,7 +1020,7 @@
   environment.etc."webhook/hooks.json".text = ''
     [
       {
-        "id": "postgis-rollback",
+        "id": "postgres-rollback",
         "trigger-rule": {
           "or": [
             {
@@ -1055,7 +1052,7 @@
           }
         ],
         "command-working-directory": "/",
-        "execute-command": "/run/current-system/sw/bin/webhook-postgis-reset",
+        "execute-command": "/run/current-system/sw/bin/webhook-postgres-reset",
         "response-message": "Database reset completed successfully",
         "include-command-output-in-response": true
       }

@@ -1,6 +1,6 @@
 [
   {
-    "id": "postgis-rollback",
+    "id": "postgres-rollback",
     "trigger-rule": {
       "or": [
         {
@@ -32,7 +32,7 @@
       }
     ],
     "command-working-directory": "/",
-    "execute-command": "/run/current-system/sw/bin/webhook-postgis-reset",
+    "execute-command": "/run/current-system/sw/bin/webhook-postgres-reset",
     "response-message": "Database reset completed successfully",
     "include-command-output-in-response": true
   }
