@@ -71,13 +71,15 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 │   ├── packages/         # Custom package definitions
 │   ├── services/         # Service configurations
 │   ├── shared-packages/  # Shared package sets
+│   ├── aws-root-config.nix # AWS configuration for root user
 │   ├── claude-desktop.nix # Claude desktop config
 │   ├── ghostty-terminfo.nix # Ghostty terminal support
 │   ├── heroku-cli.nix    # Heroku CLI module
 │   ├── n100-disko.nix    # N100 ZFS disk configuration
 │   ├── n100-network.nix  # N100 network configuration
 │   ├── nfs-mounts.nix    # NFS client configuration
-│   └── ssh-keys.nix      # SSH key management
+│   ├── ssh-keys.nix      # SSH key management
+│   └── unified-shell-experience.nix # Unified shell environment
 ├── pkgs/                 # Custom package derivations
 │   ├── llama-cpp/        # LLaMA C++ implementation
 │   └── netboot-xyz/      # Netboot.xyz bootloader package
@@ -448,6 +450,30 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Added shellcheck to devShell packages and treefmt configuration for shell script linting
 - All scripts maintain identical functionality while being standalone executables
 - Scripts use proper error handling with `set -euo pipefail` and clear parameter validation
+
+### Unified Shell Experience (July 2025)
+
+- Created `modules/unified-shell-experience.nix` for consistent shell environment across all hosts and users
+- Provides tmux (Ctrl+B prefix), zsh with oh-my-zsh, neovim, and starship prompt system-wide
+- Fixed oh-my-zsh permission issues by using per-user temp cache directories
+- Restored clean single-line starship prompt with proper default colors
+- Shell environment is consistent even for root user across all Linux and Darwin hosts
+- Includes modern CLI replacements (eza, bat, fd, procs, pay-respects)
+
+### AWS Root Configuration (July 2025)
+
+- Created `modules/aws-root-config.nix` to provide AWS CLI configuration for root user
+- Configuration matches jamesbrink user's AWS setup with all profiles and regions
+- Cross-platform support for both Linux and Darwin hosts
+- Secrets encrypted with agenix and deployed to appropriate system paths
+- Module included in all server and desktop profiles
+
+### PostgreSQL ZFS Import Documentation (July 2025)
+
+- Documented PostgreSQL ZFS snapshot import process in `hosts/hal9000/postgresql-zfs-import.md`
+- Import command: `sudo zfs receive -F storage-fast/quantierra/base < ~/Downloads/pg_base_20250727.zfs`
+- Updated webhook reset scripts to use new snapshot name `backup_20250727`
+- Provides step-by-step instructions for future imports and clone operations
 
 ## Secrets Management Process
 

@@ -40,6 +40,7 @@ This project uses:
 │   └── sevastopol/              # Intel iMac 27" 2013 (Darwin)
 ├── LICENSE                      # MIT License
 ├── modules/                     # Shared modules and services
+│   ├── aws-root-config.nix      # AWS configuration for root user
 │   ├── claude-desktop.nix       # Claude desktop config deployment
 │   ├── darwin/                  # Darwin-specific modules
 │   │   ├── dock.nix             # Dock configuration
@@ -72,7 +73,8 @@ This project uses:
 │   │   ├── default.nix          # Default packages
 │   │   ├── devops-darwin.nix    # Darwin DevOps tools
 │   │   └── devops.nix           # DevOps tools
-│   └── ssh-keys.nix             # SSH key management
+│   ├── ssh-keys.nix             # SSH key management
+│   └── unified-shell-experience.nix # Unified shell environment
 ├── overlays/                    # Nix overlays
 │   └── README.md                # Overlays documentation
 ├── pkgs/                        # Custom package builds
@@ -570,6 +572,21 @@ Current N100 nodes and their MAC addresses:
 - Unstable overlay available via `pkgs.unstablePkgs`
 - Per-host channel selection based on requirements
 
+### Unified Shell Experience
+
+- Consistent shell environment across all hosts and users (including root)
+- Tmux with Ctrl+B prefix key, vi-mode, and clipboard integration
+- Zsh with oh-my-zsh, starship prompt, and modern CLI replacements
+- Neovim with LSP support, treesitter, and gruvbox-material theme
+- Managed through `modules/unified-shell-experience.nix`
+
+### AWS Configuration Management
+
+- Centralized AWS config for root user across all hosts
+- Configuration matches jamesbrink user's AWS setup
+- Managed through `modules/aws-root-config.nix`
+- Supports multiple AWS profiles and regions
+
 ### Container Services
 
 - Podman for containerized services
@@ -581,6 +598,7 @@ Current N100 nodes and their MAC addresses:
 - ZFS for advanced storage features on main servers
 - NFS exports for shared storage across network
 - Bind mounts for service-specific storage paths
+- PostgreSQL ZFS snapshot management with webhook-based reset functionality
 
 ### Backup System
 
