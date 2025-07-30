@@ -243,6 +243,45 @@
     AllowSuspendThenHibernate=no
   '';
 
+  # PostgreSQL WAL sync service
+  systemd.services.postgresql-wal-sync = {
+    description = "Sync PostgreSQL WAL files from S3";
+    # Keep it disabled by default as requested
+    enable = false;
+    serviceConfig = {
+      Type = "oneshot";
+      # Run as jamesbrink to maintain proper permissions
+      User = "jamesbrink";
+      Group = "users";
+      # Ensure AWS credentials are available
+      EnvironmentFile = "/home/jamesbrink/.config/environment.d/infracost-api-key.sh";
+      # Working directory
+      WorkingDirectory = "/storage-fast/quantierra";
+      # The sync command
+      ExecStart = "${pkgs.awscli2}/bin/aws s3 sync s3://quantierra-backups/postgresql-archive/ /storage-fast/quantierra/archive --profile quantierra";
+      # Logging
+      StandardOutput = "journal";
+      StandardError = "journal";
+    };
+    # Ensure the service can access network
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+  };
+
+  # Timer for nightly execution
+  systemd.timers.postgresql-wal-sync = {
+    description = "Run PostgreSQL WAL sync nightly";
+    # Keep it disabled by default as requested
+    enable = false;
+    timerConfig = {
+      # Run at 3 AM every day
+      OnCalendar = "daily";
+      AccuracySec = "1h";
+      Persistent = true;
+    };
+    wantedBy = [ "timers.target" ];
+  };
+
   networking = {
     hostName = "hal9000";
     domain = "home.urandom.io";
