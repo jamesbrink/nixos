@@ -304,18 +304,12 @@ in
     };
   };
   
-  # Starship prompt configuration
+  # Starship prompt configuration - clean single-line style
   programs.starship = {
     enable = true;
     settings = {
-      format = lib.concatStrings [
-        "[┌───────────────────>](bold green)"
-        "$line_break"
-        "[│](bold green)"
-        "$all"
-        "$line_break"
-        "[└─>](bold green) "
-      ];
+      # Use the default format but ensure single line
+      add_newline = false;
       
       username = {
         show_always = true;
@@ -326,7 +320,8 @@ in
       
       hostname = {
         ssh_only = false;
-        format = "@ [$hostname](bold yellow) ";
+        style = "bold green";
+        format = "in 🌐 [$hostname]($style) ";
       };
       
       directory = {
@@ -338,7 +333,7 @@ in
       
       git_branch = {
         style = "bold purple";
-        format = "on [$branch]($style) ";
+        format = "on [$symbol$branch]($style) ";
       };
       
       git_status = {
@@ -346,10 +341,21 @@ in
         format = "[$all_status$ahead_behind]($style) ";
       };
       
-      character = {
-        success_symbol = "[➜](bold green)";
-        error_symbol = "[➜](bold red)";
+      aws = {
+        style = "bold blue";
+        format = "on ☁️  [$profile( \\($region\\))]($style) ";
+        symbol = "";
       };
+      
+      character = {
+        success_symbol = "[❯](bold green)";
+        error_symbol = "[❯](bold red)";
+      };
+      
+      # Disable modules that might add extra lines
+      line_break.disabled = false;
+      cmd_duration.disabled = true;
+      jobs.disabled = true;
     };
   };
 
