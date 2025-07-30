@@ -20,8 +20,8 @@ let
     echo "Destroying existing dev clone..."
     ${pkgs.zfs}/bin/zfs destroy storage-fast/quantierra/postgres13
 
-    echo "Creating new clone from storage-fast/quantierra/base@backup_20250227..."
-    ${pkgs.zfs}/bin/zfs clone storage-fast/quantierra/base@backup_20250227 storage-fast/quantierra/postgres13
+    echo "Creating new clone from storage-fast/quantierra/base@backup_20250727..."
+    ${pkgs.zfs}/bin/zfs clone storage-fast/quantierra/base@backup_20250727 storage-fast/quantierra/postgres13
     touch /storage-fast/quantierra/postgres13/standby.signal
 
     # Start the service back up
