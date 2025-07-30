@@ -33,6 +33,10 @@ let
     echo "Syncing WAL files from $START_SEGMENT onwards..."
     echo "Timeline: $TIMELINE, Log: $LOG_SEQ, Segment: $SEG_NUM"
 
+    # Ensure the archive directory is owned by the current user for rsync
+    echo "Temporarily fixing archive directory ownership for rsync..."
+    sudo chown -R $(id -u):$(id -g) "$ARCHIVE_DIR"
+
     # Build rsync include patterns for current and next few log sequences
     # This handles hex arithmetic for WAL file sequences
     INCLUDES=""
