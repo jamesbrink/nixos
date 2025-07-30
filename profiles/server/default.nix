@@ -8,6 +8,7 @@
     ../../modules/ssh-keys.nix
     ../../modules/nfs-mounts.nix
     ../../modules/local-hosts.nix
+    ../../modules/aws-root-config.nix
   ];
 
   environment.systemPackages = with pkgs; [

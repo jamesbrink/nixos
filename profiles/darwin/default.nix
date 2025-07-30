@@ -9,6 +9,7 @@
   imports = [
     ../../modules/shared-packages/default.nix
     ../../modules/darwin/local-hosts.nix
+    ../../modules/aws-root-config.nix
   ];
 
   # Nix configuration

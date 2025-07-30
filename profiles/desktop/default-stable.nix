@@ -9,6 +9,7 @@
     ../../modules/claude-desktop.nix
     ../../modules/ssh-keys.nix
     ../../modules/nfs-mounts.nix
+    ../../modules/aws-root-config.nix
   ];
 
   environment.systemPackages = with pkgs; [
