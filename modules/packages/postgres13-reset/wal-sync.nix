@@ -276,59 +276,6 @@ let
     exit 1
   '';
 
-  # Recovery mode script to switch back to standby mode
-  postgres13-recovery-mode = pkgs.writeScriptBin "postgres13-recovery-mode" ''
-    #!${pkgs.bash}/bin/bash
-    set -euo pipefail
-
-    echo "=== Switching PostgreSQL back to Recovery Mode ==="
-
-    # Check if container is running
-    if !  ${pkgs.podman}/bin/podman ps | grep -q postgres13; then
-      echo "Error: postgres13 container is not running"
-      exit 1
-    fi
-
-    # Check current recovery status
-    RECOVERY_STATUS=$( ${pkgs.podman}/bin/podman exec postgres13 psql -U postgres -t -c "SELECT pg_is_in_recovery();" | tr -d ' ')
-
-    if [ "$RECOVERY_STATUS" = "t" ]; then
-      echo "PostgreSQL is already in recovery (read-only) mode"
-      exit 0
-    fi
-
-    echo "PostgreSQL is currently in normal mode"
-    echo "Adding standby.signal to switch to recovery mode..."
-
-    # Add standby signal file
-     touch /storage-fast/quantierra/postgres13/standby.signal
-
-    # Restart the container to apply changes
-    echo "Restarting PostgreSQL container..."
-     systemctl restart podman-postgres13.service
-
-    # Wait for container to be ready
-    echo "Waiting for PostgreSQL to start in recovery mode..."
-    sleep 5
-
-    # Verify the mode change
-    for i in {1..10}; do
-      if  ${pkgs.podman}/bin/podman exec postgres13 psql -U postgres -c "SELECT 1;" &>/dev/null; then
-        RECOVERY_STATUS=$( ${pkgs.podman}/bin/podman exec postgres13 psql -U postgres -t -c "SELECT pg_is_in_recovery();" | tr -d ' ')
-        if [ "$RECOVERY_STATUS" = "t" ]; then
-          echo "✓ PostgreSQL is now in recovery (read-only) mode"
-          echo "✓ Recovery mode enabled successfully"
-          exit 0
-        fi
-      fi
-      echo "Waiting for PostgreSQL to be ready... ($i/10)"
-      sleep 2
-    done
-
-    echo "Error: Failed to switch to recovery mode"
-    exit 1
-  '';
-
   # Base snapshot creation script
   postgres13-create-base-auto = pkgs.writeScriptBin "postgres13-create-base-auto" ''
     #!${pkgs.bash}/bin/bash
@@ -396,7 +343,6 @@ pkgs.symlinkJoin {
     postgres13-wal-retention
     postgres13-wal-sync-full
     postgres13-dev-mode
-    postgres13-recovery-mode
     postgres13-create-base-auto
   ];
 }

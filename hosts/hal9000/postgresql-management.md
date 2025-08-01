@@ -1,8 +1,8 @@
 # PostgreSQL Development Database Management Guide
 
-This guide covers managing the PostgreSQL development read-replica on HAL9000, including ZFS snapshot imports, WAL synchronization, reset/activation, and recovery management.
+This guide covers managing the PostgreSQL 13 development database on HAL9000, which can operate in either standby mode (read-only replica) or development mode (read-write).
 
-**Last Updated:** August 1, 2025 - Fixed sudo removal in scripts, improved activation timeout, added podman-compose
+**Last Updated:** August 1, 2025 - Removed postgres13-recovery-mode command, disabled archiving, enabled query logging
 
 ## Quick Commands
 
@@ -11,15 +11,21 @@ This guide covers managing the PostgreSQL development read-replica on HAL9000, i
 postgres13-reset
 
 # Switch to development mode (read-write)
-postgres13-activate
+postgres13-activate        # Recommended command
+postgres13-dev-mode       # Alternative command
 
-# Create a new base snapshot
+# Create a new base snapshot manually
 postgres13-create-base
 
-# Sync WAL files
-postgres13-wal-sync
+# Sync WAL files manually
+postgres13-wal-sync       # Smart sync - only needed files
+postgres13-wal-sync-full  # Full sync with retention cleanup
 
-# Check replication status
+# Check current mode
+sudo podman exec postgres13 psql -U postgres -t -c "SELECT pg_is_in_recovery();"
+# Returns: 't' = standby mode, 'f' = development mode
+
+# Check replication lag (when in standby mode)
 sudo podman exec postgres13 psql -U postgres -c "SELECT pg_is_in_recovery() as is_replica, pg_last_wal_replay_lsn() as current_lsn, CASE WHEN pg_is_in_recovery() THEN EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))::int ELSE 0 END as lag_seconds;"
 ```
 
@@ -182,12 +188,14 @@ postgres13-wal-retention
    postgres13-reset
    ```
 
-### Legacy Mode Commands (Still Available)
+### Alternative Commands
 
 ```bash
-# Old commands (use postgres13-activate instead)
-postgres13-dev-mode      # Switch to read-write
-postgres13-recovery-mode # Switch back to standby
+# Alternative to postgres13-activate
+postgres13-dev-mode      # Also switches to read-write mode
+
+# Direct rollback script (called by postgres13-reset)
+postgres13-rollback      # Resets to latest base snapshot
 ```
 
 ## Troubleshooting
@@ -254,31 +262,32 @@ postgres13-wal-sync
 
 ## Recent Updates (August 2025)
 
-### New Features
-- **postgres13-reset**: Direct command to reset to latest base snapshot
-- **postgres13-activate**: Direct command to switch to development mode
-- **Automatic base snapshots**: Creates new base snapshots every 3 days
-- **Smart base selection**: Reset now uses the most recent base snapshot
-- **Webhook activation**: Added WEBHOOK_TOKEN_ACTIVE for remote activation
+### Key Changes
+- **Removed postgres13-recovery-mode**: Use `postgres13-reset` to return to standby mode
+- **Disabled archiving**: Set `archive_mode = off` to prevent read-only filesystem errors
+- **Query logging enabled**: All SQL statements are logged (`log_statement = 'all'`)
+- **Verified all functionality**: All commands tested and working correctly
 
-### Improvements
-- **Fixed WAL ordering**: Syncs start from the exact next WAL file needed
-- **Direct rsync**: No temporary directories, better permission handling
-- **Safety checks**: Base snapshot creation verifies standby mode and lag
-- **Fallback logic**: Uses original backup if no base snapshots exist
-- **Extended timeout**: Activation now waits up to 5 minutes for recovery
-- **Removed sudo**: All scripts run as root via webhook/systemd (no sudo needed)
-- **Added podman-compose**: Available system-wide for container orchestration
+### Available Commands
+1. **postgres13-reset**: Reset to latest base snapshot (standby mode)
+2. **postgres13-activate**: Switch to development mode (read-write)
+3. **postgres13-dev-mode**: Alternative command for development mode
+4. **postgres13-create-base**: Manually create base snapshot
+5. **postgres13-rollback**: Direct rollback script (used by reset)
+6. **postgres13-wal-sync**: Smart WAL file synchronization
+7. **postgres13-wal-sync-full**: Full sync with retention cleanup
 
-### Fixed Issues
-- WAL sync permission errors (runs as root with proper ownership)
-- Rsync argument parsing (uses bash arrays instead of string concatenation)
-- WAL file ordering (starts from next file after last local)
-- Segment wraparound handling (FF → 00 with log increment)
-- Webhook sudo PATH issues (removed sudo entirely)
-- Activation timeout when switching from old snapshots
-- Base snapshots now created on base dataset (persist through resets)
+### Features
+- **Automatic base snapshots**: Every 3 days at 4 AM (days 1,4,7,10,13,16,19,22,25,28,31)
+- **Automatic WAL sync**: Daily at 3 AM
+- **Webhook control**: Reset via WEBHOOK_TOKEN_RESET, activate via WEBHOOK_TOKEN_ACTIVE
+- **Smart WAL sync**: Only downloads needed files in correct order
+- **Base dataset snapshots**: Snapshots persist through resets
+- **Query logging**: All SQL statements logged for debugging
 
-### Known Limitations
-- Helper commands work best via webhooks (permission issues when run directly)
-- High replication lag after reset to old snapshots is expected
+### Architecture Notes
+- PostgreSQL runs in Podman container (postgis/postgis:13-3.5)
+- Data stored on ZFS dataset: `/storage-fast/quantierra/postgres13`
+- WAL files synced from production to `/storage-fast/quantierra/archive`
+- Base snapshots created on `storage-fast/quantierra/base` dataset
+- Configuration prevents archiving to avoid read-only filesystem errors in development mode
