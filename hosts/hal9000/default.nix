@@ -246,13 +246,13 @@
   # PostgreSQL WAL sync service
   systemd.services.postgresql-wal-sync = {
     description = "Sync PostgreSQL WAL files from Quantierra server";
-    # Keep it disabled by default as requested
-    enable = false;
+    # Enable WAL sync to catch up on replication lag
+    enable = true;
     serviceConfig = {
       Type = "oneshot";
-      # Run as jamesbrink to maintain proper permissions
-      User = "jamesbrink";
-      Group = "users";
+      # Run as root since we need to manage permissions and ZFS snapshots
+      User = "root";
+      Group = "root";
       # Use the full sync script with retention management
       ExecStart = "/run/current-system/sw/bin/postgres13-wal-sync-full";
       # Logging
@@ -267,8 +267,8 @@
   # Timer for nightly execution
   systemd.timers.postgresql-wal-sync = {
     description = "Run PostgreSQL WAL sync nightly";
-    # Keep it disabled by default as requested
-    enable = false;
+    # Enable timer for automatic WAL sync
+    enable = true;
     timerConfig = {
       # Run at 3 AM every day
       OnCalendar = "daily";

@@ -13,20 +13,20 @@ let
     set -e
 
     echo "Killing PostgreSQL 13 container..."
-    ${pkgs.podman}/bin/podman kill postgres13 || true
+    sudo ${pkgs.podman}/bin/podman kill postgres13 || true
     echo "Container killed"
 
-    # Destroy the existing clone
-    echo "Destroying existing dev clone..."
-    ${pkgs.zfs}/bin/zfs destroy storage-fast/quantierra/postgres13
+    # Destroy the existing clone and all its snapshots
+    echo "Destroying existing dev clone and snapshots..."
+    sudo ${pkgs.zfs}/bin/zfs destroy -r storage-fast/quantierra/postgres13
 
     echo "Creating new clone from storage-fast/quantierra/base@backup_20250727..."
-    ${pkgs.zfs}/bin/zfs clone storage-fast/quantierra/base@backup_20250727 storage-fast/quantierra/postgres13
-    touch /storage-fast/quantierra/postgres13/standby.signal
+    sudo ${pkgs.zfs}/bin/zfs clone storage-fast/quantierra/base@backup_20250727 storage-fast/quantierra/postgres13
+    sudo touch /storage-fast/quantierra/postgres13/standby.signal
 
     # Start the service back up
     echo "Starting podman-postgres13 service..."
-    ${pkgs.systemd}/bin/systemctl start podman-postgres13.service
+    sudo ${pkgs.systemd}/bin/systemctl start podman-postgres13.service
 
     echo "Reset complete!"
   '';
@@ -64,12 +64,12 @@ let
     TOKEN="$1"
 
     case "$TOKEN" in
-      "reset")
+      "WEBHOOK_TOKEN_RESET"|"reset")
         echo "PostgreSQL 13 rollback initiated"
         ${postgres13-rollback}/bin/postgres13-rollback
         echo "PostgreSQL 13 rollback completed"
         ;;
-      "reset17")
+      "WEBHOOK_TOKEN_RESET17"|"reset17")
         echo "PostgreSQL 17 rollback initiated"
         ${postgres17-rollback}/bin/postgres17-rollback
         echo "PostgreSQL 17 rollback completed"

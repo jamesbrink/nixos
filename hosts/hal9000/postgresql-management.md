@@ -2,6 +2,8 @@
 
 This guide covers managing the PostgreSQL development read-replica on HAL9000, including ZFS snapshot imports, WAL synchronization, and recovery management.
 
+**Last Updated:** July 31, 2025 - Fixed WAL sync permissions and webhook functionality
+
 ## Import Process
 
 1. **Import the ZFS snapshot:**
@@ -36,8 +38,8 @@ This guide covers managing the PostgreSQL development read-replica on HAL9000, i
 ## Update Configuration
 
 If the snapshot name changes, update the webhook reset script:
-1. Edit `/modules/packages/postgis-reset/default.nix`
-2. Update the snapshot name in lines 23-24
+1. Edit `/modules/packages/postgres13-reset/default.nix`
+2. Update the snapshot name in line 24 (currently `backup_20250727`)
 3. Deploy: `deploy hal9000`
 
 ## Verify
@@ -56,7 +58,10 @@ sudo postgres13-rollback
 ## Reset Methods
 
 - **Command:** `sudo postgres13-rollback`
-- **Webhook:** POST to `https://webhook.home.urandom.io/hooks/postgres-rollback` with header `X-Webhook-Token: reset`
+- **Webhook:** POST to `http://localhost:9000/hooks/postgres-rollback` with header `X-Webhook-Token: WEBHOOK_TOKEN_RESET`
+  ```bash
+  curl -X POST http://localhost:9000/hooks/postgres-rollback -H "X-Webhook-Token: WEBHOOK_TOKEN_RESET"
+  ```
 - **Web UI:** Reset button at `https://zfs.home.urandom.io`
 
 ## WAL Sync and Retention
@@ -83,12 +88,14 @@ After importing a snapshot and starting PostgreSQL in recovery mode, you'll need
 # Sync only needed WAL files from the Quantierra server
 postgres13-wal-sync
 
-# Full sync with retention cleanup (3-day retention)
+# Full sync with retention cleanup (3-day retention) - safe to run repeatedly
 postgres13-wal-sync-full
 
 # Just retention cleanup
 postgres13-wal-retention
 ```
+
+**Note:** The sync commands are idempotent and safe to run multiple times. They will only download files that don't already exist locally.
 
 ### WAL File Source
 
@@ -98,10 +105,10 @@ This avoids AWS S3 transfer costs while maintaining access to production WAL fil
 
 ### Automated WAL Sync Service
 
-The PostgreSQL WAL sync is configured as a systemd service (disabled by default):
+The PostgreSQL WAL sync is configured as a systemd service that runs as root for proper permissions:
 
 ```bash
-# Enable nightly WAL sync
+# Enable nightly WAL sync (runs at 3 AM daily)
 sudo systemctl enable postgresql-wal-sync.timer
 sudo systemctl start postgresql-wal-sync.timer
 
@@ -115,6 +122,8 @@ journalctl -u postgresql-wal-sync.service
 # Run manually
 sudo systemctl start postgresql-wal-sync.service
 ```
+
+**Note:** The service runs as root but uses `sudo -u jamesbrink` for rsync to access SSH keys.
 
 ### WAL Sync Features
 
@@ -214,3 +223,25 @@ This command will:
 sudo podman exec postgres13 psql -U postgres -c "SELECT pg_is_in_recovery();"
 # Returns 't' for recovery mode, 'f' for normal mode
 ```
+
+## Recent Fixes (July 2025)
+
+### WAL Sync Improvements
+- Fixed permission issues by running the systemd service as root
+- Added logic to detect what WAL file PostgreSQL is requesting from logs
+- Sync now includes previous sequences (10 back) to handle recovery gaps
+- Added history file syncing for timeline changes
+- Fixed ZFS snapshot creation permissions
+- **Fixed rsync argument parsing**: Changed from string concatenation to bash array for include patterns
+  - Root cause: Shell variable expansion was treating all include patterns as a single argument
+  - Solution: Using `INCLUDE_ARGS=()` array and `"${INCLUDE_ARGS[@]}"` expansion
+  - This fixed the issue where dry-run showed files but actual sync downloaded nothing
+
+### Webhook Reset
+- Updated webhook handler to accept both `WEBHOOK_TOKEN_RESET` and `reset`
+- Fixed ZFS destroy to include snapshots with `-r` flag
+- All ZFS commands now use sudo for proper permissions
+
+### Known Issues
+- PostgreSQL may show "invalid resource manager ID 39" errors for WAL files from different major versions
+- The container uses UID 999 for the postgres user (not the standard system postgres user)

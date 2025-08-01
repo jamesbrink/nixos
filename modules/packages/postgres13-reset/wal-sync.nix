@@ -13,17 +13,45 @@ let
     ARCHIVE_DIR="/storage-fast/quantierra/archive"
     REMOTE_SOURCE="jamesbrink@server01.myquantierra.com:/mnt/spinners/postgresql_backups/archive/"
 
-    # Get the last WAL file we have locally
-    LAST_LOCAL_WAL=$(ls -1 "$ARCHIVE_DIR" 2>/dev/null | grep -E '^[0-9A-F]{24}\.gz$' | sort | tail -1 || echo "")
-
-    if [ -z "$LAST_LOCAL_WAL" ]; then
-      echo "No local WAL files found. Starting from snapshot base (00000001000042900000000D)"
-      START_SEGMENT="00000001000042900000000D"
+    # First, check what PostgreSQL is actually looking for
+    if sudo ${pkgs.podman}/bin/podman ps | grep -q postgres13; then
+      # Try to get the WAL file PostgreSQL is requesting from recent logs
+      echo "Checking PostgreSQL logs for requested WAL files..."
+      REQUESTED_WAL=$(sudo journalctl -u podman-postgres13 -n 100 --no-pager | grep -oE "restored log file \"[0-9A-F]{24}\"" | tail -1 | grep -oE "[0-9A-F]{24}" || echo "")
+      if [ -n "$REQUESTED_WAL" ]; then
+        echo "PostgreSQL is looking for WAL file: $REQUESTED_WAL"
+        # Use this as the starting point
+        START_SEGMENT="$REQUESTED_WAL"
+      else
+        echo "No WAL restore requests found in logs, checking for missing WAL files..."
+        # Check what PostgreSQL is trying to restore
+        MISSING_WAL=$(sudo journalctl -u podman-postgres13 -n 100 --no-pager | grep -oE "gzip: /var/lib/postgresql/archive/[0-9A-F]{24}\.gz: No such file" | tail -1 | grep -oE "[0-9A-F]{24}" || echo "")
+        if [ -n "$MISSING_WAL" ]; then
+          echo "PostgreSQL is missing WAL file: $MISSING_WAL"
+          START_SEGMENT="$MISSING_WAL"
+        else
+          # Fall back to checking local files
+          LAST_LOCAL_WAL=$(ls -1 "$ARCHIVE_DIR" 2>/dev/null | grep -E '^[0-9A-F]{24}\.gz$' | sort | tail -1 || echo "")
+          if [ -z "$LAST_LOCAL_WAL" ]; then
+            echo "No local WAL files found. Starting from snapshot base (00000001000042900000000D)"
+            START_SEGMENT="00000001000042900000000D"
+          else
+            START_SEGMENT="''${LAST_LOCAL_WAL%.gz}"
+          fi
+        fi
+      fi
     else
-      # Extract the segment number from the last local WAL
-      START_SEGMENT="''${LAST_LOCAL_WAL%.gz}"
-      echo "Last local WAL: $START_SEGMENT"
+      # Container not running, use local files
+      LAST_LOCAL_WAL=$(ls -1 "$ARCHIVE_DIR" 2>/dev/null | grep -E '^[0-9A-F]{24}\.gz$' | sort | tail -1 || echo "")
+      if [ -z "$LAST_LOCAL_WAL" ]; then
+        echo "No local WAL files found. Starting from snapshot base (00000001000042900000000D)"
+        START_SEGMENT="00000001000042900000000D"
+      else
+        START_SEGMENT="''${LAST_LOCAL_WAL%.gz}"
+      fi
     fi
+
+    echo "Last local WAL/Starting point: $START_SEGMENT"
 
     # Extract timeline and log/segment numbers
     TIMELINE="''${START_SEGMENT:0:8}"
@@ -32,32 +60,117 @@ let
 
     echo "Syncing WAL files from $START_SEGMENT onwards..."
     echo "Timeline: $TIMELINE, Log: $LOG_SEQ, Segment: $SEG_NUM"
+    
+    # First, let's check what files exist on the remote for our log sequence
+    echo "Checking remote for files around log sequence $LOG_SEQ..."
+    if [ "$(id -u)" = "0" ]; then
+      REMOTE_FILES=$(sudo -u jamesbrink ssh jamesbrink@server01.myquantierra.com "ls -1 /mnt/spinners/postgresql_backups/archive/$TIMELINE$LOG_SEQ*.gz 2>/dev/null | head -10" || echo "")
+    else
+      REMOTE_FILES=$(ssh jamesbrink@server01.myquantierra.com "ls -1 /mnt/spinners/postgresql_backups/archive/$TIMELINE$LOG_SEQ*.gz 2>/dev/null | head -10" || echo "")
+    fi
+    
+    if [ -n "$REMOTE_FILES" ]; then
+      echo "Found remote files for current log sequence:"
+      echo "$REMOTE_FILES" | head -5
+    else
+      echo "No files found on remote for log sequence $LOG_SEQ"
+    fi
 
-    # Ensure the archive directory is owned by the current user for rsync
-    echo "Temporarily fixing archive directory ownership for rsync..."
-    sudo chown -R $(id -u):$(id -g) "$ARCHIVE_DIR"
-
-    # Build rsync include patterns for current and next few log sequences
-    # This handles hex arithmetic for WAL file sequences
-    INCLUDES=""
-    for i in {0..2}; do
-      NEXT_LOG=$(printf "%08X" $((0x$LOG_SEQ + i)))
-      INCLUDES="$INCLUDES --include='$TIMELINE$NEXT_LOG*'"
+    # Build rsync include patterns for current and PREVIOUS log sequences too
+    # This ensures we get any missing files that PostgreSQL might be looking for
+    # Use an array to properly handle the arguments
+    INCLUDE_ARGS=()
+    
+    # Include 10 sequences before the current one
+    for i in {10..1}; do
+      PREV_LOG=$(printf "%08X" $((0x$LOG_SEQ - i)))
+      if [ $((0x$LOG_SEQ - i)) -ge 0 ]; then
+        INCLUDE_ARGS+=("--include=$TIMELINE$PREV_LOG*")
+      fi
     done
 
+    # Include current and future sequences
+    for i in {0..100}; do
+      NEXT_LOG=$(printf "%08X" $((0x$LOG_SEQ + i)))
+      INCLUDE_ARGS+=("--include=$TIMELINE$NEXT_LOG*")
+    done
+
+    # Also include any history files
+    INCLUDE_ARGS+=("--include=*.history.gz")
+
     # Sync with bandwidth limit and compression
-    ${pkgs.rsync}/bin/rsync -avz \
-      --bwlimit=10000 \
-      --include='*/' \
-      $INCLUDES \
-      --exclude='*' \
-      "$REMOTE_SOURCE" \
-      "$ARCHIVE_DIR/"
+    # If running as root, use jamesbrink's SSH configuration
+    echo "Syncing files from remote..."
+    TEMP_DIR="/tmp/wal-sync-temp-$$"
+    mkdir -p "$TEMP_DIR"
+    
+    # Debug: Show what patterns we're including
+    echo "Include patterns being used:"
+    printf '%s\n' "''${INCLUDE_ARGS[@]}"
+    
+    echo ""
+    echo "Testing rsync command (dry-run):"
+    if [ "$(id -u)" = "0" ]; then
+      # Running as root, use jamesbrink's SSH key
+      echo "Running as root, using sudo -u jamesbrink"
+      sudo -u jamesbrink ${pkgs.rsync}/bin/rsync -avz \
+        --bwlimit=10000 \
+        --include='*/' \
+        "''${INCLUDE_ARGS[@]}" \
+        --exclude='*' \
+        --dry-run --stats \
+        "$REMOTE_SOURCE" \
+        "$TEMP_DIR/"
+      echo ""
+      echo "Now running actual sync:"
+      sudo -u jamesbrink ${pkgs.rsync}/bin/rsync -avz \
+        --bwlimit=10000 \
+        --include='*/' \
+        "''${INCLUDE_ARGS[@]}" \
+        --exclude='*' \
+        "$REMOTE_SOURCE" \
+        "$TEMP_DIR/"
+    else
+      # Running as regular user
+      echo "Running as user $(whoami)"
+      ${pkgs.rsync}/bin/rsync -avz \
+        --bwlimit=10000 \
+        --include='*/' \
+        "''${INCLUDE_ARGS[@]}" \
+        --exclude='*' \
+        --dry-run --stats \
+        "$REMOTE_SOURCE" \
+        "$TEMP_DIR/"
+      echo ""
+      echo "Now running actual sync:"
+      ${pkgs.rsync}/bin/rsync -avz \
+        --bwlimit=10000 \
+        --include='*/' \
+        "''${INCLUDE_ARGS[@]}" \
+        --exclude='*' \
+        "$REMOTE_SOURCE" \
+        "$TEMP_DIR/"
+    fi
+    
+    # Move files to final destination with proper permissions
+    echo "Checking temp directory for synced files:"
+    ls -la "$TEMP_DIR/" | head -10 || echo "No files in temp directory"
+    
+    if ls "$TEMP_DIR"/*.gz >/dev/null 2>&1; then
+      echo "Moving $(ls "$TEMP_DIR"/*.gz | wc -l) files to archive directory"
+      sudo mv "$TEMP_DIR"/*.gz "$ARCHIVE_DIR/" 2>/dev/null || true
+    else
+      echo "No .gz files found in temp directory to move"
+    fi
+    rm -rf "$TEMP_DIR"
 
     # Fix permissions for PostgreSQL container (postgres user is UID 999 in container)
     echo "Fixing permissions for PostgreSQL container..."
     sudo chown -R 999:999 "$ARCHIVE_DIR"
-    sudo chmod -R 640 "$ARCHIVE_DIR"/*.gz 2>/dev/null || true
+    sudo chmod 755 "$ARCHIVE_DIR"
+    # Only chmod actual .gz files, not rsync temporary files
+    # Rsync creates temp files like .filename.gz.XXXXXX during transfer
+    find "$ARCHIVE_DIR" -maxdepth 1 -name "*.gz" -type f ! -name ".*" -exec sudo chmod 640 {} \; 2>/dev/null || true
 
     echo "WAL sync completed successfully"
   '';
@@ -81,15 +194,15 @@ let
 
     # Create ZFS snapshot after successful sync and cleanup
     SNAPSHOT_NAME="postgres13@wal-sync-$(date +%Y%m%d-%H%M%S)"
-    ${pkgs.zfs}/bin/zfs snapshot "storage-fast/quantierra/$SNAPSHOT_NAME" || true
+    sudo ${pkgs.zfs}/bin/zfs snapshot "storage-fast/quantierra/$SNAPSHOT_NAME" || true
     echo "Created ZFS snapshot: $SNAPSHOT_NAME"
 
     # Clean up old WAL sync snapshots (keep last 3)
     echo "Cleaning up old WAL sync snapshots..."
-    ${pkgs.zfs}/bin/zfs list -t snapshot -o name -s creation | \
+    sudo ${pkgs.zfs}/bin/zfs list -t snapshot -o name -s creation | \
       grep "storage-fast/quantierra/postgres13@wal-sync-" | \
       head -n -3 | \
-      xargs -r -n1 ${pkgs.zfs}/bin/zfs destroy || true
+      xargs -r -n1 sudo ${pkgs.zfs}/bin/zfs destroy || true
   '';
 
   # Combined sync and retention script
