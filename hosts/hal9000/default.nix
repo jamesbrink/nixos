@@ -278,6 +278,33 @@
     wantedBy = [ "timers.target" ];
   };
 
+  # Service for creating base snapshots
+  systemd.services.postgresql-base-snapshot = {
+    description = "Create PostgreSQL base snapshot for reset operations";
+    serviceConfig = {
+      Type = "oneshot";
+      User = "root";
+      Group = "root";
+      ExecStart = "/run/current-system/sw/bin/postgres13-create-base-auto";
+      StandardOutput = "journal";
+      StandardError = "journal";
+    };
+    after = [ "postgresql-wal-sync.service" ];
+  };
+
+  # Timer for base snapshot creation every 3 days
+  systemd.timers.postgresql-base-snapshot = {
+    description = "Create PostgreSQL base snapshot every 3 days";
+    enable = true;
+    timerConfig = {
+      # Run every 3 days at 4 AM
+      OnCalendar = "*-*-1,4,7,10,13,16,19,22,25,28,31 04:00:00";
+      AccuracySec = "1h";
+      Persistent = true;
+    };
+    wantedBy = [ "timers.target" ];
+  };
+
   networking = {
     hostName = "hal9000";
     domain = "home.urandom.io";
@@ -327,6 +354,18 @@
         7000 # AirPlay
         7001 # AirPlay
         7100 # AirPlay screen mirroring
+        # Development ports
+        8000
+        8001
+        8002
+        8003
+        8004
+        8005
+        8006
+        8007
+        8008
+        8009
+        8010
       ];
       allowedUDPPorts = [
         111 # RPC portmapper
@@ -1037,6 +1076,16 @@
               "match": {
                 "type": "value",
                 "value": "WEBHOOK_TOKEN_RESET17",
+                "parameter": {
+                  "source": "header",
+                  "name": "X-Webhook-Token"
+                }
+              }
+            },
+            {
+              "match": {
+                "type": "value",
+                "value": "WEBHOOK_TOKEN_ACTIVE",
                 "parameter": {
                   "source": "header",
                   "name": "X-Webhook-Token"

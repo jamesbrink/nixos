@@ -34,6 +34,7 @@
     openvpn3
     openvswitch
     packer
+    podman-compose
     postgresql
     pre-commit
     restic
