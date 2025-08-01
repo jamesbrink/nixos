@@ -9,7 +9,7 @@
   imports = [
     ../../modules/shared-packages/default.nix
     ../../modules/darwin/local-hosts.nix
-    ../../modules/aws-root-config.nix
+    # aws-root-config is Linux-only (uses systemd)
     ../../modules/unified-shell-experience.nix
   ];
 

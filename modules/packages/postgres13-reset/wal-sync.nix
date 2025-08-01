@@ -92,7 +92,7 @@ let
 
     echo "Syncing WAL files from $START_SEGMENT onwards..."
     echo "Timeline: $TIMELINE, Log: $LOG_SEQ, Segment: $SEG_NUM"
-    
+
     # First, let's check what files exist on the remote for our log sequence
     echo "Checking remote for files around log sequence $LOG_SEQ..."
     if [ "$(id -u)" = "0" ]; then
@@ -100,7 +100,7 @@ let
     else
       REMOTE_FILES=$(ssh jamesbrink@server01.myquantierra.com "ls -1 /mnt/spinners/postgresql_backups/archive/$TIMELINE$LOG_SEQ*.gz 2>/dev/null | head -10" || echo "")
     fi
-    
+
     if [ -n "$REMOTE_FILES" ]; then
       echo "Found remote files for current log sequence:"
       echo "$REMOTE_FILES" | head -5
@@ -294,7 +294,7 @@ let
 
     # Check replication lag
     LAG_INFO=$( ${pkgs.podman}/bin/podman exec postgres13 psql -U postgres -t -c "SELECT CASE WHEN pg_is_in_recovery() THEN EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))::int ELSE 0 END as lag_seconds;" 2>/dev/null | tr -d ' ' || echo "999999")
-    
+
     if [ "$LAG_INFO" -gt 3600 ]; then
       echo "Error: Replication lag is $LAG_INFO seconds (> 1 hour). Skipping base snapshot creation."
       exit 1
@@ -303,7 +303,7 @@ let
     # Check if a base snapshot already exists for today
     TODAY=$(date +%Y%m%d)
     EXISTING=$( ${pkgs.zfs}/bin/zfs list -t snapshot -o name | grep "base@base-$TODAY" || echo "")
-    
+
     if [ -n "$EXISTING" ]; then
       echo "Base snapshot for today already exists: $EXISTING"
       exit 0

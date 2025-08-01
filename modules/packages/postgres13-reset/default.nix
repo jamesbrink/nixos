@@ -14,7 +14,7 @@ let
 
     echo "Killing PostgreSQL 13 service..."
      ${pkgs.systemd}/bin/systemctl kill -s KILL podman-postgres13.service || true
-    
+
     echo "Removing PostgreSQL 13 container..."
      ${pkgs.podman}/bin/podman rm -f postgres13 || true
     echo "Container killed and removed"
@@ -52,7 +52,7 @@ let
     LATEST_BASE=$( ${pkgs.zfs}/bin/zfs list -t snapshot -o name -s creation | \
       grep "storage-fast/quantierra/base@base-" | \
       tail -1 || echo "")
-    
+
     # Fallback to the original base if no base snapshots exist
     if [ -z "$LATEST_BASE" ]; then
       echo "No base snapshots found, using original backup"
@@ -61,7 +61,7 @@ let
 
     echo "Creating new clone from $LATEST_BASE..."
      ${pkgs.zfs}/bin/zfs clone "$LATEST_BASE" storage-fast/quantierra/postgres13
-    
+
     # Always add standby.signal for reset operation
      touch /storage-fast/quantierra/postgres13/standby.signal
 
@@ -164,7 +164,7 @@ let
 
     # Check replication lag
     LAG_INFO=$( ${pkgs.podman}/bin/podman exec postgres13 psql -U postgres -t -c "SELECT CASE WHEN pg_is_in_recovery() THEN EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))::int ELSE 0 END as lag_seconds;" | tr -d ' ')
-    
+
     if [ "$LAG_INFO" -gt 300 ]; then
       echo "Warning: Replication lag is $LAG_INFO seconds (> 5 minutes)"
       read -p "Continue anyway? (y/N): " -n 1 -r

@@ -12,6 +12,17 @@
     ../../modules/unified-shell-experience.nix
   ];
 
+  # Enable zsh as default shell
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    autosuggestions.enable = true;
+    syntaxHighlighting.enable = true;
+  };
+
+  # Set zsh as default shell
+  users.defaultUserShell = pkgs.zsh;
+
   environment.systemPackages = with pkgs; [
     # Infrastructure tools
     ansible
