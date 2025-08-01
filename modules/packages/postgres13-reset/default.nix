@@ -20,11 +20,32 @@ let
     echo "Container killed and removed"
 
     # Brief wait for filesystem to unmount
-    sleep 1
+    sleep 2
 
-    # Destroy the existing clone
+    # Try to unmount if still mounted
+    if mountpoint -q /storage-fast/quantierra/postgres13 2>/dev/null; then
+      echo "Force unmounting postgres13 dataset..."
+       umount -f /storage-fast/quantierra/postgres13 || true
+      sleep 1
+    fi
+
+    # Destroy the existing clone with retries
     echo "Destroying existing dev clone..."
-     ${pkgs.zfs}/bin/zfs destroy -rf storage-fast/quantierra/postgres13 || true
+    for i in {1..3}; do
+      if  ${pkgs.zfs}/bin/zfs destroy -rf storage-fast/quantierra/postgres13 2>/dev/null; then
+        echo "Successfully destroyed postgres13 dataset"
+        break
+      else
+        if [ $i -eq 3 ]; then
+          echo "Warning: Could not destroy dataset after 3 attempts, forcing..."
+          # Last resort - try to force destroy
+           ${pkgs.zfs}/bin/zfs destroy -Rf storage-fast/quantierra/postgres13 || true
+        else
+          echo "Dataset busy, retry $i/3 in 2 seconds..."
+          sleep 2
+        fi
+      fi
+    done
 
     # Find the most recent base snapshot on the base dataset
     echo "Finding most recent base snapshot..."
@@ -44,9 +65,9 @@ let
     # Always add standby.signal for reset operation
      touch /storage-fast/quantierra/postgres13/standby.signal
 
-    # Start the service back up
+    # Start the service back up (use restart to ensure standby.signal is recognized)
     echo "Starting podman-postgres13 service..."
-     ${pkgs.systemd}/bin/systemctl start podman-postgres13.service
+     ${pkgs.systemd}/bin/systemctl restart podman-postgres13.service
 
     echo "Reset complete! PostgreSQL is in standby mode."
     echo "Source snapshot: $LATEST_BASE"
