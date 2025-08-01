@@ -12,13 +12,19 @@ let
     # Exit on any error
     set -e
 
-    echo "Killing PostgreSQL 13 container..."
-     ${pkgs.podman}/bin/podman kill postgres13 || true
-    echo "Container killed"
+    echo "Killing PostgreSQL 13 service..."
+     ${pkgs.systemd}/bin/systemctl kill -s KILL podman-postgres13.service || true
+    
+    echo "Removing PostgreSQL 13 container..."
+     ${pkgs.podman}/bin/podman rm -f postgres13 || true
+    echo "Container killed and removed"
+
+    # Brief wait for filesystem to unmount
+    sleep 1
 
     # Destroy the existing clone
     echo "Destroying existing dev clone..."
-     ${pkgs.zfs}/bin/zfs destroy -r storage-fast/quantierra/postgres13 || true
+     ${pkgs.zfs}/bin/zfs destroy -rf storage-fast/quantierra/postgres13 || true
 
     # Find the most recent base snapshot on the base dataset
     echo "Finding most recent base snapshot..."
