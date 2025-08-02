@@ -129,23 +129,22 @@ in
       n8n = {
         image = "docker.io/n8nio/n8n:latest";
         autoStart = true;
-        environment =
-          {
-            DB_TYPE = "postgresdb";
-            DB_POSTGRESDB_HOST = "postgres";
-            DB_POSTGRESDB_USER = cfg.postgres.user;
-            DB_POSTGRESDB_PASSWORD = cfg.postgres.password;
-            DB_POSTGRESDB_DATABASE = cfg.postgres.database;
-            OLLAMA_HOST = "host.containers.internal:11434";
-            N8N_DIAGNOSTICS_ENABLED = "false";
-            N8N_PERSONALIZATION_ENABLED = "false";
-          }
-          // (optionalAttrs (cfg.n8n.editorBaseUrl != null) {
-            N8N_EDITOR_BASE_URL = cfg.n8n.editorBaseUrl;
-          })
-          // (optionalAttrs (cfg.n8n.webhookUrl != null) {
-            WEBHOOK_URL = cfg.n8n.webhookUrl;
-          });
+        environment = {
+          DB_TYPE = "postgresdb";
+          DB_POSTGRESDB_HOST = "postgres";
+          DB_POSTGRESDB_USER = cfg.postgres.user;
+          DB_POSTGRESDB_PASSWORD = cfg.postgres.password;
+          DB_POSTGRESDB_DATABASE = cfg.postgres.database;
+          OLLAMA_HOST = "host.containers.internal:11434";
+          N8N_DIAGNOSTICS_ENABLED = "false";
+          N8N_PERSONALIZATION_ENABLED = "false";
+        }
+        // (optionalAttrs (cfg.n8n.editorBaseUrl != null) {
+          N8N_EDITOR_BASE_URL = cfg.n8n.editorBaseUrl;
+        })
+        // (optionalAttrs (cfg.n8n.webhookUrl != null) {
+          WEBHOOK_URL = cfg.n8n.webhookUrl;
+        });
         volumes = [
           "${cfg.storagePath}/n8n:/home/node/.n8n"
           "${cfg.n8n.backupPath}:/backup"

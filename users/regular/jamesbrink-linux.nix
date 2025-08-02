@@ -82,7 +82,6 @@ in
           ffmpeg-full
           imagemagick
           nushell
-          tldr
           xonsh
           yt-dlp
 

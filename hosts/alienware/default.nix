@@ -297,7 +297,6 @@
   };
 
   # Shell configuration
-  # Shell, tmux, and neovim configuration now handled by unified-shell-experience.nix
 
   # SSH configuration with age secrets
   services.openssh = {

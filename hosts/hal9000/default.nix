@@ -116,6 +116,8 @@
     "d /mnt 0775 root users"
     "d /storage-fast 0775 root users"
     "d /mnt/storage 0775 root users"
+    "d /mnt/storage20tb 0775 root users"
+    "d /export/storage20tb 0755 root root"
     "d /var/lib/libvirt/images 0775 root libvirtd"
     "d /storage-fast/vms 0775 jamesbrink libvirtd"
     "d ${config.users.users.jamesbrink.home}/.local/share/rustdesk 0755 jamesbrink users"
@@ -224,11 +226,27 @@
     options = [ "bind" ];
   };
 
+  # New 20TB storage drive
+  fileSystems."/mnt/storage20tb" = {
+    device = "/dev/disk/by-uuid/6d016e74-3cff-4f4d-8a8a-2769e7f35d76";
+    fsType = "ext4";
+    options = [
+      "defaults"
+      "nofail"
+    ];
+  };
+
+  fileSystems."/export/storage20tb" = {
+    device = "/mnt/storage20tb";
+    options = [ "bind" ];
+  };
+
   services.nfs.server = {
     enable = true;
     exports = ''
       /export                 10.70.100.0/24(rw,fsid=0,no_subtree_check) 100.64.0.0/10(rw,fsid=0,no_subtree_check)
       /export/storage-fast    10.70.100.0/24(rw,nohide,insecure,no_subtree_check) 100.64.0.0/10(rw,nohide,insecure,no_subtree_check)
+      /export/storage20tb     10.70.100.0/24(rw,nohide,insecure,no_subtree_check) 100.64.0.0/10(rw,nohide,insecure,no_subtree_check)
     '';
     # Ensure NFS listens on all interfaces
     lockdPort = 4045;
@@ -910,7 +928,6 @@
   };
 
   programs = {
-    # Removed zsh, tmux, and neovim - now in unified-shell-experience.nix
     ssh = {
       startAgent = true;
       extraConfig = ''
@@ -924,8 +941,6 @@
       binfmt = true;
     };
   };
-
-  # users.defaultUserShell is now set in unified-shell-experience.nix
 
   # Allow user to bind to privileged ports
   systemd.user.extraConfig = ''
@@ -1276,6 +1291,15 @@
       storage = {
         path = "/storage-fast";
         comment = "Fast storage array (alias)";
+        browseable = true;
+        readOnly = false;
+        validUsers = [ "jamesbrink" ];
+        createMask = "0664";
+        directoryMask = "0775";
+      };
+      storage20tb = {
+        path = "/mnt/storage20tb";
+        comment = "20TB Storage Drive";
         browseable = true;
         readOnly = false;
         validUsers = [ "jamesbrink" ];

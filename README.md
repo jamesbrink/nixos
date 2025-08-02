@@ -73,8 +73,7 @@ This project uses:
 │   │   ├── default.nix          # Default packages
 │   │   ├── devops-darwin.nix    # Darwin DevOps tools
 │   │   └── devops.nix           # DevOps tools
-│   ├── ssh-keys.nix             # SSH key management
-│   └── unified-shell-experience.nix # Unified shell environment
+│   └── ssh-keys.nix             # SSH key management
 ├── overlays/                    # Nix overlays
 │   └── README.md                # Overlays documentation
 ├── pkgs/                        # Custom package builds
@@ -578,7 +577,7 @@ Current N100 nodes and their MAC addresses:
 - Tmux with Ctrl+B prefix key, vi-mode, and clipboard integration
 - Zsh with oh-my-zsh, starship prompt, and modern CLI replacements
 - Neovim with LSP support, treesitter, and gruvbox-material theme
-- Managed through `modules/unified-shell-experience.nix`
+- Managed through home-manager modules in `modules/home-manager/`
 
 ### AWS Configuration Management
 

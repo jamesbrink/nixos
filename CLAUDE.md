@@ -78,8 +78,7 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 │   ├── n100-disko.nix    # N100 ZFS disk configuration
 │   ├── n100-network.nix  # N100 network configuration
 │   ├── nfs-mounts.nix    # NFS client configuration
-│   ├── ssh-keys.nix      # SSH key management
-│   └── unified-shell-experience.nix # Unified shell environment
+│   └── ssh-keys.nix      # SSH key management
 ├── pkgs/                 # Custom package derivations
 │   ├── llama-cpp/        # LLaMA C++ implementation
 │   └── netboot-xyz/      # Netboot.xyz bootloader package
@@ -451,14 +450,16 @@ If you see "can't find terminal definition for xterm-ghostty":
 - All scripts maintain identical functionality while being standalone executables
 - Scripts use proper error handling with `set -euo pipefail` and clear parameter validation
 
-### Unified Shell Experience (July 2025)
+### Home-Manager Shell Configuration (July 2025)
 
-- Created `modules/unified-shell-experience.nix` for consistent shell environment across all hosts and users
-- Provides tmux (Ctrl+B prefix), zsh with oh-my-zsh, neovim, and starship prompt system-wide
-- Fixed oh-my-zsh permission issues by using per-user temp cache directories
-- Restored clean single-line starship prompt with proper default colors
-- Shell environment is consistent even for root user across all Linux and Darwin hosts
-- Includes modern CLI replacements (eza, bat, fd, procs, pay-respects)
+- Migrated shell configuration from system-level to home-manager modules
+- Created modular structure in `modules/home-manager/` with separate modules for shell, editor, and CLI tools
+- Provides consistent environment across all users including root via home-manager
+- Shell features: zsh with oh-my-zsh, starship prompt, tmux (Ctrl+B prefix)
+- Editor: neovim with LSP support, treesitter, and gruvbox-material theme
+- Modern CLI replacements: eza, bat, fd, ripgrep, procs, pay-respects
+- Fixed eza integration to prevent ls alias conflicts
+- Resolved Startify viminfo errors with proper shada configuration
 
 ### AWS Root Configuration (July 2025)
 

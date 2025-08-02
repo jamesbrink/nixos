@@ -16,35 +16,25 @@ in
       age
       inputs.agenix.packages.${pkgs.system}.default
       bandwhich
-      bat
       bfg-repo-cleaner
-      (btop.override {
-        cudaSupport = pkgs.stdenv.isLinux && (config.hardware.nvidia.package or null) != null;
-      })
       bzip2
       cachix
       dig
-      direnv
       dnsutils
-      eza
       fastfetch
-      fd
-      git
       git-lfs
       home-manager
-      htop
       httpie
       jq
       lf
       lsof
       neofetch
-      neovim
       netcat
       nixfmt-rfc-style
       nixpkgs-fmt
       openssh
       p7zip
-      # Language servers for Neovim
+      # Language servers for Neovim (kept here for system-wide availability)
       nodePackages.bash-language-server
       pyright
       terraform-ls
@@ -55,22 +45,17 @@ in
       python313Packages.markitdown
       python313Packages.pip
       python313Packages.pynvim
-      ripgrep
       rsync
       screen
       speedtest-cli
-      pay-respects
       restic-browser
-      tmux
       tree
       unzip
-      vim
       virt-viewer
       watch
       wget
       wireguard-tools
       yarn
-      zsh
       # Additional development and utility tools
       act
       code2prompt

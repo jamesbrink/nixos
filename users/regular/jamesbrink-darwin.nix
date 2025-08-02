@@ -47,7 +47,6 @@ in
         imagemagick
         nushell
         pay-respects
-        tldr
         xonsh
         yt-dlp
 

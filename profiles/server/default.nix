@@ -9,7 +9,7 @@
     ../../modules/nfs-mounts.nix
     ../../modules/local-hosts.nix
     ../../modules/aws-root-config.nix
-    ../../modules/unified-shell-experience.nix
+    ../../users/root.nix
   ];
 
   # Enable zsh as default shell

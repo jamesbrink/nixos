@@ -133,105 +133,104 @@ in
       package = pkgs.samba4Full;
       openFirewall = true;
 
-      settings =
+      settings = {
+        global = {
+          workgroup = cfg.workgroup;
+          "server string" = cfg.serverString;
+          "server role" = "standalone";
+          security = "user";
+          "map to guest" = "never";
+          "guest account" = "nobody";
+
+          # Protocol settings - Critical for macOS compatibility
+          "server min protocol" = "SMB2";
+          "server max protocol" = "SMB3"; # Explicitly set max protocol
+          "client min protocol" = "SMB2";
+          "client max protocol" = "SMB3";
+          "server smb encrypt" = "if_required"; # Changed from 'desired' for better compatibility
+          "ntlm auth" = "ntlmv2-only"; # Force NTLMv2 for macOS
+          "raw NTLMv2 auth" = "yes";
+
+          # Additional macOS compatibility
+          "ea support" = "yes";
+          "inherit acls" = "yes";
+          "map acl inherit" = "yes";
+
+          # Performance settings - Simplified for compatibility
+          "socket options" = "TCP_NODELAY"; # Removed buffer size overrides
+          "use sendfile" = "yes";
+          "aio read size" = "1";
+          "aio write size" = "1";
+          "min receivefile size" = "16384";
+          "getwd cache" = "yes";
+          "read raw" = "yes";
+          "write raw" = "yes";
+          "strict locking" = "no";
+
+          # Network restrictions
+          "hosts allow" = concatStringsSep " " (cfg.allowedNetworks ++ [ "127.0.0.1" ]);
+          "hosts deny" = "0.0.0.0/0";
+
+          # Logging
+          "log file" = "/var/log/samba/log.%m";
+          "max log size" = "50";
+          "log level" = "1";
+
+          # NetBIOS settings
+          "netbios name" = config.networking.hostName;
+          "wins support" = if cfg.enableWins then "yes" else "no";
+          "dns proxy" = "no";
+
+          # Misc settings
+          "load printers" = "no";
+          "printing" = "bsd";
+          "printcap name" = "/dev/null";
+          "disable spoolss" = "yes";
+          "multicast dns register" = "yes"; # Help with macOS discovery
+          "unix extensions" = "no"; # Disable for better macOS compatibility
+
+          # macOS compatibility - MUST be in this order
+          "vfs objects" = "catia fruit streams_xattr";
+          "fruit:metadata" = "stream";
+          "fruit:model" = "MacSamba";
+          "fruit:veto_appledouble" = "no";
+          "fruit:posix_rename" = "yes";
+          "fruit:zero_file_id" = "yes";
+          "fruit:wipe_intentionally_left_blank_rfork" = "yes";
+          "fruit:delete_empty_adfiles" = "yes";
+          "fruit:nfs_aces" = "no";
+          "fruit:encoding" = "native";
+
+          # Additional macOS optimizations
+          "veto files" = "/._*/.DS_Store/";
+          "delete veto files" = "yes";
+        };
+      }
+      // mapAttrs (
+        name: share:
         {
-          global = {
-            workgroup = cfg.workgroup;
-            "server string" = cfg.serverString;
-            "server role" = "standalone";
-            security = "user";
-            "map to guest" = "never";
-            "guest account" = "nobody";
-
-            # Protocol settings - Critical for macOS compatibility
-            "server min protocol" = "SMB2";
-            "server max protocol" = "SMB3"; # Explicitly set max protocol
-            "client min protocol" = "SMB2";
-            "client max protocol" = "SMB3";
-            "server smb encrypt" = "if_required"; # Changed from 'desired' for better compatibility
-            "ntlm auth" = "ntlmv2-only"; # Force NTLMv2 for macOS
-            "raw NTLMv2 auth" = "yes";
-
-            # Additional macOS compatibility
-            "ea support" = "yes";
-            "inherit acls" = "yes";
-            "map acl inherit" = "yes";
-
-            # Performance settings - Simplified for compatibility
-            "socket options" = "TCP_NODELAY"; # Removed buffer size overrides
-            "use sendfile" = "yes";
-            "aio read size" = "1";
-            "aio write size" = "1";
-            "min receivefile size" = "16384";
-            "getwd cache" = "yes";
-            "read raw" = "yes";
-            "write raw" = "yes";
-            "strict locking" = "no";
-
-            # Network restrictions
-            "hosts allow" = concatStringsSep " " (cfg.allowedNetworks ++ [ "127.0.0.1" ]);
-            "hosts deny" = "0.0.0.0/0";
-
-            # Logging
-            "log file" = "/var/log/samba/log.%m";
-            "max log size" = "50";
-            "log level" = "1";
-
-            # NetBIOS settings
-            "netbios name" = config.networking.hostName;
-            "wins support" = if cfg.enableWins then "yes" else "no";
-            "dns proxy" = "no";
-
-            # Misc settings
-            "load printers" = "no";
-            "printing" = "bsd";
-            "printcap name" = "/dev/null";
-            "disable spoolss" = "yes";
-            "multicast dns register" = "yes"; # Help with macOS discovery
-            "unix extensions" = "no"; # Disable for better macOS compatibility
-
-            # macOS compatibility - MUST be in this order
-            "vfs objects" = "catia fruit streams_xattr";
-            "fruit:metadata" = "stream";
-            "fruit:model" = "MacSamba";
-            "fruit:veto_appledouble" = "no";
-            "fruit:posix_rename" = "yes";
-            "fruit:zero_file_id" = "yes";
-            "fruit:wipe_intentionally_left_blank_rfork" = "yes";
-            "fruit:delete_empty_adfiles" = "yes";
-            "fruit:nfs_aces" = "no";
-            "fruit:encoding" = "native";
-
-            # Additional macOS optimizations
-            "veto files" = "/._*/.DS_Store/";
-            "delete veto files" = "yes";
-          };
+          path = share.path;
+          comment = share.comment;
+          browseable = if share.browseable then "yes" else "no";
+          "read only" = if share.readOnly then "yes" else "no";
+          "guest ok" = if share.guestOk then "yes" else "no";
+          "create mask" = share.createMask;
+          "directory mask" = share.directoryMask;
         }
-        // mapAttrs (
-          name: share:
-          {
-            path = share.path;
-            comment = share.comment;
-            browseable = if share.browseable then "yes" else "no";
-            "read only" = if share.readOnly then "yes" else "no";
-            "guest ok" = if share.guestOk then "yes" else "no";
-            "create mask" = share.createMask;
-            "directory mask" = share.directoryMask;
-          }
-          // optionalAttrs (share.validUsers != [ ]) {
-            "valid users" = concatStringsSep " " share.validUsers;
-          }
-          // optionalAttrs (share.forceUser != null) {
-            "force user" = share.forceUser;
-          }
-          // optionalAttrs (share.forceGroup != null) {
-            "force group" = share.forceGroup;
-          }
-          // optionalAttrs (cfg.enableTimeMachine && elem name cfg.timeMachineShares) {
-            "fruit:time machine" = "yes";
-            "fruit:time machine max size" = "0";
-          }
-        ) cfg.shares;
+        // optionalAttrs (share.validUsers != [ ]) {
+          "valid users" = concatStringsSep " " share.validUsers;
+        }
+        // optionalAttrs (share.forceUser != null) {
+          "force user" = share.forceUser;
+        }
+        // optionalAttrs (share.forceGroup != null) {
+          "force group" = share.forceGroup;
+        }
+        // optionalAttrs (cfg.enableTimeMachine && elem name cfg.timeMachineShares) {
+          "fruit:time machine" = "yes";
+          "fruit:time machine max size" = "0";
+        }
+      ) cfg.shares;
     };
 
     # Configure WSDD for Windows network discovery
@@ -260,12 +259,14 @@ in
       allowedTCPPorts = [
         445 # SMB
         139 # NetBIOS Session Service
-      ] ++ optional cfg.enableWSDD 5357; # WSDD
+      ]
+      ++ optional cfg.enableWSDD 5357; # WSDD
 
       allowedUDPPorts = [
         137 # NetBIOS Name Service
         138 # NetBIOS Datagram Service
-      ] ++ optional cfg.enableWSDD 3702; # WSDD
+      ]
+      ++ optional cfg.enableWSDD 3702; # WSDD
     };
 
     # Create log directory

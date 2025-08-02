@@ -27,27 +27,27 @@ stdenv.mkDerivation rec {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs =
-    [
-      cmake
-      git
-      gcc11
-      makeWrapper
-    ]
-    ++ lib.optionals cudaSupport [
-      cudaPackages.cuda_nvcc
-    ];
+  nativeBuildInputs = [
+    cmake
+    git
+    gcc11
+    makeWrapper
+  ]
+  ++ lib.optionals cudaSupport [
+    cudaPackages.cuda_nvcc
+  ];
 
-  buildInputs =
-    [ openblas ]
-    ++ lib.optionals cudaSupport [
-      cudaPackages.cuda_cudart
-      cudaPackages.cuda_cccl
-      cudaPackages.libcublas
-      cudaPackages.cuda_cudart.lib
-      cudaPackages.cuda_cudart.static
-      linuxPackages.nvidia_x11
-    ];
+  buildInputs = [
+    openblas
+  ]
+  ++ lib.optionals cudaSupport [
+    cudaPackages.cuda_cudart
+    cudaPackages.cuda_cccl
+    cudaPackages.libcublas
+    cudaPackages.cuda_cudart.lib
+    cudaPackages.cuda_cudart.static
+    linuxPackages.nvidia_x11
+  ];
 
   runtimeDependencies = lib.optionals cudaSupport [
     cudaPackages.cuda_cudart
@@ -57,29 +57,28 @@ stdenv.mkDerivation rec {
     linuxPackages.nvidia_x11
   ];
 
-  cmakeFlags =
-    [
-      "-DLLAMA_BLAS=ON"
-      "-DLLAMA_BLAS_VENDOR=OpenBLAS"
-      "-DBUILD_SHARED_LIBS=OFF"
-      "-DCMAKE_BUILD_TYPE=Release"
-      "-DLLAMA_NATIVE=OFF"
-      "-DCMAKE_INSTALL_LIBDIR=lib"
-      "-DLLAMA_STATIC=ON"
-      "-DGGML_STATIC=ON"
-    ]
-    ++ lib.optionals cudaSupport [
-      "-DGGML_CUDA=ON"
-      "-DCMAKE_CUDA_ARCHITECTURES=${cudaArch}"
-      "-DCUDA_TOOLKIT_ROOT_DIR=${cudaPackages.cuda_cudart}"
-      "-DCUDA_CUBLAS_LIBRARY=${cudaPackages.libcublas}/lib/libcublas.so"
-      "-DCUDA_CUDART_LIBRARY=${cudaPackages.cuda_cudart}/lib/libcudart.so"
-      "-DCUDA_NVCC_EXECUTABLE=${cudaPackages.cuda_nvcc}/bin/nvcc"
-      "-DLLAMA_CUDA=ON"
-      "-DLLAMA_CUDA_F16=ON"
-      "-DLLAMA_CUDA_DMMV=ON"
-      "-DLLAMA_CUDA_MMV_Y=ON"
-    ];
+  cmakeFlags = [
+    "-DLLAMA_BLAS=ON"
+    "-DLLAMA_BLAS_VENDOR=OpenBLAS"
+    "-DBUILD_SHARED_LIBS=OFF"
+    "-DCMAKE_BUILD_TYPE=Release"
+    "-DLLAMA_NATIVE=OFF"
+    "-DCMAKE_INSTALL_LIBDIR=lib"
+    "-DLLAMA_STATIC=ON"
+    "-DGGML_STATIC=ON"
+  ]
+  ++ lib.optionals cudaSupport [
+    "-DGGML_CUDA=ON"
+    "-DCMAKE_CUDA_ARCHITECTURES=${cudaArch}"
+    "-DCUDA_TOOLKIT_ROOT_DIR=${cudaPackages.cuda_cudart}"
+    "-DCUDA_CUBLAS_LIBRARY=${cudaPackages.libcublas}/lib/libcublas.so"
+    "-DCUDA_CUDART_LIBRARY=${cudaPackages.cuda_cudart}/lib/libcudart.so"
+    "-DCUDA_NVCC_EXECUTABLE=${cudaPackages.cuda_nvcc}/bin/nvcc"
+    "-DLLAMA_CUDA=ON"
+    "-DLLAMA_CUDA_F16=ON"
+    "-DLLAMA_CUDA_DMMV=ON"
+    "-DLLAMA_CUDA_MMV_Y=ON"
+  ];
 
   env.CUDA_PATH = lib.optionalString cudaSupport "${cudaPackages.cuda_cudart}";
   CXXFLAGS = lib.optionalString cudaSupport "-I${cudaPackages.cuda_cudart}/include";
