@@ -1,6 +1,10 @@
 # SSH configuration for local hosts and private networks
 # This file is managed by Nix - do not edit directly
 
+# NOTE: This file uses both short hostnames and FQDNs for command-line convenience
+# The main SSH config has only FQDNs for VSCode compatibility
+# Keep both formats here to allow users to use either "ssh alienware" or "ssh alienware.home.urandom.io"
+
 # Local NixOS/Darwin hosts
 Host alienware alienware.home.urandom.io
   StrictHostKeyChecking no
@@ -22,6 +26,10 @@ Host sevastopol sevastopol.home.urandom.io
   CheckHostIP no
   UserKnownHostsFile=/dev/null
 
+Host darkstarmk6mod1 darkstarmk6mod1.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
 
 Host n100-01 n100-01.home.urandom.io
   StrictHostKeyChecking no

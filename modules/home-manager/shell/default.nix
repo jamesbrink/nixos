@@ -53,6 +53,66 @@
       # Convenience
       AddKeysToAgent yes
       ForwardAgent yes
+
+      # Local NixOS/Darwin hosts
+      # NOTE: Using only FQDNs here for VSCode Remote SSH compatibility
+      # VSCode has issues parsing multiple hostnames per Host entry
+      # The 00-local-hosts include file has both short and FQDN names for CLI usage
+
+      Host alienware.home.urandom.io
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
+      Host hal9000.home.urandom.io
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
+      Host halcyon.home.urandom.io
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
+      Host sevastopol.home.urandom.io
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
+      Host darkstarmk6mod1.home.urandom.io
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
+      Host n100-01.home.urandom.io
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
+      Host n100-02.home.urandom.io
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
+      Host n100-03.home.urandom.io
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
+      Host n100-04.home.urandom.io
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
+      Host server01
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
+      Host socrates
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
     '';
   };
 
