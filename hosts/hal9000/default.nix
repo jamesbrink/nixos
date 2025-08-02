@@ -981,6 +981,8 @@
   ];
 
   environment.systemPackages = with pkgs; [
+    # Pin pixinsight to existing store path to avoid rebuild
+    (builtins.storePath /nix/store/vhva0m6160s0pnkavmkgdxkxx0zffh3b-pixinsight-1.9.3-20250402)
     # unstablePkgs.exo
     audit
     bottles
@@ -996,7 +998,7 @@
     OVMF
     pgbackrest
     pgweb
-    pixinsight
+    # pixinsight  # Pinned above to existing store path
     podman
     samba4Full
     spice
