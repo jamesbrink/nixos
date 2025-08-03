@@ -188,7 +188,7 @@
       };
 
       mouse = {
-        hide_when_typing = true;
+        hide_when_typing = false;
       };
     };
   };
