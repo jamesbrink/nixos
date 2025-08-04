@@ -190,6 +190,23 @@
       mouse = {
         hide_when_typing = false;
       };
+
+      keyboard = {
+        bindings = [
+          # Clear screen on Command+K (macOS)
+          {
+            key = "K";
+            mods = "Command";
+            action = "ClearHistory";
+          }
+          # Also bind Command+K to send the clear sequence
+          {
+            key = "K";
+            mods = "Command";
+            chars = "\\u000c";
+          }
+        ];
+      };
     };
   };
 
