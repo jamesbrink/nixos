@@ -61,6 +61,7 @@
       # Development
       "cursor"
       "datagrip"
+      "github"
       "orbstack"
       "visual-studio-code"
 

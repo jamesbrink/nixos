@@ -1,8 +1,14 @@
 {
   "mcpServers": {
-    "nixos": {
-      "command": "uvx",
-      "args": ["mcp-nixos"]
+        "nixos": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/jamesbrink/Projects/utensils/mcp-nixos",
+        "mcp-nixos"
+      ]
     }
   }
 }
