@@ -89,8 +89,8 @@ in
     };
 
     history = {
-      size = 999999999999; # Infinite history
-      save = 999999999999; # Save infinite entries
+      size = 2147483647; # Maximum integer value for unlimited history
+      save = 2147483647; # Maximum integer value for unlimited saves
       path = "${homeDir}/.zsh_history";
       extended = true; # Save timestamps
       ignoreDups = false; # Keep duplicate entries

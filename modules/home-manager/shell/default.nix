@@ -147,34 +147,34 @@
       };
 
       colors = {
-        # Gruvbox dark theme
+        # Rosé Pine theme
         primary = {
-          background = "0x1d2021";
-          foreground = "0xebdbb2";
+          background = "0x191724";
+          foreground = "0xe0def4";
         };
         cursor = {
-          text = "0x1d2021";
-          cursor = "0xebdbb2";
+          text = "0x191724";
+          cursor = "0xe0def4";
         };
         normal = {
-          black = "0x282828";
-          red = "0xcc241d";
-          green = "0x98971a";
-          yellow = "0xd79921";
-          blue = "0x458588";
-          magenta = "0xb16286";
-          cyan = "0x689d6a";
-          white = "0xa89984";
+          black = "0x26233a";
+          red = "0xeb6f92";
+          green = "0x31748f";
+          yellow = "0xf6c177";
+          blue = "0x9ccfd8";
+          magenta = "0xc4a7e7";
+          cyan = "0xebbcba";
+          white = "0xe0def4";
         };
         bright = {
-          black = "0x928374";
-          red = "0xfb4934";
-          green = "0xb8bb26";
-          yellow = "0xfabd2f";
-          blue = "0x83a598";
-          magenta = "0xd3869b";
-          cyan = "0x8ec07c";
-          white = "0xebdbb2";
+          black = "0x6e6a86";
+          red = "0xeb6f92";
+          green = "0x31748f";
+          yellow = "0xf6c177";
+          blue = "0x9ccfd8";
+          magenta = "0xc4a7e7";
+          cyan = "0xebbcba";
+          white = "0xe0def4";
         };
       };
 

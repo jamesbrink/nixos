@@ -43,6 +43,9 @@
 
       # Root prompt customization
       programs.starship.settings = {
+        # Use the same two-line minimal format
+        format = lib.mkForce "$username$hostname$directory$git_branch$git_status$aws\n$character";
+        
         username = {
           show_always = true;
           style_user = lib.mkForce "red bold";

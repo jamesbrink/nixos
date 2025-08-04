@@ -13,6 +13,9 @@
     enableBashIntegration = true;
 
     settings = {
+      # Two-line minimal prompt format
+      format = "$username$hostname$directory$git_branch$git_status$aws\n$character";
+      
       # Use single line prompt
       add_newline = false;
 
@@ -28,13 +31,13 @@
       hostname = {
         ssh_only = false;
         style = "dimmed green";
-        format = "in 🌐 [$hostname]($style) ";
+        format = "@ [$hostname]($style) ";
       };
 
       # Directory configuration
       directory = {
         style = "cyan bold";
-        format = "in [$path]($style) ";
+        format = "[$path]($style) ";
         truncation_length = 3;
         truncate_to_repo = false;
       };
@@ -42,7 +45,7 @@
       # Git branch
       git_branch = {
         style = "purple bold";
-        format = "on [$symbol$branch]($style) ";
+        format = "[$symbol$branch]($style) ";
       };
 
       # Git status
@@ -54,7 +57,7 @@
       # AWS profile
       aws = {
         style = "yellow bold";
-        format = "on ☁️  [$profile( \\($region\\))]($style) ";
+        format = " (\\($region\\)) ";
         symbol = "";
       };
 
