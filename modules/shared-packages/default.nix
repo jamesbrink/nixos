@@ -44,6 +44,7 @@ in
       screen
       speedtest-cli
       restic-browser
+      terraform
       tree
       unzip
       virt-viewer
