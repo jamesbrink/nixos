@@ -52,6 +52,7 @@ in
       wget
       wireguard-tools
       yarn
+      zellij
       # Additional development and utility tools
       act
       code2prompt
