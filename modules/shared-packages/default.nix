@@ -23,6 +23,7 @@ in
       dnsutils
       fastfetch
       git-lfs
+      gitleaks
       home-manager
       httpie
       jq

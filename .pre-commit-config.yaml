@@ -28,7 +28,7 @@ repos:
     hooks:
       - id: prettier
         name: Format JSON/YAML/Markdown
-        entry: prettier --write
+        entry: nix develop -c prettier --write
         language: system
         types_or: [json, yaml, markdown]
         exclude: '^(flake\.lock|secrets/|nix-secrets/|nixos-old/).*'
@@ -48,7 +48,7 @@ repos:
     hooks:
       - id: gitleaks
         name: GitLeaks secret scan
-        entry: bash scripts/scan-gitleaks.sh --protect
+        entry: nix develop -c bash scripts/scan-gitleaks.sh --protect
         language: system
         pass_filenames: false
         always_run: true
