@@ -1,0 +1,31 @@
+# GitLeaks configuration for NixOS repository
+# This file defines allowlists for intentional secrets and false positives
+
+title = "NixOS GitLeaks Configuration"
+
+[extend]
+# Extend the base configuration
+useDefault = true
+
+[allowlist]
+description = "Allowlisted files and patterns"
+
+# Allow the intentionally hardcoded SSH host key in netboot installer
+# This provides consistent SSH fingerprints during N100 cluster installation
+paths = [
+    '''modules/netboot/installer-ssh-keys\.nix''',
+]
+
+# Allow webhook token placeholders in documentation and examples
+# These are not actual secrets but placeholder values
+regexes = [
+    '''WEBHOOK_TOKEN_RESET''',
+    '''WEBHOOK_TOKEN_ACTIVE''',
+]
+
+# Additional allowlist for specific commits if needed
+commits = [
+    # Original commit that added the netboot SSH keys
+    "bf0dafd3",
+    "9e1de5d8",
+]

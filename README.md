@@ -23,7 +23,18 @@ This project uses:
 
 ```shell
 .
+├── .envrc                       # direnv configuration
+├── .gitleaks.toml               # GitLeaks configuration
+├── .gitignore                   # Git ignore patterns
+├── .gitmodules                  # Git submodules (secrets)
+├── .mcp.json                    # MCP configuration
+├── .pre-commit-config.yaml      # Pre-commit hooks configuration
 ├── CLAUDE.md                    # AI assistant guidance and documentation
+├── LICENSE                      # MIT License
+├── README.md                    # This file
+├── SECRETS.md                   # Secrets management documentation
+├── TODO.md                      # Project todo list
+├── claude                       # Claude CLI wrapper
 ├── docs/                        # Documentation files
 │   └── nix-darwin-trackpad-options.md  # macOS trackpad configuration options
 ├── flake.lock                   # Locked dependencies
@@ -38,7 +49,6 @@ This project uses:
 │   ├── n100-03/                 # Cluster node 3 (NixOS)
 │   ├── n100-04/                 # Cluster node 4 (NixOS)
 │   └── sevastopol/              # Intel iMac 27" 2013 (Darwin)
-├── LICENSE                      # MIT License
 ├── modules/                     # Shared modules and services
 │   ├── aws-root-config.nix      # AWS configuration for root user
 │   ├── claude-desktop.nix       # Claude desktop config deployment
@@ -48,6 +58,11 @@ This project uses:
 │   │   └── packages.nix         # Darwin packages
 │   ├── ghostty-terminfo.nix     # Ghostty terminal support
 │   ├── heroku-cli.nix           # Heroku CLI module
+│   ├── home-manager/            # Home Manager modules
+│   │   ├── cli-tools.nix        # CLI tool configurations
+│   │   ├── editor/              # Editor configurations
+│   │   └── shell/               # Shell configurations
+│   ├── local-hosts.nix          # Local hosts file configuration
 │   ├── n100-disko.nix           # N100 disk configuration
 │   ├── n100-network.nix         # N100 network configuration
 │   ├── netboot/                 # Netboot infrastructure
@@ -59,7 +74,9 @@ This project uses:
 │   ├── nfs-mounts.nix           # NFS client configuration
 │   ├── packages/                # Custom package definitions
 │   │   ├── ollama/              # Ollama AI model runner
-│   │   └── postgis-reset/       # PostGIS webhook handler
+│   │   └── postgres13-reset/    # PostgreSQL 13 reset handler
+│   ├── restic-backups.nix       # Restic backup configuration
+│   ├── restic-shell-init.nix    # Restic shell initialization
 │   ├── services/                # Service configurations
 │   │   ├── ai-starter-kit/      # n8n/qdrant/postgres integration
 │   │   ├── netboot-autochain.nix # Netboot auto-chain config
@@ -78,7 +95,8 @@ This project uses:
 │   └── README.md                # Overlays documentation
 ├── pkgs/                        # Custom package builds
 │   ├── llama-cpp/               # CUDA-enabled llama.cpp
-│   └── netboot-xyz/             # Netboot.xyz package
+│   ├── netboot-xyz/             # Netboot.xyz package
+│   └── pixinsight/              # PixInsight astronomy software
 ├── profiles/                    # Reusable system profiles
 │   ├── darwin/                  # Darwin profiles
 │   │   ├── default.nix          # Base Darwin configuration
@@ -89,7 +107,6 @@ This project uses:
 │   ├── keychron/                # Keyboard configuration
 │   ├── n100/                    # N100 cluster profile
 │   └── server/                  # Server profile
-├── README.md                    # This file
 ├── scripts/                     # Utility scripts
 │   ├── build-netboot-images.sh  # Build netboot images
 │   ├── check-large-files.sh     # Check for large files
@@ -116,7 +133,7 @@ This project uses:
 │   ├── secrets-verify.sh        # Verify secrets integrity
 │   ├── setup-n100-macs.sh       # Document N100 MACs
 │   └── show-generations.sh      # Show system generations
-├── SECRETS.md                   # Secrets management documentation
+├── secrets/                     # Encrypted secrets (git submodule)
 ├── treefmt.toml                 # Code formatting configuration
 └── users/                       # User configurations
     └── regular/
@@ -397,7 +414,7 @@ For first-time deployment to a Darwin host, you need to configure passwordless s
 
 3. Add this line:
 
-   ```
+   ```sudoers
    jamesbrink ALL=(ALL) NOPASSWD: ALL
    ```
 
@@ -410,6 +427,7 @@ For first-time deployment to a Darwin host, you need to configure passwordless s
    ```
 
 6. Verify configuration:
+
    ```bash
    sudo visudo -c
    ```
@@ -462,6 +480,7 @@ For first-time deployment of N100 nodes:
    ```
 
 4. **After initial installation**, use regular deploy:
+
    ```bash
    deploy n100-01  # Uses standard deployment
    ```
@@ -510,7 +529,7 @@ For first-time deployment of N100 nodes:
 
 ### Network Boot Process
 
-```
+```mermaid
 N100 → DHCP Request → MikroTik Router
      ← IP + next-server (HAL9000) + netboot.xyz.efi ←
      → TFTP: Request netboot.xyz.efi →
