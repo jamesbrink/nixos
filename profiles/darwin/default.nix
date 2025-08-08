@@ -8,6 +8,7 @@
 {
   imports = [
     ../../modules/shared-packages/default.nix
+    ../../modules/shared-packages/python.nix
     ../../modules/darwin/local-hosts.nix
   ];
 

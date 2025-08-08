@@ -15,7 +15,7 @@
     settings = {
       # Two-line minimal prompt format
       format = "$username$hostname$directory$git_branch$git_status$nix_shell$aws\n$character";
-      
+
       # Use single line prompt
       add_newline = false;
 

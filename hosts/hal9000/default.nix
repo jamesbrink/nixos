@@ -16,6 +16,7 @@
     ./nginx.nix
     ./nginx-netboot.nix
     ../../modules/shared-packages/default.nix
+    ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix
     ../../modules/restic-backups.nix
     ../../users/regular/jamesbrink.nix

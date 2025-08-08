@@ -4,6 +4,7 @@
 {
   imports = [
     ../../modules/shared-packages/default.nix
+    ../../modules/shared-packages/python.nix
     ../../modules/claude-desktop.nix
     ../../modules/ssh-keys.nix
     ../../modules/nfs-mounts.nix

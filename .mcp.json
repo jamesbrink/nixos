@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-        "nixos": {
+    "nixos": {
       "type": "stdio",
       "command": "uv",
       "args": [

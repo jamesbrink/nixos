@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+if [[ -f flake.nix ]] && [[ -z "$IN_NIX_SHELL" ]]; then
+    exec nix develop --command ~/.claude/local/claude "$@"
+else
+    exec claude "$@"
+fi

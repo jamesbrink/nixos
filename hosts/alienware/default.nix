@@ -16,6 +16,7 @@
     ./hardware-configuration.nix
     ../../profiles/desktop/default-stable.nix
     ../../modules/shared-packages/default.nix
+    ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix
     ../../modules/restic-backups.nix
     ../../modules/services/samba-server.nix

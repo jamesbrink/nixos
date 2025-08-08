@@ -16,6 +16,7 @@
     ../../modules/darwin/restic-backups.nix
     ../../modules/ssh-keys.nix
     ../../users/regular/jamesbrink-darwin.nix
+    ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops-darwin.nix
   ];
 

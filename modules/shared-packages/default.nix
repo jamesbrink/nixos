@@ -36,15 +36,9 @@ in
       p7zip
       # Language servers for Neovim (kept here for system-wide availability)
       nodePackages.bash-language-server
-      pyright
       terraform-ls
       marksman
       nil
-      python313Full
-      python313Packages.boto3
-      python313Packages.markitdown
-      python313Packages.pip
-      python313Packages.pynvim
       rsync
       screen
       speedtest-cli
@@ -84,14 +78,5 @@ in
       wireshark
       # Zen Browser (twilight version for reproducibility)
       inputs.zen-browser.packages.${pkgs.system}.twilight
-      # ML packages (heavy dependencies, Linux-only for now)
-      # Note: Some ML packages don't support Python 3.13 yet, using 3.12 for those
-      python313Packages.torch
-      python313Packages.torchvision
-      python313Packages.torchaudio
-      python312Packages.tensorflow # TensorFlow doesn't support Python 3.13 yet
-      python313Packages.huggingface-hub
-      python313Packages.llvmlite
-      python313Packages.numba
     ];
 }
