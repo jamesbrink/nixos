@@ -26,6 +26,9 @@
     PAGER = "less -FR";
 
     CLICOLOR = "1";
+
+    # Add ~/.local/bin to PATH
+    PATH = "$HOME/.local/bin:$PATH";
   }
   // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
     SSH_AUTH_SOCK = "/run/user/$(id -u)/ssh-agent";
