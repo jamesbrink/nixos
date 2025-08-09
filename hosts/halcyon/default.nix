@@ -55,11 +55,20 @@
     unstablePkgs.libpostalWithData
     # pkg-config and headers for building Python bindings
     pkg-config
+    # Additional build tools needed for compiling Python extensions
+    clang
+    darwin.apple_sdk.frameworks.CoreServices
+    darwin.apple_sdk.frameworks.SystemConfiguration
   ];
 
-  # Set environment variable for libpostal data directory
+  # Set environment variables for libpostal
   environment.variables = {
     LIBPOSTAL_DATA_DIR = "${pkgs.unstablePkgs.libpostalWithData}/share/libpostal";
+    # Add include and lib paths for building Python bindings
+    C_INCLUDE_PATH = "${pkgs.unstablePkgs.libpostalWithData}/include";
+    LIBRARY_PATH = "${pkgs.unstablePkgs.libpostalWithData}/lib";
+    # Also set PKG_CONFIG_PATH for pkg-config to find libpostal
+    PKG_CONFIG_PATH = "${pkgs.unstablePkgs.libpostalWithData}/lib/pkgconfig";
   };
 
   # Time zone
