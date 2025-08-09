@@ -65,10 +65,13 @@
   environment.variables = {
     LIBPOSTAL_DATA_DIR = "${pkgs.unstablePkgs.libpostalWithData}/share/libpostal";
     # Add include and lib paths for building Python bindings
-    C_INCLUDE_PATH = "${pkgs.unstablePkgs.libpostalWithData}/include";
-    LIBRARY_PATH = "${pkgs.unstablePkgs.libpostalWithData}/lib";
+    C_INCLUDE_PATH = "${pkgs.unstablePkgs.libpostalWithData}/include:\${C_INCLUDE_PATH}";
+    LIBRARY_PATH = "${pkgs.unstablePkgs.libpostalWithData}/lib:\${LIBRARY_PATH}";
     # Also set PKG_CONFIG_PATH for pkg-config to find libpostal
-    PKG_CONFIG_PATH = "${pkgs.unstablePkgs.libpostalWithData}/lib/pkgconfig";
+    PKG_CONFIG_PATH = "${pkgs.unstablePkgs.libpostalWithData}/lib/pkgconfig:\${PKG_CONFIG_PATH}";
+    # Set CFLAGS and LDFLAGS to ensure correct library is used
+    CFLAGS = "-I${pkgs.unstablePkgs.libpostalWithData}/include";
+    LDFLAGS = "-L${pkgs.unstablePkgs.libpostalWithData}/lib";
   };
 
   # Time zone
