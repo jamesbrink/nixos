@@ -49,6 +49,19 @@
     ];
   };
 
+  # Additional packages for this host
+  environment.systemPackages = with pkgs; [
+    # libpostal with data for address parsing/normalization
+    libpostal
+    # pkg-config and headers for building Python bindings
+    pkg-config
+  ];
+
+  # Set environment variable for libpostal data directory
+  environment.variables = {
+    LIBPOSTAL_DATA_DIR = "${pkgs.libpostal}/share/libpostal";
+  };
+
   # Time zone
   time.timeZone = "America/Phoenix";
 
