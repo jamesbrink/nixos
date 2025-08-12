@@ -83,9 +83,6 @@ in
       # Pay respects (thefuck replacement)
       fuck = "pay-respects";
       pr = "pay-respects";
-
-      # Claude code
-      claude = "~/.claude/local/claude";
     };
 
     history = {
@@ -98,6 +95,9 @@ in
     };
 
     initContent = ''
+      # Add ~/.local/bin for pipx and ~/.claude/local for Claude CLI
+      export PATH="$HOME/.local/bin:$HOME/.claude/local:$PATH"
+
       # ZSH Options
       setopt APPEND_HISTORY          # Append to history file, don't overwrite
       setopt INC_APPEND_HISTORY      # Write to history file immediately

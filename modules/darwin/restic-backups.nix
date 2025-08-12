@@ -225,19 +225,20 @@ with lib;
     };
 
     # Age secrets configuration
-    age.secrets = {
-      "restic-password" = {
-        file = "${secretsPath}/global/restic/password.age";
-        path = "${config.users.users.jamesbrink.home}/.config/restic/password";
-        owner = "jamesbrink";
-        mode = "0400";
-      };
-      "restic-s3-env" = {
-        file = "${secretsPath}/global/restic/s3-env.age";
-        path = "${config.users.users.jamesbrink.home}/.config/restic/s3-env";
-        owner = "jamesbrink";
-        mode = "0400";
-      };
-    };
+    # TODO: Temporarily disabled to fall back to dummy profile
+    # age.secrets = {
+    #   "restic-password" = {
+    #     file = "${secretsPath}/global/restic/password.age";
+    #     path = "${config.users.users.jamesbrink.home}/.config/restic/password";
+    #     owner = "jamesbrink";
+    #     mode = "0400";
+    #   };
+    #   "restic-s3-env" = {
+    #     file = "${secretsPath}/global/restic/s3-env.age";
+    #     path = "${config.users.users.jamesbrink.home}/.config/restic/s3-env";
+    #     owner = "jamesbrink";
+    #     mode = "0400";
+    #   };
+    # };
   };
 }

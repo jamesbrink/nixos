@@ -74,6 +74,12 @@ let
       sphinx
       mkdocs
 
+      # MCP Tools (some deps for omnara)
+      typer # CLI framework for MCP tools
+      shellingham # Shell detection for typer
+      authlib # Authentication library
+      pydantic-settings # Settings management
+
       # Existing packages from default.nix
       pynvim # Neovim support (keeping from original)
       markitdown # Markdown processing (keeping from original)

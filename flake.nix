@@ -147,6 +147,10 @@
                 name = "PRJ_ROOT";
                 eval = "$PWD";
               }
+              {
+                name = "PATH";
+                eval = "$HOME/.local/bin:$PATH";
+              }
             ];
 
             packages = with pkgs; [
@@ -164,6 +168,7 @@
               trufflehog # For secret scanning
               gitleaks # For git-aware secret scanning
               pre-commit # For git hooks management
+              python313Packages.pipx # For installing Python tools like omnara
             ];
 
             commands = [

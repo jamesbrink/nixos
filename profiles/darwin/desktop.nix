@@ -80,7 +80,7 @@
       "wireshark-app"
 
       # AI Tools
-      "claude" # Claude Code
+      "claude" # Claude Desktop app
       "diffusionbee"
       "ollama-app"
 

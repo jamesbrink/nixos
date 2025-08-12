@@ -52,6 +52,24 @@
   # Time zone
   time.timeZone = "America/Phoenix";
 
+  # Copy authorized_keys to standard location for compatibility
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    echo "Copying authorized_keys to standard location for compatibility..."
+
+    # Ensure .ssh directory exists with correct permissions
+    mkdir -p /Users/jamesbrink/.ssh
+    chown jamesbrink:staff /Users/jamesbrink/.ssh
+    chmod 700 /Users/jamesbrink/.ssh
+
+    # Copy nix-managed authorized_keys to standard location
+    if [ -f /etc/ssh/nix_authorized_keys.d/jamesbrink ]; then
+      cp /etc/ssh/nix_authorized_keys.d/jamesbrink /Users/jamesbrink/.ssh/authorized_keys
+      chown jamesbrink:staff /Users/jamesbrink/.ssh/authorized_keys
+      chmod 600 /Users/jamesbrink/.ssh/authorized_keys
+      echo "Authorized keys copied to ~/.ssh/authorized_keys"
+    fi
+  '';
+
   # Dock auto-hide configuration
   system.defaults.dock.autohide = lib.mkForce true;
 
