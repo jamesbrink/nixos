@@ -71,6 +71,10 @@ let
       "server02"
       "server02.home.urandom.io"
     ];
+    "100.84.243.88" = [
+      "socrates"
+      "socrates.home.urandom.io"
+    ];
   };
 
   # Convert the localHosts attribute set to hosts file entries

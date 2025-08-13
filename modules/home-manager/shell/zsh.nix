@@ -60,7 +60,7 @@ in
       # System management
       cleanup = if pkgs.stdenv.isDarwin then "nix-collect-garbage -d" else "sudo nix-collect-garbage -d";
 
-      # Restic aliases
+      # Restic aliases - these now use the wrapper function from restic-shell-init.nix
       backup =
         if pkgs.stdenv.isDarwin then
           "restic-backup backup"
@@ -137,16 +137,8 @@ in
         . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
       fi
 
-      # Restic environment configuration
-      if [ -f "$HOME/.config/restic/s3-env" ]; then
-        set -a
-        source "$HOME/.config/restic/s3-env"
-        set +a
-      fi
-      export RESTIC_REPOSITORY="s3:s3.us-west-2.amazonaws.com/urandom-io-backups/$(hostname -s)"
-      if [ -f "$HOME/.config/restic/password" ]; then
-        export RESTIC_PASSWORD_FILE="$HOME/.config/restic/password"
-      fi
+      # Restic environment configuration is handled by wrapper functions
+      # See modules/restic-shell-init.nix for credential isolation implementation
 
       # Source environment files (with race condition protection)
       for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key; do

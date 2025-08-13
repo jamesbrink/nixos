@@ -97,29 +97,37 @@ with lib;
         #!/usr/bin/env bash
         set -euo pipefail
 
-        # Set PATH to include restic
-        export PATH="${pkgs.restic}/bin:$PATH"
+        # Function to run restic with credentials loaded in a subshell
+        run_restic() {
+          (
+            # Set PATH to include restic
+            export PATH="${pkgs.restic}/bin:$PATH"
 
-        # Load environment variables
-        if [ -f "$HOME/.config/restic/s3-env" ]; then
-          set -a
-          source "$HOME/.config/restic/s3-env"
-          set +a
-        else
-          echo "Error: Restic S3 environment file not found at $HOME/.config/restic/s3-env"
-          exit 1
-        fi
+            # Load environment variables only for this restic invocation
+            if [ -f "$HOME/.config/restic/s3-env" ]; then
+              set -a
+              source "$HOME/.config/restic/s3-env"
+              set +a
+            else
+              echo "Error: Restic S3 environment file not found at $HOME/.config/restic/s3-env"
+              exit 1
+            fi
 
-        # Set repository based on hostname
-        export RESTIC_REPOSITORY="s3:s3.us-west-2.amazonaws.com/urandom-io-backups/$(hostname -s)"
+            # Set repository based on hostname
+            export RESTIC_REPOSITORY="s3:s3.us-west-2.amazonaws.com/urandom-io-backups/$(hostname -s)"
 
-        # Load password
-        if [ -f "$HOME/.config/restic/password" ]; then
-          export RESTIC_PASSWORD_FILE="$HOME/.config/restic/password"
-        else
-          echo "Error: Restic password file not found at $HOME/.config/restic/password"
-          exit 1
-        fi
+            # Load password
+            if [ -f "$HOME/.config/restic/password" ]; then
+              export RESTIC_PASSWORD_FILE="$HOME/.config/restic/password"
+            else
+              echo "Error: Restic password file not found at $HOME/.config/restic/password"
+              exit 1
+            fi
+
+            # Execute restic with all arguments
+            restic "$@"
+          )
+        }
 
         # Default paths to backup (from configuration)
         BACKUP_PATHS=(
@@ -140,25 +148,39 @@ with lib;
         case "''${1:-}" in
           init)
             echo "Initializing Restic repository..."
-            restic init
+            run_restic init
             ;;
           backup)
-            echo "Starting backup to $RESTIC_REPOSITORY..."
+            # Note: We need to get the repository info outside the subshell for the echo
+            REPO_NAME="s3:s3.us-west-2.amazonaws.com/urandom-io-backups/$(hostname -s)"
+            echo "Starting backup to $REPO_NAME..."
             # Check if repository exists, initialize if not
-            if ! restic snapshots &>/dev/null; then
+            if ! run_restic snapshots &>/dev/null; then
               echo "Repository does not exist. Initializing..."
-              restic init || { echo "Failed to initialize repository"; exit 1; }
+              run_restic init || { echo "Failed to initialize repository"; exit 1; }
             fi
-            eval restic backup --compression max --verbose $EXCLUDE_ARGS "''${BACKUP_PATHS[@]}"
+            # Run backup in subshell with credentials
+            (
+              # Load environment variables for the backup command
+              if [ -f "$HOME/.config/restic/s3-env" ]; then
+                set -a
+                source "$HOME/.config/restic/s3-env"
+                set +a
+              fi
+              export RESTIC_REPOSITORY="$REPO_NAME"
+              [ -f "$HOME/.config/restic/password" ] && export RESTIC_PASSWORD_FILE="$HOME/.config/restic/password"
+              
+              eval restic backup --compression max --verbose $EXCLUDE_ARGS "''${BACKUP_PATHS[@]}"
+            )
             ;;
           snapshots)
-            restic snapshots
+            run_restic snapshots
             ;;
           check)
-            restic check
+            run_restic check
             ;;
           prune)
-            restic forget --prune ${lib.concatStringsSep " " config.programs.restic-backups.pruneOpts}
+            run_restic forget --prune ${lib.concatStringsSep " " config.programs.restic-backups.pruneOpts}
             ;;
           restore)
             if [ -z "''${2:-}" ]; then
@@ -166,7 +188,7 @@ with lib;
               exit 1
             fi
             TARGET="''${3:-restored-files}"
-            restic restore "''${2}" --target "$TARGET"
+            run_restic restore "''${2}" --target "$TARGET"
             ;;
           status)
             echo "Launchd backup agent status:"
@@ -208,7 +230,8 @@ with lib;
       script = ''
         # Only run if restic config exists
         if [ -f "$HOME/.config/restic/s3-env" ] && [ -f "$HOME/.config/restic/password" ]; then
-          /run/current-system/sw/bin/restic-backup backup
+          # Run backup in a clean environment without polluting the shell
+          exec /run/current-system/sw/bin/restic-backup backup
         fi
       '';
 
@@ -225,20 +248,19 @@ with lib;
     };
 
     # Age secrets configuration
-    # TODO: Temporarily disabled to fall back to dummy profile
-    # age.secrets = {
-    #   "restic-password" = {
-    #     file = "${secretsPath}/global/restic/password.age";
-    #     path = "${config.users.users.jamesbrink.home}/.config/restic/password";
-    #     owner = "jamesbrink";
-    #     mode = "0400";
-    #   };
-    #   "restic-s3-env" = {
-    #     file = "${secretsPath}/global/restic/s3-env.age";
-    #     path = "${config.users.users.jamesbrink.home}/.config/restic/s3-env";
-    #     owner = "jamesbrink";
-    #     mode = "0400";
-    #   };
-    # };
+    age.secrets = {
+      "restic-password" = {
+        file = "${secretsPath}/global/restic/password.age";
+        path = "${config.users.users.jamesbrink.home}/.config/restic/password";
+        owner = "jamesbrink";
+        mode = "0400";
+      };
+      "restic-s3-env" = {
+        file = "${secretsPath}/global/restic/s3-env.age";
+        path = "${config.users.users.jamesbrink.home}/.config/restic/s3-env";
+        owner = "jamesbrink";
+        mode = "0400";
+      };
+    };
   };
 }
