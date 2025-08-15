@@ -1,43 +1,44 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
-    "CLAUDE_BASH_COMMAND_TIMEOUT": "150000",
-    "CLAUDE_BASH_COMMAND_MAX_TIMEOUT": "600000"
+    "MCP_TOOL_TIMEOUT": "150000",
+    "ANTHROPIC_LOG": "info"
   },
   "permissions": {
     "allow": [
-      "Bash(nix develop:*)",
-      "Bash(nix flake lock:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "WebFetch(domain:github.com)",
-      "Bash(grep:*)",
-      "Bash(deploy alienware)",
-      "Bash(mkdir:*)",
-      "Bash(git clone:*)",
-      "Bash(nix run:*)",
-      "Bash(ls:*)",
-      "Bash(touch:*)",
-      "Bash(rm:*)",
-      "Bash(git restore:*)",
-      "Bash(ssh:*)",
-      "Bash(agenix:*)",
-      "Bash(RULES=../nix-secrets/secrets.nix agenix -r -i ~/.ssh/id_ed25519)",
-      "Bash(git -C ../nix-secrets add -A)",
-      "Bash(git -C ../nix-secrets status)",
-      "Bash(git -C ../nix-secrets commit -m \"Add sevastopol host to age recipients\")",
-      "Bash(git -C ../nix-secrets push)",
-      "Bash(scp:*)",
-      "Bash(git rm:*)",
-      "Bash(git checkout:*)",
-      "Bash(git -C tmp/nixos-old checkout m4)",
-      "Bash(git -C tmp/nixos-old branch --show-current)",
-      "Bash(rg:*)",
-      "Bash(find:*)",
-      "Bash(chmod:*)"
+      "Bash",
+      "Edit",
+      "Glob",
+      "Grep",
+      "LS",
+      "Read",
+      "mcp__*",
+      "MultiEdit",
+      "Task",
+      "WebFetch",
+      "WebSearch",
+      "Write"
     ],
-    "deny": []
+    "deny": ["Bash(rm:-rf /)"],
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": ["../nix-secrets"]
   },
+  "includeCoAuthoredBy": true,
+  "cleanupPeriodDays": 30,
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["nixos"]
+  "enabledMcpjsonServers": ["nixos"],
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "nixfmt ${CLAUDE_FILE_PATHS} 2>/dev/null || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
 }
