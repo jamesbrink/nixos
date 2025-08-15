@@ -67,6 +67,10 @@ let
       "vmware"
       "vmware.home.urandom.io"
     ];
+    "100.105.134.43" = [
+      "plato"
+      "plato.home.urandom.io"
+    ];
     "10.70.100.192" = [
       "server02"
       "server02.home.urandom.io"
