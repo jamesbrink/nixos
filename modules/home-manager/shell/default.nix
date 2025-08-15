@@ -111,11 +111,6 @@
         StrictHostKeyChecking no
         CheckHostIP no
         UserKnownHostsFile=/dev/null
-
-      Host socrates
-        StrictHostKeyChecking no
-        CheckHostIP no
-        UserKnownHostsFile=/dev/null
     '';
   };
 
