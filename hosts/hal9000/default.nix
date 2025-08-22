@@ -599,11 +599,41 @@
   };
 
   virtualisation = {
+    containers = {
+      enable = true;
+      containersConf.settings = {
+        engine = {
+          runtime = "crun";
+          runtimes = {
+            crun = [ "${pkgs.crun}/bin/crun" ];
+            runc = [ "${pkgs.runc}/bin/runc" ];
+          };
+        };
+      };
+    };
     podman = {
       enable = true;
-      dockerCompat = true;
+      dockerCompat = false; # Disable docker compatibility to use real Docker
       defaultNetwork.settings.dns_enabled = true;
       # enableNvidia = true;
+      extraPackages = with pkgs; [
+        runc
+        crun
+        conmon
+      ];
+    };
+    docker = {
+      enable = true;
+      enableNvidia = true; # Enable NVIDIA support for Docker
+      autoPrune = {
+        enable = true;
+        dates = "weekly";
+      };
+      daemon.settings = {
+        features = {
+          buildkit = true;
+        };
+      };
     };
     oci-containers = {
       containers = {
@@ -1018,6 +1048,8 @@
     pgbackrest
     pgweb
     podman
+    podman-compose
+    docker-compose
     samba4Full
     spice
     spice-gtk
