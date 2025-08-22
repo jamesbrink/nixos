@@ -223,6 +223,131 @@ let
     echo "Completed at: $(date)"
   '';
 
+  # Sync WAL files from N days ago
+  postgres13-wal-sync-days = pkgs.writeScriptBin "postgres13-wal-sync-days" ''
+    #!${pkgs.bash}/bin/bash
+    set -euo pipefail
+
+    DAYS_BACK=''${1:-5}
+    ARCHIVE_DIR="/storage-fast/quantierra/archive"
+    REMOTE_SOURCE="jamesbrink@server01.myquantierra.com:/mnt/spinners/postgresql_backups/archive/"
+
+    echo "=== PostgreSQL WAL Sync - Going back $DAYS_BACK days ==="
+    echo "Started at: $(date)"
+
+    # Calculate the date N days ago (format: YYYYMMDD)
+    TARGET_DATE=$(date -d "$DAYS_BACK days ago" +%Y%m%d 2>/dev/null || date -v-''${DAYS_BACK}d +%Y%m%d)
+    echo "Target date: $TARGET_DATE"
+
+    # First, let's see what WAL files exist on the remote from that date
+    echo "Checking remote for WAL files from around $TARGET_DATE..."
+
+    # Get a sample of remote files to determine the approximate log sequence
+    # Test with a simple ls command first
+    if [ "$(id -u)" = "0" ]; then
+      REMOTE_SAMPLE=$(sudo -u jamesbrink ssh jamesbrink@server01.myquantierra.com "ls /mnt/spinners/postgresql_backups/archive/ 2>/dev/null | grep -E '^[0-9A-F]{24}\.gz$' | sort | tail -1000" || echo "")
+    else
+      REMOTE_SAMPLE=$(ssh jamesbrink@server01.myquantierra.com "ls /mnt/spinners/postgresql_backups/archive/ 2>/dev/null | grep -E '^[0-9A-F]{24}\.gz$' | sort | tail -1000" || echo "")
+    fi
+
+    if [ -z "$REMOTE_SAMPLE" ]; then
+      echo "Error: Could not get remote file list"
+      exit 1
+    fi
+
+    # Try to find a reasonable starting point based on file patterns
+    # PostgreSQL WAL files are named: TTTTTTTTLLLLLLLLSSSSSSSS where T=timeline, L=log sequence, S=segment
+    # We'll start from a point and sync everything forward
+
+    # Get the oldest local WAL file to understand what we already have
+    OLDEST_LOCAL=$(ls -1 "$ARCHIVE_DIR" 2>/dev/null | grep -E '^[0-9A-F]{24}\.gz$' | sort | head -1 || echo "")
+
+    if [ -n "$OLDEST_LOCAL" ]; then
+      echo "Oldest local WAL: ''${OLDEST_LOCAL%.gz}"
+      
+      # Extract components from oldest local
+      TIMELINE="''${OLDEST_LOCAL:0:8}"
+      OLD_LOG_SEQ="''${OLDEST_LOCAL:8:8}"
+      
+      # Calculate log sequence from N days ago (rough estimate: ~2GB of WAL per day = ~128 segments)
+      SEGMENTS_PER_DAY=128
+      SEGMENTS_BACK=$((DAYS_BACK * SEGMENTS_PER_DAY))
+      
+      # Convert hex to decimal, subtract, convert back
+      OLD_LOG_DEC=$((0x$OLD_LOG_SEQ))
+      TARGET_LOG_DEC=$((OLD_LOG_DEC - (SEGMENTS_BACK / 256)))  # 256 segments per log
+      
+      if [ $TARGET_LOG_DEC -lt 1 ]; then
+        TARGET_LOG_DEC=1
+      fi
+      
+      TARGET_LOG_SEQ=$(printf "%08X" $TARGET_LOG_DEC)
+      START_SEGMENT="''${TIMELINE}''${TARGET_LOG_SEQ}00000000"
+      
+      echo "Calculated starting WAL segment: $START_SEGMENT"
+    else
+      echo "No local WAL files found. Starting from snapshot base"
+      START_SEGMENT="00000001000042900000000D"
+    fi
+
+    # Build rsync include patterns
+    INCLUDE_ARGS=()
+
+    TIMELINE="''${START_SEGMENT:0:8}"
+    LOG_SEQ="''${START_SEGMENT:8:8}"
+    LOG_DEC=$((0x$LOG_SEQ))
+
+    # Include the starting log sequence and everything after
+    for ((i = 0; i <= 200; i++)); do
+      NEXT_LOG=$(printf "%08X" $((LOG_DEC + i)))
+      INCLUDE_ARGS+=("--include=''${TIMELINE}''${NEXT_LOG}*.gz")
+    done
+
+    # Include history files
+    INCLUDE_ARGS+=("--include=*.history.gz")
+
+    echo "Syncing WAL files from log sequence $LOG_SEQ onwards..."
+    echo "Number of include patterns: ''${#INCLUDE_ARGS[@]}"
+
+    # Fix permissions before syncing
+    echo "Preparing archive directory..."
+     chown -R 999:999 "$ARCHIVE_DIR"
+     chmod 755 "$ARCHIVE_DIR"
+
+    # Run rsync with bandwidth limit
+    echo "Starting rsync (this may take a while for $DAYS_BACK days of WAL)..."
+     ${pkgs.rsync}/bin/rsync -avz \
+      --bwlimit=10000 \
+      --include='*/' \
+      "''${INCLUDE_ARGS[@]}" \
+      --exclude='*' \
+      --timeout=300 \
+      --chown=999:999 \
+      --chmod=F640,D755 \
+      --progress \
+      -e "${pkgs.openssh}/bin/ssh -o User=jamesbrink" \
+      "$REMOTE_SOURCE" \
+      "$ARCHIVE_DIR/"
+
+    # Show what we have now
+    echo ""
+    echo "Sync complete. Current archive status:"
+    TOTAL_FILES=$(find "$ARCHIVE_DIR" -name "*.gz" -type f | wc -l)
+    OLDEST_FILE=$(ls -1t "$ARCHIVE_DIR"/*.gz 2>/dev/null | tail -1 | xargs basename 2>/dev/null || echo "none")
+    NEWEST_FILE=$(ls -1t "$ARCHIVE_DIR"/*.gz 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "none")
+    echo "Total WAL files: $TOTAL_FILES"
+    echo "Oldest file: $OLDEST_FILE"
+    echo "Newest file: $NEWEST_FILE"
+
+    echo ""
+    echo "WAL sync completed at: $(date)"
+    echo ""
+    echo "To apply these WAL files to PostgreSQL:"
+    echo "1. Ensure PostgreSQL is in recovery mode"
+    echo "2. Restart PostgreSQL: systemctl restart podman-postgres13"
+    echo "3. Monitor logs: journalctl -fu podman-postgres13"
+  '';
+
   # Development mode script to switch from recovery to normal mode
   postgres13-dev-mode = pkgs.writeScriptBin "postgres13-dev-mode" ''
     #!${pkgs.bash}/bin/bash
@@ -342,6 +467,7 @@ pkgs.symlinkJoin {
     postgres13-wal-sync
     postgres13-wal-retention
     postgres13-wal-sync-full
+    postgres13-wal-sync-days
     postgres13-dev-mode
     postgres13-create-base-auto
   ];
