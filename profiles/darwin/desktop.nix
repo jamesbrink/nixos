@@ -94,7 +94,7 @@
     # Mac App Store apps
     masApps = {
       "Amphetamine" = 937984704;
-      "Spark" = 1176895641;
+      "Spark Desktop" = 6445813049; # New Spark Mail app with AI features
       "Xcode" = 497799835;
     };
   };
