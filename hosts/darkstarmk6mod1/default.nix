@@ -96,7 +96,6 @@
       "krita"
 
       # Communication
-      "mailspring"
       "signal"
       "whatsapp"
 

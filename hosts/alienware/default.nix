@@ -238,7 +238,6 @@
   };
 
   # VSCode Server (commented out)
-  # services.vscode-server.enable = true;
 
   # Syncthing configuration
   services.syncthing = {

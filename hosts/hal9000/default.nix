@@ -122,6 +122,8 @@
     "d /var/lib/libvirt/images 0775 root libvirtd"
     "d /storage-fast/vms 0775 jamesbrink libvirtd"
     "d ${config.users.users.jamesbrink.home}/.local/share/rustdesk 0755 jamesbrink users"
+    # PixInsight cache directory - prevents garbage collection of the tar.xz file
+    "d /var/cache/pixinsight 0755 root root"
   ];
 
   fileSystems."/storage-fast" = {
@@ -997,8 +999,9 @@
   ];
 
   environment.systemPackages = with pkgs; [
-    # Pin pixinsight to existing store path to avoid rebuild
-    (builtins.storePath /nix/store/vhva0m6160s0pnkavmkgdxkxx0zffh3b-pixinsight-1.9.3-20250402)
+    # IMPORTANT: pixinsight is pinned to a specific version - DO NOT MODIFY
+    # This avoids expensive rebuilds. If you need to update, coordinate with jamesbrink
+    pixinsight # Pinned via overlay to version 1.9.3-20250402
     # unstablePkgs.exo
     audit
     bottles
@@ -1014,7 +1017,6 @@
     OVMF
     pgbackrest
     pgweb
-    # pixinsight  # Pinned above to existing store path
     podman
     samba4Full
     spice

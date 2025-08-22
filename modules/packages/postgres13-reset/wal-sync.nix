@@ -96,7 +96,7 @@ let
     # First, let's check what files exist on the remote for our log sequence
     echo "Checking remote for files around log sequence $LOG_SEQ..."
     if [ "$(id -u)" = "0" ]; then
-      REMOTE_FILES=$( -u jamesbrink ssh jamesbrink@server01.myquantierra.com "ls -1 /mnt/spinners/postgresql_backups/archive/$TIMELINE$LOG_SEQ*.gz 2>/dev/null | head -10" || echo "")
+      REMOTE_FILES=$(sudo -u jamesbrink ssh jamesbrink@server01.myquantierra.com "ls -1 /mnt/spinners/postgresql_backups/archive/$TIMELINE$LOG_SEQ*.gz 2>/dev/null | head -10" || echo "")
     else
       REMOTE_FILES=$(ssh jamesbrink@server01.myquantierra.com "ls -1 /mnt/spinners/postgresql_backups/archive/$TIMELINE$LOG_SEQ*.gz 2>/dev/null | head -10" || echo "")
     fi

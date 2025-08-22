@@ -690,6 +690,8 @@
           modules = [
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
+            vscode-server.nixosModules.default
+            ./modules/vscode-server.nix
             ./hosts/alienware/default.nix
             # Use unstable packages
             {
@@ -724,12 +726,7 @@
             home-manager.nixosModules.home-manager
             agenix.nixosModules.default
             vscode-server.nixosModules.default
-            (
-              { config, pkgs, ... }:
-              {
-                services.vscode-server.enable = true;
-              }
-            )
+            ./modules/vscode-server.nix
             ./hosts/hal9000/default.nix
 
             # Use unstable packages
