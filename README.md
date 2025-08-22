@@ -823,6 +823,56 @@ The `samba-add-user` script is available in the development shell and on all Lin
 - Shellcheck integration for shell script linting and validation
 - Proper error handling with `set -euo pipefail` in all scripts
 
+## Custom Packages
+
+### PixInsight Astronomy Software
+
+PixInsight is a commercial astronomy image processing application that requires special handling due to its licensing and size.
+
+#### Initial Setup
+
+1. **Purchase/Download**: Obtain PixInsight from [pixinsight.com](https://pixinsight.com) (requires license)
+2. **Download the Linux tar.xz file**: `PI-linux-x64-1.9.3-20250402-c.tar.xz`
+3. **Add to Nix Store** (on the target host):
+   ```bash
+   nix-prefetch-url --type sha256 file:///path/to/PI-linux-x64-1.9.3-20250402-c.tar.xz
+   ```
+
+#### Permanent Cache Solution
+
+To prevent the PixInsight file from being garbage collected:
+
+1. **Create cache directory** (on HAL9000):
+
+   ```bash
+   sudo mkdir -p /var/cache/pixinsight
+   sudo cp ~/Downloads/PI-linux-x64-*.tar.xz /var/cache/pixinsight/
+   sudo chmod 644 /var/cache/pixinsight/*.tar.xz
+   ```
+
+2. **Add to Nix store**:
+   ```bash
+   nix-store --add-fixed sha256 /var/cache/pixinsight/PI-linux-x64-1.9.3-20250402-c.tar.xz
+   ```
+
+The cache directory is preserved via systemd tmpfiles rules and prevents repeated downloads.
+
+#### Version Updates
+
+When updating PixInsight:
+
+1. Download new version from pixinsight.com
+2. Copy to `/var/cache/pixinsight/`
+3. Update version and hash in `pkgs/pixinsight/package.nix`
+4. Rebuild the system
+
+See `docs/pixinsight-cache.md` for detailed troubleshooting.
+
+### Other Custom Packages
+
+- **llama-cpp**: CUDA-enabled LLaMA implementation for AI workloads
+- **netboot-xyz**: Custom netboot.xyz package (v2.0.87) for PXE booting
+
 ## Troubleshooting
 
 ### Common Issues
