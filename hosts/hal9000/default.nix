@@ -367,6 +367,7 @@
         139 # NetBIOS Session Service
         445 # SMB/CIFS
         3389
+        5433 # PostgreSQL 13 dev database (PostGIS)
         5900 # SPICE for VMs
         5901 # Additional SPICE ports
         5902
@@ -376,6 +377,17 @@
         7001 # AirPlay
         7100 # AirPlay screen mirroring
         # Development ports
+        3000
+        3001
+        3002
+        3003
+        3004
+        3005
+        3006
+        3007
+        3008
+        3009
+        3010
         8000
         8001
         8002
@@ -415,9 +427,22 @@
             4046 # NFS mountd
             4047 # NFS statd
             3389
+            5433 # PostgreSQL 13 dev database (PostGIS)
             7000 # AirPlay
             7001 # AirPlay
             7100 # AirPlay screen mirroring
+            # Development ports
+            3000
+            3001
+            3002
+            3003
+            3004
+            3005
+            3006
+            3007
+            3008
+            3009
+            3010
           ];
           allowedUDPPorts = [
             111 # RPC portmapper
@@ -657,7 +682,7 @@
             "hba_file=/etc/postgresql/pg_hba.conf"
           ];
           ports = [
-            "5432:5432"
+            "5433:5432" # Expose container's 5432 as host's 5433
           ];
         };
 
@@ -1187,7 +1212,7 @@
     };
     serviceConfig = {
       Type = "simple";
-      ExecStart = "${pkgs.pgweb}/bin/pgweb --bind=0.0.0.0 --listen=8081 --host=127.0.0.1 --port=5432 --user=postgres --pass=postgres --db=nyc_real_estate_dev --skip-open --sessions";
+      ExecStart = "${pkgs.pgweb}/bin/pgweb --bind=0.0.0.0 --listen=8081 --host=127.0.0.1 --port=5433 --user=postgres --pass=postgres --db=nyc_real_estate_dev --skip-open --sessions";
       Restart = "always";
       RestartSec = "5s";
       User = "jamesbrink";
