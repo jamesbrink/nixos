@@ -198,14 +198,14 @@
                 name = "deploy";
                 category = "deployment";
                 help = "Deploy the configuration to a target host";
-                command = "${./scripts/deploy.sh} $@";
+                command = ''$PRJ_ROOT/scripts/deploy.sh "$@"'';
               }
 
               {
                 name = "deploy-test";
                 category = "deployment";
                 help = "Test the deployment without making changes";
-                command = "${./scripts/deploy-test.sh} $@";
+                command = ''$PRJ_ROOT/scripts/deploy-test.sh "$@"'';
               }
 
               {
@@ -280,14 +280,14 @@
                 category = "deployment";
                 help = "Deploy to all hosts in parallel with a summary report";
                 command = ''
-                  ${./scripts/deploy-all.sh} "$@"
+                  "$PRJ_ROOT/scripts/deploy-all.sh" "$@"
                 '';
               }
               {
                 name = "deploy-local";
                 category = "deployment";
                 help = "Build locally and deploy to a remote host (useful for low-RAM targets)";
-                command = "${./scripts/deploy-local.sh} $@";
+                command = ''$PRJ_ROOT/scripts/deploy-local.sh "$@"'';
               }
 
               {
@@ -308,14 +308,14 @@
                 name = "health-check";
                 category = "maintenance";
                 help = "Check the health of a system";
-                command = "${./scripts/health-check.sh} $@";
+                command = ''$PRJ_ROOT/scripts/health-check.sh "$@"'';
               }
 
               {
                 name = "nix-gc";
                 category = "maintenance";
                 help = "Run garbage collection to free up disk space";
-                command = "${./scripts/nix-gc.sh} $@";
+                command = ''$PRJ_ROOT/scripts/nix-gc.sh "$@"'';
               }
 
               {
@@ -332,35 +332,35 @@
                 name = "show-generations";
                 category = "maintenance";
                 help = "Show NixOS generations on a host";
-                command = "${./scripts/show-generations.sh} $@";
+                command = ''$PRJ_ROOT/scripts/show-generations.sh "$@"'';
               }
 
               {
                 name = "rollback";
                 category = "maintenance";
                 help = "Rollback to the previous generation on a host";
-                command = "${./scripts/rollback.sh} $@";
+                command = ''$PRJ_ROOT/scripts/rollback.sh "$@"'';
               }
 
               {
                 name = "samba-add-user";
                 category = "maintenance";
                 help = "Add or update a Samba user password";
-                command = "${./scripts/samba-add-user.sh} $@";
+                command = ''$PRJ_ROOT/scripts/samba-add-user.sh "$@"'';
               }
 
               {
                 name = "secrets-edit";
                 category = "secrets";
                 help = "Edit a secret file";
-                command = "${./scripts/secrets-edit.sh} $@";
+                command = ''$PRJ_ROOT/scripts/secrets-edit.sh "$@"'';
               }
 
               {
                 name = "secrets-rekey";
                 category = "secrets";
                 help = "Re-encrypt all secrets with current recipients";
-                command = "${./scripts/secrets-rekey.sh} $@";
+                command = ''$PRJ_ROOT/scripts/secrets-rekey.sh "$@"'';
               }
 
               {
@@ -377,7 +377,7 @@
                 name = "secrets-verify";
                 category = "secrets";
                 help = "Verify all secrets can be decrypted";
-                command = "${./scripts/secrets-verify.sh} $@";
+                command = ''$PRJ_ROOT/scripts/secrets-verify.sh "$@"'';
               }
 
               {
@@ -395,7 +395,7 @@
                 name = "secrets-add-host";
                 category = "secrets";
                 help = "Add a new host to secrets recipients";
-                command = "${./scripts/secrets-add-host.sh} $@";
+                command = ''$PRJ_ROOT/scripts/secrets-add-host.sh "$@"'';
               }
 
               # ───────────────────────────────────────────────────────
@@ -406,7 +406,7 @@
                 category = "netboot";
                 help = "Build and deploy N100 netboot images";
                 command = ''
-                  NIX_CONFIG_DIR="${toString ./.}" ${./scripts/build-netboot-images.sh}
+                  NIX_CONFIG_DIR="$PRJ_ROOT" "$PRJ_ROOT/scripts/build-netboot-images.sh"
                 '';
               }
 
@@ -416,7 +416,7 @@
                 help = "Document N100 MAC addresses for netboot";
                 command = ''
                   echo "Setting up N100 MAC addresses..."
-                  cd ${toString ./.}
+                  cd "$PRJ_ROOT"
                   ./scripts/setup-n100-macs.sh
                 '';
               }
@@ -425,21 +425,21 @@
                 name = "deploy-n100";
                 category = "netboot";
                 help = "Initial deployment to N100 node using nixos-anywhere (creates ZFS volumes). Use NIXOS_ANYWHERE_NOCONFIRM=1 to skip confirmation";
-                command = "${./scripts/deploy-n100.sh} $@";
+                command = ''$PRJ_ROOT/scripts/deploy-n100.sh "$@"'';
               }
 
               {
                 name = "deploy-n100-local";
                 category = "netboot";
                 help = "Initial deployment to N100 node using nixos-anywhere with local build (for resource-constrained targets)";
-                command = "${./scripts/deploy-n100-local.sh} $@";
+                command = ''$PRJ_ROOT/scripts/deploy-n100-local.sh "$@"'';
               }
 
               {
                 name = "secrets-print";
                 category = "secrets";
                 help = "Decrypt and print a secret (for testing/debugging)";
-                command = "${./scripts/secrets-print.sh} $@";
+                command = ''$PRJ_ROOT/scripts/secrets-print.sh "$@"'';
               }
 
               # ───────────────────────────────────────────────────────
@@ -449,28 +449,28 @@
                 name = "scan-secrets";
                 category = "security";
                 help = "Scan for secrets in the repository (use --help for options)";
-                command = "${./scripts/scan-secrets.sh} $@";
+                command = ''$PRJ_ROOT/scripts/scan-secrets.sh "$@"'';
               }
 
               {
                 name = "scan-secrets-history";
                 category = "security";
                 help = "Deep scan git history for secrets (use --help for options)";
-                command = "${./scripts/scan-secrets-history.sh} $@";
+                command = ''$PRJ_ROOT/scripts/scan-secrets-history.sh "$@"'';
               }
 
               {
                 name = "scan-secrets-pre-commit";
                 category = "security";
                 help = "Pre-commit hook to scan staged files for secrets";
-                command = "${./scripts/scan-secrets-pre-commit.sh} $@";
+                command = ''$PRJ_ROOT/scripts/scan-secrets-pre-commit.sh "$@"'';
               }
 
               {
                 name = "scan-gitleaks";
                 category = "security";
                 help = "Scan for secrets using GitLeaks (use --help for options)";
-                command = "${./scripts/scan-gitleaks.sh} $@";
+                command = ''$PRJ_ROOT/scripts/scan-gitleaks.sh "$@"'';
               }
 
               {
@@ -481,13 +481,13 @@
                   echo "Running full security audit..."
                   echo
                   echo "1. TruffleHog filesystem scan..."
-                  ${./scripts/scan-secrets.sh} --filesystem
+                  "$PRJ_ROOT/scripts/scan-secrets.sh" --filesystem
                   echo
                   echo "2. TruffleHog history scan..."
-                  ${./scripts/scan-secrets-history.sh}
+                  "$PRJ_ROOT/scripts/scan-secrets-history.sh"
                   echo
                   echo "3. GitLeaks repository scan..."
-                  ${./scripts/scan-gitleaks.sh}
+                  "$PRJ_ROOT/scripts/scan-gitleaks.sh"
                   echo
                   echo "Security audit complete!"
                 '';
@@ -519,21 +519,21 @@
                 name = "restic-status";
                 category = "backup";
                 help = "Check Restic backup status on all hosts";
-                command = "${./scripts/restic-status.sh} $@";
+                command = ''$PRJ_ROOT/scripts/restic-status.sh "$@"'';
               }
 
               {
                 name = "restic-run";
                 category = "backup";
                 help = "Manually trigger backup on a specific host";
-                command = "${./scripts/restic-run.sh} $@";
+                command = ''$PRJ_ROOT/scripts/restic-run.sh "$@"'';
               }
 
               {
                 name = "restic-snapshots";
                 category = "backup";
                 help = "List snapshots for a host";
-                command = "RESTIC_PATH=${pkgs.restic}/bin/restic ${./scripts/restic-snapshots.sh} $@";
+                command = ''RESTIC_PATH="${pkgs.restic}/bin/restic" "$PRJ_ROOT/scripts/restic-snapshots.sh" "$@"'';
               }
             ];
           };
