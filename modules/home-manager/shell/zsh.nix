@@ -98,6 +98,9 @@ in
       # Add ~/.local/bin for pipx and ~/.claude/local for Claude CLI
       export PATH="$HOME/.local/bin:$HOME/.claude/local:$PATH"
 
+      # Disable Nix hyperlinks in error messages (prevents underlined text)
+      export NIX_DONT_HYPERLINK=1
+
       # ZSH Options
       setopt APPEND_HISTORY          # Append to history file, don't overwrite
       setopt INC_APPEND_HISTORY      # Write to history file immediately
