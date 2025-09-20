@@ -1425,4 +1425,7 @@
   #     GST_DEBUG = "3";
   #   };
   # };
+
+  # Open firewall port for Fooocus web UI
+  networking.firewall.allowedTCPPorts = [ 7865 ];
 }
