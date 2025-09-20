@@ -8,6 +8,9 @@
 }:
 
 {
+  # Allow broken packages (zig-hook is broken on x86_64-darwin)
+  nixpkgs.config.allowBroken = true;
+
   imports = [
     ./hardware.nix
     ../../profiles/darwin/desktop.nix # Use full desktop profile

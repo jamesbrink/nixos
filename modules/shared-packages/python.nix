@@ -17,7 +17,6 @@ let
       setuptools
       wheel
       virtualenv
-      tkinter # GUI support (was in python313Full)
 
       # Modern Python tools
       ruff # Fast linter and formatter
@@ -92,7 +91,7 @@ in
     with pkgs;
     [
       # Base Python installation
-      python313 # Python 3.13 (Full removed - bluetooth now default, tkinter in package set)
+      python313 # Python 3.13 (python313Full has been removed from nixpkgs)
 
       # Python 3.13 with bundled packages
       python313WithPackages
@@ -113,6 +112,9 @@ in
       # ML/AI packages (conditional for Linux due to heavy dependencies)
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
+      # GUI support (tkinter causes zig-hook issues on Darwin)
+      python313Packages.tkinter
+
       # Original ML packages
       python313Packages.torch # (keeping from original)
       python313Packages.torchvision # (keeping from original)
