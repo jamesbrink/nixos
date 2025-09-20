@@ -157,7 +157,7 @@ This project uses:
 
 ### Darwin (macOS) Hosts
 
-- **halcyon**: M4 Mac with Apple Silicon
+- **halcyon**: M4 Mac with Apple Silicon running macOS 26 (Tahoe)
 - **sevastopol**: Intel iMac 27" 2013 running macOS Sequoia via OCLP
 - **darkstarmk6mod1**: 2019 MacBook Pro 16" Intel
 

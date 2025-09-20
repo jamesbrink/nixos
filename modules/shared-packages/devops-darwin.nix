@@ -1,5 +1,19 @@
 { pkgs, ... }:
 
+let
+  # Pin terraform-docs to a working nixpkgs revision (before the flake update)
+  # This fixes the Go compilation error on Darwin
+  pinnedNixpkgs =
+    import
+      (builtins.fetchTarball {
+        url = "https://github.com/NixOS/nixpkgs/archive/3016b4b15d13f3089db8a41ef937b13a9e33a8df.tar.gz";
+        # sha256 will be computed on first build
+      })
+      {
+        system = pkgs.system;
+        config.allowUnfree = true;
+      };
+in
 {
   environment.systemPackages = with pkgs; [
     # DevOps tools that are compatible with darwin
@@ -33,7 +47,7 @@
     starship
     # tailscale # Use homebrew cask instead (tailscale-app)
     talosctl
-    terraform-docs
+    pinnedNixpkgs.terraform-docs # Pinned to working revision due to Go compilation issues
     terraform-lsp
     tflint
     tig

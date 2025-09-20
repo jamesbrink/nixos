@@ -17,6 +17,7 @@ let
       setuptools
       wheel
       virtualenv
+      tkinter # GUI support (was in python313Full)
 
       # Modern Python tools
       ruff # Fast linter and formatter
@@ -91,7 +92,7 @@ in
     with pkgs;
     [
       # Base Python installation
-      python313Full # Full Python 3.13 (keeping from original)
+      python313 # Python 3.13 (Full removed - bluetooth now default, tkinter in package set)
 
       # Python 3.13 with bundled packages
       python313WithPackages

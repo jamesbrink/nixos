@@ -137,7 +137,7 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
    - Each host has its own directory with `default.nix` and hardware configuration
    - Hosts import shared profiles, modules, and user configurations
    - Linux hosts: `hal9000` (main server with AI services), `n100-*` (cluster nodes), `alienware` (desktop)
-   - macOS hosts: `halcyon` (M4 Mac), `sevastopol` (Intel iMac 2013), `darkstarmk6mod1` (Intel MacBook Pro 2019)
+   - macOS hosts: `halcyon` (M4 Mac running macOS 26/Tahoe), `sevastopol` (Intel iMac 2013), `darkstarmk6mod1` (Intel MacBook Pro 2019)
 
 3. **Profiles** (`profiles/*/`):
 

@@ -57,8 +57,6 @@
     pkg-config
     # Additional build tools needed for compiling Python extensions
     clang
-    darwin.apple_sdk.frameworks.CoreServices
-    darwin.apple_sdk.frameworks.SystemConfiguration
   ];
 
   # Set environment variables for libpostal

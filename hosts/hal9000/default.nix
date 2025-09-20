@@ -376,6 +376,7 @@
         7000 # AirPlay
         7001 # AirPlay
         7100 # AirPlay screen mirroring
+        7865 # Fooocus web UI
         # Development ports
         3000
         3001
@@ -1425,7 +1426,4 @@
   #     GST_DEBUG = "3";
   #   };
   # };
-
-  # Open firewall port for Fooocus web UI
-  networking.firewall.allowedTCPPorts = [ 7865 ];
 }
