@@ -1057,7 +1057,7 @@
   environment.systemPackages = with pkgs; [
     # IMPORTANT: pixinsight is pinned to a specific version - DO NOT MODIFY
     # This avoids expensive rebuilds. If you need to update, coordinate with jamesbrink
-    pixinsight # Pinned via overlay to version 1.9.3-20250402
+    pixinsight # Pinned via overlay to version 1.9.3-20250402 - using cached file
     # unstablePkgs.exo
     audit
     bottles
