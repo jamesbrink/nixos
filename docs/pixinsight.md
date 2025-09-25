@@ -34,6 +34,8 @@ nix-store --add-fixed sha256 /path/to/PI-linux-x64-1.9.3-20250402-c.tar.xz
 
 Expected hash: `sha256-MOAWH64A13vVLeNiBC9nO78P0ELmXXHR5ilh5uUhWhs=`
 
+**Note:** The PixInsight tarball has been permanently stored at `/opt/pixinsight/PI-linux-x64-1.9.3-20250402-c.tar.xz` on hal9000 and added to the Nix store at `/nix/store/3z10lwax02gv278sspwmigppsxjqba01-PI-linux-x64-1.9.3-20250402-c.tar.xz`.
+
 ### 3. Enable in Configuration
 
 Add PixInsight to your host's system packages:
