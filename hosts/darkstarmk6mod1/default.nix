@@ -49,7 +49,7 @@
     items = [
       { path = "/System/Applications/Messages.app"; }
       { path = "/Applications/Visual Studio Code.app"; }
-      { path = "${config.users.users.jamesbrink.home}/.nix-profile/Applications/Alacritty.app"; }
+      { path = "/Applications/Alacritty.app"; } # Now installed via Homebrew
       { path = "/Applications/Ghostty.app"; }
       { path = "/Applications/Claude.app"; }
       { path = "/Applications/Slack.app"; }

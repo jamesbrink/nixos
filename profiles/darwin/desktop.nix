@@ -15,7 +15,7 @@
   # Desktop-specific packages
   environment.systemPackages = with pkgs; [
     # Terminal and CLI tools
-    alacritty
+    # alacritty # Moved to Homebrew cask for better performance on Darwin
     ncurses # Provides terminfo database
     iterm2
 
@@ -45,6 +45,9 @@
 
     # GUI applications
     casks = [
+      # Terminal applications
+      "alacritty"
+
       # Browsers
       "zen"
       "firefox"
