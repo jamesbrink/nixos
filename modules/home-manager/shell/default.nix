@@ -37,16 +37,14 @@
   # SSH configuration
   programs.ssh = {
     enable = true;
+    controlMaster = "auto";
+    controlPath = "~/.ssh/sockets/%r@%h-%p";
+    controlPersist = "600";
+    serverAliveInterval = 60;
+    serverAliveCountMax = 2;
 
-    # Default configuration for all hosts
-    matchBlocks."*" = {
-      controlMaster = "auto";
-      controlPath = "~/.ssh/sockets/%r@%h-%p";
-      controlPersist = "600";
-      serverAliveInterval = 60;
-      serverAliveCountMax = 2;
-      compression = true;
-    };
+    # Compression moved to matchBlocks as per deprecation warning
+    matchBlocks."*".compression = true;
 
     extraConfig = ''
       # Security settings
