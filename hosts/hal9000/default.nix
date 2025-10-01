@@ -499,6 +499,10 @@
     };
   };
 
+  # Prevent network services from restarting during deployment to avoid SSH disconnection
+  systemd.services.systemd-networkd.restartIfChanged = false;
+  systemd.services.systemd-resolved.restartIfChanged = false;
+
   services = {
     rpcbind.enable = true;
     printing.enable = true;

@@ -102,14 +102,15 @@ in
       export NIX_DONT_HYPERLINK=1
 
       # ZSH Options
-      setopt APPEND_HISTORY          # Append to history file, don't overwrite
+      # Note: SHARE_HISTORY is enabled via programs.zsh.history.share = true
+      # This automatically handles appending and sharing, so we don't set APPEND_HISTORY
       setopt INC_APPEND_HISTORY      # Write to history file immediately
       setopt NO_HIST_IGNORE_ALL_DUPS # Keep all duplicate entries
       setopt HIST_REDUCE_BLANKS      # Remove superfluous blanks
       setopt NO_HIST_SAVE_NO_DUPS    # Save duplicate entries
       setopt NO_HIST_FIND_NO_DUPS    # Display duplicates when searching
       setopt EXTENDED_HISTORY        # Save timestamp with commands
-      setopt SHARE_HISTORY           # Share history between sessions
+      # SHARE_HISTORY is already set by home-manager from programs.zsh.history.share = true
 
       # Fix terminal issues
       if [[ "$TERM" == "alacritty" ]]; then
