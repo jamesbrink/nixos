@@ -20,6 +20,9 @@
     ../../modules/shared-packages/devops-darwin.nix
   ];
 
+  # Allow broken packages (zig-hook is broken on x86_64-darwin)
+  nixpkgs.config.allowBroken = true;
+
   # TODO: Remove this override once awscli2 tests are fixed on macOS Tahoe
   # The python s3transfer tests fail with "AF_UNIX path too long" on macOS 26 (Tahoe)
   # This issue only affects darkstarmk6mod1 - other Darwin hosts work fine
