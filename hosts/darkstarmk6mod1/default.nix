@@ -25,12 +25,17 @@
 
   # TODO: Remove this override once awscli2 tests are fixed on macOS Tahoe
   # The python s3transfer tests fail with "AF_UNIX path too long" on macOS 26 (Tahoe)
+  # The dulwich tests fail with GPG signing errors on macOS 26 (Tahoe)
   # This issue only affects darkstarmk6mod1 - other Darwin hosts work fine
   nixpkgs.overlays = [
     (final: prev: {
       python313Packages = prev.python313Packages.override {
         overrides = self: super: {
           s3transfer = super.s3transfer.overridePythonAttrs (old: {
+            doCheck = false;
+            doInstallCheck = false;
+          });
+          dulwich = super.dulwich.overridePythonAttrs (old: {
             doCheck = false;
             doInstallCheck = false;
           });
