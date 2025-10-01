@@ -107,7 +107,7 @@ in
           ghostty
           google-chrome
           insomnia
-          jetbrains.datagrip
+          unstable.jetbrains.datagrip
           legendary-gl
           lens
           mailspring
@@ -120,7 +120,7 @@ in
           unstable.claude-code
           unstable.goose-cli
           unstable.windsurf
-          warp-terminal
+          unstable.warp-terminal
           waveterm
           wezterm
           winbox4

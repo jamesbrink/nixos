@@ -247,7 +247,25 @@ deploy_host() {
             rm -rf "$TEMP_DIR" 2>/dev/null || true
             mkdir -p "$TEMP_DIR"
             rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' "$FLAKE_DIR/" "$TEMP_DIR/" >> "$log_file" 2>&1
-            
+
+            # Special handling for hal9000 PixInsight package
+            if [ "$HOST_LOWER" = "hal9000" ]; then
+                echo "Checking for PixInsight tarball cache..." >> "$log_file"
+                PIXINSIGHT_CACHE="/var/cache/pixinsight/PI-linux-x64-1.9.3-20250402-c.tar.xz"
+                if [ -f "$PIXINSIGHT_CACHE" ]; then
+                    echo "Found PixInsight tarball in cache, adding to nix store with GC root..." >> "$log_file"
+                    STORE_PATH=$(sudo nix-store --add-fixed sha256 "$PIXINSIGHT_CACHE" 2>&1 | grep -v "warning:" || true)
+                    if [ -n "$STORE_PATH" ]; then
+                        # Create GC root to prevent garbage collection
+                        sudo mkdir -p /nix/var/nix/gcroots/pixinsight >> "$log_file" 2>&1
+                        sudo ln -sf "$STORE_PATH" /nix/var/nix/gcroots/pixinsight/tarball >> "$log_file" 2>&1 || true
+                        echo "Created GC root to protect PixInsight from garbage collection" >> "$log_file"
+                    fi
+                else
+                    echo "Warning: PixInsight tarball not found at $PIXINSIGHT_CACHE" >> "$log_file"
+                fi
+            fi
+
             if [ "$DRY_RUN" = true ]; then
                 deploy_cmd="sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake $TEMP_DIR#$host --impure"
             else
@@ -272,7 +290,27 @@ deploy_host() {
             # NixOS remote deployment
             TEMP_DIR="/tmp/nixos-config"
             rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' "$FLAKE_DIR/" "root@$host:$TEMP_DIR/" >> "$log_file" 2>&1
-            
+
+            # Special handling for hal9000 PixInsight package
+            if [ "$HOST_LOWER" = "hal9000" ]; then
+                echo "Checking for PixInsight tarball cache on hal9000..." >> "$log_file"
+                ssh root@"$host" 'bash -s' >> "$log_file" 2>&1 << 'ENDSSH'
+                    PIXINSIGHT_CACHE="/var/cache/pixinsight/PI-linux-x64-1.9.3-20250402-c.tar.xz"
+                    if [ -f "$PIXINSIGHT_CACHE" ]; then
+                        echo "Found PixInsight tarball in cache, adding to nix store with GC root..."
+                        STORE_PATH=$(nix-store --add-fixed sha256 "$PIXINSIGHT_CACHE" 2>&1 | grep -v "warning:" || true)
+                        if [ -n "$STORE_PATH" ]; then
+                            # Create GC root to prevent garbage collection
+                            mkdir -p /nix/var/nix/gcroots/pixinsight
+                            ln -sf "$STORE_PATH" /nix/var/nix/gcroots/pixinsight/tarball || true
+                            echo "Created GC root to protect PixInsight from garbage collection"
+                        fi
+                    else
+                        echo "Warning: PixInsight tarball not found at $PIXINSIGHT_CACHE"
+                    fi
+ENDSSH
+            fi
+
             if [ "$DRY_RUN" = true ]; then
                 deploy_cmd="ssh root@$host 'cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$host --impure'"
             else

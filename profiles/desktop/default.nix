@@ -6,7 +6,7 @@
 
 {
   imports = [
-    ../../modules/claude-desktop.nix
+    # ../../modules/claude-desktop.nix  # TODO: Fix hash mismatch upstream
     ../../modules/ssh-keys.nix
     ../../modules/nfs-mounts.nix
     ../../modules/local-hosts.nix
@@ -14,7 +14,8 @@
 
   environment.systemPackages = with pkgs; [
     # Claude Desktop application
-    inputs.claude-desktop.packages.${pkgs.system}.claude-desktop
+    # TODO: Re-enable when upstream hash is fixed
+    # inputs.claude-desktop.packages.${pkgs.system}.claude-desktop
     alacritty
     chromium
     vscode
