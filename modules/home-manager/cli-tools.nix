@@ -23,7 +23,6 @@
       fzf # Fuzzy finder
       zoxide # Smart cd replacement
       ranger # Terminal file manager
-      ncdu # Disk usage analyzer
 
       git
       delta # Better git diff
@@ -55,6 +54,9 @@
       tealdeer # Fast tldr client (provides tldr command)
       choose # Human-friendly cut
 
+    ]
+    ++ lib.optionals (!pkgs.stdenv.isx86_64) [
+      ncdu # Disk usage analyzer (requires zig-hook which is broken on x86_64-darwin)
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       xclip # Clipboard support on Linux
