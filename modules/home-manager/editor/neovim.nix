@@ -253,8 +253,7 @@
     '';
 
     extraLuaConfig = ''
-      -- LSP Configuration
-      local lspconfig = require('lspconfig')
+      -- LSP Configuration using Neovim 0.11+ native API
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
       -- Common on_attach function
@@ -271,33 +270,48 @@
         vim.keymap.set('n', '<leader>f', function() vim.lsp.buf.format { async = true } end, opts)
       end
 
-      -- Language servers
+      -- Language servers using new vim.lsp.config API
       -- Python
-      lspconfig.pyright.setup{
+      vim.lsp.config.pyright = {
+        cmd = { 'pyright-langserver', '--stdio' },
+        filetypes = { 'python' },
+        root_markers = { 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', 'Pipfile', '.git' },
         capabilities = capabilities,
         on_attach = on_attach,
       }
 
       -- Bash
-      lspconfig.bashls.setup{
+      vim.lsp.config.bashls = {
+        cmd = { 'bash-language-server', 'start' },
+        filetypes = { 'sh' },
+        root_markers = { '.git' },
         capabilities = capabilities,
         on_attach = on_attach,
       }
 
       -- Terraform
-      lspconfig.terraformls.setup{
+      vim.lsp.config.terraformls = {
+        cmd = { 'terraform-ls', 'serve' },
+        filetypes = { 'terraform', 'tf' },
+        root_markers = { '.terraform', '.git' },
         capabilities = capabilities,
         on_attach = on_attach,
       }
 
       -- Markdown
-      lspconfig.marksman.setup{
+      vim.lsp.config.marksman = {
+        cmd = { 'marksman', 'server' },
+        filetypes = { 'markdown', 'markdown.mdx' },
+        root_markers = { '.git', '.marksman.toml' },
         capabilities = capabilities,
         on_attach = on_attach,
       }
 
       -- Nix
-      lspconfig.nil_ls.setup{
+      vim.lsp.config.nil_ls = {
+        cmd = { 'nil' },
+        filetypes = { 'nix' },
+        root_markers = { 'flake.nix', '.git' },
         capabilities = capabilities,
         on_attach = on_attach,
         settings = {
@@ -308,6 +322,13 @@
           },
         },
       }
+
+      -- Enable LSP servers for matching filetypes
+      vim.lsp.enable('pyright')
+      vim.lsp.enable('bashls')
+      vim.lsp.enable('terraformls')
+      vim.lsp.enable('marksman')
+      vim.lsp.enable('nil_ls')
 
       -- Completion setup
       local cmp = require('cmp')
