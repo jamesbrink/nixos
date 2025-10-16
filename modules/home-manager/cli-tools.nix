@@ -68,9 +68,6 @@
       enableZshIntegration = false;
       git = true;
       icons = "auto";
-      extraOptions = [
-        "--no-hyperlink" # Disable OSC 8 hyperlinks that cause underlined text
-      ];
     };
 
     zoxide = {
