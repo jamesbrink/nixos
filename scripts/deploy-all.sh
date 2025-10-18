@@ -110,8 +110,8 @@ if [ -z "$FLAKE_JSON" ]; then
     echo -e "${YELLOW}Using alternative host discovery method...${NC}"
     # Alternative: list directories in hosts/
     if [ -d "hosts" ]; then
-        NIXOS_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -v -E '^(darkstarmk6mod1|halcyon|sevastopol)$' | sort)
-        DARWIN_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -E '^(darkstarmk6mod1|halcyon|sevastopol)$' | sort)
+        NIXOS_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -v -E '^(halcyon|sevastopol)$' | sort)
+        DARWIN_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -E '^(halcyon|sevastopol)$' | sort)
     else
         echo -e "${RED}Error: hosts directory not found. Are you in the nixos configuration directory?${NC}"
         exit 1
@@ -128,8 +128,7 @@ if [ -n "$FLAKE_JSON" ]; then
     # If darwinConfigurations is completely unevaluated, fall back to known hosts
     if [ -z "$DARWIN_HOSTS" ] || [ "$DARWIN_HOSTS" = "type" ]; then
         # Known Darwin hosts based on the codebase
-        DARWIN_HOSTS="darkstarmk6mod1
-halcyon
+        DARWIN_HOSTS="halcyon
 sevastopol"
     fi
 fi
@@ -257,8 +256,8 @@ deploy_host() {
                     STORE_PATH=$(sudo nix-store --add-fixed sha256 "$PIXINSIGHT_CACHE" 2>&1 | grep -v "warning:" || true)
                     if [ -n "$STORE_PATH" ]; then
                         # Create GC root to prevent garbage collection
-                        sudo mkdir -p /nix/var/nix/gcroots/pixinsight >> "$log_file" 2>&1
-                        sudo ln -sf "$STORE_PATH" /nix/var/nix/gcroots/pixinsight/tarball >> "$log_file" 2>&1 || true
+                        sudo mkdir -p /nix/var/nix/gcroots/pixinsight 2>&1 | tee -a "$log_file" >/dev/null
+                        sudo ln -sf "$STORE_PATH" /nix/var/nix/gcroots/pixinsight/tarball 2>&1 | tee -a "$log_file" >/dev/null || true
                         echo "Created GC root to protect PixInsight from garbage collection" >> "$log_file"
                     fi
                 else

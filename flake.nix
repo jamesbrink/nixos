@@ -843,53 +843,6 @@
             ./hosts/sevastopol/default.nix
           ];
         };
-
-        darkstarmk6mod1 = darwin.lib.darwinSystem {
-          system = "x86_64-darwin"; # 2019 MacBook Pro 16" Intel
-
-          specialArgs = {
-            inherit inputs agenix claude-desktop;
-            secretsPath = "${inputs.secrets}";
-            unstablePkgs = import nixos-unstable {
-              system = "x86_64-darwin";
-              config.allowUnfree = true;
-              overlays = [ ];
-            };
-          };
-
-          modules = [
-            home-manager-unstable.darwinModules.home-manager
-            agenix.darwinModules.default
-            nix-homebrew.darwinModules.nix-homebrew
-            {
-              nix-homebrew = {
-                user = "jamesbrink";
-                enable = true;
-                taps = {
-                  "homebrew/homebrew-core" = homebrew-core;
-                  "homebrew/homebrew-cask" = homebrew-cask;
-                  "homebrew/homebrew-bundle" = homebrew-bundle;
-                };
-                mutableTaps = true;
-                autoMigrate = true;
-              };
-            }
-            {
-              nixpkgs.config.allowUnfree = true;
-              nixpkgs.overlays = [
-                (import ./overlays/pixinsight.nix)
-                (final: prev: {
-                  unstablePkgs = import nixos-unstable {
-                    system = "x86_64-darwin";
-                    config.allowUnfree = true;
-                    overlays = [ ];
-                  };
-                })
-              ];
-            }
-            ./hosts/darkstarmk6mod1/default.nix
-          ];
-        };
       };
     };
 }

@@ -41,7 +41,6 @@ This project uses:
 ├── flake.nix                    # Main flake configuration
 ├── hosts/                       # Host-specific configurations
 │   ├── alienware/               # Desktop workstation (NixOS)
-│   ├── darkstarmk6mod1/         # MacBook Pro 16" 2019 (Darwin)
 │   ├── hal9000/                 # Main server with AI services (NixOS)
 │   ├── halcyon/                 # M4 Mac (Darwin)
 │   ├── n100-01/                 # Cluster node 1 (NixOS)
@@ -147,19 +146,272 @@ This project uses:
         └── strivedi.nix         # Additional user
 ```
 
-## Hosts
+## Infrastructure Overview
 
-### NixOS Hosts
+This repository manages a multi-host NixOS/nix-darwin infrastructure consisting of 8 hosts across Linux and macOS platforms, organized into three functional categories: servers, workstations, and cluster nodes.
 
-- **alienware**: Desktop workstation with NVIDIA GPU support
-- **hal9000**: Main server running AI services (Ollama, ComfyUI, etc.)
-- **n100-01, n100-02, n100-03, n100-04**: Intel N100 cluster nodes
+### Linux Hosts (NixOS)
+
+#### hal9000 - Primary Server with AI Services
+
+**Role**: Main computational server and infrastructure hub
+
+**Hardware**:
+
+- x86_64 Intel-based system with NVIDIA GPU (CUDA enabled)
+- 32GB swap, ZFS storage pool (`storage-fast`)
+
+**Key Services**:
+
+- AI/ML Stack: Ollama, Open-WebUI, Fooocus, n8n workflow automation
+- Database: PostgreSQL 13 with PostGIS (port 5433)
+- Storage: NFS/Samba server for network shares
+- Networking: TFTP/HTTP netboot server for N100 cluster
+- Virtualization: libvirtd, KVM/QEMU, Windows 11 VM support
+
+**Network Role**: Central hub serving storage, AI services, and cluster management
+
+#### alienware - Desktop Workstation
+
+**Role**: High-performance gaming and development workstation
+
+**Hardware**:
+
+- x86_64 with dual GPUs (integrated + discrete NVIDIA)
+- Multiple storage drives: primary ext4, 8TB USB storage
+
+**Key Services**:
+
+- Desktop Environment: GNOME with remote desktop
+- Gaming: Steam with game streaming (Sunshine/Moonlight)
+- Storage: NFS/Samba server for local shares
+- Sync: Syncthing hub coordinating with N100 cluster
+- Virtualization: libvirtd, Incus, VMware guest tools
+
+**Network Role**: Primary desktop with shared storage, linked to cluster
+
+#### N100 Cluster (n100-01 through n100-04)
+
+**Role**: Distributed computing cluster nodes
+
+**Architecture**:
+
+- 4x Intel N100 compact systems with NVMe SSDs
+- ZFS root filesystem with declarative disko partitioning
+- PXE netboot deployment capability
+
+**Services per Node**:
+
+- Minimal system footprint for compute workloads
+- NFS client mounts to hal9000 and alienware
+- Samba shares for local network access
+- Automated Restic backups
+
+**Network Role**: Distributed compute nodes with centralized management
+
+**MAC Addresses**:
+
+- n100-01: `e0:51:d8:12:ba:97` (IP: 10.70.100.201)
+- n100-02: `e0:51:d8:13:04:50` (IP: 10.70.100.202)
+- n100-03: `e0:51:d8:13:4e:91` (IP: 10.70.100.203)
+- n100-04: `e0:51:d8:15:46:4e` (IP: 10.70.100.204)
 
 ### Darwin (macOS) Hosts
 
-- **halcyon**: M4 Mac with Apple Silicon running macOS 26 (Tahoe)
-- **sevastopol**: Intel iMac 27" 2013 running macOS Sequoia via OCLP
-- **darkstarmk6mod1**: 2019 MacBook Pro 16" Intel
+#### halcyon - M4 Mac
+
+**Role**: Modern Apple Silicon development machine
+
+**Hardware**: Apple M4 (ARM/aarch64-darwin) with Rosetta support
+
+**Key Features**:
+
+- Full Homebrew integration for GUI applications
+- NFS client to all infrastructure storage
+- Development tools: VS Code, JetBrains, Ghostty terminal
+- AI tools: Claude desktop, ChatGPT
+
+**Network Role**: Modern development machine with infrastructure access
+
+#### sevastopol - Intel iMac 27" (2013)
+
+**Role**: Legacy Intel Mac with extended OS support
+
+**Hardware**: Intel iMac 27" running macOS Sequoia via OpenCore Legacy Patcher
+
+**Key Features**:
+
+- Similar software stack to halcyon
+- Full infrastructure NFS access
+- Legacy hardware kept current with OCLP
+
+**Network Role**: Functional legacy Mac connected to infrastructure
+
+### Network Architecture
+
+**Address Spaces**:
+
+- Home Network: 10.70.100.0/24 (primary LAN)
+- Tailscale VPN: 100.64.0.0/10 (remote access)
+- VM Networks: 192.168.122.0/24 (libvirt on hal9000)
+
+**Storage Topology**:
+
+```
+hal9000 (central hub)
+  ├── ZFS storage-fast → NFS/Samba exports
+  ├── 20TB ext4 secondary → NFS/Samba exports
+  └── Serves: AI models, PostgreSQL, n8n, ollama, VMs
+
+alienware (secondary hub)
+  ├── 8TB USB storage → NFS/Samba exports
+  ├── Internal data drive → NFS/Samba exports
+  └── Syncthing coordinator
+
+N100 Cluster
+  ├── Local ZFS root pools
+  └── NFS clients mounting hal9000 and alienware
+
+Darwin Macs (halcyon, sevastopol)
+  └── NFS clients with access to all infrastructure storage
+```
+
+## Key Services and Infrastructure
+
+### Custom Service Modules
+
+The infrastructure includes several custom service modules defined in `modules/services/`:
+
+#### AI Starter Kit (`ai-starter-kit/`)
+
+**Purpose**: Integrated workflow automation and AI vector database
+
+**Components**:
+
+- n8n workflow automation platform (port 5678)
+- Qdrant vector database (port 6333)
+- PostgreSQL 13 database for n8n state
+- Automated health monitoring and cleanup
+
+**Deployed on**: hal9000
+
+#### Netboot Infrastructure
+
+**Purpose**: PXE network booting for N100 cluster deployment
+
+**Components**:
+
+- TFTP Server (`tftp-server.nix`): Serves iPXE boot scripts (port 69)
+- Netboot Server (`netboot-server.nix`): HTTP server for boot images (port 8079)
+- Auto-Chain (`netboot-autochain.nix`): MAC-based automatic boot routing
+- Netboot Configs (`netboot-configs.nix`): Configuration file generator
+
+**Features**:
+
+- MAC address-based node detection
+- Automatic installer boot for recognized N100 nodes
+- Integration with netboot.xyz v2.0.87
+- Declarative ZFS partitioning via disko
+
+**Deployed on**: hal9000
+
+#### Windows 11 VM (`windows11-vm.nix`)
+
+**Purpose**: Development VM with full Windows 11 support
+
+**Features**:
+
+- TPM 2.0 and UEFI for Windows 11 compatibility
+- Nested virtualization (Hyper-V, WSL2, Docker Desktop)
+- VirtIO drivers for optimized performance
+- SPICE graphics for remote desktop
+- Configurable resources (memory, vCPUs, disk size)
+
+**Management Commands**:
+
+- `win11-vm start/stop/status/console`
+
+**Deployed on**: hal9000 (available via module)
+
+#### Samba Server (`samba-server.nix`)
+
+**Purpose**: Cross-platform file sharing
+
+**Features**:
+
+- SMB2/SMB3 protocol support (SMB1 disabled)
+- macOS optimization with fruit VFS module
+- Avahi/Bonjour discovery for macOS
+- WSDD for Windows 10/11 discovery
+- NTLMv2 authentication only
+
+**Deployed on**: All Linux hosts (hal9000, alienware, N100 cluster)
+
+### Containerized Services (hal9000)
+
+The following services run as Podman containers on hal9000:
+
+| Service           | Port  | Purpose                               | GPU    |
+| ----------------- | ----- | ------------------------------------- | ------ |
+| **Ollama**        | 11434 | LLM inference server                  | NVIDIA |
+| **Open-WebUI**    | 3000  | Chat interface for Ollama             | No     |
+| **Pipelines**     | 9099  | Extended functionality for Open-WebUI | No     |
+| **Fooocus**       | 7865  | AI image generation                   | NVIDIA |
+| **PostgreSQL 13** | 5433  | Database with PostGIS extension       | No     |
+
+**Key Features**:
+
+- Automatic container updates and management
+- Persistent storage via bind mounts to ZFS datasets
+- GPU passthrough for AI workloads
+- Health monitoring and auto-restart
+
+### Infrastructure Services
+
+#### Storage Services
+
+- **NFS Servers**: hal9000, alienware, N100 cluster
+- **Samba Servers**: All Linux hosts
+- **ZFS Management**: Automatic scrub, trim, snapshots
+- **PostgreSQL ZFS Snapshots**: Automated WAL sync and base snapshots
+
+#### Networking Services
+
+- **Tailscale VPN**: Secure remote access on all hosts
+- **Avahi/mDNS**: Service discovery and .local hostname resolution
+- **systemd-networkd**: Advanced networking on server hosts
+- **Bridge Networks**: VM connectivity on hal9000
+
+#### Backup Services
+
+- **Restic to S3**: All 7 hosts backup to AWS S3
+  - Linux: Daily via systemd timers
+  - Darwin: Daily at 2 AM via launchd
+- **Retention**: 7 daily, 4 weekly, 12 monthly, 2 yearly
+- **PostgreSQL Backups**: ZFS snapshots + WAL archiving
+
+#### Monitoring and Management
+
+- **pgweb**: Database browser UI (port 8081)
+- **ZFS Monitor**: WebSocket service (port 9999)
+- **Webhook Service**: Database management and automation
+- **Health Checks**: Automated via deployment tools
+
+### Service Distribution by Host
+
+| Service Category    | hal9000 | alienware | N100s | Darwin |
+| ------------------- | ------- | --------- | ----- | ------ |
+| AI/ML Services      | ✓       | -         | -     | -      |
+| NFS Server          | ✓       | ✓         | ✓     | -      |
+| Samba Server        | ✓       | ✓         | ✓     | -      |
+| NFS Client          | -       | ✓         | ✓     | ✓      |
+| PostgreSQL          | ✓       | -         | -     | -      |
+| Netboot (TFTP/HTTP) | ✓       | -         | -     | -      |
+| Syncthing           | -       | ✓         | ✓     | -      |
+| Restic Backups      | ✓       | ✓         | ✓     | ✓      |
+| Tailscale VPN       | ✓       | ✓         | ✓     | ✓      |
+| Desktop (GNOME)     | -       | ✓         | -     | Native |
+| Virtualization      | ✓       | ✓         | -     | -      |
 
 ## Development Shell
 
@@ -584,51 +836,235 @@ Current N100 nodes and their MAC addresses:
 
 ## Key Features
 
-### Channel Management
+### Modular Architecture
 
-- Stable channel (nixos-25.05) as default
-- Unstable overlay available via `pkgs.unstablePkgs`
-- Per-host channel selection based on requirements
+**Three-Layer Configuration System**:
+
+1. **Profiles** (`profiles/`): Reusable system profiles (server, desktop, darwin, n100, keychron)
+2. **Modules** (`modules/`): Feature-specific configurations (services, packages, users)
+3. **Hosts** (`hosts/`): Host-specific customizations and hardware configs
+
+**Benefits**:
+
+- Consistent configuration across similar hosts
+- Easy maintenance and updates
+- Clear separation of concerns
+- Platform-specific abstractions (Linux vs Darwin)
+
+### Dual-Channel Package Management
+
+- **Stable Channel** (nixos-25.05): Default for system packages
+- **Unstable Overlay**: Available via `pkgs.unstablePkgs` for cutting-edge software
+- **Per-Host Selection**: Hosts can choose stable or unstable based on needs
+- **Specialized Overlays**: Custom packages for PixInsight, llama-cpp, netboot-xyz
+
+**Usage Pattern**:
+
+```nix
+environment.systemPackages = with pkgs; [
+  git                    # From stable channel
+  unstablePkgs.llm       # From unstable channel
+];
+```
 
 ### Unified Shell Experience
 
-- Consistent shell environment across all hosts and users (including root)
-- Tmux with Ctrl+B prefix key, vi-mode, and clipboard integration
-- Zsh with oh-my-zsh, starship prompt, and modern CLI replacements
-- Neovim with LSP support, treesitter, and gruvbox-material theme
-- Managed through home-manager modules in `modules/home-manager/`
+Consistent shell environment across all hosts and users (including root):
 
-### AWS Configuration Management
+**Terminal Stack**:
 
-- Centralized AWS config for root user across all hosts
-- Configuration matches jamesbrink user's AWS setup
-- Managed through `modules/aws-root-config.nix`
-- Supports multiple AWS profiles and regions
+- **Shell**: Zsh with oh-my-zsh and modern completion
+- **Prompt**: Starship with git integration
+- **Multiplexer**: Tmux (Ctrl+B prefix, vi-mode, clipboard integration)
+- **Editor**: Neovim with LSP support, treesitter, gruvbox-material theme
+
+**Modern CLI Replacements**:
+
+- `eza` (replaces ls) - Modern file listing
+- `bat` (replaces cat) - Syntax-highlighted file viewing
+- `fd` (replaces find) - Fast file searching
+- `ripgrep` (replaces grep) - Blazing fast text search
+- `procs` (replaces ps) - Modern process viewer
+- `pay-respects` (replaces thefuck) - Command correction
+
+**Home-Manager Integration**:
+
+- Managed through `modules/home-manager/` modules
+- Cross-platform support (identical on Linux and Darwin)
+- Root user gets same environment with red-bold prompt
+
+### Cross-Platform Support
+
+**Platform Abstraction**:
+
+- **NixOS** (Linux): Uses `nixpkgs.lib.nixosSystem` and `nixos-rebuild`
+- **nix-darwin** (macOS): Uses `darwin.lib.darwinSystem` and `darwin-rebuild`
+- **Unified Modules**: Shared modules work on both platforms with conditional logic
+
+**macOS Integration**:
+
+- Homebrew integration via nix-homebrew for GUI applications
+- Automatic dock configuration and management
+- Support for both Intel (x86_64) and Apple Silicon (aarch64)
+- Determinate Nix compatibility (`nix.enable = false`)
+
+**Conditional Configuration**:
+
+```nix
+lib.optionals pkgs.stdenv.isLinux [ linux-only-package ]
+++ lib.optionals pkgs.stdenv.isDarwin [ macos-only-package ]
+```
+
+### Centralized Secrets Management
+
+**Agenix Integration**:
+
+- Secrets stored in private Git submodule (`git@github.com:jamesbrink/nix-secrets.git`)
+- Age encryption using SSH keys as identity
+- Per-host access control via SSH public keys
+- Automatic deployment and decryption
+
+**Supported Secrets**:
+
+- SSH authorized keys
+- AWS credentials and configs
+- Heroku authentication tokens
+- Database passwords
+- API keys (Infracost, Claude, webhooks)
+- Syncthing passwords
+- Claude desktop configuration
+
+**Secret Management Workflow**:
+
+1. Create/edit: `secrets-edit <path>`
+2. Re-encrypt: `secrets-rekey` (after adding new hosts)
+3. Verify: `secrets-verify`
+4. Deploy: Automatically handled during `deploy <hostname>`
+
+### Infrastructure as Code
+
+**Declarative Everything**:
+
+- Host configurations in Nix (no manual setup)
+- Service definitions with proper options
+- User environments via home-manager
+- Disk layouts via disko (N100 cluster)
+- Network configs via systemd-networkd
+
+**Deployment Automation**:
+
+- Single command deployment: `deploy <hostname>`
+- Parallel deployment: `deploy-all` (all hosts at once)
+- Test before apply: `deploy-test <hostname>`
+- Automatic rollback capability: `rollback <hostname>`
+- Health monitoring: `health-check <hostname>`
+
+**Netboot Provisioning**:
+
+- PXE boot for bare-metal N100 deployment
+- MAC address-based automatic detection
+- Unattended installation with disko
+- Declarative ZFS partitioning
 
 ### Container Services
 
-- Podman for containerized services
-- Custom AI service stack with automatic updates
-- Network isolation with podman networks
+**Podman-Based Services** (hal9000):
 
-### Storage Architecture
+- Rootless containerization with systemd integration
+- Automatic updates and health monitoring
+- GPU passthrough for AI workloads (Ollama, Fooocus)
+- Persistent storage via bind mounts to ZFS datasets
+- Pod-based networking for service isolation
 
-- ZFS for advanced storage features on main servers
-- NFS exports for shared storage across network
-- Bind mounts for service-specific storage paths
-- PostgreSQL ZFS snapshot management with webhook-based reset functionality
+**AI/ML Stack**:
 
-### Backup System
+- Ollama: LLM inference with NVIDIA GPU
+- Open-WebUI: Chat interface
+- Pipelines: Extended functionality
+- Fooocus: AI image generation
+- n8n: Workflow automation
 
-- Automated Restic backups to AWS S3 for all hosts
-- Each host has its own repository in S3 bucket `urandom-io-backups`
-- Linux hosts: Daily automatic backups via systemd timer
-- Darwin hosts: Daily backups at 2 AM via launchd + manual backup script
-- Default backup paths:
-  - Linux: `/etc/nixos`, `/home`, `/root`, `/var/lib`
-  - Darwin: `~/Documents`, `~/Projects`, `~/.config`, `~/.ssh`
-- Retention policy: 7 daily, 4 weekly, 12 monthly, 2 yearly snapshots
-- Compression enabled with automatic exclusion of cache/temp files
+### Advanced Storage Architecture
+
+**ZFS Features** (hal9000, N100 cluster):
+
+- Automatic scrub and trim scheduling
+- Snapshot management and rollback
+- PostgreSQL-specific ZFS snapshots (WAL + base)
+- Webhook-based database reset functionality
+- Dataset-per-service organization
+
+**Network Storage**:
+
+- **NFS**: Linux-to-Linux, Linux-to-macOS
+- **Samba**: Cross-platform (Linux/Windows/macOS)
+- **Automount**: On-demand with 600s idle timeout
+- **Bind Mounts**: Service-specific paths (e.g., `/export/*`)
+
+**Storage Distribution**:
+
+- hal9000: ZFS pool (storage-fast) + 20TB ext4
+- alienware: 8TB USB + internal data drive
+- N100 nodes: Local ZFS root + NFS client mounts
+- Darwin: NFS clients mounting all infrastructure storage
+
+### Comprehensive Backup System
+
+**Restic to AWS S3**:
+
+- All 7 hosts backup to individual S3 repositories
+- Bucket: `urandom-io-backups`
+- Repository per host: `s3:urandom-io-backups/<hostname>`
+
+**Backup Schedule**:
+
+- **Linux**: Daily via systemd timers
+- **Darwin**: Daily at 2 AM via launchd
+
+**Retention Policy**:
+
+- 7 daily snapshots
+- 4 weekly snapshots
+- 12 monthly snapshots
+- 2 yearly snapshots
+
+**Backup Paths**:
+
+- **Linux**: `/etc/nixos`, `/home`, `/root`, `/var/lib`
+- **Darwin**: `~/Documents`, `~/Projects`, `~/.config`, `~/.ssh`
+
+**Features**:
+
+- Compression enabled
+- Automatic cache/temp exclusion
+- Shell initialization for easy commands
+- Manual trigger via `restic-run <hostname>`
+- Browse snapshots: `restic-snapshots <hostname>`
+
+### Security Features
+
+**Multi-Layer Security**:
+
+1. **Pre-commit Hooks**: Automatic formatting and secret scanning
+2. **TruffleHog**: Verified secret detection in git history
+3. **GitLeaks**: Git-aware secret scanner with custom rules
+4. **Comprehensive Audits**: `security-audit` command
+5. **Encrypted Secrets**: All sensitive data via agenix
+
+**Network Security**:
+
+- Tailscale VPN for secure remote access
+- Firewall rules on server hosts
+- SSH key-based authentication only
+- NTLMv2-only for Samba (no LM/NTLMv1)
+- SMB1 disabled (SMB2/SMB3 only)
+
+**Access Control**:
+
+- Age-encrypted secrets with per-host keys
+- SSH authorized keys centrally managed
+- Samba user authentication
+- Network restrictions (10.70.100.0/24, 100.64.0.0/10)
 
 ### NFS Shares Documentation
 
@@ -668,11 +1104,10 @@ All Linux hosts automatically mount all available NFS shares under `/mnt/nfs/`:
 
 macOS hosts use the automounter to mount NFS shares. The mount points are configured to avoid conflicts with Finder's network browsing functionality:
 
-| Host                | Mount Point             | NFS Server | Remote Path           | Options                                                     |
-| ------------------- | ----------------------- | ---------- | --------------------- | ----------------------------------------------------------- |
-| **halcyon**         | `/mnt/NFS-*`            | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
-| **sevastopol**      | `/mnt/NFS-*`            | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
-| **darkstarmk6mod1** | `/opt/nfs-mounts/NFS-*` | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+| Host           | Mount Point  | NFS Server | Remote Path           | Options                                                     |
+| -------------- | ------------ | ---------- | --------------------- | ----------------------------------------------------------- |
+| **halcyon**    | `/mnt/NFS-*` | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
+| **sevastopol** | `/mnt/NFS-*` | Various    | All available exports | noowners, nolockd, noresvport, hard, bg, intr, rw, tcp, nfc |
 
 **Note**: NFS shares are mounted outside of `/Volumes` to prevent conflicts with Finder's ability to mount network shares via the GUI. The automounter configuration is managed through the host-specific `system.activationScripts`.
 
@@ -691,7 +1126,7 @@ macOS hosts use the automounter to mount NFS shares. The mount points are config
   - Configured for both private IP ranges (192.168.0.0/16 and 10.0.0.0/8)
   - Uses permissive permissions (777) with all_squash for easy access
 
-- **macOS hosts** (halcyon, sevastopol, darkstarmk6mod1):
+- **macOS hosts** (halcyon, sevastopol):
 
   - Mount all available NFS shares to `/Volumes/NFS-*` for Finder visibility
   - Uses macOS native automounter with `/etc/auto_nfs` configuration

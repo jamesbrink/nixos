@@ -60,7 +60,6 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
 .
 ├── hosts/                 # Host-specific configurations
 │   ├── alienware/        # Gaming desktop (Linux)
-│   ├── darkstarmk6mod1/  # MacBook Pro 16" 2019 (Darwin)
 │   ├── hal9000/          # Main server with AI services (Linux)
 │   ├── halcyon/          # M4 Mac (Darwin)
 │   ├── n100-01..04/      # Cluster nodes (Linux)
@@ -137,7 +136,7 @@ The codebase follows a modular NixOS/nix-darwin flake structure with clear separ
    - Each host has its own directory with `default.nix` and hardware configuration
    - Hosts import shared profiles, modules, and user configurations
    - Linux hosts: `hal9000` (main server with AI services), `n100-*` (cluster nodes), `alienware` (desktop)
-   - macOS hosts: `halcyon` (M4 Mac running macOS 26/Tahoe), `sevastopol` (Intel iMac 2013), `darkstarmk6mod1` (Intel MacBook Pro 2019)
+   - macOS hosts: `halcyon` (M4 Mac running macOS 26/Tahoe), `sevastopol` (Intel iMac 2013)
 
 3. **Profiles** (`profiles/*/`):
 
@@ -301,7 +300,6 @@ If you see "can't find terminal definition for xterm-ghostty":
 - Fixed Finder network browsing issues caused by automounter taking over `/Volumes`
 - Updated NFS automount configurations on all Darwin hosts to use alternative mount points:
   - `halcyon` and `sevastopol`: NFS shares now mount to `/mnt/`
-  - `darkstarmk6mod1`: NFS shares mount to `/opt/nfs-mounts/` (due to `/mnt` being read-only)
 - Automounter no longer interferes with Finder's ability to mount SMB/NFS shares via GUI
 - All NFS shares remain accessible at their new locations while preserving native macOS functionality
 

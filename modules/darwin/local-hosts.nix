@@ -35,10 +35,6 @@ let
       "alienware"
       "alienware.home.urandom.io"
     ];
-    "10.70.100.207" = [
-      "darkstarmk6mod1"
-      "darkstarmk6mod1.home.urandom.io"
-    ];
     "10.70.100.208" = [
       "sevastopol"
       "sevastopol.home.urandom.io"
