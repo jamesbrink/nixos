@@ -781,7 +781,7 @@ For first-time deployment of N100 nodes:
 
 ### Network Boot Process
 
-```mermaid
+```
 N100 → DHCP Request → MikroTik Router
      ← IP + next-server (HAL9000) + netboot.xyz.efi ←
      → TFTP: Request netboot.xyz.efi →
