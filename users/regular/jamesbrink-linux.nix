@@ -85,6 +85,8 @@ in
 
           # Startup services
           "exec-once" = [
+            "waybar" # Status bar
+            "mako" # Notification daemon
             "wl-paste --type text --watch cliphist store" # Clipboard history for text
             "wl-paste --type image --watch cliphist store" # Clipboard history for images
           ];
