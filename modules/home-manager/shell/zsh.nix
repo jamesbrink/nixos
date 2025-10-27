@@ -116,6 +116,20 @@ in
       setopt EXTENDED_HISTORY        # Save timestamp with commands
       # SHARE_HISTORY is already set by home-manager from programs.zsh.history.share = true
 
+      # Track last directory for new terminal instances
+      # This allows new terminals to open in the same directory as the last terminal
+      function chpwd() {
+        pwd > "$HOME/.last_terminal_dir"
+      }
+
+      # On shell start, cd to last terminal directory if it exists
+      if [[ -f "$HOME/.last_terminal_dir" ]]; then
+        LAST_DIR=$(cat "$HOME/.last_terminal_dir")
+        if [[ -d "$LAST_DIR" ]]; then
+          cd "$LAST_DIR"
+        fi
+      fi
+
       # Fix terminal issues
       if [[ "$TERM" == "alacritty" ]]; then
         export TERM=xterm-256color
