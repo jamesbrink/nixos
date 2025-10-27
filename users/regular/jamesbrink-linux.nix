@@ -83,19 +83,25 @@ in
           # Omarchy-style keybindings
           "$mod" = "SUPER";
 
+          # Startup services
+          "exec-once" = [
+            "wl-paste --type text --watch cliphist store" # Clipboard history for text
+            "wl-paste --type image --watch cliphist store" # Clipboard history for images
+          ];
+
           bind = [
             # Applications
             "$mod, RETURN, exec, kitty"
             "$mod SHIFT, F, exec, thunar"
             "$mod SHIFT, B, exec, firefox"
             "$mod SHIFT ALT, B, exec, firefox --private-window"
-            # "$mod SHIFT, M, exec, spotify"  # Music (not installed)
-            # "$mod SHIFT, N, exec, kitty -e nvim"  # Editor
+            "$mod SHIFT, M, exec, spotify"
+            "$mod SHIFT, N, exec, kitty -e nvim"
             "$mod SHIFT, T, exec, kitty -e btop"
-            # "$mod SHIFT, D, exec, kitty -e lazydocker"  # Docker (not installed)
+            "$mod SHIFT, D, exec, kitty -e lazydocker"
             "$mod SHIFT, G, exec, signal-desktop"
             "$mod SHIFT, O, exec, obsidian"
-            # "$mod SHIFT, SLASH, exec, 1password"  # Passwords (not installed)
+            # "$mod SHIFT, SLASH, exec, 1password"  # Passwords (not installed yet)
 
             # Web Apps (require wrapper scripts or direct launches)
             # "$mod SHIFT, A, exec, firefox --new-window https://chat.openai.com"
@@ -109,10 +115,10 @@ in
 
             # Menus
             "$mod, SPACE, exec, rofi -show drun"
-            # "$mod CTRL, E, exec, rofi -show emoji"  # Emoji picker
-            # "$mod ALT, SPACE, exec, omarchy-menu"  # Omarchy menu
-            # "$mod, ESCAPE, exec, wlogout"  # Power menu
-            # "$mod, K, exec, show-keybindings"  # Key bindings
+            "$mod CTRL, E, exec, rofi -show emoji"
+            # "$mod ALT, SPACE, exec, omarchy-menu"  # Omarchy menu (not installed)
+            "$mod, ESCAPE, exec, wlogout"
+            # "$mod, K, exec, show-keybindings"  # Key bindings (custom script needed)
 
             # Window Management
             "$mod, W, killactive,"
@@ -181,7 +187,7 @@ in
             "$mod, C, exec, wl-copy"
             "$mod, V, exec, wl-paste"
             "$mod, X, exec, wl-copy && wl-paste -c"
-            # "$mod CTRL, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+            "$mod CTRL, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
 
             # Captures (screenshots)
             ", PRINT, exec, grim -g \"$(slurp)\" - | swappy -f -"
@@ -192,10 +198,10 @@ in
             "$mod CTRL SHIFT, 4, exec, grim -g \"$(slurp)\" ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
             # "$mod CTRL SHIFT, 5, exec, hyprctl -j activewindow | jq -r '.at,.size' | grim -g - ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
 
-            # Notifications
-            # "$mod, comma, exec, makoctl dismiss"
-            # "$mod SHIFT, comma, exec, makoctl dismiss -a"
-            # "$mod CTRL, comma, exec, makoctl mode -t dnd"
+            # Notifications (mako is installed in desktop profile)
+            "$mod, comma, exec, makoctl dismiss"
+            "$mod SHIFT, comma, exec, makoctl dismiss -a"
+            "$mod CTRL, comma, exec, makoctl mode -t dnd"
 
             # Scroll workspace switching
             "$mod, mouse_down, workspace, e+1"
@@ -249,6 +255,7 @@ in
           })
         ]
         ++ [
+          # Desktop applications
           barrier
           dbeaver-bin
           discord
@@ -277,6 +284,18 @@ in
           wezterm
           winbox4
           wireshark
+
+          # User-specific Wayland/Hyprland apps
+          spotify # Music player (commented out in keybindings)
+          # 1password-gui # Password manager (if available)
+
+          # Development tools
+          lazydocker # Docker TUI (already in keybindings)
+
+          # Customization tools
+          pywal # Color scheme generator from wallpapers
+          nwg-look # GTK theme configuration
+          wdisplays # Display configuration GUI
         ];
     };
 

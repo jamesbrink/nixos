@@ -24,7 +24,7 @@
 
     # Execute apps at launch
     exec-once = waybar
-    exec-once = dunst
+    exec-once = mako
 
     # Set terminal
     $terminal = kitty
@@ -188,11 +188,20 @@
     wlr-randr # Display configuration
     wayland-utils # Wayland info tools
     xwayland # X11 compatibility
+    cliphist # Clipboard history manager
+
+    # Session management and power
+    wlogout # Power menu (logout/shutdown/reboot)
+    swaylock-effects # Enhanced screen locker with effects
+
+    # Wallpaper management
+    swww # Animated wallpaper daemon (alternative to hyprpaper)
 
     # Application launcher and bar
     rofi-wayland # Application launcher
     waybar # Status bar
     dunst # Notification daemon
+    mako # Alternative notification daemon
 
     # Terminal
     alacritty # Terminal emulator

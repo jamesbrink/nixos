@@ -101,6 +101,10 @@ in
       # Disable Nix hyperlinks in error messages (prevents underlined text)
       export NIX_DONT_HYPERLINK=1
 
+      # Disable exit confirmation (no "you have running jobs" or "you have stopped jobs" warnings)
+      setopt NO_CHECK_JOBS
+      setopt NO_HUP
+
       # ZSH Options
       # Note: SHARE_HISTORY is enabled via programs.zsh.history.share = true
       # This automatically handles appending and sharing, so we don't set APPEND_HISTORY
