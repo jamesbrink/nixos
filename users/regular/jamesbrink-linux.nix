@@ -297,6 +297,60 @@ in
           nwg-look # GTK theme configuration
           wdisplays # Display configuration GUI
         ];
+
+      # Configure wlogout for proper Hyprland logout
+      xdg.configFile."wlogout/layout".text = ''
+        {
+          "label" : "lock",
+          "action" : "swaylock",
+          "text" : "Lock",
+          "keybind" : "l"
+        }
+        {
+          "label" : "logout",
+          "action" : "hyprctl dispatch exit",
+          "text" : "Logout",
+          "keybind" : "e"
+        }
+        {
+          "label" : "shutdown",
+          "action" : "systemctl poweroff",
+          "text" : "Shutdown",
+          "keybind" : "s"
+        }
+        {
+          "label" : "reboot",
+          "action" : "systemctl reboot",
+          "text" : "Reboot",
+          "keybind" : "r"
+        }
+      '';
+
+      xdg.configFile."wlogout/style.css".text = ''
+        * {
+          background-image: none;
+        }
+        window {
+          background-color: rgba(12, 12, 12, 0.9);
+        }
+        button {
+          color: #FFFFFF;
+          background-color: #1E1E1E;
+          border-style: solid;
+          border-width: 2px;
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: 25%;
+          border-radius: 10px;
+          margin: 10px;
+          min-width: 150px;
+          min-height: 150px;
+        }
+        button:focus, button:active, button:hover {
+          background-color: #3700B3;
+          outline-style: none;
+        }
+      '';
     };
 
   # Linux-specific sudo configuration
