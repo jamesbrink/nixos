@@ -14,6 +14,8 @@ else
   exit 1
 fi
 
-RULES=./secrets.nix agenix -r -i "$IDENTITY_FILE"
+# Use ragenix instead of agenix to avoid the empty secrets bug
+# See: secrets/CLAUDE.md for details about the agenix bug
+nix run nixpkgs#ragenix -- --rekey --identity "$IDENTITY_FILE"
 cd ..
 echo "All secrets have been re-encrypted"
