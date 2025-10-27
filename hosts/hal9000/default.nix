@@ -21,7 +21,7 @@
     ../../modules/restic-backups.nix
     ../../users/regular/jamesbrink.nix
     # ../../users/regular/strivedi.nix # Temporarily disabled for UID migration
-    ../../profiles/desktop/default-stable.nix
+    ../../profiles/desktop/hyprland.nix
     ../../profiles/keychron/default.nix
     ../../modules/services/ai-starter-kit/default.nix
     ../../modules/services/tftp-server.nix

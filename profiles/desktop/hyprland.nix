@@ -96,7 +96,7 @@
     kitty # Alternative terminal
 
     # File manager
-    thunar # Lightweight file manager
+    xfce.thunar # Lightweight file manager
     xfce.thunar-volman # Volume management
     xfce.thunar-archive-plugin # Archive support
 
