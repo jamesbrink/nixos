@@ -91,14 +91,14 @@ in
 
           bind = [
             # Applications
-            "$mod, RETURN, exec, kitty"
-            "$mod SHIFT, F, exec, thunar"
+            "$mod, RETURN, exec, alacritty"
+            "$mod SHIFT, F, exec, thunar" # File manager
             "$mod SHIFT, B, exec, firefox"
             "$mod SHIFT ALT, B, exec, firefox --private-window"
             "$mod SHIFT, M, exec, spotify"
-            "$mod SHIFT, N, exec, kitty -e nvim"
-            "$mod SHIFT, T, exec, kitty -e btop"
-            "$mod SHIFT, D, exec, kitty -e lazydocker"
+            "$mod SHIFT, N, exec, alacritty -e nvim"
+            "$mod SHIFT, T, exec, alacritty -e btop"
+            "$mod SHIFT, D, exec, alacritty -e lazydocker"
             "$mod SHIFT, G, exec, signal-desktop"
             "$mod SHIFT, O, exec, obsidian"
             # "$mod SHIFT, SLASH, exec, 1password"  # Passwords (not installed yet)
@@ -292,6 +292,11 @@ in
           # Development tools
           lazydocker # Docker TUI (already in keybindings)
 
+          # System utilities
+          btop # System monitor (used in keybindings)
+          xfce.thunar # File manager (used in keybindings)
+          playerctl # Media player control
+
           # Customization tools
           pywal # Color scheme generator from wallpapers
           nwg-look # GTK theme configuration
@@ -351,6 +356,141 @@ in
           outline-style: none;
         }
       '';
+
+      # Tokyo Night GTK theme configuration
+      gtk = {
+        enable = true;
+
+        theme = {
+          name = "Tokyonight-Dark";
+          package = pkgs.tokyonight-gtk-theme;
+        };
+
+        iconTheme = {
+          name = "Papirus-Dark";
+          package = pkgs.papirus-icon-theme;
+        };
+
+        cursorTheme = {
+          name = "Bibata-Modern-Classic";
+          package = pkgs.bibata-cursors;
+          size = 24;
+        };
+
+        gtk3.extraConfig = {
+          gtk-application-prefer-dark-theme = true;
+        };
+
+        gtk4.extraConfig = {
+          gtk-application-prefer-dark-theme = true;
+        };
+      };
+
+      # VSCode Tokyo Night theme configuration
+      programs.vscode = {
+        enable = true;
+        userSettings = {
+          "workbench.colorTheme" = "Tokyo Night";
+          "workbench.iconTheme" = "material-icon-theme";
+          "terminal.integrated.fontFamily" = "'JetBrainsMono Nerd Font'";
+          "terminal.integrated.fontSize" = 13;
+          "editor.fontFamily" = "'JetBrainsMono Nerd Font', 'monospace'";
+          "editor.fontSize" = 14;
+          "editor.fontLigatures" = true;
+          "editor.formatOnSave" = true;
+          "editor.minimap.enabled" = true;
+          "workbench.startupEditor" = "none";
+        };
+        extensions = with pkgs.vscode-extensions; [
+          enkia.tokyo-night
+          pkief.material-icon-theme
+        ];
+      };
+
+      # Alacritty Tokyo Night theme configuration (override shared config)
+      programs.alacritty = {
+        enable = true;
+        settings = lib.mkForce {
+          env = {
+            TERM = "xterm-256color";
+          };
+
+          window = {
+            padding = {
+              x = 10;
+              y = 10;
+            };
+            decorations = "full";
+            opacity = 0.95;
+          };
+
+          font = {
+            normal = {
+              family = "JetBrainsMono Nerd Font";
+              style = "Regular";
+            };
+            bold = {
+              family = "JetBrainsMono Nerd Font";
+              style = "Bold";
+            };
+            italic = {
+              family = "JetBrainsMono Nerd Font";
+              style = "Italic";
+            };
+            size = 12.0;
+          };
+
+          # Tokyo Night color scheme
+          colors = {
+            primary = {
+              background = "#1a1b26";
+              foreground = "#c0caf5";
+            };
+
+            normal = {
+              black = "#15161e";
+              red = "#f7768e";
+              green = "#9ece6a";
+              yellow = "#e0af68";
+              blue = "#7aa2f7";
+              magenta = "#bb9af7";
+              cyan = "#7dcfff";
+              white = "#a9b1d6";
+            };
+
+            bright = {
+              black = "#414868";
+              red = "#f7768e";
+              green = "#9ece6a";
+              yellow = "#e0af68";
+              blue = "#7aa2f7";
+              magenta = "#bb9af7";
+              cyan = "#7dcfff";
+              white = "#c0caf5";
+            };
+
+            indexed_colors = [
+              {
+                index = 16;
+                color = "#ff9e64";
+              }
+              {
+                index = 17;
+                color = "#db4b4b";
+              }
+            ];
+          };
+
+          cursor = {
+            style = "Block";
+            unfocused_hollow = true;
+          };
+
+          selection = {
+            save_to_clipboard = true;
+          };
+        };
+      };
     };
 
   # Linux-specific sudo configuration

@@ -200,8 +200,7 @@
     # Application launcher and bar
     rofi-wayland # Application launcher
     waybar # Status bar
-    dunst # Notification daemon
-    mako # Alternative notification daemon
+    mako # Notification daemon
 
     # Terminal
     alacritty # Terminal emulator
@@ -211,6 +210,9 @@
     xfce.thunar # Lightweight file manager
     xfce.thunar-volman # Volume management
     xfce.thunar-archive-plugin # Archive support
+    gvfs # Virtual filesystem support (USB, MTP, etc.)
+    udisks2 # Disk management
+    udiskie # Auto-mount removable media
 
     # Network management
     networkmanagerapplet # Network manager GUI
@@ -222,6 +224,9 @@
     # Brightness control
     brightnessctl # Screen brightness
     light # Alternative brightness control
+
+    # Media control
+    playerctl # Media player control (for keybindings)
 
     # Screenshots and screen recording
     grim # Screenshot tool
@@ -251,13 +256,32 @@
     btop # System monitor
     htop # Process viewer
 
-    # Theme and appearance
+    # Theme and appearance - Qt support
     qt5.qtwayland # Qt Wayland support
     qt6.qtwayland # Qt6 Wayland support
     libsForQt5.qt5ct # Qt5 configuration
     libsForQt5.qtstyleplugin-kvantum # Qt theming
-    gnome-themes-extra # GTK themes
-    papirus-icon-theme # Icon theme
+
+    # GTK themes
+    gnome-themes-extra # GNOME default themes
+    tokyonight-gtk-theme # Tokyo Night theme
+    catppuccin-gtk # Catppuccin pastel themes
+    gruvbox-gtk-theme # Gruvbox retro theme
+    arc-theme # Flat transparent theme
+    nordic # Nord-based GTK theme
+    orchis-theme # Material Design theme
+    graphite-gtk-theme # Modern dark theme
+
+    # Icon themes
+    papirus-icon-theme # Papirus icons (default)
+    numix-icon-theme # Numix icons
+    tela-icon-theme # Tela icons
+    candy-icons # Candy icons
+
+    # Cursor themes
+    bibata-cursors # Bibata cursor theme
+    nordzy-cursor-theme # Nord cursor theme
+    catppuccin-cursors # Catppuccin cursors
   ];
 
   # Environment variables for Wayland
@@ -266,10 +290,50 @@
     MOZ_ENABLE_WAYLAND = "1"; # Enable Wayland for Firefox
     QT_QPA_PLATFORM = "wayland";
     QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
+    QT_QPA_PLATFORMTHEME = "qt5ct"; # Use qt5ct for Qt theming
     SDL_VIDEODRIVER = "wayland";
     XDG_SESSION_TYPE = "wayland";
     _JAVA_AWT_WM_NONREPARENTING = "1";
+    # GTK theme environment - Tokyo Night
+    GTK_THEME = "Tokyonight-Dark";
+    XCURSOR_THEME = "Bibata-Modern-Classic";
+    XCURSOR_SIZE = "24";
   };
+
+  # Default GTK settings - Tokyo Night theme
+  environment.etc."xdg/gtk-3.0/settings.ini".text = ''
+    [Settings]
+    gtk-theme-name=Tokyonight-Dark
+    gtk-icon-theme-name=Papirus-Dark
+    gtk-font-name=Sans 10
+    gtk-cursor-theme-name=Bibata-Modern-Classic
+    gtk-cursor-theme-size=24
+    gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
+    gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
+    gtk-button-images=1
+    gtk-menu-images=1
+    gtk-enable-event-sounds=1
+    gtk-enable-input-feedback-sounds=0
+    gtk-xft-antialias=1
+    gtk-xft-hinting=1
+    gtk-xft-hintstyle=hintslight
+    gtk-xft-rgba=rgb
+    gtk-application-prefer-dark-theme=1
+  '';
+
+  environment.etc."xdg/gtk-4.0/settings.ini".text = ''
+    [Settings]
+    gtk-theme-name=Tokyonight-Dark
+    gtk-icon-theme-name=Papirus-Dark
+    gtk-font-name=Sans 10
+    gtk-cursor-theme-name=Bibata-Modern-Classic
+    gtk-cursor-theme-size=24
+    gtk-xft-antialias=1
+    gtk-xft-hinting=1
+    gtk-xft-hintstyle=hintslight
+    gtk-xft-rgba=rgb
+    gtk-application-prefer-dark-theme=1
+  '';
 
   # Enable OpenGL
   hardware.graphics.enable = true;
@@ -301,10 +365,268 @@
   # Enable sound with pipewire
   services.pulseaudio.enable = false;
 
-  # Bluetooth support (optional, remove if not needed)
+  # Bluetooth support
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
+    settings = {
+      General = {
+        Enable = "Source,Sink,Media,Socket";
+        Experimental = true;
+      };
+    };
   };
   services.blueman.enable = true;
+
+  # Auto-mount removable media
+  services.udisks2.enable = true;
+  services.gvfs.enable = true;
+
+  # Enable thumbnails in file managers
+  services.tumbler.enable = true;
+
+  # Default waybar configuration
+  environment.etc."xdg/waybar/config".text = ''
+    {
+      "layer": "top",
+      "position": "top",
+      "height": 34,
+      "spacing": 4,
+
+      "modules-left": ["hyprland/workspaces", "hyprland/window"],
+      "modules-center": ["clock"],
+      "modules-right": ["pulseaudio", "network", "cpu", "memory", "temperature", "battery", "tray"],
+
+      "hyprland/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+          "1": "󰲠",
+          "2": "󰲢",
+          "3": "󰲤",
+          "4": "󰲦",
+          "5": "󰲨",
+          "6": "󰲪",
+          "7": "󰲬",
+          "8": "󰲮",
+          "9": "󰲰",
+          "10": "󰿬"
+        },
+        "persistent-workspaces": {
+          "*": 5
+        }
+      },
+
+      "hyprland/window": {
+        "max-length": 50,
+        "separate-outputs": true
+      },
+
+      "clock": {
+        "format": "  {:%I:%M %p}",
+        "format-alt": "  {:%A, %B %d, %Y}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+          "mode": "year",
+          "mode-mon-col": 3,
+          "weeks-pos": "right",
+          "on-scroll": 1,
+          "format": {
+            "months": "<span color='#ffead3'><b>{}</b></span>",
+            "days": "<span color='#ecc6d9'><b>{}</b></span>",
+            "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
+            "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+            "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+          }
+        }
+      },
+
+      "cpu": {
+        "format": "  {usage}%",
+        "tooltip": true
+      },
+
+      "memory": {
+        "format": "  {}%"
+      },
+
+      "temperature": {
+        "critical-threshold": 80,
+        "format": "{icon} {temperatureC}°C",
+        "format-icons": ["", "", ""]
+      },
+
+      "battery": {
+        "states": {
+          "warning": 30,
+          "critical": 15
+        },
+        "format": "{icon} {capacity}%",
+        "format-charging": "  {capacity}%",
+        "format-plugged": "  {capacity}%",
+        "format-alt": "{icon} {time}",
+        "format-icons": ["", "", "", "", ""]
+      },
+
+      "network": {
+        "format-wifi": "  {essid}",
+        "format-ethernet": "  {ipaddr}",
+        "format-disconnected": "󰤭 Disconnected",
+        "tooltip-format": "{ifname} via {gwaddr}",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)",
+        "tooltip-format-ethernet": "{ifname}: {ipaddr}/{cidr}"
+      },
+
+      "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-bluetooth": "{icon}  {volume}%",
+        "format-muted": " Muted",
+        "format-icons": {
+          "headphone": "",
+          "hands-free": "",
+          "headset": "",
+          "phone": "",
+          "portable": "",
+          "car": "",
+          "default": ["", "", ""]
+        },
+        "on-click": "pavucontrol"
+      },
+
+      "tray": {
+        "spacing": 10
+      }
+    }
+  '';
+
+  # Waybar styling - Tokyo Night theme
+  environment.etc."xdg/waybar/style.css".text = ''
+    * {
+      border: none;
+      border-radius: 0;
+      font-family: "JetBrainsMono Nerd Font", "Font Awesome 6 Free";
+      font-size: 13px;
+      min-height: 0;
+    }
+
+    window#waybar {
+      background: rgba(26, 27, 38, 0.9);
+      color: #c0caf5;
+    }
+
+    tooltip {
+      background: rgba(26, 27, 38, 0.95);
+      border: 1px solid rgba(122, 162, 247, 0.5);
+      border-radius: 8px;
+    }
+
+    tooltip label {
+      color: #c0caf5;
+    }
+
+    #workspaces button {
+      padding: 0 8px;
+      color: #565f89;
+      background: transparent;
+      border-bottom: 2px solid transparent;
+    }
+
+    #workspaces button.active {
+      color: #7aa2f7;
+      border-bottom: 2px solid #7aa2f7;
+    }
+
+    #workspaces button:hover {
+      background: rgba(122, 162, 247, 0.2);
+      color: #7aa2f7;
+    }
+
+    #window {
+      padding: 0 15px;
+      color: #c0caf5;
+      font-weight: bold;
+    }
+
+    #clock,
+    #cpu,
+    #memory,
+    #temperature,
+    #battery,
+    #network,
+    #pulseaudio,
+    #tray {
+      padding: 0 10px;
+      margin: 0 2px;
+      background: rgba(31, 35, 51, 0.7);
+      border-radius: 8px;
+    }
+
+    #clock {
+      color: #bb9af7;
+      font-weight: bold;
+    }
+
+    #cpu {
+      color: #f7768e;
+    }
+
+    #memory {
+      color: #ff9e64;
+    }
+
+    #temperature {
+      color: #e0af68;
+    }
+
+    #battery {
+      color: #9ece6a;
+    }
+
+    #battery.charging {
+      color: #7aa2f7;
+    }
+
+    #battery.warning:not(.charging) {
+      color: #e0af68;
+    }
+
+    #battery.critical:not(.charging) {
+      color: #f7768e;
+      animation: blink 1s linear infinite;
+    }
+
+    @keyframes blink {
+      to {
+        color: #1a1b26;
+      }
+    }
+
+    #network {
+      color: #7aa2f7;
+    }
+
+    #network.disconnected {
+      color: #f7768e;
+    }
+
+    #pulseaudio {
+      color: #bb9af7;
+    }
+
+    #pulseaudio.muted {
+      color: #565f89;
+    }
+
+    #tray {
+      background: rgba(31, 35, 51, 0.7);
+    }
+
+    #tray > .passive {
+      -gtk-icon-effect: dim;
+    }
+
+    #tray > .needs-attention {
+      -gtk-icon-effect: highlight;
+      background-color: #f7768e;
+    }
+  '';
 }
