@@ -187,7 +187,7 @@
   };
 
   # Enable sound with pipewire
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
 
   # Bluetooth support (optional, remove if not needed)
   hardware.bluetooth = {
