@@ -491,6 +491,21 @@ in
           selection = {
             save_to_clipboard = true;
           };
+
+          keyboard.bindings = [
+            # SUPER+C for copy (same as Ctrl+Shift+C)
+            {
+              key = "C";
+              mods = "Super";
+              action = "Copy";
+            }
+            # SUPER+V for paste (same as Ctrl+Shift+V)
+            {
+              key = "V";
+              mods = "Super";
+              action = "Paste";
+            }
+          ];
         };
       };
     };
