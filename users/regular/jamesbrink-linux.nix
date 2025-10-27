@@ -93,7 +93,7 @@ in
 
           bind = [
             # Applications
-            "$mod, RETURN, exec, alacritty"
+            "$mod, RETURN, exec, spawn-terminal-here"
             "$mod SHIFT, F, exec, thunar" # File manager
             "$mod SHIFT, B, exec, firefox"
             "$mod SHIFT ALT, B, exec, firefox --private-window"
@@ -304,6 +304,24 @@ in
           nwg-look # GTK theme configuration
           wdisplays # Display configuration GUI
         ];
+
+      # Script to spawn terminal in same directory as active window
+      home.file.".local/bin/spawn-terminal-here" = {
+        text = ''
+          #!/usr/bin/env bash
+          # Get the working directory of the currently focused window
+          ACTIVE_WINDOW=$(hyprctl activewindow -j)
+          PID=$(echo "$ACTIVE_WINDOW" | jq -r '.pid')
+
+          if [[ -n "$PID" ]] && [[ -d "/proc/$PID/cwd" ]]; then
+            WORK_DIR=$(readlink "/proc/$PID/cwd")
+            alacritty --working-directory "$WORK_DIR"
+          else
+            alacritty
+          fi
+        '';
+        executable = true;
+      };
 
       # Configure wlogout for proper Hyprland logout
       xdg.configFile."wlogout/layout".text = ''
