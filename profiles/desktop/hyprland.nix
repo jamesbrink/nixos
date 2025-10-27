@@ -137,6 +137,8 @@
     displayManager.sddm = {
       enable = true;
       wayland.enable = true;
+      theme = "catppuccin-mocha";
+      package = pkgs.kdePackages.sddm;
     };
 
     # Pipewire for audio
@@ -220,6 +222,7 @@
     # Audio control
     pavucontrol # PulseAudio volume control
     pamixer # CLI audio mixer
+    swayosd # OSD for volume/brightness/caps lock
 
     # Brightness control
     brightnessctl # Screen brightness
@@ -271,6 +274,9 @@
     nordic # Nord-based GTK theme
     orchis-theme # Material Design theme
     graphite-gtk-theme # Modern dark theme
+
+    # SDDM themes
+    catppuccin-sddm-corners # Catppuccin SDDM theme with rounded corners
 
     # Icon themes
     papirus-icon-theme # Papirus icons (default)

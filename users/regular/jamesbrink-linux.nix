@@ -87,6 +87,7 @@ in
           "exec-once" = [
             "waybar" # Status bar
             "mako" # Notification daemon
+            "swayosd-server" # OSD server for volume/brightness overlays
             "wl-paste --type text --watch cliphist store" # Clipboard history for text
             "wl-paste --type image --watch cliphist store" # Clipboard history for images
           ];
@@ -210,18 +211,18 @@ in
             "$mod, mouse_up, workspace, e-1"
           ];
 
-          # Repeating bindings (for media keys)
+          # Repeating bindings (for media keys with SwayOSD)
           binde = [
-            ", XF86AudioRaiseVolume, exec, pamixer -i 5"
-            ", XF86AudioLowerVolume, exec, pamixer -d 5"
-            ", XF86MonBrightnessUp, exec, brightnessctl set +5%"
-            ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
+            ", XF86AudioRaiseVolume, exec, swayosd-client --output-volume raise"
+            ", XF86AudioLowerVolume, exec, swayosd-client --output-volume lower"
+            ", XF86MonBrightnessUp, exec, swayosd-client --brightness raise"
+            ", XF86MonBrightnessDown, exec, swayosd-client --brightness lower"
           ];
 
           # Non-repeating media bindings
           bindl = [
-            ", XF86AudioMute, exec, pamixer -t"
-            # ", XF86AudioMicMute, exec, pamixer --default-source -t"
+            ", XF86AudioMute, exec, swayosd-client --output-volume mute-toggle"
+            ", XF86AudioMicMute, exec, swayosd-client --input-volume mute-toggle"
             ", XF86AudioPlay, exec, playerctl play-pause"
             ", XF86AudioNext, exec, playerctl next"
             ", XF86AudioPrev, exec, playerctl previous"
