@@ -75,6 +75,158 @@ in
 
       # Allow unfree packages in home-manager
       nixpkgs.config.allowUnfree = true;
+
+      # Hyprland user configuration
+      wayland.windowManager.hyprland = {
+        enable = true;
+        settings = {
+          # Omarchy-style keybindings
+          "$mod" = "SUPER";
+
+          bind = [
+            # Applications
+            "$mod, RETURN, exec, kitty"
+            "$mod SHIFT, F, exec, thunar"
+            "$mod SHIFT, B, exec, firefox"
+            "$mod SHIFT ALT, B, exec, firefox --private-window"
+            # "$mod SHIFT, M, exec, spotify"  # Music (not installed)
+            # "$mod SHIFT, N, exec, kitty -e nvim"  # Editor
+            "$mod SHIFT, T, exec, kitty -e btop"
+            # "$mod SHIFT, D, exec, kitty -e lazydocker"  # Docker (not installed)
+            "$mod SHIFT, G, exec, signal-desktop"
+            "$mod SHIFT, O, exec, obsidian"
+            # "$mod SHIFT, SLASH, exec, 1password"  # Passwords (not installed)
+
+            # Web Apps (require wrapper scripts or direct launches)
+            # "$mod SHIFT, A, exec, firefox --new-window https://chat.openai.com"
+            # "$mod SHIFT ALT, A, exec, firefox --new-window https://grok.x.ai"
+            # "$mod SHIFT, C, exec, firefox --new-window https://calendar.google.com"
+            # "$mod SHIFT, E, exec, firefox --new-window https://mail.google.com"
+            "$mod SHIFT, Y, exec, firefox --new-window https://youtube.com"
+            # "$mod SHIFT ALT, G, exec, firefox --new-window https://web.whatsapp.com"
+            # "$mod SHIFT CTRL, G, exec, firefox --new-window https://messages.google.com"
+            # "$mod SHIFT, X, exec, firefox --new-window https://x.com"
+
+            # Menus
+            "$mod, SPACE, exec, rofi -show drun"
+            # "$mod CTRL, E, exec, rofi -show emoji"  # Emoji picker
+            # "$mod ALT, SPACE, exec, omarchy-menu"  # Omarchy menu
+            # "$mod, ESCAPE, exec, wlogout"  # Power menu
+            # "$mod, K, exec, show-keybindings"  # Key bindings
+
+            # Window Management
+            "$mod, W, killactive,"
+            # "CTRL ALT, DELETE, exec, hyprctl clients | jq -r '.[].address' | xargs -I {} hyprctl dispatch closewindow address:{}"
+            "$mod, J, togglesplit,"
+            "$mod, P, pseudo,"
+            "$mod, T, togglefloating,"
+            "$mod, F, fullscreen, 0"
+            "$mod CTRL, F, fullscreen, 1"
+            # "$mod ALT, F, resizeactive, exact 100% 0"  # Full width
+            "$mod, left, movefocus, l"
+            "$mod, right, movefocus, r"
+            "$mod, up, movefocus, u"
+            "$mod, down, movefocus, d"
+            "$mod SHIFT, left, swapwindow, l"
+            "$mod SHIFT, right, swapwindow, r"
+            "$mod SHIFT, up, swapwindow, u"
+            "$mod SHIFT, down, swapwindow, d"
+
+            # Workspaces
+            "$mod, 1, workspace, 1"
+            "$mod, 2, workspace, 2"
+            "$mod, 3, workspace, 3"
+            "$mod, 4, workspace, 4"
+            "$mod, 5, workspace, 5"
+            "$mod, 6, workspace, 6"
+            "$mod, 7, workspace, 7"
+            "$mod, 8, workspace, 8"
+            "$mod, 9, workspace, 9"
+            "$mod, 0, workspace, 10"
+            "$mod SHIFT, 1, movetoworkspace, 1"
+            "$mod SHIFT, 2, movetoworkspace, 2"
+            "$mod SHIFT, 3, movetoworkspace, 3"
+            "$mod SHIFT, 4, movetoworkspace, 4"
+            "$mod SHIFT, 5, movetoworkspace, 5"
+            "$mod SHIFT, 6, movetoworkspace, 6"
+            "$mod SHIFT, 7, movetoworkspace, 7"
+            "$mod SHIFT, 8, movetoworkspace, 8"
+            "$mod SHIFT, 9, movetoworkspace, 9"
+            "$mod SHIFT, 0, movetoworkspace, 10"
+            "$mod, TAB, workspace, e+1"
+            "$mod SHIFT, TAB, workspace, e-1"
+            # "$mod CTRL, TAB, workspace, previous"  # Former workspace
+
+            # Window Cycling
+            "ALT, TAB, cyclenext,"
+            "ALT SHIFT, TAB, cyclenext, prev"
+
+            # Window Resizing
+            "$mod, minus, resizeactive, -40 0"
+            "$mod, equal, resizeactive, 40 0"
+            "$mod SHIFT, minus, resizeactive, 0 -40"
+            "$mod SHIFT, equal, resizeactive, 0 40"
+
+            # Groups
+            "$mod, G, togglegroup,"
+            # "$mod ALT, G, moveoutofgroup"
+            "$mod ALT, left, moveintogroup, l"
+            "$mod ALT, right, moveintogroup, r"
+            "$mod ALT, up, moveintogroup, u"
+            "$mod ALT, down, moveintogroup, d"
+            "$mod ALT, TAB, changegroupactive, f"
+            "$mod ALT SHIFT, TAB, changegroupactive, b"
+
+            # Clipboard
+            "$mod, C, exec, wl-copy"
+            "$mod, V, exec, wl-paste"
+            "$mod, X, exec, wl-copy && wl-paste -c"
+            # "$mod CTRL, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+
+            # Captures (screenshots)
+            ", PRINT, exec, grim -g \"$(slurp)\" - | swappy -f -"
+            "SHIFT, PRINT, exec, grim -g \"$(slurp)\" - | wl-copy"
+            # "ALT, PRINT, exec, wf-recorder"  # Screen recording
+            # "$mod, PRINT, exec, hyprpicker -a"  # Color picker
+            "$mod CTRL SHIFT, 3, exec, grim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+            "$mod CTRL SHIFT, 4, exec, grim -g \"$(slurp)\" ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+            # "$mod CTRL SHIFT, 5, exec, hyprctl -j activewindow | jq -r '.at,.size' | grim -g - ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+
+            # Notifications
+            # "$mod, comma, exec, makoctl dismiss"
+            # "$mod SHIFT, comma, exec, makoctl dismiss -a"
+            # "$mod CTRL, comma, exec, makoctl mode -t dnd"
+
+            # Scroll workspace switching
+            "$mod, mouse_down, workspace, e+1"
+            "$mod, mouse_up, workspace, e-1"
+          ];
+
+          # Repeating bindings (for media keys)
+          binde = [
+            ", XF86AudioRaiseVolume, exec, pamixer -i 5"
+            ", XF86AudioLowerVolume, exec, pamixer -d 5"
+            ", XF86MonBrightnessUp, exec, brightnessctl set +5%"
+            ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
+          ];
+
+          # Non-repeating media bindings
+          bindl = [
+            ", XF86AudioMute, exec, pamixer -t"
+            # ", XF86AudioMicMute, exec, pamixer --default-source -t"
+            ", XF86AudioPlay, exec, playerctl play-pause"
+            ", XF86AudioNext, exec, playerctl next"
+            ", XF86AudioPrev, exec, playerctl previous"
+          ];
+
+          # Mouse bindings
+          bindm = [
+            "$mod, mouse:272, movewindow"
+            "$mod, mouse:273, resizewindow"
+          ];
+        };
+      };
+
       home.packages =
         with pkgs;
         [

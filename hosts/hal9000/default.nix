@@ -40,6 +40,9 @@
     ];
   };
 
+  # Home-manager configuration
+  home-manager.backupFileExtension = "backup";
+
   # services.keychron-keyboard = {
   #   enable = true;
   #   user = "jamesbrink";
