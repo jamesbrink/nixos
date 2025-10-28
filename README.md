@@ -851,6 +851,40 @@ Current N100 nodes and their MAC addresses:
 - Clear separation of concerns
 - Platform-specific abstractions (Linux vs Darwin)
 
+### Hyprland Desktop with Unified Theming
+
+**Modular Theme System** for Hyprland desktop environment with 5 curated themes:
+
+- **tokyo-night** (default) - Dark blue/purple cyberpunk aesthetic
+- **catppuccin** - Pastel macchiato dark theme
+- **gruvbox** - Warm retro dark theme
+- **nord** - Cool arctic dark theme
+- **rose-pine** - Muted mauve moon theme
+
+**Features**:
+
+- Declarative theme configuration with single variable
+- Unified theming across Hyprland, GTK, Alacritty, VSCode
+- Centralized font configuration (JetBrainsMono Nerd Font)
+- Walker application launcher (Super+Space)
+- Omarchy-inspired keybindings menu (Super+K)
+- Sharp corners design (rounding=0)
+
+**Switching Themes**:
+
+```nix
+# Edit modules/home-manager/hyprland/default.nix
+selectedTheme = "tokyo-night";  # or catppuccin, gruvbox, nord, rose-pine
+```
+
+```bash
+# Apply changes
+sudo nixos-rebuild switch --flake /etc/nixos/#default
+hyprctl reload  # Reload Hyprland without logging out
+```
+
+**Configuration**: `modules/home-manager/hyprland/default.nix` and `modules/home-manager/hyprland/themes/`
+
 ### Dual-Channel Package Management
 
 - **Stable Channel** (nixos-25.05): Default for system packages

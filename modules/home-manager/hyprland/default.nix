@@ -1,4 +1,24 @@
-# Hyprland window manager configuration
+# Hyprland window manager configuration with theme system
+#
+# To switch themes:
+# 1. Change the `selectedTheme` variable below to one of the available themes
+# 2. Run: nixos-rebuild switch --flake /etc/nixos/#default
+# 3. Run: hyprctl reload (to reload without logging out)
+#
+# Available themes:
+#   - tokyo-night   (default, dark blue/purple cyberpunk aesthetic)
+#   - catppuccin    (pastel macchiato dark theme)
+#   - gruvbox       (warm retro dark theme)
+#   - nord          (cool arctic dark theme)
+#   - rose-pine     (muted mauve moon theme)
+#
+# Each theme includes colors for:
+#   - Hyprland (borders)
+#   - Alacritty (terminal)
+#   - GTK (system theme)
+#   - VSCode (editor)
+#   - Icons (theme pack)
+#
 {
   config,
   pkgs,
@@ -6,6 +26,30 @@
   ...
 }:
 
+let
+  # Select theme - change this to switch themes
+  selectedTheme = "rose-pine";
+
+  # Load theme configuration
+  themeConfig = import (./themes + "/${selectedTheme}.nix");
+
+  # Resolve GTK theme package
+  gtkThemePackage =
+    if themeConfig.gtk.themePackage == "catppuccin-gtk" then
+      pkgs.catppuccin-gtk.override {
+        accents = [ "blue" ];
+        variant = "macchiato";
+      }
+    else
+      pkgs.${themeConfig.gtk.themePackage};
+
+  # Resolve icon theme package
+  iconThemePackage = pkgs.${themeConfig.gtk.iconPackage};
+
+  # Font configuration (Omarchy uses CaskaydiaMono, but JetBrainsMono is similar)
+  fontFamily = "JetBrainsMono Nerd Font";
+  fontSize = 12;
+in
 {
   # Hyprland window manager
   wayland.windowManager.hyprland = {
@@ -17,6 +61,12 @@
       # Visual settings - Omarchy style (sharp corners)
       decoration = {
         rounding = 0;
+      };
+
+      # Theme colors
+      general = {
+        "col.active_border" = themeConfig.hyprland.activeBorder;
+        "col.inactive_border" = themeConfig.hyprland.inactiveBorder;
       };
 
       # Startup services
@@ -292,26 +342,28 @@
     executable = true;
   };
 
-  # Tokyo Night GTK theme configuration
+  # GTK theme configuration (from selected theme)
   gtk = {
     enable = true;
 
     theme = {
-      name = "Tokyonight-Dark";
-      package = pkgs.tokyonight-gtk-theme;
+      name = themeConfig.gtk.themeName;
+      package = gtkThemePackage;
     };
 
     iconTheme = {
-      name = "Papirus-Dark";
-      package = pkgs.papirus-icon-theme;
+      name = themeConfig.gtk.iconName;
+      package = iconThemePackage;
     };
 
     gtk3.extraConfig = {
       gtk-application-prefer-dark-theme = true;
+      gtk-font-name = "${fontFamily} 10";
     };
 
     gtk4.extraConfig = {
       gtk-application-prefer-dark-theme = true;
+      gtk-font-name = "${fontFamily} 10";
     };
   };
 
@@ -430,17 +482,17 @@
     }
   '';
 
-  # VSCode Tokyo Night theme configuration
+  # VSCode theme configuration
   programs.vscode = {
     enable = true;
     profiles.default = {
       userSettings = {
-        "workbench.colorTheme" = "Tokyo Night";
+        "workbench.colorTheme" = themeConfig.vscode.theme;
         "workbench.iconTheme" = "material-icon-theme";
-        "terminal.integrated.fontFamily" = "'JetBrainsMono Nerd Font'";
-        "terminal.integrated.fontSize" = 13;
-        "editor.fontFamily" = "'JetBrainsMono Nerd Font', 'monospace'";
-        "editor.fontSize" = 14;
+        "terminal.integrated.fontFamily" = "'${fontFamily}'";
+        "terminal.integrated.fontSize" = fontSize + 1;
+        "editor.fontFamily" = "'${fontFamily}', 'monospace'";
+        "editor.fontSize" = fontSize + 2;
         "editor.fontLigatures" = true;
         "editor.formatOnSave" = true;
         "editor.minimap.enabled" = true;
@@ -453,7 +505,7 @@
     };
   };
 
-  # Alacritty Tokyo Night theme configuration
+  # Alacritty terminal configuration
   programs.alacritty = {
     enable = true;
     settings = lib.mkForce {
@@ -472,59 +524,30 @@
 
       font = {
         normal = {
-          family = "JetBrainsMono Nerd Font";
+          family = fontFamily;
           style = "Regular";
         };
         bold = {
-          family = "JetBrainsMono Nerd Font";
+          family = fontFamily;
           style = "Bold";
         };
         italic = {
-          family = "JetBrainsMono Nerd Font";
+          family = fontFamily;
           style = "Italic";
         };
-        size = 12.0;
+        bold_italic = {
+          family = fontFamily;
+          style = "Bold Italic";
+        };
+        size = fontSize * 1.0;
       };
 
-      # Tokyo Night color scheme
+      # Theme-based color scheme
       colors = {
-        primary = {
-          background = "#1a1b26";
-          foreground = "#c0caf5";
-        };
-
-        normal = {
-          black = "#15161e";
-          red = "#f7768e";
-          green = "#9ece6a";
-          yellow = "#e0af68";
-          blue = "#7aa2f7";
-          magenta = "#bb9af7";
-          cyan = "#7dcfff";
-          white = "#a9b1d6";
-        };
-
-        bright = {
-          black = "#414868";
-          red = "#f7768e";
-          green = "#9ece6a";
-          yellow = "#e0af68";
-          blue = "#7aa2f7";
-          magenta = "#bb9af7";
-          cyan = "#7dcfff";
-          white = "#c0caf5";
-        };
-
-        indexed_colors = [
-          {
-            index = 16;
-            color = "#ff9e64";
-          }
-          {
-            index = 17;
-            color = "#db4b4b";
-          }
-        ];
+        primary = themeConfig.alacritty.primary;
+        normal = themeConfig.alacritty.normal;
+        bright = themeConfig.alacritty.bright;
+        indexed_colors = themeConfig.alacritty.indexed_colors;
       };
 
       cursor = {
