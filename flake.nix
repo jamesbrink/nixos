@@ -197,7 +197,7 @@
               {
                 name = "deploy";
                 category = "deployment";
-                help = "Deploy the configuration to a target host";
+                help = "Deploy the configuration to a target host (use --build-host <host> for remote build)";
                 command = ''$PRJ_ROOT/scripts/deploy.sh "$@"'';
               }
 

@@ -493,22 +493,24 @@ in
       # VSCode Tokyo Night theme configuration
       programs.vscode = {
         enable = true;
-        userSettings = {
-          "workbench.colorTheme" = "Tokyo Night";
-          "workbench.iconTheme" = "material-icon-theme";
-          "terminal.integrated.fontFamily" = "'JetBrainsMono Nerd Font'";
-          "terminal.integrated.fontSize" = 13;
-          "editor.fontFamily" = "'JetBrainsMono Nerd Font', 'monospace'";
-          "editor.fontSize" = 14;
-          "editor.fontLigatures" = true;
-          "editor.formatOnSave" = true;
-          "editor.minimap.enabled" = true;
-          "workbench.startupEditor" = "none";
+        profiles.default = {
+          userSettings = {
+            "workbench.colorTheme" = "Tokyo Night";
+            "workbench.iconTheme" = "material-icon-theme";
+            "terminal.integrated.fontFamily" = "'JetBrainsMono Nerd Font'";
+            "terminal.integrated.fontSize" = 13;
+            "editor.fontFamily" = "'JetBrainsMono Nerd Font', 'monospace'";
+            "editor.fontSize" = 14;
+            "editor.fontLigatures" = true;
+            "editor.formatOnSave" = true;
+            "editor.minimap.enabled" = true;
+            "workbench.startupEditor" = "none";
+          };
+          extensions = with pkgs.vscode-extensions; [
+            enkia.tokyo-night
+            pkief.material-icon-theme
+          ];
         };
-        extensions = with pkgs.vscode-extensions; [
-          enkia.tokyo-night
-          pkief.material-icon-theme
-        ];
       };
 
       # Alacritty Tokyo Night theme configuration (override shared config)

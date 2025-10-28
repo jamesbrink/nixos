@@ -9,6 +9,7 @@
    ```
 
 2. Get Halcyon's SSH host key:
+
    ```bash
    sudo cat /etc/ssh/ssh_host_ed25519_key.pub
    ```
@@ -45,6 +46,7 @@
    ```
 
 6. Back in the main nixos repository, update the secrets input:
+
    ```bash
    cd ~/Projects/jamesbrink/nixos
    nix flake lock --update-input secrets

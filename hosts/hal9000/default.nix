@@ -85,6 +85,7 @@
 
     loader = {
       systemd-boot.enable = true;
+      systemd-boot.configurationLimit = 3;
       efi.canTouchEfiVariables = true;
     };
     kernelModules = [
@@ -657,7 +658,6 @@
     };
     docker = {
       enable = true;
-      enableNvidia = true; # Enable NVIDIA support for Docker
       autoPrune = {
         enable = true;
         dates = "weekly";

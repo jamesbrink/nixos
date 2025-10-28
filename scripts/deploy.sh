@@ -1,15 +1,43 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Check if argument is provided
-if [ $# -eq 0 ]; then
-  HOST=""
-else
-  HOST="$1"
-fi
+# Parse arguments
+HOST=""
+BUILD_HOST=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --build-host)
+      BUILD_HOST="$2"
+      shift 2
+      ;;
+    -h|--help)
+      echo "Usage: deploy <hostname> [--build-host <build-hostname>]"
+      echo ""
+      echo "Arguments:"
+      echo "  <hostname>                Target host to deploy to"
+      echo "  --build-host <hostname>   Optional: Host to build on (for low-resource targets)"
+      echo ""
+      echo "Available hosts:"
+      find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
+      exit 0
+      ;;
+    *)
+      if [ -z "$HOST" ]; then
+        HOST="$1"
+      else
+        echo "Error: Unknown argument '$1'"
+        echo "Usage: deploy <hostname> [--build-host <build-hostname>]"
+        exit 1
+      fi
+      shift
+      ;;
+  esac
+done
+
 if [ -z "$HOST" ]; then
   echo "Error: You must specify a hostname."
-  echo "Usage: deploy <hostname>"
+  echo "Usage: deploy <hostname> [--build-host <build-hostname>]"
   echo "Available hosts:"
   find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
   exit 1
@@ -18,6 +46,34 @@ fi
 HOSTNAME=$(hostname | cut -d. -f1 | tr '[:upper:]' '[:lower:]')
 SYSTEM=$(uname -s | tr '[:upper:]' '[:lower:]')
 HOST_LOWER=$(echo "$HOST" | tr '[:upper:]' '[:lower:]')
+
+# If build host is specified, use remote build strategy
+if [ -n "$BUILD_HOST" ]; then
+  BUILD_HOST_LOWER=$(echo "$BUILD_HOST" | tr '[:upper:]' '[:lower:]')
+  echo "Building on $BUILD_HOST and deploying to $HOST..."
+
+  # Copy flake to build host
+  echo "Copying configuration to build host $BUILD_HOST..."
+  rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . root@"$BUILD_HOST":/tmp/nixos-config/
+
+  # Build on the build host and copy closure to target
+  echo "Building configuration on $BUILD_HOST..."
+  ssh root@"$BUILD_HOST" "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake .#$HOST --impure"
+
+  # Get the system closure path
+  SYSTEM_PATH=$(ssh root@"$BUILD_HOST" "readlink -f /tmp/nixos-config/result")
+
+  # Copy closure to target host
+  echo "Copying built system to $HOST..."
+  ssh root@"$BUILD_HOST" "nix copy --to ssh://root@$HOST $SYSTEM_PATH"
+
+  # Activate on target host
+  echo "Activating configuration on $HOST..."
+  ssh root@"$HOST" "nix-env --profile /nix/var/nix/profiles/system --set $SYSTEM_PATH && $SYSTEM_PATH/bin/switch-to-configuration switch"
+
+  echo "Deployment to $HOST complete!"
+  exit 0
+fi
 
 echo "Deploying configuration to $HOST..."
 

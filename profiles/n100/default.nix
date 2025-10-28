@@ -56,7 +56,8 @@
       devNodes = "/dev/disk/by-id";
     };
 
-    kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
+    # Pin to LTS kernel for ZFS stability (6.6 is LTS until Dec 2026)
+    kernelPackages = pkgs.linuxPackages_6_6;
     kernel.sysctl."kernel.dmesg_restrict" = 0;
   };
 
