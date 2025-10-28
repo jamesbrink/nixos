@@ -71,6 +71,12 @@
     background = "#24273a";
   };
 
+  # Waybar colors
+  waybar = {
+    foreground = "#c6d0f5";
+    background = "#24273a";
+  };
+
   # Wallpapers
   wallpapers = [
     "1-catppuccin.png"

@@ -61,6 +61,12 @@
     background = "#2d353b";
   };
 
+  # Waybar colors
+  waybar = {
+    foreground = "#d3c6aa";
+    background = "#2d353b";
+  };
+
   # Wallpapers (none specified for now)
   wallpapers = [ ];
 }

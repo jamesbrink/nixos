@@ -70,6 +70,12 @@
     background = "#2E3440";
   };
 
+  # Waybar colors
+  waybar = {
+    foreground = "#D8DEE9";
+    background = "#2E3440";
+  };
+
   # Wallpapers
   wallpapers = [
     "1-nord.png"

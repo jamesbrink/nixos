@@ -933,4 +933,257 @@ in
       ];
     };
   };
+
+  # Waybar configuration (Omarchy-style)
+  programs.waybar = {
+    enable = true;
+
+    settings = {
+      mainBar = {
+        layer = "top";
+        position = "top";
+        height = 34;
+        spacing = 0;
+
+        modules-left = [
+          "hyprland/workspaces"
+          "hyprland/window"
+        ];
+        modules-center = [ "clock" ];
+        modules-right = [
+          "tray"
+          "bluetooth"
+          "network"
+          "pulseaudio"
+          "cpu"
+          "memory"
+          "temperature"
+          "battery"
+        ];
+
+        "hyprland/workspaces" = {
+          on-click = "activate";
+          format = "{icon}";
+          format-icons = {
+            "1" = "1";
+            "2" = "2";
+            "3" = "3";
+            "4" = "4";
+            "5" = "5";
+            "6" = "6";
+            "7" = "7";
+            "8" = "8";
+            "9" = "9";
+            active = "󱓻";
+            default = "";
+          };
+          persistent-workspaces = {
+            "1" = [ ];
+            "2" = [ ];
+            "3" = [ ];
+            "4" = [ ];
+            "5" = [ ];
+          };
+        };
+
+        clock = {
+          format = "{:%A %H:%M}";
+          format-alt = "{:%d %B W%V %Y}";
+          tooltip = false;
+        };
+
+        "hyprland/window" = {
+          max-length = 50;
+          separate-outputs = true;
+        };
+
+        cpu = {
+          interval = 5;
+          format = "󰍛 {usage}%";
+          on-click = "\${TERMINAL} -e btop";
+        };
+
+        memory = {
+          format = " {}%";
+          interval = 5;
+        };
+
+        temperature = {
+          critical-threshold = 80;
+          format = "{icon} {temperatureC}°C";
+          format-icons = [
+            ""
+            ""
+            ""
+          ];
+          interval = 5;
+        };
+
+        network = {
+          format-icons = [
+            "󰤯"
+            "󰤟"
+            "󰤢"
+            "󰤥"
+            "󰤨"
+          ];
+          format = "{icon}";
+          format-wifi = "{icon}";
+          format-ethernet = "󰀂";
+          format-disconnected = "󰤮";
+          tooltip-format-wifi = "{essid} ({frequency} GHz)\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}";
+          tooltip-format-ethernet = "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}";
+          tooltip-format-disconnected = "Disconnected";
+          interval = 3;
+        };
+
+        battery = {
+          format = "{capacity}% {icon}";
+          format-discharging = "{icon}";
+          format-charging = "{icon}";
+          format-plugged = "";
+          format-icons = {
+            charging = [
+              "󰢜"
+              "󰂆"
+              "󰂇"
+              "󰂈"
+              "󰢝"
+              "󰂉"
+              "󰢞"
+              "󰂊"
+              "󰂋"
+              "󰂅"
+            ];
+            default = [
+              "󰁺"
+              "󰁻"
+              "󰁼"
+              "󰁽"
+              "󰁾"
+              "󰁿"
+              "󰂀"
+              "󰂁"
+              "󰂂"
+              "󰁹"
+            ];
+          };
+          format-full = "󰂅";
+          tooltip-format-discharging = "{power:.1f}W↓ {capacity}%";
+          tooltip-format-charging = "{power:.1f}W↑ {capacity}%";
+          interval = 5;
+          states = {
+            warning = 20;
+            critical = 10;
+          };
+        };
+
+        bluetooth = {
+          format = "";
+          format-disabled = "󰂲";
+          format-connected = "";
+          tooltip-format = "Devices connected: {num_connections}";
+          on-click = "blueberry";
+        };
+
+        pulseaudio = {
+          format = "{icon}";
+          on-click = "\${TERMINAL} --class=Wiremix -e wiremix";
+          on-click-right = "pamixer -t";
+          tooltip-format = "Playing at {volume}%";
+          scroll-step = 5;
+          format-muted = "";
+          format-icons = {
+            default = [
+              ""
+              ""
+              ""
+            ];
+          };
+        };
+
+        tray = {
+          icon-size = 12;
+          spacing = 12;
+        };
+      };
+    };
+
+    style = ''
+      * {
+        border: none;
+        border-radius: 0;
+        font-family: "${fontFamily}";
+        font-size: 14px;
+        min-height: 0;
+      }
+
+      window#waybar {
+        background: ${themeConfig.waybar.background};
+        color: ${themeConfig.waybar.foreground};
+      }
+
+      tooltip {
+        background: ${themeConfig.waybar.background};
+        border: 1px solid ${themeConfig.waybar.foreground};
+        border-radius: 0;
+        opacity: 0.95;
+      }
+
+      tooltip label {
+        color: ${themeConfig.waybar.foreground};
+      }
+
+      #workspaces button {
+        padding: 0 8px;
+        color: ${themeConfig.waybar.foreground};
+        background: transparent;
+        border-bottom: 2px solid transparent;
+        opacity: 0.5;
+      }
+
+      #workspaces button.active {
+        color: ${themeConfig.waybar.foreground};
+        border-bottom: 2px solid ${themeConfig.waybar.foreground};
+        opacity: 1.0;
+      }
+
+      #workspaces button:hover {
+        background: ${themeConfig.waybar.foreground};
+        color: ${themeConfig.waybar.background};
+        opacity: 0.1;
+      }
+
+      #window {
+        padding: 0 15px;
+        color: ${themeConfig.waybar.foreground};
+        font-weight: normal;
+      }
+
+      #clock,
+      #cpu,
+      #memory,
+      #temperature,
+      #network,
+      #battery,
+      #bluetooth,
+      #pulseaudio,
+      #tray {
+        padding: 0 10px;
+        color: ${themeConfig.waybar.foreground};
+      }
+
+      #temperature.critical {
+        color: #f38ba8;
+      }
+
+      #battery.warning {
+        color: #f9e2af;
+      }
+
+      #battery.critical {
+        color: #f38ba8;
+      }
+    '';
+  };
 }

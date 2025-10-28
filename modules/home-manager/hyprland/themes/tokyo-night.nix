@@ -70,6 +70,12 @@
     background = "#1a1b26";
   };
 
+  # Waybar colors
+  waybar = {
+    foreground = "#cdd6f4";
+    background = "#1a1b26";
+  };
+
   # Wallpapers
   wallpapers = [
     "1-scenery-pink-lakeside-sunset-lake-landscape-scenic-panorama-7680x3215-144.png"

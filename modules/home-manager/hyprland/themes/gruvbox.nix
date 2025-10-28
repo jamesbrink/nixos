@@ -70,6 +70,12 @@
     background = "#282828";
   };
 
+  # Waybar colors
+  waybar = {
+    foreground = "#ebdbb2";
+    background = "#282828";
+  };
+
   # Wallpapers
   wallpapers = [
     "1-grubox.jpg"

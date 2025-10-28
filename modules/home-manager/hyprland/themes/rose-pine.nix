@@ -70,6 +70,12 @@
     background = "#232136"; # Base
   };
 
+  # Waybar colors
+  waybar = {
+    foreground = "#e0def4";
+    background = "#232136";
+  };
+
   # Wallpapers
   wallpapers = [
     "1-rose-pine.jpg"
