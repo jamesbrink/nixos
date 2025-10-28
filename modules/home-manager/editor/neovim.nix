@@ -5,10 +5,108 @@
   ...
 }:
 
+let
+  # Theme mapping for neovim colorschemes (Omarchy-style)
+  # Maps our theme names to LazyVim colorschemes
+  themeToColorscheme = {
+    tokyo-night = "tokyonight";
+    catppuccin = "catppuccin";
+    gruvbox = "gruvbox";
+    nord = "nordfox";
+    rose-pine = "rose-pine";
+  };
+
+  # Get the selected theme from hyprland module if it exists
+  # Otherwise default to tokyo-night
+  selectedTheme = "tokyo-night"; # This will be dynamic later
+  nvimColorscheme = themeToColorscheme.${selectedTheme} or "tokyonight";
+
+in
 {
-  home.file.".local/state/nvim/shada/.keep".text = "";
-  home.file.".local/share/nvim/session/.keep".text = "";
-  home.file.".vim/.keep".text = "";
+  # LazyVim configuration directories
+  xdg.configFile."nvim/lazyvim.json".text = builtins.toJSON {
+    extras = [
+      "lazyvim.plugins.extras.editor.neo-tree"
+    ];
+    install_version = 8;
+    news = {
+      "NEWS.md" = "10960";
+    };
+    version = 8;
+  };
+
+  # Theme configuration (matches selected theme)
+  xdg.configFile."nvim/lua/plugins/theme.lua".text = ''
+    return {
+      {
+        "LazyVim/LazyVim",
+        opts = {
+          colorscheme = "${nvimColorscheme}",
+        },
+      },
+    }
+  '';
+
+  # Disable animated scrolling (Omarchy preference)
+  xdg.configFile."nvim/lua/plugins/snacks-animated-scrolling-off.lua".text = ''
+    return {
+      {
+        "folke/snacks.nvim",
+        opts = {
+          scroll = { enabled = false },
+        },
+      },
+    }
+  '';
+
+  # Transparency configuration (Omarchy-style)
+  xdg.configFile."nvim/plugin/after/transparency.lua".text = ''
+    -- transparent background
+    vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+    vim.api.nvim_set_hl(0, "FloatBorder", { bg = "none" })
+    vim.api.nvim_set_hl(0, "Pmenu", { bg = "none" })
+    vim.api.nvim_set_hl(0, "Terminal", { bg = "none" })
+    vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "none" })
+    vim.api.nvim_set_hl(0, "FoldColumn", { bg = "none" })
+    vim.api.nvim_set_hl(0, "Folded", { bg = "none" })
+    vim.api.nvim_set_hl(0, "SignColumn", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
+    vim.api.nvim_set_hl(0, "WhichKeyFloat", { bg = "none" })
+    vim.api.nvim_set_hl(0, "TelescopeBorder", { bg = "none" })
+    vim.api.nvim_set_hl(0, "TelescopeNormal", { bg = "none" })
+    vim.api.nvim_set_hl(0, "TelescopePromptBorder", { bg = "none" })
+    vim.api.nvim_set_hl(0, "TelescopePromptTitle", { bg = "none" })
+
+    -- transparent background for neotree
+    vim.api.nvim_set_hl(0, "NeoTreeNormal", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NeoTreeNormalNC", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NeoTreeVertSplit", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NeoTreeWinSeparator", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NeoTreeEndOfBuffer", { bg = "none" })
+
+    -- transparent background for nvim-tree
+    vim.api.nvim_set_hl(0, "NvimTreeNormal", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NvimTreeVertSplit", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NvimTreeEndOfBuffer", { bg = "none" })
+
+    -- transparent notify background
+    vim.api.nvim_set_hl(0, "NotifyINFOBody", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyERRORBody", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyWARNBody", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyTRACEBody", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyDEBUGBody", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyINFOTitle", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyERRORTitle", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyWARNTitle", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyTRACETitle", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyDEBUGTitle", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyINFOBorder", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyERRORBorder", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyWARNBorder", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyTRACEBorder", { bg = "none" })
+    vim.api.nvim_set_hl(0, "NotifyDEBUGBorder", { bg = "none" })
+  '';
 
   programs.neovim = {
     enable = true;
@@ -17,449 +115,83 @@
     vimAlias = true;
     vimdiffAlias = true;
 
-    withNodeJs = true;
-    withPython3 = true;
-    withRuby = false;
+    # LazyVim distribution (Omarchy-style)
+    # Use the lazyvim package which includes lazy.nvim and LazyVim starter
+    package = pkgs.neovim-unwrapped;
 
-    plugins = with pkgs.vimPlugins; [
-      # UI and themes
-      gruvbox-material
-      lualine-nvim
-      vim-airline
-      vim-airline-themes
-      vim-startify
-      indent-blankline-nvim
-      which-key-nvim
+    extraPackages = with pkgs; [
+      # Language servers
+      lua-language-server
+      nil # Nix LSP
+      nodePackages.bash-language-server
+      nodePackages.typescript-language-server
+      nodePackages.vscode-langservers-extracted # HTML/CSS/JSON
+      python3Packages.python-lsp-server
+      terraform-ls
+      marksman # Markdown LSP
 
-      # Core functionality
-      vim-sensible
-      vim-surround
-      vim-commentary
-      vim-repeat
-      vim-lastplace
-      vim-smoothie
+      # Formatters
+      nixfmt-rfc-style
+      stylua
+      black
+      isort
+      shfmt
+      nodePackages.prettier
 
-      # File navigation
-      telescope-nvim
-      plenary-nvim
-      nerdtree
-      fzf-vim
-
-      # Git integration
-      vim-fugitive
-      vim-gitgutter
-
-      # Language support and syntax
-      (nvim-treesitter.withPlugins (p: [
-        p.bash
-        p.c
-        p.go
-        p.hcl
-        p.javascript
-        p.json
-        p.lua
-        p.markdown
-        p.nix
-        p.python
-        p.rust
-        p.terraform
-        p.toml
-        p.typescript
-        p.vim
-        p.vimdoc
-        p.yaml
-      ]))
-
-      # Language-specific plugins
-      ansible-vim
-      nvim-sops
-      vim-terraform
-      vim-markdown
-      vim-nix
-
-      # LSP and completion
-      nvim-lspconfig
-      nvim-cmp
-      cmp-nvim-lsp
-      cmp-buffer
-      cmp-path
-      cmp-cmdline
-      luasnip
-      cmp_luasnip
-
-      # Terminal and tmux integration
-      toggleterm-nvim
-      vim-tmux-navigator
+      # Tools
+      ripgrep
+      fd
+      git
+      lazygit
     ];
 
-    extraConfig = ''
-      " Basic settings
-      syntax on
-      filetype plugin indent on
-      set number relativenumber
-      set hidden
-      set encoding=utf-8
-      set title
-      set showmatch
-      set ignorecase smartcase
-      set hlsearch incsearch
-      set expandtab
-      set tabstop=2 shiftwidth=2 softtabstop=2
-      set autoindent smartindent
-      set ruler
-      set wrap breakindent
-      set mouse=a
-      set clipboard=unnamedplus
-      set updatetime=300
-      set signcolumn=yes
-      set termguicolors
-      set cursorline
-      set ttyfast
-      set scrolloff=3
-      set showcmd
-      set wildmenu
-      set wildmode=list:longest
-      set laststatus=2
-      set backspace=indent,eol,start
-      set modelines=0
-      set history=1000
-
-      " Disable backups and swapfiles
-      set nobackup
-      set nowritebackup
-      set noswapfile
-
-      if has('nvim')
-        silent! call mkdir(expand('~/.local/state/nvim/shada'), 'p')
-        set shada='100,<1000,s100,h
-        let &shadafile = expand('~/.local/state/nvim/shada/main.shada')
-      else
-        silent! call mkdir(expand('~/.vim'), 'p')
-        set viminfo='100,<1000,s100,h
-        let &viminfofile = expand('~/.vim/viminfo')
-      endif
-
-      " Ensure viminfo/shada file exists
-      if !has('nvim') && !filereadable(expand('~/.vim/viminfo'))
-        silent! execute 'wviminfo'
-      endif
-
-      " Disable Startify's viminfo usage completely
-      let g:startify_session_delete_buffers = 1
-      let g:startify_change_to_vcs_root = 0
-      let g:startify_session_sort = 0
-      let g:startify_enable_special = 0
-      let g:startify_session_before_save = []
-      let g:startify_skiplist = [
-        \ 'COMMIT_EDITMSG',
-        \ '^/tmp',
-        \ escape(fnamemodify(resolve($VIMRUNTIME), ':p'), '\') . 'doc',
-        \ 'bundle/.*/doc',
-        \ ]
-
-      " Set leader keys
-      let mapleader = ","
-      let maplocalleader = " "
-
-      " Color scheme
-      set background=dark
-      colorscheme gruvbox-material
-
-      " Airline configuration
-      let g:airline_theme='bubblegum'
-      let g:airline_powerline_fonts = 1
-
-      " Key mappings
-      " File operations
-      nnoremap <leader>w :w<CR>
-      nnoremap <leader>q :q<CR>
-      cmap w!! w !sudo tee % >/dev/null
-
-      " File navigation
-      nnoremap <leader>e :NERDTreeToggle<CR>
-      nnoremap <leader>f :Files<CR>
-      nnoremap <leader>ff <cmd>Telescope find_files<cr>
-      nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-      nnoremap <leader>fb <cmd>Telescope buffers<cr>
-      nnoremap <leader>fh <cmd>Telescope help_tags<cr>
-      nnoremap <leader>g :Rg<CR>
-      nnoremap <leader>b :Buffers<CR>
-
-      " Clear search highlight
-      nnoremap <leader>h :nohlsearch<CR>
-
-      " Window navigation
-      nnoremap <C-h> <C-w>h
-      nnoremap <C-j> <C-w>j
-      nnoremap <C-k> <C-w>k
-      nnoremap <C-l> <C-w>l
-
-      " Buffer navigation
-      nnoremap <tab> :bnext<cr>
-      nnoremap <S-tab> :bprev<cr>
-
-      " Maintain visual selection after indenting
-      vnoremap < <gv
-      vnoremap > >gv
-
-      " Move lines up and down
-      nnoremap <A-j> :m .+1<CR>==
-      nnoremap <A-k> :m .-2<CR>==
-      vnoremap <A-j> :m '>+1<CR>gv=gv
-      vnoremap <A-k> :m '<-2<CR>gv=gv
-
-      " Yank to end of line
-      nnoremap Y y$
-
-      " Move by display lines when wrapping
-      nnoremap j gj
-      nnoremap k gk
-
-      " Clipboard operations
-      nnoremap <Leader>, "+gP
-      xnoremap <Leader>. "+y
-
-      " Terminal settings for Neovim
-      if has('nvim')
-        tnoremap <Esc> <C-\><C-n>
-        autocmd TermOpen * startinsert
-      endif
-
-      " Auto-save on focus lost
-      autocmd FocusLost * silent! wa
-
-      " Highlight yanked text
-      autocmd TextYankPost * silent! lua vim.highlight.on_yank()
-
-      " Change cursor on mode
-      autocmd InsertEnter * set cul
-      autocmd InsertLeave * set nocul
-
-      " Startify configuration
-      let g:startify_session_dir = expand('~/.local/share/nvim/session')
-      let g:startify_session_persistence = 1
-      let g:startify_session_autoload = 0
-      let g:startify_fortune_use_unicode = 1
-
-      let g:startify_lists = [
-        \ { 'type': 'dir',       'header': ['   Current Directory '. getcwd()] },
-        \ { 'type': 'sessions',  'header': ['   Sessions']       },
-        \ { 'type': 'bookmarks', 'header': ['   Bookmarks']      }
-        \ ]
-
-      let g:startify_bookmarks = [
-        \ '~/.local/share/src',
-        \ ]
-    '';
-
     extraLuaConfig = ''
-      -- LSP Configuration using Neovim 0.11+ native API
-      local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
-      -- Common on_attach function
-      local on_attach = function(client, bufnr)
-        local opts = { noremap=true, silent=true, buffer=bufnr }
-        vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-        vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-        vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-        vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-        vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-        vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
-        vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-        vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-        vim.keymap.set('n', '<leader>f', function() vim.lsp.buf.format { async = true } end, opts)
+      -- Bootstrap lazy.nvim
+      local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+      if not (vim.uv or vim.loop).fs_stat(lazypath) then
+        local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+        local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+        if vim.v.shell_error ~= 0 then
+          vim.api.nvim_echo({
+            { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+            { out, "WarningMsg" },
+            { "\nPress any key to exit..." },
+          }, true, {})
+          vim.fn.getchar()
+          os.exit(1)
+        end
       end
+      vim.opt.rtp:prepend(lazypath)
 
-      -- Language servers using new vim.lsp.config API
-      -- Python
-      vim.lsp.config.pyright = {
-        cmd = { 'pyright-langserver', '--stdio' },
-        filetypes = { 'python' },
-        root_markers = { 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', 'Pipfile', '.git' },
-        capabilities = capabilities,
-        on_attach = on_attach,
-      }
-
-      -- Bash
-      vim.lsp.config.bashls = {
-        cmd = { 'bash-language-server', 'start' },
-        filetypes = { 'sh' },
-        root_markers = { '.git' },
-        capabilities = capabilities,
-        on_attach = on_attach,
-      }
-
-      -- Terraform
-      vim.lsp.config.terraformls = {
-        cmd = { 'terraform-ls', 'serve' },
-        filetypes = { 'terraform', 'tf' },
-        root_markers = { '.terraform', '.git' },
-        capabilities = capabilities,
-        on_attach = on_attach,
-      }
-
-      -- Markdown
-      vim.lsp.config.marksman = {
-        cmd = { 'marksman', 'server' },
-        filetypes = { 'markdown', 'markdown.mdx' },
-        root_markers = { '.git', '.marksman.toml' },
-        capabilities = capabilities,
-        on_attach = on_attach,
-      }
-
-      -- Nix
-      vim.lsp.config.nil_ls = {
-        cmd = { 'nil' },
-        filetypes = { 'nix' },
-        root_markers = { 'flake.nix', '.git' },
-        capabilities = capabilities,
-        on_attach = on_attach,
-        settings = {
-          ['nil'] = {
-            formatting = {
-              command = { "nixfmt" },
+      -- Setup lazy.nvim with LazyVim
+      require("lazy").setup({
+        spec = {
+          -- Import LazyVim and its plugins
+          { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+          -- Import user plugins from lua/plugins
+          { import = "plugins" },
+        },
+        defaults = {
+          lazy = false,
+          version = false,
+        },
+        checker = { enabled = true },
+        performance = {
+          rtp = {
+            disabled_plugins = {
+              "gzip",
+              "tarPlugin",
+              "tohtml",
+              "tutor",
+              "zipPlugin",
             },
           },
         },
-      }
-
-      -- Enable LSP servers for matching filetypes
-      vim.lsp.enable('pyright')
-      vim.lsp.enable('bashls')
-      vim.lsp.enable('terraformls')
-      vim.lsp.enable('marksman')
-      vim.lsp.enable('nil_ls')
-
-      -- Completion setup
-      local cmp = require('cmp')
-      local luasnip = require('luasnip')
-
-      cmp.setup({
-        snippet = {
-          expand = function(args)
-            luasnip.lsp_expand(args.body)
-          end,
-        },
-        mapping = cmp.mapping.preset.insert({
-          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-          ['<C-f>'] = cmp.mapping.scroll_docs(4),
-          ['<C-Space>'] = cmp.mapping.complete(),
-          ['<C-e>'] = cmp.mapping.abort(),
-          ['<CR>'] = cmp.mapping.confirm({ select = true }),
-          ['<Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_next_item()
-            elseif luasnip.expand_or_jumpable() then
-              luasnip.expand_or_jump()
-            else
-              fallback()
-            end
-          end, { 'i', 's' }),
-          ['<S-Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_prev_item()
-            elseif luasnip.jumpable(-1) then
-              luasnip.jump(-1)
-            else
-              fallback()
-            end
-          end, { 'i', 's' }),
-        }),
-        sources = cmp.config.sources({
-          { name = 'nvim_lsp' },
-          { name = 'luasnip' },
-        }, {
-          { name = 'buffer' },
-          { name = 'path' },
-        })
       })
 
-      -- Use buffer source for `/` and `?`
-      cmp.setup.cmdline({ '/', '?' }, {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = {
-          { name = 'buffer' }
-        }
-      })
-
-      -- Use cmdline & path source for ':'
-      cmp.setup.cmdline(':', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources({
-          { name = 'path' }
-        }, {
-          { name = 'cmdline' }
-        })
-      })
-
-      -- Treesitter configuration
-      require('nvim-treesitter.configs').setup {
-        highlight = {
-          enable = true,
-          additional_vim_regex_highlighting = false,
-        },
-        indent = {
-          enable = true,
-        },
-        incremental_selection = {
-          enable = true,
-          keymaps = {
-            init_selection = "gnn",
-            node_incremental = "grn",
-            scope_incremental = "grc",
-            node_decremental = "grm",
-          },
-        },
-      }
-
-      -- Lualine setup
-      require('lualine').setup {
-        options = {
-          theme = 'gruvbox-material',
-          component_separators = { left = "", right = ""},
-          section_separators = { left = "", right = ""},
-        }
-      }
-
-      -- Indent blankline
-      require("ibl").setup({
-        scope = {
-          enabled = true,
-          show_start = true,
-          show_end = false,
-        }
-      })
-
-      -- Which-key
-      require("which-key").setup({
-        win = {
-          border = "rounded",
-          position = "bottom",
-          margin = { 1, 0, 1, 0 },
-          padding = { 2, 2, 2, 2 },
-        },
-      })
-
-      -- Telescope setup
-      require('telescope').setup{
-        defaults = {
-          mappings = {
-            i = {
-              ["<esc>"] = require('telescope.actions').close
-            }
-          }
-        }
-      }
-
-      -- Toggle terminal setup
-      require("toggleterm").setup{
-        size = 20,
-        open_mapping = [[<c-\>]],
-        direction = 'float',
-        float_opts = {
-          border = 'curved',
-        }
-      }
+      -- Basic settings
+      vim.opt.relativenumber = false
+      vim.opt.clipboard = "unnamedplus"
     '';
   };
 }
