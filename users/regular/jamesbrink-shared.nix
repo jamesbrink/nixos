@@ -26,6 +26,40 @@ in
         ../../modules/home-manager/shell
       ];
 
+      # Alacritty terminal configuration
+      programs.alacritty = {
+        enable = true;
+        settings = {
+          env.TERM = "xterm-256color";
+
+          keyboard.bindings = [
+            # SUPER+C for copy (macOS-style)
+            {
+              key = "C";
+              mods = "Super";
+              action = "Copy";
+            }
+            # SUPER+V for paste (macOS-style)
+            {
+              key = "V";
+              mods = "Super";
+              action = "Paste";
+            }
+            # Keep default Ctrl+Shift+C/V as well
+            {
+              key = "C";
+              mods = "Control|Shift";
+              action = "Copy";
+            }
+            {
+              key = "V";
+              mods = "Control|Shift";
+              action = "Paste";
+            }
+          ];
+        };
+      };
+
       # SSH configuration files
       home.file."${homeDir}/.ssh/config_external" = {
         source = ./ssh/config_external;
@@ -70,6 +104,21 @@ in
         EOF
           chmod 600 ${homeDir}/.netrc
         fi
+      '';
+
+      # NPM global packages in user directory
+      home.file."${homeDir}/.npmrc".text = ''
+        prefix=${homeDir}/.npm-global
+      '';
+
+      # Add npm global bin to PATH
+      home.sessionPath = [
+        "${homeDir}/.npm-global/bin"
+      ];
+
+      # Create npm global directory
+      home.activation.setupNpmGlobal = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        mkdir -p ${homeDir}/.npm-global
       '';
     };
 }

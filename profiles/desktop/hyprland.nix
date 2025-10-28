@@ -35,8 +35,14 @@
     bind = $mainMod, Q, killactive,
     bind = $mainMod, M, exit,
     bind = $mainMod, E, exec, thunar
-    bind = $mainMod, V, togglefloating,
+    bind = $mainMod, F, togglefloating,
     bind = $mainMod, D, exec, rofi -show drun
+    bind = $mainMod, J, togglesplit, # Toggle window split direction
+
+    # Screenshot bindings (macOS-style) - saves to ~/Pictures and copies to clipboard
+    bind = SUPER CTRL SHIFT, 3, exec, grim - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | wl-copy
+    bind = SUPER CTRL SHIFT, 4, exec, grim -g "$(slurp)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | wl-copy
+    bind = SUPER CTRL SHIFT, 5, exec, grim -g "$(hyprctl activewindow -j | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"')" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | wl-copy
 
     # Move focus
     bind = $mainMod, left, movefocus, l
@@ -146,6 +152,9 @@
       };
     };
 
+    # GNOME Keyring for application secrets (Signal, etc.)
+    gnome.gnome-keyring.enable = true;
+
     # Pipewire for audio
     pipewire = {
       enable = true;
@@ -179,10 +188,16 @@
   security = {
     polkit.enable = true;
     rtkit.enable = true;
+    pam.services.sddm.enableGnomeKeyring = true;
   };
 
   # Essential system packages for Hyprland
   environment.systemPackages = with pkgs; [
+    # Keyring and secrets management
+    gnome-keyring
+    libsecret # For applications using libsecret API
+    seahorse # GUI for managing keyrings
+
     # Hyprland utilities
     hyprpaper # Wallpaper daemon
     hyprlock # Screen locker
@@ -205,7 +220,7 @@
     swww # Animated wallpaper daemon (alternative to hyprpaper)
 
     # Application launcher and bar
-    rofi-wayland # Application launcher
+    walker # Wayland-native application launcher (Omarchy-style)
     waybar # Status bar
     mako # Notification daemon
 
@@ -243,6 +258,7 @@
     slurp # Region selector
     swappy # Screenshot editor
     wf-recorder # Screen recorder
+    jq # JSON processor for window info
 
     # Session management
     polkit_gnome # Polkit authentication agent

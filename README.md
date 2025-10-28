@@ -164,7 +164,7 @@ This repository manages a multi-host NixOS/nix-darwin infrastructure consisting 
 **Key Services**:
 
 - AI/ML Stack: Ollama, Open-WebUI, Fooocus, n8n workflow automation
-- Database: PostgreSQL 13 with PostGIS (port 5433)
+- Database: PostgreSQL 13 with PostGIS (port 5439)
 - Storage: NFS/Samba server for network shares
 - Networking: TFTP/HTTP netboot server for N100 cluster
 - Virtualization: libvirtd, KVM/QEMU, Windows 11 VM support
@@ -357,7 +357,7 @@ The following services run as Podman containers on hal9000:
 | **Open-WebUI**    | 3000  | Chat interface for Ollama             | No     |
 | **Pipelines**     | 9099  | Extended functionality for Open-WebUI | No     |
 | **Fooocus**       | 7865  | AI image generation                   | NVIDIA |
-| **PostgreSQL 13** | 5433  | Database with PostGIS extension       | No     |
+| **PostgreSQL 13** | 5439  | Database with PostGIS extension       | No     |
 
 **Key Features**:
 
