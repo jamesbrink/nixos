@@ -88,6 +88,57 @@ in
         "noanim, walker"
       ];
 
+      # Window rules (Omarchy-style)
+      windowrule = [
+        # Suppress maximize events for all windows
+        "suppressevent maximize, class:.*"
+
+        # Base opacity for all windows (subtle transparency)
+        "opacity 0.97 0.9, class:.*"
+
+        # Fix some dragging issues with XWayland
+        "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
+
+        # Browser types - tag identification
+        "tag +chromium-based-browser, class:([cC]hrom(e|ium)|[bB]rave-browser|Microsoft-edge|Vivaldi-stable)"
+        "tag +firefox-based-browser, class:([fF]irefox|zen|librewolf)"
+
+        # Force chromium-based browsers into a tile to deal with --app bug
+        "tile, tag:chromium-based-browser"
+
+        # Only subtle opacity change for browsers
+        "opacity 1 0.97, tag:chromium-based-browser"
+        "opacity 1 0.97, tag:firefox-based-browser"
+
+        # Some video sites should never have opacity applied to them
+        "opacity 1.0 1.0, initialTitle:((?i)(?:[a-z0-9-]+\\.)*youtube\\.com_/|app\\.zoom\\.us_/wc/home)"
+
+        # No transparency on media windows
+        "opacity 1 1, class:^(zoom|vlc|mpv|org.kde.kdenlive|com.obsproject.Studio|com.github.PintaProject.Pinta|imv|org.gnome.NautilusPreviewer)$"
+
+        # Floating windows - tag identification
+        "tag +floating-window, class:(blueberry.py|Impala|Wiremix|org.gnome.NautilusPreviewer|com.gabm.satty|Omarchy|About|TUI.float)"
+        "tag +floating-window, class:(xdg-desktop-portal-gtk|sublime_text|DesktopEditors|org.gnome.Nautilus), title:^(Open.*Files?|Open [F|f]older.*|Save.*Files?|Save.*As|Save|All Files)"
+
+        # Floating window settings
+        "float, tag:floating-window"
+        "center, tag:floating-window"
+        "size 800 600, tag:floating-window"
+
+        # Fullscreen screensaver
+        "fullscreen, class:Screensaver"
+
+        # Picture-in-picture overlays
+        "tag +pip, title:(Picture.{0,1}in.{0,1}[Pp]icture)"
+        "float, tag:pip"
+        "pin, tag:pip"
+        "size 600 338, tag:pip"
+        "keepaspectratio, tag:pip"
+        "noborder, tag:pip"
+        "opacity 1 1, tag:pip"
+        "move 100%-w-40 4%, tag:pip"
+      ];
+
       # Startup services
       "exec-once" = [
         "waybar" # Status bar
@@ -181,11 +232,15 @@ in
         # Clipboard history
         "$mod CTRL, V, exec, cliphist list | walker --dmenu | cliphist decode | wl-copy"
 
-        # Captures (screenshots)
-        ", PRINT, exec, grim -g \"$(slurp)\" - | swappy -f -"
-        "SHIFT, PRINT, exec, grim -g \"$(slurp)\" - | wl-copy"
-        "$mod CTRL SHIFT, 3, exec, grim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
-        "$mod CTRL SHIFT, 4, exec, grim -g \"$(slurp)\" ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+        # Background rotation (Omarchy-style)
+        "$mod CTRL, SPACE, exec, rotate-background"
+
+        # Captures (screenshots) - Omarchy-style with hyprshot + satty
+        ", PRINT, exec, screenshot-annotate region"
+        "SHIFT, PRINT, exec, screenshot-annotate window"
+        "$mod CTRL SHIFT, 3, exec, screenshot-annotate output"
+        "$mod CTRL SHIFT, 4, exec, screenshot-annotate region"
+        "$mod CTRL SHIFT, 5, exec, screenshot-annotate window"
 
         # Notifications (mako is installed in desktop profile)
         "$mod, comma, exec, makoctl dismiss"
@@ -700,6 +755,95 @@ in
     executable = true;
   };
 
+  # Screenshot with annotation (Omarchy-style: hyprshot + satty)
+  home.file.".local/bin/screenshot-annotate" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Screenshot with annotation using hyprshot and satty (Omarchy-style)
+
+      OUTPUT_DIR="$HOME/Pictures"
+      MODE="''${1:-region}"
+
+      # Create Pictures directory if it doesn't exist
+      mkdir -p "$OUTPUT_DIR"
+
+      # Kill any running slurp instances (prevents conflicts)
+      ${pkgs.procps}/bin/pkill slurp 2>/dev/null || true
+
+      # Capture screenshot with hyprshot and pipe to satty for annotation
+      ${pkgs.hyprshot}/bin/hyprshot -m "$MODE" --raw | \
+        ${pkgs.satty}/bin/satty --filename - \
+          --output-filename "$OUTPUT_DIR/screenshot-$(date +'%Y-%m-%d_%H-%M-%S').png" \
+          --early-exit \
+          --actions-on-enter save-to-clipboard \
+          --save-after-copy \
+          --copy-command '${pkgs.wl-clipboard}/bin/wl-copy'
+    '';
+    executable = true;
+  };
+
+  # Background rotation script (Omarchy-style)
+  home.file.".local/bin/rotate-background" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Cycle through theme wallpapers using swww (Omarchy-style)
+
+      WALLPAPERS_DIR="${config.home.homeDirectory}/.config/hyprland/current-theme-wallpapers"
+      CURRENT_BG_FILE="${config.home.homeDirectory}/.config/hyprland/current-background"
+      STATE_FILE="${config.home.homeDirectory}/.config/hyprland/background-index"
+
+      # Check if wallpapers directory exists and has files
+      if [[ ! -d "$WALLPAPERS_DIR" ]] || [[ -z "$(${pkgs.coreutils}/bin/ls -A "$WALLPAPERS_DIR")" ]]; then
+        # No wallpapers available, use solid color
+        ${pkgs.libnotify}/bin/notify-send "No backgrounds for this theme" "Using solid color" -t 2000 2>/dev/null || true
+        ${pkgs.procps}/bin/pkill -x swww-daemon
+        ${pkgs.swww}/bin/swww-daemon &
+        sleep 0.5
+        ${pkgs.swww}/bin/swww img --transition-type=none -o '*' --resize=crop -t 0 <(${pkgs.imagemagick}/bin/convert -size 1920x1080 xc:'#000000' png:-)
+        exit 0
+      fi
+
+      # Get list of wallpapers (sorted)
+      mapfile -t WALLPAPERS < <(${pkgs.findutils}/bin/find "$WALLPAPERS_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | ${pkgs.coreutils}/bin/sort)
+      TOTAL=''${#WALLPAPERS[@]}
+
+      if [[ $TOTAL -eq 0 ]]; then
+        # No image files found, use solid color
+        ${pkgs.libnotify}/bin/notify-send "No backgrounds for this theme" "Using solid color" -t 2000 2>/dev/null || true
+        ${pkgs.procps}/bin/pkill -x swww-daemon
+        ${pkgs.swww}/bin/swww-daemon &
+        sleep 0.5
+        ${pkgs.swww}/bin/swww img --transition-type=none -o '*' --resize=crop -t 0 <(${pkgs.imagemagick}/bin/convert -size 1920x1080 xc:'#000000' png:-)
+        exit 0
+      fi
+
+      # Read current index from state file
+      if [[ -f "$STATE_FILE" ]]; then
+        CURRENT_INDEX=$(${pkgs.coreutils}/bin/cat "$STATE_FILE")
+      else
+        CURRENT_INDEX=0
+      fi
+
+      # Calculate next index (wrap around)
+      NEXT_INDEX=$(( (CURRENT_INDEX + 1) % TOTAL ))
+      NEXT_WALLPAPER="''${WALLPAPERS[$NEXT_INDEX]}"
+
+      # Save new index
+      echo "$NEXT_INDEX" > "$STATE_FILE"
+
+      # Update current background symlink
+      ${pkgs.coreutils}/bin/ln -sf "$NEXT_WALLPAPER" "$CURRENT_BG_FILE"
+
+      # Apply wallpaper with swww
+      ${pkgs.swww}/bin/swww img --transition-type=wipe --transition-angle=30 --transition-duration=1 "$NEXT_WALLPAPER"
+
+      # Get wallpaper filename for notification
+      WALLPAPER_NAME=$(${pkgs.coreutils}/bin/basename "$NEXT_WALLPAPER")
+      ${pkgs.libnotify}/bin/notify-send "Background changed" "''${WALLPAPER_NAME}" -t 2000 2>/dev/null || true
+    '';
+    executable = true;
+  };
+
   # GTK theme configuration (from selected theme)
   gtk = {
     enable = true;
@@ -732,6 +876,27 @@ in
     size = 24;
     gtk.enable = true;
   };
+
+  # Create wallpaper symlinks for current theme (Omarchy-style)
+  # This allows the rotate-background script to find wallpapers
+  home.activation.setupWallpaperSymlinks = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    WALLPAPERS_SOURCE="${./wallpapers}/${selectedTheme}"
+    WALLPAPERS_TARGET="${config.home.homeDirectory}/.config/hyprland/current-theme-wallpapers"
+
+    # Create hyprland config directory if it doesn't exist
+    mkdir -p "${config.home.homeDirectory}/.config/hyprland"
+
+    # Remove old symlink if it exists
+    rm -f "$WALLPAPERS_TARGET"
+
+    # Create symlink to current theme wallpapers if they exist
+    if [[ -d "$WALLPAPERS_SOURCE" ]]; then
+      ln -sf "$WALLPAPERS_SOURCE" "$WALLPAPERS_TARGET"
+      echo "Created wallpaper symlink: $WALLPAPERS_TARGET -> $WALLPAPERS_SOURCE"
+    else
+      echo "No wallpapers directory for theme ${selectedTheme}"
+    fi
+  '';
 
   # wlogout power menu configuration
   xdg.configFile."wlogout/layout".text = ''

@@ -76,6 +76,11 @@
     background = "#eff1f5";
   };
 
-  # Wallpapers (none specified for now)
+  # Wallpapers
+  # To add wallpapers for this theme:
+  # 1. Create directory: mkdir -p modules/home-manager/hyprland/wallpapers/catppuccin-latte
+  # 2. Add image files (JPG or PNG) to the directory
+  # 3. List them here: wallpapers = [ "1-my-wallpaper.jpg" "2-another.png" ];
+  # 4. Use Super+Ctrl+Space to rotate through backgrounds
   wallpapers = [ ];
 }

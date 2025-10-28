@@ -257,8 +257,11 @@
     grim # Screenshot tool
     slurp # Region selector
     swappy # Screenshot editor
+    satty # Screenshot annotation tool (Omarchy-style)
     wf-recorder # Screen recorder
     jq # JSON processor for window info
+    libnotify # Desktop notifications (notify-send command)
+    imagemagick # Image manipulation (for fallback solid color backgrounds)
 
     # Session management
     polkit_gnome # Polkit authentication agent
