@@ -60,5 +60,19 @@
     theme = "Nord";
   };
 
-  wallpapers = [ ];
+  # Walker launcher colors
+  walker = {
+    selectedText = "#88C0D0";
+    text = "#D8DEE9";
+    base = "#2E3440";
+    border = "#D8DEE9";
+    foreground = "#D8DEE9";
+    background = "#2E3440";
+  };
+
+  # Wallpapers
+  wallpapers = [
+    "1-nord.png"
+    "2-nord.png"
+  ];
 }

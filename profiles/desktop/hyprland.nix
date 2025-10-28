@@ -220,7 +220,7 @@
     swww # Animated wallpaper daemon (alternative to hyprpaper)
 
     # Application launcher and bar
-    walker # Wayland-native application launcher (Omarchy-style)
+    unstablePkgs.walker # Wayland-native application launcher 0.13.26 (Omarchy-style)
     waybar # Status bar
     mako # Notification daemon
 

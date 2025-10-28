@@ -60,5 +60,18 @@
     theme = "Gruvbox Material Dark";
   };
 
-  wallpapers = [ ];
+  # Walker launcher colors
+  walker = {
+    selectedText = "#fabd2f";
+    text = "#ebdbb2";
+    base = "#282828";
+    border = "#ebdbb2";
+    foreground = "#ebdbb2";
+    background = "#282828";
+  };
+
+  # Wallpapers
+  wallpapers = [
+    "1-grubox.jpg"
+  ];
 }

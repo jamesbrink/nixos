@@ -61,5 +61,20 @@
     theme = "Catppuccin Macchiato";
   };
 
-  wallpapers = [ ];
+  # Walker launcher colors
+  walker = {
+    selectedText = "#8caaee";
+    text = "#c6d0f5";
+    base = "#24273a";
+    border = "#c6d0f5";
+    foreground = "#c6d0f5";
+    background = "#24273a";
+  };
+
+  # Wallpapers
+  wallpapers = [
+    "1-catppuccin.png"
+    "2-cat-waves-mocha.png"
+    "3-cat-blue-eye-mocha.png"
+  ];
 }

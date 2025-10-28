@@ -28,7 +28,7 @@
 
 let
   # Select theme - change this to switch themes
-  selectedTheme = "rose-pine";
+  selectedTheme = "ristretto";
 
   # Load theme configuration
   themeConfig = import (./themes + "/${selectedTheme}.nix");
@@ -49,6 +49,13 @@ let
   # Font configuration (Omarchy uses CaskaydiaMono, but JetBrainsMono is similar)
   fontFamily = "JetBrainsMono Nerd Font";
   fontSize = 12;
+
+  # Wallpaper path (first wallpaper from theme)
+  wallpaperPath =
+    if (builtins.length themeConfig.wallpapers) > 0 then
+      "${./wallpapers}/${selectedTheme}/${builtins.head themeConfig.wallpapers}"
+    else
+      null;
 in
 {
   # Hyprland window manager
@@ -76,6 +83,11 @@ in
         force_split = 2; # Always split on the right (Omarchy default)
       };
 
+      # Layer rules - disable animations for Walker (Omarchy-style)
+      layerrule = [
+        "noanim, walker"
+      ];
+
       # Startup services
       "exec-once" = [
         "waybar" # Status bar
@@ -83,7 +95,9 @@ in
         "swayosd-server" # OSD server for volume/brightness overlays
         "wl-paste --type text --watch cliphist store" # Clipboard history for text
         "wl-paste --type image --watch cliphist store" # Clipboard history for images
-      ];
+        "${pkgs.swww}/bin/swww-daemon" # Wallpaper daemon
+      ]
+      ++ (if wallpaperPath != null then [ "${pkgs.swww}/bin/swww img ${wallpaperPath}" ] else [ ]);
 
       bind = [
         # Applications
@@ -210,26 +224,360 @@ in
 
   # Walker configuration (Omarchy-style launcher)
   xdg.configFile."walker/config.toml".text = ''
+    # Theme configuration
+    theme = "omarchy-default"
+    theme_base = []
+    theme_location = ["~/.config/walker/themes/"]
+    hotreload_theme = true
+
     # Basic behavior
+    close_when_open = true
+    force_keyboard_focus = true
+    timeout = 60
+
     [search]
-    placeholder = "Search..."
+    placeholder = " Search..."
 
     [list]
-    max_entries = 50
+    max_entries = 200
+    cycle = true
 
     # Applications module
     [builtins.applications]
     refresh = true
     context_aware = true
+    placeholder = " Search..."
+    icon = ""
+    hidden = true
+
+    [builtins.applications.actions]
+    enabled = false
 
     # Emoji module
     [builtins.emojis]
+    name = "Emojis"
+    icon = ""
+    prefix = ":"
     exec = "wl-copy"
 
     # Clipboard module
     [builtins.clipboard]
+    hidden = true
     exec = "wl-copy"
     max_entries = 10
+
+    # Calculator
+    [builtins.calc]
+    name = "Calculator"
+    icon = ""
+    min_chars = 3
+    prefix = "="
+
+    # File finder
+    [builtins.finder]
+    use_fd = true
+    icon = "file"
+    name = "Finder"
+    preview_images = true
+    hidden = false
+    prefix = "."
+
+    # Windows switcher
+    [builtins.windows]
+    switcher_only = true
+    hidden = true
+
+    # Runner
+    [builtins.runner]
+    switcher_only = true
+    hidden = true
+
+    # Hidden modules
+    [builtins.bookmarks]
+    hidden = true
+
+    [builtins.commands]
+    hidden = true
+
+    [builtins.custom_commands]
+    hidden = true
+
+    [builtins.ssh]
+    hidden = true
+
+    [builtins.websearch]
+    switcher_only = true
+    hidden = true
+
+    [builtins.translation]
+    hidden = true
+
+    [builtins.symbols]
+    hidden = true
+
+    [builtins.hyprland_keybinds]
+    path = "~/.config/hypr/hyprland.conf"
+    hidden = true
+  '';
+
+  # Walker theme - base CSS (Omarchy-style)
+  xdg.configFile."walker/themes/omarchy-default.css".text = ''
+    /* Reset all elements */
+    #window,
+    #box,
+    #search,
+    #password,
+    #input,
+    #prompt,
+    #clear,
+    #typeahead,
+    #list,
+    child,
+    scrollbar,
+    slider,
+    #item,
+    #text,
+    #label,
+    #sub,
+    #activationlabel {
+      all: unset;
+    }
+
+    * {
+      font-family: ${fontFamily};
+      font-size: 18px;
+    }
+
+    /* Window */
+    #window {
+      background: transparent;
+      color: @text;
+    }
+
+    /* Main box container */
+    #box {
+      background: alpha(@base, 0.95);
+      padding: 20px;
+      border: 2px solid @border;
+      border-radius: 0px;
+    }
+
+    /* Search container */
+    #search {
+      background: @base;
+      padding: 10px;
+      margin-bottom: 0;
+    }
+
+    /* Hide prompt icon */
+    #prompt {
+      opacity: 0;
+      min-width: 0;
+      margin: 0;
+    }
+
+    /* Hide clear button */
+    #clear {
+      opacity: 0;
+      min-width: 0;
+    }
+
+    /* Input field */
+    #input {
+      background: none;
+      color: @text;
+      padding: 0;
+    }
+
+    #input placeholder {
+      opacity: 0.5;
+      color: @text;
+    }
+
+    /* Hide typeahead */
+    #typeahead {
+      opacity: 0;
+    }
+
+    /* List */
+    #list {
+      background: transparent;
+    }
+
+    /* List items */
+    child {
+      padding: 0px 12px;
+      background: transparent;
+      border-radius: 0;
+    }
+
+    child:selected,
+    child:hover {
+      background: transparent;
+    }
+
+    /* Item layout */
+    #item {
+      padding: 0;
+    }
+
+    #item.active {
+      font-style: italic;
+    }
+
+    /* Icon */
+    #icon {
+      margin-right: 10px;
+      -gtk-icon-transform: scale(0.7);
+    }
+
+    /* Text */
+    #text {
+      color: @text;
+      padding: 14px 0;
+    }
+
+    #label {
+      font-weight: normal;
+    }
+
+    /* Selected state */
+    child:selected #text,
+    child:selected #label,
+    child:hover #text,
+    child:hover #label {
+      color: @selected-text;
+    }
+
+    /* Hide sub text */
+    #sub {
+      opacity: 0;
+      font-size: 0;
+      min-height: 0;
+    }
+
+    /* Hide activation label */
+    #activationlabel {
+      opacity: 0;
+      min-width: 0;
+    }
+
+    /* Scrollbar styling */
+    scrollbar {
+      opacity: 0;
+    }
+
+    /* Hide spinner */
+    #spinner {
+      opacity: 0;
+    }
+
+    /* Hide AI elements */
+    #aiScroll,
+    #aiList,
+    .aiItem {
+      opacity: 0;
+      min-height: 0;
+    }
+
+    /* Bar entry (switcher) */
+    #bar {
+      opacity: 0;
+      min-height: 0;
+    }
+
+    .barentry {
+      opacity: 0;
+    }
+
+    /* Import theme-specific colors from external file (must be last!) */
+    @import url("file://${config.home.homeDirectory}/.config/walker/themes/tokyo-night.css");
+  '';
+
+  # Walker theme - Tokyo Night colors (separate file for proper CSS variable order)
+  xdg.configFile."walker/themes/tokyo-night.css".text = ''
+    @define-color selected-text ${themeConfig.walker.selectedText};
+    @define-color text ${themeConfig.walker.text};
+    @define-color base ${themeConfig.walker.base};
+    @define-color border ${themeConfig.walker.border};
+    @define-color foreground ${themeConfig.walker.foreground};
+    @define-color background ${themeConfig.walker.background};
+  '';
+
+  # Walker theme - omarchy-default TOML (main launcher dimensions)
+  xdg.configFile."walker/themes/omarchy-default.toml".text = ''
+    [ui.window.box]
+    width = 664
+    min_width = 664
+    max_width = 664
+    height = 396
+    min_height = 396
+    max_height = 396
+
+    # List constraints are critical - without these, the window shrinks when empty
+    [ui.window.box.scroll.list]
+    height = 300
+    min_height = 300
+    max_height = 300
+
+    [ui.window.box.scroll.list.item.icon]
+    pixel_size = 40
+  '';
+
+  # Walker theme - keybindings (larger for keybindings menu)
+  xdg.configFile."walker/themes/keybindings.css".text = ''
+    /* Import base CSS first - it will import tokyo-night.css at the end */
+    @import url("file://${config.home.homeDirectory}/.config/walker/themes/omarchy-default.css");
+  '';
+
+  xdg.configFile."walker/themes/keybindings.toml".text = ''
+    [ui.window.box]
+    width = 964
+    min_width = 964
+    max_width = 964
+    height = 664
+    min_height = 664
+    max_height = 664
+
+    [ui.window.box.search]
+    hide = false
+
+    [ui.window.box.scroll]
+    v_align = "fill"
+    h_align = "fill"
+    min_width = 964
+    width = 964
+    max_width = 964
+    min_height = 664
+    height = 664
+    max_height = 664
+
+    [ui.window.box.scroll.list]
+    v_align = "fill"
+    h_align = "fill"
+    min_width = 900
+    width = 900
+    max_width = 900
+    min_height = 600
+    height = 600
+    max_height = 600
+
+    [ui.window.box.scroll.list.item]
+    h_align = "fill"
+    min_width = 900
+    width = 900
+    max_width = 900
+
+    [ui.window.box.scroll.list.item.activation_label]
+    hide = true
+
+    [ui.window.box.scroll.list.placeholder]
+    v_align = "start"
+    h_align = "fill"
+    hide = false
+    min_width = 900
+    width = 900
+    max_width = 900
   '';
 
   # Custom scripts
@@ -347,7 +695,7 @@ in
               printf "%-35s → %s\n", key_combo, action;
           }
       }' | \
-        ${pkgs.walker}/bin/walker --dmenu
+        ${pkgs.walker}/bin/walker --dmenu --theme keybindings -p 'Keybindings'
     '';
     executable = true;
   };

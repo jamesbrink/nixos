@@ -60,5 +60,20 @@
     theme = "Rosé Pine Moon";
   };
 
-  wallpapers = [ ];
+  # Walker launcher colors (Rose Pine Moon - dark variant)
+  walker = {
+    selectedText = "#c4a7e7"; # Iris (magenta)
+    text = "#e0def4"; # Text
+    base = "#232136"; # Base
+    border = "#c4a7e7"; # Iris border
+    foreground = "#e0def4"; # Text
+    background = "#232136"; # Base
+  };
+
+  # Wallpapers
+  wallpapers = [
+    "1-rose-pine.jpg"
+    "2-wave-light.png"
+    "3-leafy-dawn-omarchy.png"
+  ];
 }

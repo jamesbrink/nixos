@@ -60,5 +60,20 @@
     theme = "Tokyo Night";
   };
 
-  wallpapers = [ ];
+  # Walker launcher colors
+  walker = {
+    selectedText = "#7dcfff";
+    text = "#cfc9c2";
+    base = "#1a1b26";
+    border = "#33ccff";
+    foreground = "#cfc9c2";
+    background = "#1a1b26";
+  };
+
+  # Wallpapers
+  wallpapers = [
+    "1-scenery-pink-lakeside-sunset-lake-landscape-scenic-panorama-7680x3215-144.png"
+    "2-Pawel-Czerwinski-Abstract-Purple-Blue.jpg"
+    "3-Milad-Fakurian-Abstract-Purple-Blue.jpg"
+  ];
 }
