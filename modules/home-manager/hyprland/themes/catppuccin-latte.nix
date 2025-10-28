@@ -7,6 +7,7 @@
   gtk = {
     themeName = "Catppuccin-Latte-Standard-Blue-Light";
     themePackage = "catppuccin-gtk";
+    themeOverride = ''accents = [ "blue" ]; variant = "latte";'';
     iconName = "Papirus";
     iconPackage = "papirus-icon-theme";
   };
@@ -74,6 +75,52 @@
   waybar = {
     foreground = "#4c4f69";
     background = "#eff1f5";
+  };
+
+  # wlogout power menu colors
+  wlogout = {
+    backgroundColor = "#eff1f5";
+    buttonBackground = "#e6e9ef";
+    buttonHoverBackground = "#1e66f5";
+    textColor = "#4c4f69";
+    textHoverColor = "#eff1f5";
+  };
+
+  # tmux status bar colors
+  tmux = {
+    statusBackground = "#eff1f5";
+    statusForeground = "#4c4f69";
+    windowStatusCurrent = "#1e66f5";
+    paneActiveBorder = "#1e66f5";
+    paneInactiveBorder = "#acb0be";
+    messageBackground = "#1e66f5";
+    messageForeground = "#eff1f5";
+  };
+
+  # Mako notification colors
+  mako = {
+    textColor = "#4c4f69";
+    borderColor = "#1e66f5";
+    backgroundColor = "#eff1f5";
+    progressColor = "#4c4f69";
+  };
+
+  # SwayOSD colors
+  swayosd = {
+    backgroundColor = "#eff1f5";
+    borderColor = "#1e66f5";
+    textColor = "#4c4f69";
+  };
+
+  # Hyprlock colors
+  hyprlock = {
+    general = "#eff1f5";
+    input = "#eff1f5";
+    innerColor = "#eff1f5cc";
+    outerColor = "#1e66f5";
+    fontColor = "#4c4f69";
+    checkColor = "#04a5e5";
+    failColor = "#d20f39";
   };
 
   # Wallpapers

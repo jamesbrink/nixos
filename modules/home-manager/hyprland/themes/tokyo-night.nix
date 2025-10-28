@@ -76,6 +76,52 @@
     background = "#1a1b26";
   };
 
+  # wlogout power menu colors
+  wlogout = {
+    backgroundColor = "#1a1b26";
+    buttonBackground = "#24283b";
+    buttonHoverBackground = "#33ccff";
+    textColor = "#a9b1d6";
+    textHoverColor = "#1a1b26";
+  };
+
+  # tmux status bar colors
+  tmux = {
+    statusBackground = "#1a1b26";
+    statusForeground = "#a9b1d6";
+    windowStatusCurrent = "#7aa2f7";
+    paneActiveBorder = "#33ccff";
+    paneInactiveBorder = "#595959";
+    messageBackground = "#7aa2f7";
+    messageForeground = "#1a1b26";
+  };
+
+  # Mako notification colors
+  mako = {
+    textColor = "#a9b1d6";
+    borderColor = "#33ccff";
+    backgroundColor = "#1a1b26";
+    progressColor = "#a9b1d6";
+  };
+
+  # SwayOSD colors
+  swayosd = {
+    backgroundColor = "#1a1b26";
+    borderColor = "#33ccff";
+    textColor = "#a9b1d6";
+  };
+
+  # Hyprlock colors
+  hyprlock = {
+    general = "#1a1b26";
+    input = "#1a1b26";
+    innerColor = "#1a1b26cc";
+    outerColor = "#cdd6f4";
+    fontColor = "#cdd6f4";
+    checkColor = "#449dab";
+    failColor = "#f7768e";
+  };
+
   # Wallpapers
   wallpapers = [
     "1-scenery-pink-lakeside-sunset-lake-landscape-scenic-panorama-7680x3215-144.png"

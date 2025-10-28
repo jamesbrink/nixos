@@ -67,6 +67,52 @@
     background = "#121212";
   };
 
+  # wlogout power menu colors
+  wlogout = {
+    backgroundColor = "#121212";
+    buttonBackground = "#1f1f1f";
+    buttonHoverBackground = "#D35F5F";
+    textColor = "#bebebe";
+    textHoverColor = "#121212";
+  };
+
+  # tmux status bar colors
+  tmux = {
+    statusBackground = "#121212";
+    statusForeground = "#bebebe";
+    windowStatusCurrent = "#FFC107";
+    paneActiveBorder = "#8a8a8d";
+    paneInactiveBorder = "#333333";
+    messageBackground = "#FFC107";
+    messageForeground = "#121212";
+  };
+
+  # Mako notification colors
+  mako = {
+    textColor = "#8a8a8d";
+    borderColor = "#8A8A8D";
+    backgroundColor = "#1e1e1e";
+    progressColor = "#8A8A8D";
+  };
+
+  # SwayOSD colors
+  swayosd = {
+    backgroundColor = "#121212";
+    borderColor = "#8A8A8D";
+    textColor = "#8A8A8D";
+  };
+
+  # Hyprlock colors
+  hyprlock = {
+    general = "#0c0c0c";
+    input = "#0c0c0c";
+    innerColor = "#8a8a8d4d";
+    outerColor = "#eaeaea80";
+    fontColor = "#eaeaea";
+    checkColor = "#f59e0b";
+    failColor = "#B91C1C";
+  };
+
   # Wallpapers (none specified for now)
   wallpapers = [ ];
 }

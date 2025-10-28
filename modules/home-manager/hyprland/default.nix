@@ -142,7 +142,7 @@ in
       # Startup services
       "exec-once" = [
         "waybar" # Status bar
-        "mako" # Notification daemon
+        # Mako is now managed by services.mako (see below)
         "swayosd-server" # OSD server for volume/brightness overlays
         "wl-paste --type text --watch cliphist store" # Clipboard history for text
         "wl-paste --type image --watch cliphist store" # Clipboard history for images
@@ -242,7 +242,7 @@ in
         "$mod CTRL SHIFT, 4, exec, screenshot-annotate region"
         "$mod CTRL SHIFT, 5, exec, screenshot-annotate window"
 
-        # Notifications (mako is installed in desktop profile)
+        # Notifications (mako is managed by services.mako)
         "$mod, comma, exec, makoctl dismiss"
         "$mod SHIFT, comma, exec, makoctl dismiss -a"
         "$mod CTRL, comma, exec, makoctl mode -t dnd"
@@ -927,23 +927,23 @@ in
   '';
 
   xdg.configFile."wlogout/style.css".text = ''
-    /* Tokyo Night themed wlogout */
+    /* Theme-integrated wlogout */
     * {
       background-image: none;
-      font-family: "JetBrainsMono Nerd Font", sans-serif;
+      font-family: ${fontFamily}, sans-serif;
       font-size: 16px;
     }
 
     window {
-      background-color: rgba(26, 27, 38, 0.95);
+      background-color: ${themeConfig.wlogout.backgroundColor};
     }
 
     button {
-      color: #c0caf5;
-      background-color: #1f2335;
+      color: ${themeConfig.wlogout.textColor};
+      background-color: ${themeConfig.wlogout.buttonBackground};
       border-style: solid;
       border-width: 2px;
-      border-color: #414868;
+      border-color: ${themeConfig.wlogout.buttonBackground};
       background-repeat: no-repeat;
       background-position: center;
       background-size: 30%;
@@ -956,11 +956,11 @@ in
     }
 
     button:focus, button:active, button:hover {
-      background-color: #24283b;
-      border-color: #7aa2f7;
-      color: #7aa2f7;
+      background-color: ${themeConfig.wlogout.buttonHoverBackground};
+      border-color: ${themeConfig.wlogout.buttonHoverBackground};
+      color: ${themeConfig.wlogout.textHoverColor};
       outline-style: none;
-      box-shadow: 0 4px 20px rgba(122, 162, 247, 0.3);
+      box-shadow: 0 4px 20px ${themeConfig.wlogout.buttonHoverBackground}4d;
       transform: scale(1.05);
     }
 
@@ -979,29 +979,84 @@ in
     #reboot {
       background-image: image(url("/run/current-system/sw/share/wlogout/icons/reboot.png"));
     }
+  '';
 
-    #lock:hover {
-      border-color: #e0af68;
-      color: #e0af68;
-      box-shadow: 0 4px 20px rgba(224, 175, 104, 0.3);
+  # SwayOSD styling (theme-integrated)
+  xdg.configFile."swayosd/style.css".text = ''
+    window {
+      background-color: ${themeConfig.swayosd.backgroundColor};
+      border: 2px solid ${themeConfig.swayosd.borderColor};
+      border-radius: 0;
     }
 
-    #logout:hover {
-      border-color: #f7768e;
-      color: #f7768e;
-      box-shadow: 0 4px 20px rgba(247, 118, 142, 0.3);
+    label, image {
+      color: ${themeConfig.swayosd.textColor};
     }
 
-    #shutdown:hover {
-      border-color: #f7768e;
-      color: #f7768e;
-      box-shadow: 0 4px 20px rgba(247, 118, 142, 0.3);
+    progressbar {
+      background-color: ${themeConfig.swayosd.backgroundColor};
     }
 
-    #reboot:hover {
-      border-color: #9ece6a;
-      color: #9ece6a;
-      box-shadow: 0 4px 20px rgba(158, 206, 106, 0.3);
+    trough {
+      background-color: ${themeConfig.swayosd.borderColor};
+    }
+
+    progress {
+      background-color: ${themeConfig.swayosd.textColor};
+    }
+  '';
+
+  # hyprlock screen locker (theme-integrated)
+  xdg.configFile."hypr/hyprlock.conf".text = ''
+    general {
+      grace = 0
+      hide_cursor = true
+      no_fade_in = false
+      no_fade_out = false
+    }
+
+    background {
+      path = screenshot
+      blur_passes = 3
+      blur_size = 3
+    }
+
+    input-field {
+      size = 250, 50
+      outline_thickness = 2
+      dots_size = 0.25
+      dots_spacing = 0.25
+      outer_color = ${themeConfig.hyprlock.outerColor}
+      inner_color = ${themeConfig.hyprlock.innerColor}
+      font_color = ${themeConfig.hyprlock.fontColor}
+      check_color = ${themeConfig.hyprlock.checkColor}
+      fail_color = ${themeConfig.hyprlock.failColor}
+      fade_on_empty = false
+      placeholder_text = <span foreground="##${themeConfig.hyprlock.fontColor}">Enter password...</span>
+      hide_input = false
+      position = 0, 50
+      halign = center
+      valign = center
+    }
+
+    label {
+      text = $TIME
+      color = ${themeConfig.hyprlock.fontColor}
+      font_size = 64
+      font_family = ${fontFamily}
+      position = 0, 150
+      halign = center
+      valign = center
+    }
+
+    label {
+      text = Hi, $USER
+      color = ${themeConfig.hyprlock.fontColor}
+      font_size = 24
+      font_family = ${fontFamily}
+      position = 0, -50
+      halign = center
+      valign = center
     }
   '';
 
@@ -1351,4 +1406,133 @@ in
       }
     '';
   };
+
+  # Mako notification daemon (theme-integrated)
+  services.mako = {
+    enable = true;
+
+    settings = {
+      # Theme colors
+      text-color = themeConfig.mako.textColor;
+      border-color = themeConfig.mako.borderColor;
+      background-color = themeConfig.mako.backgroundColor;
+      progress-color = themeConfig.mako.progressColor;
+
+      # Omarchy-style settings
+      font = "${fontFamily} 11";
+      padding = "15";
+      border-size = 2;
+      border-radius = 0; # Sharp corners like Omarchy
+      max-icon-size = 48;
+      default-timeout = 5000;
+      ignore-timeout = false;
+
+      # Position
+      anchor = "top-right";
+      margin = "10";
+
+      # Grouping
+      group-by = "app-name";
+      max-visible = 5;
+
+      # Interaction
+      actions = true;
+
+      # Format
+      format = "<b>%s</b>\\n%b";
+    };
+  };
+
+  # tmux theme integration (override shell module's hardcoded colors)
+  programs.tmux.extraConfig = lib.mkForce ''
+    # Set default shell
+    set-option -g default-shell "${pkgs.zsh}/bin/zsh"
+    set-option -g default-command "${pkgs.zsh}/bin/zsh"
+
+    # Enable true colors
+    set-option -ga terminal-overrides ",*256col*:Tc"
+    set-option -ga terminal-overrides ",alacritty:Tc"
+
+    # Mouse support
+    set -g mouse on
+
+    # Status bar (theme-integrated)
+    set -g status-position top
+    set -g status-style 'bg=${themeConfig.tmux.statusBackground} fg=${themeConfig.tmux.statusForeground}'
+    set -g status-left '#[fg=${themeConfig.tmux.windowStatusCurrent},bold]#S #[fg=${themeConfig.tmux.statusForeground}]• '
+    set -g status-right '#[fg=${themeConfig.tmux.statusForeground}]#(whoami)@#h • %Y-%m-%d %H:%M'
+    set -g status-left-length 50
+    set -g status-right-length 50
+
+    # Window status (theme-integrated)
+    setw -g window-status-current-style 'fg=${themeConfig.tmux.statusBackground} bg=${themeConfig.tmux.windowStatusCurrent} bold'
+    setw -g window-status-current-format ' #I:#W#F '
+    setw -g window-status-style 'fg=${themeConfig.tmux.statusForeground}'
+    setw -g window-status-format ' #I:#W#F '
+
+    # Pane borders (theme-integrated)
+    set -g pane-border-style 'fg=${themeConfig.tmux.paneInactiveBorder}'
+    set -g pane-active-border-style 'fg=${themeConfig.tmux.paneActiveBorder}'
+
+    # Message style (theme-integrated)
+    set -g message-style 'fg=${themeConfig.tmux.messageForeground} bg=${themeConfig.tmux.messageBackground} bold'
+
+    # Copy mode (theme-integrated)
+    setw -g mode-style 'fg=${themeConfig.tmux.statusBackground} bg=${themeConfig.tmux.windowStatusCurrent} bold'
+
+    # Window/pane management
+    bind | split-window -h -c "#{pane_current_path}"
+    bind - split-window -v -c "#{pane_current_path}"
+    bind c new-window -c "#{pane_current_path}"
+
+    # Resize panes with vim keys
+    bind -r H resize-pane -L 5
+    bind -r J resize-pane -D 5
+    bind -r K resize-pane -U 5
+    bind -r L resize-pane -R 5
+
+    # Quick window selection
+    bind -r C-h select-window -t :-
+    bind -r C-l select-window -t :+
+
+    # Reload config
+    bind r source-file ~/.config/tmux/tmux.conf \; display-message "Config reloaded!"
+
+    # Copy mode vi bindings
+    bind-key -T copy-mode-vi v send-keys -X begin-selection
+    bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
+    bind-key -T copy-mode-vi Escape send-keys -X cancel
+
+    # Platform-specific clipboard integration
+    ${
+      if pkgs.stdenv.isDarwin then
+        ''
+          bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"
+          bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "pbcopy"
+          bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "pbcopy"
+        ''
+      else
+        ''
+          bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip -selection clipboard"
+          bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip -selection clipboard"
+          bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "xclip -selection clipboard"
+        ''
+    }
+
+    # Activity monitoring
+    setw -g monitor-activity on
+    set -g visual-activity off
+
+    # Auto-rename windows
+    setw -g automatic-rename on
+    set -g set-titles on
+    set -g set-titles-string '#h ❐ #S ● #I #W'
+
+    # Plugin configurations
+    set -g @resurrect-capture-pane-contents 'on'
+    set -g @continuum-restore 'on'
+    set -g @continuum-boot 'on'
+    set -g @prefix_highlight_show_copy_mode 'on'
+    set -g @prefix_highlight_copy_mode_attr 'fg=black,bg=yellow,bold'
+  '';
 }

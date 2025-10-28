@@ -76,6 +76,52 @@
     background = "#282828";
   };
 
+  # wlogout power menu colors
+  wlogout = {
+    backgroundColor = "#282828";
+    buttonBackground = "#3c3836";
+    buttonHoverBackground = "#d8a657";
+    textColor = "#d4be98";
+    textHoverColor = "#282828";
+  };
+
+  # tmux status bar colors
+  tmux = {
+    statusBackground = "#282828";
+    statusForeground = "#d4be98";
+    windowStatusCurrent = "#d8a657";
+    paneActiveBorder = "#a89984";
+    paneInactiveBorder = "#504945";
+    messageBackground = "#d8a657";
+    messageForeground = "#282828";
+  };
+
+  # Mako notification colors
+  mako = {
+    textColor = "#d4be98";
+    borderColor = "#a89984";
+    backgroundColor = "#282828";
+    progressColor = "#ebdbb2";
+  };
+
+  # SwayOSD colors
+  swayosd = {
+    backgroundColor = "#282828";
+    borderColor = "#a89984";
+    textColor = "#ebdbb2";
+  };
+
+  # Hyprlock colors
+  hyprlock = {
+    general = "#282828";
+    input = "#282828";
+    innerColor = "#282828cc";
+    outerColor = "#d4be98";
+    fontColor = "#d4be98";
+    checkColor = "#d6995c";
+    failColor = "#ea6962";
+  };
+
   # Wallpapers
   wallpapers = [
     "1-grubox.jpg"

@@ -77,6 +77,52 @@
     background = "#24273a";
   };
 
+  # wlogout power menu colors
+  wlogout = {
+    backgroundColor = "#24273a";
+    buttonBackground = "#363a4f";
+    buttonHoverBackground = "#8aadf4";
+    textColor = "#cad3f5";
+    textHoverColor = "#24273a";
+  };
+
+  # tmux status bar colors
+  tmux = {
+    statusBackground = "#24273a";
+    statusForeground = "#cad3f5";
+    windowStatusCurrent = "#8aadf4";
+    paneActiveBorder = "#8aadf4";
+    paneInactiveBorder = "#5b6078";
+    messageBackground = "#8aadf4";
+    messageForeground = "#24273a";
+  };
+
+  # Mako notification colors
+  mako = {
+    textColor = "#cad3f5";
+    borderColor = "#c6d0f5";
+    backgroundColor = "#24273a";
+    progressColor = "#cad3f5";
+  };
+
+  # SwayOSD colors
+  swayosd = {
+    backgroundColor = "#24273a";
+    borderColor = "#c6d0f5";
+    textColor = "#cad3f5";
+  };
+
+  # Hyprlock colors
+  hyprlock = {
+    general = "#181824";
+    input = "#181824";
+    innerColor = "#181824cc";
+    outerColor = "#cdd6f4";
+    fontColor = "#cdd6f4";
+    checkColor = "#449dab";
+    failColor = "#ed8796";
+  };
+
   # Wallpapers
   wallpapers = [
     "1-catppuccin.png"
