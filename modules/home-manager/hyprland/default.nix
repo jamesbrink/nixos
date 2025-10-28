@@ -69,6 +69,13 @@ in
         "col.inactive_border" = themeConfig.hyprland.inactiveBorder;
       };
 
+      # Dwindle layout configuration (Omarchy-style)
+      dwindle = {
+        pseudotile = true; # Enable pseudotiling
+        preserve_split = true; # Preserve split direction
+        force_split = 2; # Always split on the right (Omarchy default)
+      };
+
       # Startup services
       "exec-once" = [
         "waybar" # Status bar
@@ -229,15 +236,18 @@ in
   home.file.".local/bin/spawn-terminal-here" = {
     text = ''
       #!/usr/bin/env bash
-      # Get the working directory of the currently focused window
-      ACTIVE_WINDOW=$(hyprctl activewindow -j)
-      PID=$(echo "$ACTIVE_WINDOW" | jq -r '.pid')
+      # Get the working directory of the currently focused window (Omarchy-style)
+      # Get terminal PID from active window
+      terminal_pid=$(${pkgs.hyprland}/bin/hyprctl activewindow -j | ${pkgs.jq}/bin/jq -r '.pid')
 
-      if [[ -n "$PID" ]] && [[ -d "/proc/$PID/cwd" ]]; then
-        WORK_DIR=$(readlink "/proc/$PID/cwd")
-        alacritty --working-directory "$WORK_DIR"
+      # Get the shell PID (child process of terminal)
+      shell_pid=$(${pkgs.procps}/bin/pgrep -P "$terminal_pid" | head -n1)
+
+      if [[ -n "$shell_pid" ]] && [[ -d "/proc/$shell_pid/cwd" ]]; then
+        WORK_DIR=$(readlink -f "/proc/$shell_pid/cwd" 2>/dev/null)
+        ${pkgs.alacritty}/bin/alacritty --working-directory "$WORK_DIR"
       else
-        alacritty
+        ${pkgs.alacritty}/bin/alacritty
       fi
     '';
     executable = true;
