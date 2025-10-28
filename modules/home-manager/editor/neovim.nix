@@ -30,7 +30,7 @@ in
     ];
     install_version = 8;
     news = {
-      "NEWS.md" = "10960";
+      "NEWS.md" = "99999"; # Disable news popup
     };
     version = 8;
   };
@@ -42,6 +42,9 @@ in
         "LazyVim/LazyVim",
         opts = {
           colorscheme = "${nvimColorscheme}",
+          news = {
+            lazyvim = false,  -- Disable LazyVim NEWS.md popup
+          },
         },
       },
     }
@@ -50,10 +53,10 @@ in
   # Disable animated scrolling (Omarchy preference)
   xdg.configFile."nvim/lua/plugins/snacks-animated-scrolling-off.lua".text = ''
     return {
-      {
-        "folke/snacks.nvim",
-        opts = {
-          scroll = { enabled = false },
+      "folke/snacks.nvim",
+      opts = {
+        scroll = {
+          enabled = false, -- Disable scrolling animations
         },
       },
     }
