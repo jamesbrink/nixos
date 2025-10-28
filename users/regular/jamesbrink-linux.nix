@@ -211,17 +211,17 @@ in
             "$mod, mouse_up, workspace, e-1"
           ];
 
-          # Repeating bindings (for media keys with SwayOSD)
+          # Repeating bindings (for media keys with SwayOSD + audio feedback)
           binde = [
-            ", XF86AudioRaiseVolume, exec, swayosd-client --output-volume raise"
-            ", XF86AudioLowerVolume, exec, swayosd-client --output-volume lower"
+            ", XF86AudioRaiseVolume, exec, volume-feedback raise"
+            ", XF86AudioLowerVolume, exec, volume-feedback lower"
             ", XF86MonBrightnessUp, exec, swayosd-client --brightness raise"
             ", XF86MonBrightnessDown, exec, swayosd-client --brightness lower"
           ];
 
           # Non-repeating media bindings
           bindl = [
-            ", XF86AudioMute, exec, swayosd-client --output-volume mute-toggle"
+            ", XF86AudioMute, exec, volume-feedback mute-toggle"
             ", XF86AudioMicMute, exec, swayosd-client --input-volume mute-toggle"
             ", XF86AudioPlay, exec, playerctl play-pause"
             ", XF86AudioNext, exec, playerctl next"
@@ -324,6 +324,36 @@ in
         executable = true;
       };
 
+      # Volume control script with audio feedback
+      home.file.".local/bin/volume-feedback" = {
+        text = ''
+          #!/usr/bin/env bash
+          # Wrapper for SwayOSD with macOS-style audio feedback
+
+          ACTION="$1"
+
+          case "$ACTION" in
+            raise)
+              swayosd-client --output-volume raise
+              # Play feedback sound at 50% volume to avoid being too loud
+              paplay --volume=32768 /run/current-system/sw/share/sounds/freedesktop/stereo/audio-volume-change.oga 2>/dev/null &
+              ;;
+            lower)
+              swayosd-client --output-volume lower
+              paplay --volume=32768 /run/current-system/sw/share/sounds/freedesktop/stereo/audio-volume-change.oga 2>/dev/null &
+              ;;
+            mute-toggle)
+              swayosd-client --output-volume mute-toggle
+              ;;
+            *)
+              echo "Usage: volume-feedback {raise|lower|mute-toggle}"
+              exit 1
+              ;;
+          esac
+        '';
+        executable = true;
+      };
+
       # Configure wlogout for proper Hyprland logout
       xdg.configFile."wlogout/layout".text = ''
         {
@@ -353,28 +383,81 @@ in
       '';
 
       xdg.configFile."wlogout/style.css".text = ''
+        /* Tokyo Night themed wlogout */
         * {
           background-image: none;
+          font-family: "JetBrainsMono Nerd Font", sans-serif;
+          font-size: 16px;
         }
+
         window {
-          background-color: rgba(12, 12, 12, 0.9);
+          background-color: rgba(26, 27, 38, 0.95);
         }
+
         button {
-          color: #FFFFFF;
-          background-color: #1E1E1E;
+          color: #c0caf5;
+          background-color: #1f2335;
           border-style: solid;
           border-width: 2px;
+          border-color: #414868;
           background-repeat: no-repeat;
           background-position: center;
-          background-size: 25%;
-          border-radius: 10px;
-          margin: 10px;
-          min-width: 150px;
-          min-height: 150px;
+          background-size: 30%;
+          border-radius: 12px;
+          margin: 20px;
+          padding: 20px;
+          min-width: 180px;
+          min-height: 180px;
+          transition: all 0.3s ease;
         }
+
         button:focus, button:active, button:hover {
-          background-color: #3700B3;
+          background-color: #24283b;
+          border-color: #7aa2f7;
+          color: #7aa2f7;
           outline-style: none;
+          box-shadow: 0 4px 20px rgba(122, 162, 247, 0.3);
+          transform: scale(1.05);
+        }
+
+        #lock {
+          background-image: image(url("/run/current-system/sw/share/wlogout/icons/lock.png"));
+        }
+
+        #logout {
+          background-image: image(url("/run/current-system/sw/share/wlogout/icons/logout.png"));
+        }
+
+        #shutdown {
+          background-image: image(url("/run/current-system/sw/share/wlogout/icons/shutdown.png"));
+        }
+
+        #reboot {
+          background-image: image(url("/run/current-system/sw/share/wlogout/icons/reboot.png"));
+        }
+
+        #lock:hover {
+          border-color: #e0af68;
+          color: #e0af68;
+          box-shadow: 0 4px 20px rgba(224, 175, 104, 0.3);
+        }
+
+        #logout:hover {
+          border-color: #f7768e;
+          color: #f7768e;
+          box-shadow: 0 4px 20px rgba(247, 118, 142, 0.3);
+        }
+
+        #shutdown:hover {
+          border-color: #f7768e;
+          color: #f7768e;
+          box-shadow: 0 4px 20px rgba(247, 118, 142, 0.3);
+        }
+
+        #reboot:hover {
+          border-color: #9ece6a;
+          color: #9ece6a;
+          box-shadow: 0 4px 20px rgba(158, 206, 106, 0.3);
         }
       '';
 

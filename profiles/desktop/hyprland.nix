@@ -137,8 +137,13 @@
     displayManager.sddm = {
       enable = true;
       wayland.enable = true;
-      theme = "catppuccin-mocha";
-      package = pkgs.kdePackages.sddm;
+      theme = "sddm-astronaut-theme";
+      package = pkgs.kdePackages.sddm.override {
+        extraPackages = with pkgs.kdePackages; [
+          qtmultimedia
+          qt5compat
+        ];
+      };
     };
 
     # Pipewire for audio
@@ -223,6 +228,8 @@
     pavucontrol # PulseAudio volume control
     pamixer # CLI audio mixer
     swayosd # OSD for volume/brightness/caps lock
+    sound-theme-freedesktop # System sound effects for volume feedback
+    pulseaudio # Provides paplay command for playing sounds
 
     # Brightness control
     brightnessctl # Screen brightness
@@ -276,7 +283,7 @@
     graphite-gtk-theme # Modern dark theme
 
     # SDDM themes
-    catppuccin-sddm-corners # Catppuccin SDDM theme with rounded corners
+    sddm-astronaut # Modern Qt6 SDDM theme
 
     # Icon themes
     papirus-icon-theme # Papirus icons (default)
