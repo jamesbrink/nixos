@@ -226,8 +226,22 @@ EOF
 \$check_color = rgba($check_r,$check_g,$check_b,1.0)
 EOF
 
-  # Generate neovim.lua
-  echo 'return "tokyonight"' > "$theme_dir/neovim.lua"
+  # Generate neovim.lua with theme mapping
+  # Map theme names to LazyVim colorschemes (matches neovim.nix mapping)
+  case "$theme_name" in
+    tokyo-night) nvim_colorscheme="tokyonight" ;;
+    catppuccin|catppuccin-latte) nvim_colorscheme="catppuccin" ;;
+    gruvbox) nvim_colorscheme="gruvbox" ;;
+    nord) nvim_colorscheme="nordfox" ;;
+    rose-pine) nvim_colorscheme="rose-pine" ;;
+    everforest) nvim_colorscheme="everforest" ;;
+    kanagawa) nvim_colorscheme="kanagawa" ;;
+    matte-black) nvim_colorscheme="tokyonight-night" ;;
+    osaka-jade) nvim_colorscheme="tokyonight" ;;
+    ristretto) nvim_colorscheme="tokyonight" ;;
+    *) nvim_colorscheme="tokyonight" ;;
+  esac
+  echo "return \"$nvim_colorscheme\"" > "$theme_dir/neovim.lua"
 
   # Create backgrounds symlink (point to Omarchy's backgrounds if they exist)
   OMARCHY_BACKGROUNDS="$HOME/Projects/jamesbrink/notsure/omarchy/themes/$theme_name/backgrounds"
