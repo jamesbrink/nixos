@@ -78,6 +78,27 @@ if pgrep -x alacritty &>/dev/null; then
   echo "  ✓ Signaled Alacritty reload"
 fi
 
+# Update VSCode theme
+if [[ -f "$THEME_PATH/vscode.json" ]] && [[ -f "$HOME/.config/Code/User/settings.json" ]]; then
+  new_theme=$(jq -r '.["workbench.colorTheme"]' "$THEME_PATH/vscode.json")
+  if [[ -n "$new_theme" ]]; then
+    # Update VSCode settings with new theme
+    jq --arg theme "$new_theme" '.["workbench.colorTheme"] = $theme' "$HOME/.config/Code/User/settings.json" > "$HOME/.config/Code/User/settings.json.tmp"
+    mv "$HOME/.config/Code/User/settings.json.tmp" "$HOME/.config/Code/User/settings.json"
+    echo "  ✓ Updated VSCode theme"
+  fi
+fi
+
+# Update Neovim theme
+if [[ -f "$THEME_PATH/neovim.lua" ]] && [[ -f "$HOME/.config/nvim/lua/plugins/theme.lua" ]]; then
+  new_nvim_theme=$(sed 's/return "\(.*\)"/\1/' < "$THEME_PATH/neovim.lua")
+  if [[ -n "$new_nvim_theme" ]]; then
+    # Update Neovim theme.lua with new colorscheme
+    sed -i "s/colorscheme = \".*\"/colorscheme = \"$new_nvim_theme\"/" "$HOME/.config/nvim/lua/plugins/theme.lua"
+    echo "  ✓ Updated Neovim theme"
+  fi
+fi
+
 # Update browser theme (if Chrome/Brave is installed)
 if [[ -f "$THEME_PATH/chromium.theme" ]]; then
   rgb_color=$(cut -d'#' -f1 < "$THEME_PATH/chromium.theme" | tr -d ' ')
@@ -121,4 +142,4 @@ fi
 
 echo ""
 echo "Theme switched to: $THEME_NAME"
-echo "Note: Some applications (VSCode, terminals) may need restart to see changes"
+echo "Note: VSCode and Neovim will pick up changes automatically. Browser may need restart."
