@@ -243,9 +243,25 @@ in
         # Captures (screenshots) - Omarchy-style with hyprshot + satty
         ", PRINT, exec, screenshot-annotate region"
         "SHIFT, PRINT, exec, screenshot-annotate window"
-        "$mod CTRL SHIFT, 3, exec, screenshot-annotate output"
-        "$mod CTRL SHIFT, 4, exec, screenshot-annotate region"
-        "$mod CTRL SHIFT, 5, exec, screenshot-annotate window"
+        # macOS-style screenshots (direct save + clipboard, no annotation)
+        "$mod CTRL SHIFT, 3, exec, screenshot-direct output"
+        "$mod CTRL SHIFT, 4, exec, screenshot-direct region"
+        "$mod CTRL SHIFT, 5, exec, screenshot-direct window"
+        # Alternative screenshot keybindings with annotation (easier to find on K2 Keychron)
+        "$mod, S, exec, screenshot-annotate region" # Super+S for region (with annotation)
+        "$mod SHIFT, S, exec, screenshot-annotate window" # Super+Shift+S for window (with annotation)
+        "$mod CTRL, S, exec, screenshot-annotate output" # Super+Ctrl+S for full screen (with annotation)
+
+        # Screen recordings - Omarchy-style with wl-screenrec
+        "ALT, PRINT, exec, screen-record region"
+        "ALT SHIFT, PRINT, exec, screen-record region audio"
+        "CTRL ALT, PRINT, exec, screen-record output"
+        "CTRL ALT SHIFT, PRINT, exec, screen-record output audio"
+        # Alternative screen recording keybindings (easier to find on K2 Keychron)
+        "$mod, R, exec, screen-record region" # Super+R for region
+        "$mod SHIFT, R, exec, screen-record region audio" # Super+Shift+R for region with audio
+        "$mod CTRL, R, exec, screen-record output" # Super+Ctrl+R for full screen
+        "$mod CTRL SHIFT, R, exec, screen-record output audio" # Super+Ctrl+Shift+R for full screen with audio
 
         # Notifications (mako is managed by services.mako)
         "$mod, comma, exec, makoctl dismiss"
@@ -279,6 +295,26 @@ in
         "$mod, mouse:272, movewindow"
         "$mod, mouse:273, resizewindow"
       ];
+
+      # Touchpad gestures (3-finger swipe)
+      gestures = {
+        workspace_swipe = true;
+        workspace_swipe_fingers = 3;
+        workspace_swipe_distance = 300; # Lower = less distance needed to switch
+        workspace_swipe_cancel_ratio = 0.15; # Higher = easier to cancel swipe (default 0.5)
+        workspace_swipe_min_speed_to_force = 30; # Minimum speed to force workspace change
+        workspace_swipe_forever = true; # Continue swiping through multiple workspaces
+      };
+
+      # Input configuration (touchpad behavior)
+      input = {
+        touchpad = {
+          natural_scroll = true; # Inverted scrolling (macOS-style)
+          clickfinger_behavior = true; # Two-finger right-click
+          disable_while_typing = true; # Prevent accidental taps
+          tap-to-click = false; # Require click for selection
+        };
+      };
     };
   };
 
@@ -790,6 +826,111 @@ in
     executable = true;
   };
 
+  # Screen recording (Omarchy-style: wl-screenrec)
+  home.file.".local/bin/screen-record" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Screen recording using wl-screenrec (Omarchy-style)
+
+      OUTPUT_DIR="$HOME/Videos"
+      SCOPE="''${1:-region}"  # region or output
+      AUDIO="''${2:-}"        # "audio" or empty
+
+      # Create Videos directory if it doesn't exist
+      mkdir -p "$OUTPUT_DIR"
+
+      start_screenrecording() {
+        local filename="$OUTPUT_DIR/screenrecording-$(${pkgs.coreutils}/bin/date +'%Y-%m-%d_%H-%M-%S').mp4"
+        local audio_flag=""
+
+        if [[ "$AUDIO" == "audio" ]]; then
+          audio_flag="--audio"
+        fi
+
+        # Use wl-screenrec with libx264 encoding
+        ${pkgs.wl-screenrec}/bin/wl-screenrec $audio_flag -f "$filename" \
+          --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" "$@" &
+
+        # Update waybar indicator
+        ${pkgs.procps}/bin/pkill -RTMIN+8 waybar 2>/dev/null || true
+      }
+
+      stop_screenrecording() {
+        ${pkgs.procps}/bin/pkill -x wl-screenrec
+        ${pkgs.procps}/bin/pkill -x wf-recorder
+
+        ${pkgs.libnotify}/bin/notify-send "Screen recording saved to $OUTPUT_DIR" -t 3000 2>/dev/null || true
+
+        sleep 0.2  # Ensure process is dead before checking
+        # Update waybar indicator
+        ${pkgs.procps}/bin/pkill -RTMIN+8 waybar 2>/dev/null || true
+      }
+
+      screenrecording_active() {
+        ${pkgs.procps}/bin/pgrep -x wl-screenrec >/dev/null || ${pkgs.procps}/bin/pgrep -x wf-recorder >/dev/null
+      }
+
+      # Toggle recording
+      if screenrecording_active; then
+        stop_screenrecording
+      elif [[ "$SCOPE" == "output" ]]; then
+        # Full screen - select output with slurp
+        output=$(${pkgs.slurp}/bin/slurp -o) || exit 1
+        start_screenrecording -g "$output"
+      else
+        # Region selection
+        region=$(${pkgs.slurp}/bin/slurp) || exit 1
+        start_screenrecording -g "$region"
+      fi
+    '';
+    executable = true;
+  };
+
+  # Direct screenshot (macOS-style: no annotation, save + clipboard)
+  home.file.".local/bin/screenshot-direct" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Screenshot directly to file and clipboard (macOS-style, no annotation)
+
+      OUTPUT_DIR="$HOME/Pictures"
+      MODE="''${1:-region}"
+
+      # Create Pictures directory if it doesn't exist
+      mkdir -p "$OUTPUT_DIR"
+
+      # Kill any running slurp instances (prevents conflicts)
+      ${pkgs.procps}/bin/pkill slurp 2>/dev/null || true
+
+      # Generate filename
+      FILENAME="$OUTPUT_DIR/screenshot-$(${pkgs.coreutils}/bin/date +'%Y-%m-%d_%H-%M-%S').png"
+
+      # Capture screenshot directly with hyprshot
+      # For output mode, use active monitor to avoid cursor selector
+      if [[ "$MODE" == "output" ]]; then
+        ${pkgs.hyprshot}/bin/hyprshot -m active -m output -o "$OUTPUT_DIR" -f "$(${pkgs.coreutils}/bin/basename "$FILENAME")"
+      else
+        ${pkgs.hyprshot}/bin/hyprshot -m "$MODE" -o "$OUTPUT_DIR" -f "$(${pkgs.coreutils}/bin/basename "$FILENAME")"
+      fi
+
+      # Show notification if screenshot was saved successfully
+      if [[ -f "$FILENAME" ]]; then
+        # Copy to clipboard
+        ${pkgs.wl-clipboard}/bin/wl-copy < "$FILENAME"
+
+        # Extract just the filename for cleaner notification
+        BASENAME=$(${pkgs.coreutils}/bin/basename "$FILENAME")
+        ${pkgs.libnotify}/bin/notify-send \
+          "Screenshot copied to clipboard" \
+          "Saved to $OUTPUT_DIR/$BASENAME" \
+          -t 3000 \
+          -i "$FILENAME" \
+          -u normal \
+          2>/dev/null || true
+      fi
+    '';
+    executable = true;
+  };
+
   # Screenshot with annotation (Omarchy-style: hyprshot + satty)
   home.file.".local/bin/screenshot-annotate" = {
     text = ''
@@ -805,14 +946,44 @@ in
       # Kill any running slurp instances (prevents conflicts)
       ${pkgs.procps}/bin/pkill slurp 2>/dev/null || true
 
+      # Generate filename
+      FILENAME="$OUTPUT_DIR/screenshot-$(${pkgs.coreutils}/bin/date +'%Y-%m-%d_%H-%M-%S').png"
+
       # Capture screenshot with hyprshot and pipe to satty for annotation
-      ${pkgs.hyprshot}/bin/hyprshot -m "$MODE" --raw | \
-        ${pkgs.satty}/bin/satty --filename - \
-          --output-filename "$OUTPUT_DIR/screenshot-$(date +'%Y-%m-%d_%H-%M-%S').png" \
-          --early-exit \
-          --actions-on-enter save-to-clipboard \
-          --save-after-copy \
-          --copy-command '${pkgs.wl-clipboard}/bin/wl-copy'
+      # For output mode, use active monitor to avoid cursor selector
+      if [[ "$MODE" == "output" ]]; then
+        ${pkgs.hyprshot}/bin/hyprshot -m active -m output --raw | \
+          ${pkgs.satty}/bin/satty --filename - \
+            --output-filename "$FILENAME" \
+            --early-exit \
+            --action-on-enter save-to-clipboard \
+            --save-after-copy \
+            --copy-command '${pkgs.wl-clipboard}/bin/wl-copy'
+        SATTY_EXIT=$?
+      else
+        ${pkgs.hyprshot}/bin/hyprshot -m "$MODE" --raw | \
+          ${pkgs.satty}/bin/satty --filename - \
+            --output-filename "$FILENAME" \
+            --early-exit \
+            --action-on-enter save-to-clipboard \
+            --save-after-copy \
+            --copy-command '${pkgs.wl-clipboard}/bin/wl-copy'
+        SATTY_EXIT=$?
+      fi
+
+      # Show notification if screenshot was saved successfully (Omarchy-style)
+      # Only notify if satty completed successfully and file exists
+      if [[ $SATTY_EXIT -eq 0 ]] && [[ -f "$FILENAME" ]]; then
+        # Extract just the filename for cleaner notification
+        BASENAME=$(${pkgs.coreutils}/bin/basename "$FILENAME")
+        ${pkgs.libnotify}/bin/notify-send \
+          "Screenshot copied to clipboard" \
+          "Saved to $OUTPUT_DIR/$BASENAME" \
+          -t 3000 \
+          -i "$FILENAME" \
+          -u normal \
+          2>/dev/null || true
+      fi
     '';
     executable = true;
   };
@@ -1341,6 +1512,7 @@ in
           exec = "$HOME/.local/bin/waybar-recording-indicator";
           return-type = "json";
           interval = 2;
+          signal = 8; # RTMIN+8 for real-time updates from screen-record script
           format = "{}";
         };
 

@@ -302,7 +302,8 @@ in
     slurp # Region selector
     swappy # Screenshot editor
     satty # Screenshot annotation tool (Omarchy-style)
-    wf-recorder # Screen recorder
+    wl-screenrec # High performance screen recorder (Omarchy-style)
+    wf-recorder # Screen recorder (fallback for NVIDIA)
     jq # JSON processor for window info
     libnotify # Desktop notifications (notify-send command)
     imagemagick # Image manipulation (for fallback solid color backgrounds)
