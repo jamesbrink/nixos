@@ -851,6 +851,18 @@ in
     executable = true;
   };
 
+  # Runtime theme generation (Omarchy-style)
+  home.file.".local/bin/generate-themes" = {
+    source = ./scripts/generate-themes.sh;
+    executable = true;
+  };
+
+  # Runtime theme switcher (Omarchy-style)
+  home.file.".local/bin/theme-set" = {
+    source = ./scripts/theme-set.sh;
+    executable = true;
+  };
+
   # Theme picker (Omarchy-style)
   home.file.".local/bin/theme-picker" = {
     text = ''
