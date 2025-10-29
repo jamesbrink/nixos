@@ -269,6 +269,16 @@
     broken_path_overlay = "#727169";
   };
 
+  # Browser theme color (RGB format for Chrome/Brave managed policy)
+  browser = {
+    themeColor = "31,31,40"; # RGB values from primary background #1f1f28
+  };
+
+  # Fastfetch system info colors
+  fastfetch = {
+    keyColor = "blue"; # Matches the wave theme accent
+  };
+
   # Wallpapers
   # To add wallpapers for this theme:
   # 1. Create directory: mkdir -p modules/home-manager/hyprland/wallpapers/kanagawa

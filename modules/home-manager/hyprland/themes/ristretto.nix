@@ -257,6 +257,16 @@
     broken_path_overlay = "#72696a";
   };
 
+  # Browser theme color (RGB format for Chrome/Brave managed policy)
+  browser = {
+    themeColor = "44,37,37"; # RGB values from primary background #2c2525
+  };
+
+  # Fastfetch system info colors
+  fastfetch = {
+    keyColor = "magenta"; # Matches the monokai accent theme
+  };
+
   # Wallpapers
   # To add wallpapers for this theme:
   # 1. Create directory: mkdir -p modules/home-manager/hyprland/wallpapers/ristretto

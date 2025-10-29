@@ -261,6 +261,16 @@
     broken_path_overlay = "#53685B";
   };
 
+  # Browser theme color (RGB format for Chrome/Brave managed policy)
+  browser = {
+    themeColor = "17,28,24"; # RGB values from primary background #111c18
+  };
+
+  # Fastfetch system info colors
+  fastfetch = {
+    keyColor = "cyan"; # Matches the jade/green theme accent
+  };
+
   # Wallpapers
   # To add wallpapers for this theme:
   # 1. Create directory: mkdir -p modules/home-manager/hyprland/wallpapers/osaka-jade

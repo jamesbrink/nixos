@@ -257,6 +257,16 @@
     broken_path_overlay = "#555555";
   };
 
+  # Browser theme color (RGB format for Chrome/Brave managed policy)
+  browser = {
+    themeColor = "18,18,18"; # RGB values from primary background #121212
+  };
+
+  # Fastfetch system info colors
+  fastfetch = {
+    keyColor = "white"; # Matches the monochrome theme
+  };
+
   # Wallpapers
   # To add wallpapers for this theme:
   # 1. Create directory: mkdir -p modules/home-manager/hyprland/wallpapers/matte-black

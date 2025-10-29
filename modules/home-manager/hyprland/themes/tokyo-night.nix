@@ -266,6 +266,16 @@
     broken_path_overlay = "#ff007c";
   };
 
+  # Browser theme color (RGB format for Chrome/Brave managed policy)
+  browser = {
+    themeColor = "26,27,38"; # RGB values from primary background #1a1b26
+  };
+
+  # Fastfetch system info colors
+  fastfetch = {
+    keyColor = "cyan"; # Matches the blue/cyan accent theme
+  };
+
   # Wallpapers
   wallpapers = [
     "1-scenery-pink-lakeside-sunset-lake-landscape-scenic-panorama-7680x3215-144.png"

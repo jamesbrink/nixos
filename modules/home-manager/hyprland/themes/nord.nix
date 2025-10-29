@@ -266,6 +266,16 @@
     broken_path_overlay = "#4c566a";
   };
 
+  # Browser theme color (RGB format for Chrome/Brave managed policy)
+  browser = {
+    themeColor = "46,52,64"; # RGB values from primary background #2e3440
+  };
+
+  # Fastfetch system info colors
+  fastfetch = {
+    keyColor = "blue"; # Matches the arctic blue accent theme
+  };
+
   # Wallpapers
   wallpapers = [
     "1-nord.png"

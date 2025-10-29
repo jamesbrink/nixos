@@ -267,6 +267,16 @@
     broken_path_overlay = "#928374";
   };
 
+  # Browser theme color (RGB format for Chrome/Brave managed policy)
+  browser = {
+    themeColor = "40,40,40"; # RGB values from primary background #282828
+  };
+
+  # Fastfetch system info colors
+  fastfetch = {
+    keyColor = "yellow"; # Matches the retro warm accent theme
+  };
+
   # Wallpapers
   wallpapers = [
     "1-grubox.jpg"

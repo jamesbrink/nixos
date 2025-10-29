@@ -261,6 +261,16 @@
     broken_path_overlay = "#475258";
   };
 
+  # Browser theme color (RGB format for Chrome/Brave managed policy)
+  browser = {
+    themeColor = "45,53,59"; # RGB values from primary background #2d353b
+  };
+
+  # Fastfetch system info colors
+  fastfetch = {
+    keyColor = "green"; # Matches the forest theme accent
+  };
+
   # Wallpapers
   # To add wallpapers for this theme:
   # 1. Create directory: mkdir -p modules/home-manager/hyprland/wallpapers/everforest

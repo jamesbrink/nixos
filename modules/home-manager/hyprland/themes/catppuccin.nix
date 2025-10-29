@@ -272,6 +272,16 @@
     broken_path_overlay = "#585B70";
   };
 
+  # Browser theme color (RGB format for Chrome/Brave managed policy)
+  browser = {
+    themeColor = "36,39,58"; # RGB values from primary background #24273a
+  };
+
+  # Fastfetch system info colors
+  fastfetch = {
+    keyColor = "magenta"; # Matches the purple/mauve accent theme
+  };
+
   # Wallpapers
   wallpapers = [
     "1-catppuccin.png"

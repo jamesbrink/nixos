@@ -173,6 +173,7 @@ in
         "$mod CTRL, E, exec, walker --modules emoji"
         "$mod, ESCAPE, exec, wlogout"
         "$mod, K, exec, show-keybindings" # Key bindings menu (Omarchy-style)
+        "$mod SHIFT, SPACE, exec, toggle-waybar" # Toggle status bar (Omarchy-style)
 
         # Window Management
         "$mod, W, killactive,"
@@ -759,6 +760,36 @@ in
     executable = true;
   };
 
+  # Recording indicator for Waybar
+  home.file.".local/bin/waybar-recording-indicator" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Check if screen recording is active (wl-screenrec or wf-recorder)
+
+      if ${pkgs.procps}/bin/pgrep -x wl-screenrec >/dev/null || ${pkgs.procps}/bin/pgrep -x wf-recorder >/dev/null; then
+        echo '{"text": "󰻂", "tooltip": "Stop recording", "class": "active"}'
+      else
+        echo '{"text": ""}'
+      fi
+    '';
+    executable = true;
+  };
+
+  # Toggle Waybar visibility (Omarchy-style)
+  home.file.".local/bin/toggle-waybar" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Toggle waybar visibility
+
+      if ${pkgs.procps}/bin/pgrep -x waybar >/dev/null; then
+        ${pkgs.procps}/bin/pkill -x waybar
+      else
+        ${pkgs.waybar}/bin/waybar >/dev/null 2>&1 &
+      fi
+    '';
+    executable = true;
+  };
+
   # Screenshot with annotation (Omarchy-style: hyprshot + satty)
   home.file.".local/bin/screenshot-annotate" = {
     text = ''
@@ -1173,7 +1204,10 @@ in
           "hyprland/workspaces"
           "hyprland/window"
         ];
-        modules-center = [ "clock" ];
+        modules-center = [
+          "clock"
+          "custom/recording"
+        ];
         modules-right = [
           "tray"
           "bluetooth"
@@ -1302,6 +1336,13 @@ in
           };
         };
 
+        "custom/recording" = {
+          exec = "$HOME/.local/bin/waybar-recording-indicator";
+          return-type = "json";
+          interval = 2;
+          format = "{}";
+        };
+
         bluetooth = {
           format = "";
           format-disabled = "󰂲";
@@ -1407,6 +1448,20 @@ in
 
       #battery.critical {
         color: #f38ba8;
+      }
+
+      #custom-recording {
+        padding: 0 10px;
+        color: #f38ba8;
+      }
+
+      #custom-recording.active {
+        animation: blink 1s ease-in-out infinite;
+      }
+
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
       }
     '';
   };
@@ -1737,4 +1792,98 @@ in
       broken_symlink: {foreground: "${themeConfig.eza.broken_symlink}"}
       broken_path_overlay: {foreground: "${themeConfig.eza.broken_path_overlay}"}
     '';
+
+  # Fastfetch system info (theme-integrated)
+  xdg.configFile."fastfetch/config.jsonc".text = builtins.toJSON {
+    "$schema" = "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json";
+    logo = {
+      type = "small";
+      padding = {
+        top = 1;
+        right = 2;
+        left = 1;
+      };
+    };
+    modules = [
+      "break"
+      {
+        type = "title";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "separator";
+      }
+      {
+        type = "os";
+        key = "OS";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "host";
+        key = "Host";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "kernel";
+        key = "Kernel";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "uptime";
+        key = "Uptime";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "packages";
+        key = "Packages";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "shell";
+        key = "Shell";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "de";
+        key = "DE";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "wm";
+        key = "WM";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "terminal";
+        key = "Terminal";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "cpu";
+        key = "CPU";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "gpu";
+        key = "GPU";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "memory";
+        key = "Memory";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      {
+        type = "disk";
+        key = "Disk";
+        keyColor = themeConfig.fastfetch.keyColor;
+      }
+      "break"
+      {
+        type = "colors";
+        paddingLeft = 2;
+        symbol = "circle";
+      }
+    ];
+  };
 }

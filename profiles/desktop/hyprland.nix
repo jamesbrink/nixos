@@ -1,9 +1,53 @@
 {
   pkgs,
   inputs,
+  lib,
   ...
 }:
 
+let
+  # Theme selection (must match Home Manager theme selection)
+  selectedTheme = "ristretto";
+  themeConfig = import (../../modules/home-manager/hyprland/themes + "/${selectedTheme}.nix");
+
+  # Convert RGB string "R,G,B" to hex color "#RRGGBB"
+  rgbToHex =
+    rgb:
+    let
+      parts = lib.splitString "," rgb;
+      r = lib.toInt (builtins.elemAt parts 0);
+      g = lib.toInt (builtins.elemAt parts 1);
+      b = lib.toInt (builtins.elemAt parts 2);
+      toHex =
+        n:
+        let
+          hex = [
+            "0"
+            "1"
+            "2"
+            "3"
+            "4"
+            "5"
+            "6"
+            "7"
+            "8"
+            "9"
+            "a"
+            "b"
+            "c"
+            "d"
+            "e"
+            "f"
+          ];
+          high = builtins.elemAt hex (n / 16);
+          low = builtins.elemAt hex (lib.mod n 16);
+        in
+        "${high}${low}";
+    in
+    "#${toHex r}${toHex g}${toHex b}";
+
+  browserThemeColor = rgbToHex themeConfig.browser.themeColor;
+in
 {
   imports = [
     ../../modules/ssh-keys.nix
@@ -416,6 +460,23 @@
 
   # Enable thumbnails in file managers
   services.tumbler.enable = true;
+
+  # Browser theme integration via managed policies
+  # Chromium/Chrome theme color
+  environment.etc."chromium/policies/managed/color.json" = {
+    text = builtins.toJSON {
+      BrowserThemeColor = browserThemeColor;
+    };
+    mode = "0644";
+  };
+
+  # Brave browser theme color
+  environment.etc."brave/policies/managed/color.json" = {
+    text = builtins.toJSON {
+      BrowserThemeColor = browserThemeColor;
+    };
+    mode = "0644";
+  };
 
   # Waybar now configured in Home Manager (modules/home-manager/hyprland/default.nix)
 }
