@@ -162,15 +162,15 @@ in
         # Applications
         "$mod, RETURN, exec, spawn-terminal-here"
         "$mod SHIFT, F, exec, thunar" # File manager
-        "$mod SHIFT, B, exec, firefox"
-        "$mod SHIFT ALT, B, exec, firefox --private-window"
+        "$mod SHIFT, B, exec, google-chrome-stable"
+        "$mod SHIFT ALT, B, exec, google-chrome-stable --incognito"
         "$mod SHIFT, M, exec, spotify"
         "$mod SHIFT, N, exec, alacritty -e nvim"
         "$mod SHIFT, T, exec, alacritty -e btop"
         "$mod SHIFT, D, exec, alacritty -e lazydocker"
         "$mod SHIFT, G, exec, signal-desktop"
         "$mod SHIFT, O, exec, obsidian"
-        "$mod SHIFT, Y, exec, firefox --new-window https://youtube.com"
+        "$mod SHIFT, Y, exec, google-chrome-stable --new-window https://youtube.com"
 
         # Menus
         "$mod, SPACE, exec, walker"
