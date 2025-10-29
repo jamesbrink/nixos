@@ -113,6 +113,159 @@
     failColor = "#e67e80";
   };
 
-  # Wallpapers (none specified for now)
+  # btop system monitor colors
+  btop = {
+    main_bg = "#2d353b";
+    main_fg = "#d3c6aa";
+    title = "#d3c6aa";
+    hi_fg = "#e67e80";
+    selected_bg = "#3d484d";
+    selected_fg = "#dbbc7f";
+    inactive_fg = "#2d353b";
+    graph_text = "#d3c6aa";
+    proc_misc = "#a7c080";
+    cpu_box = "#3d484d";
+    mem_box = "#3d484d";
+    net_box = "#3d484d";
+    proc_box = "#3d484d";
+    div_line = "#3d484d";
+    temp_start = "#a7c080";
+    temp_mid = "#dbbc7f";
+    temp_end = "#f85552";
+    cpu_start = "#a7c080";
+    cpu_mid = "#dbbc7f";
+    cpu_end = "#f85552";
+    free_start = "#f85552";
+    free_mid = "#dbbc7f";
+    free_end = "#a7c080";
+    cached_start = "#7fbbb3";
+    cached_mid = "#83c092";
+    cached_end = "#a7c080";
+    available_start = "#f85552";
+    available_mid = "#dbbc7f";
+    available_end = "#a7c080";
+    used_start = "#a7c080";
+    used_mid = "#dbbc7f";
+    used_end = "#f85552";
+    download_start = "#a7c080";
+    download_mid = "#83c092";
+    download_end = "#7fbbb3";
+    upload_start = "#dbbc7f";
+    upload_mid = "#e69875";
+    upload_end = "#e67e80";
+    process_start = "#a7c080";
+    process_mid = "#e67e80";
+    process_end = "#f85552";
+  };
+
+  # eza file listing colors
+  eza = {
+    filekinds = {
+      normal = "#d3c6aa";
+      directory = "#7fbbb3";
+      symlink = "#83c092";
+      pipe = "#475258";
+      block_device = "#e69875";
+      char_device = "#e69875";
+      socket = "#343f44";
+      special = "#d699b6";
+      executable = "#a7c080";
+      mount_point = "#83c092";
+    };
+    perms = {
+      user_read = "#d3c6aa";
+      user_write = "#dbbc7f";
+      user_execute_file = "#a7c080";
+      user_execute_other = "#a7c080";
+      group_read = "#d3c6aa";
+      group_write = "#dbbc7f";
+      group_execute = "#a7c080";
+      other_read = "#d3c6aa";
+      other_write = "#dbbc7f";
+      other_execute = "#a7c080";
+      special_user_file = "#d699b6";
+      special_other = "#475258";
+      attribute = "#d3c6aa";
+    };
+    size = {
+      major = "#d3c6aa";
+      minor = "#83c092";
+      number_byte = "#d3c6aa";
+      number_kilo = "#d3c6aa";
+      number_mega = "#7fbbb3";
+      number_giga = "#d699b6";
+      number_huge = "#d699b6";
+      unit_byte = "#d3c6aa";
+      unit_kilo = "#7fbbb3";
+      unit_mega = "#d699b6";
+      unit_giga = "#d699b6";
+      unit_huge = "#83c092";
+    };
+    users = {
+      user_you = "#d3c6aa";
+      user_root = "#e67e80";
+      user_other = "#d699b6";
+      group_yours = "#d3c6aa";
+      group_other = "#475258";
+      group_root = "#e67e80";
+    };
+    links = {
+      normal = "#83c092";
+      multi_link_file = "#7fbbb3";
+    };
+    git = {
+      new = "#a7c080";
+      modified = "#dbbc7f";
+      deleted = "#e67e80";
+      renamed = "#83c092";
+      typechange = "#d699b6";
+      ignored = "#475258";
+      conflicted = "#f85552";
+    };
+    git_repo = {
+      branch_main = "#d3c6aa";
+      branch_other = "#d699b6";
+      git_clean = "#a7c080";
+      git_dirty = "#e67e80";
+    };
+    security_context = {
+      colon = "#475258";
+      user = "#d3c6aa";
+      role = "#d699b6";
+      typ = "#343f44";
+      range = "#d699b6";
+    };
+    file_type = {
+      image = "#dbbc7f";
+      video = "#e67e80";
+      music = "#a7c080";
+      lossless = "#83c092";
+      crypto = "#475258";
+      document = "#d3c6aa";
+      compressed = "#d699b6";
+      temp = "#e69875";
+      compiled = "#7fbbb3";
+      build = "#475258";
+      source = "#7fbbb3";
+    };
+    punctuation = "#475258";
+    date = "#dbbc7f";
+    inode = "#d3c6aa";
+    blocks = "#475258";
+    header = "#d3c6aa";
+    octal = "#83c092";
+    flags = "#d699b6";
+    symlink_path = "#83c092";
+    control_char = "#7fbbb3";
+    broken_symlink = "#e67e80";
+    broken_path_overlay = "#475258";
+  };
+
+  # Wallpapers
+  # To add wallpapers for this theme:
+  # 1. Create directory: mkdir -p modules/home-manager/hyprland/wallpapers/everforest
+  # 2. Add image files (JPG or PNG) to the directory
+  # 3. List them here: wallpapers = [ "1-my-wallpaper.jpg" "2-another.png" ];
+  # 4. Use Super+Ctrl+Space to rotate through backgrounds
   wallpapers = [ ];
 }

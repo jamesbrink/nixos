@@ -123,6 +123,155 @@
     failColor = "#ed8796";
   };
 
+  # btop system monitor colors
+  btop = {
+    main_bg = "#24273a";
+    main_fg = "#c6d0f5";
+    title = "#c6d0f5";
+    hi_fg = "#8caaee";
+    selected_bg = "#51576d";
+    selected_fg = "#8caaee";
+    inactive_fg = "#838ba7";
+    graph_text = "#f2d5cf";
+    meter_bg = "#51576d";
+    proc_misc = "#f2d5cf";
+    cpu_box = "#ca9ee6";
+    mem_box = "#a6d189";
+    net_box = "#ea999c";
+    proc_box = "#8caaee";
+    div_line = "#737994";
+    temp_start = "#a6d189";
+    temp_mid = "#e5c890";
+    temp_end = "#e78284";
+    cpu_start = "#81c8be";
+    cpu_mid = "#85c1dc";
+    cpu_end = "#babbf1";
+    free_start = "#ca9ee6";
+    free_mid = "#babbf1";
+    free_end = "#8caaee";
+    cached_start = "#85c1dc";
+    cached_mid = "#8caaee";
+    cached_end = "#babbf1";
+    available_start = "#ef9f76";
+    available_mid = "#ea999c";
+    available_end = "#e78284";
+    used_start = "#a6d189";
+    used_mid = "#81c8be";
+    used_end = "#99d1db";
+    download_start = "#ef9f76";
+    download_mid = "#ea999c";
+    download_end = "#e78284";
+    upload_start = "#a6d189";
+    upload_mid = "#81c8be";
+    upload_end = "#99d1db";
+    process_start = "#85c1dc";
+    process_mid = "#babbf1";
+    process_end = "#ca9ee6";
+  };
+
+  # eza file listing colors
+  eza = {
+    filekinds = {
+      normal = "#BAC2DE";
+      directory = "#89B4FA";
+      symlink = "#89DCEB";
+      pipe = "#7F849C";
+      block_device = "#EBA0AC";
+      char_device = "#EBA0AC";
+      socket = "#585B70";
+      special = "#CBA6F7";
+      executable = "#A6E3A1";
+      mount_point = "#74C7EC";
+    };
+    perms = {
+      user_read = "#CDD6F4";
+      user_write = "#F9E2AF";
+      user_execute_file = "#A6E3A1";
+      user_execute_other = "#A6E3A1";
+      group_read = "#BAC2DE";
+      group_write = "#F9E2AF";
+      group_execute = "#A6E3A1";
+      other_read = "#A6ADC8";
+      other_write = "#F9E2AF";
+      other_execute = "#A6E3A1";
+      special_user_file = "#CBA6F7";
+      special_other = "#585B70";
+      attribute = "#A6ADC8";
+    };
+    size = {
+      major = "#A6ADC8";
+      minor = "#89DCEB";
+      number_byte = "#CDD6F4";
+      number_kilo = "#BAC2DE";
+      number_mega = "#89B4FA";
+      number_giga = "#CBA6F7";
+      number_huge = "#CBA6F7";
+      unit_byte = "#A6ADC8";
+      unit_kilo = "#89B4FA";
+      unit_mega = "#CBA6F7";
+      unit_giga = "#CBA6F7";
+      unit_huge = "#74C7EC";
+    };
+    users = {
+      user_you = "#CDD6F4";
+      user_root = "#F38BA8";
+      user_other = "#CBA6F7";
+      group_yours = "#BAC2DE";
+      group_other = "#7F849C";
+      group_root = "#F38BA8";
+    };
+    links = {
+      normal = "#89DCEB";
+      multi_link_file = "#74C7EC";
+    };
+    git = {
+      new = "#A6E3A1";
+      modified = "#F9E2AF";
+      deleted = "#F38BA8";
+      renamed = "#94E2D5";
+      typechange = "#F5C2E7";
+      ignored = "#7F849C";
+      conflicted = "#EBA0AC";
+    };
+    git_repo = {
+      branch_main = "#CDD6F4";
+      branch_other = "#CBA6F7";
+      git_clean = "#A6E3A1";
+      git_dirty = "#F38BA8";
+    };
+    security_context = {
+      colon = "#7F849C";
+      user = "#BAC2DE";
+      role = "#CBA6F7";
+      typ = "#585B70";
+      range = "#CBA6F7";
+    };
+    file_type = {
+      image = "#F9E2AF";
+      video = "#F38BA8";
+      music = "#A6E3A1";
+      lossless = "#94E2D5";
+      crypto = "#585B70";
+      document = "#CDD6F4";
+      compressed = "#F5C2E7";
+      temp = "#EBA0AC";
+      compiled = "#74C7EC";
+      build = "#585B70";
+      source = "#89B4FA";
+    };
+    punctuation = "#7F849C";
+    date = "#F9E2AF";
+    inode = "#A6ADC8";
+    blocks = "#9399B2";
+    header = "#CDD6F4";
+    octal = "#94E2D5";
+    flags = "#CBA6F7";
+    symlink_path = "#89DCEB";
+    control_char = "#74C7EC";
+    broken_symlink = "#F38BA8";
+    broken_path_overlay = "#585B70";
+  };
+
   # Wallpapers
   wallpapers = [
     "1-catppuccin.png"

@@ -113,6 +113,155 @@
     failColor = "#fd6883";
   };
 
-  # Wallpapers (none specified for now)
+  # btop system monitor colors
+  btop = {
+    main_bg = "#2c2421";
+    main_fg = "#e6d9db";
+    title = "#e6d9db";
+    hi_fg = "#fd6883";
+    selected_bg = "#3d2f2a";
+    selected_fg = "#e6d9db";
+    inactive_fg = "#72696a";
+    proc_misc = "#adda78";
+    cpu_box = "#5b4a45";
+    mem_box = "#5b4a45";
+    net_box = "#5b4a45";
+    proc_box = "#5b4a45";
+    div_line = "#72696a";
+    temp_start = "#a8a9eb";
+    temp_mid = "#f38d70";
+    temp_end = "#fd6a85";
+    cpu_start = "#adda78";
+    cpu_mid = "#f9cc6c";
+    cpu_end = "#fd6883";
+    free_start = "#5b4a45";
+    free_mid = "#adda78";
+    free_end = "#c5e2a3";
+    cached_start = "#5b4a45";
+    cached_mid = "#85dacc";
+    cached_end = "#b3e8dd";
+    available_start = "#5b4a45";
+    available_mid = "#f9cc6c";
+    available_end = "#fce2a3";
+    used_start = "#5b4a45";
+    used_mid = "#fd6a85";
+    used_end = "#feb5c7";
+    download_start = "#3d2f2a";
+    download_mid = "#a8a9eb";
+    download_end = "#c5c6f0";
+    upload_start = "#3d2f2a";
+    upload_mid = "#fd6a85";
+    upload_end = "#feb5c7";
+  };
+
+  # eza file listing colors
+  eza = {
+    filekinds = {
+      normal = "#e6d9db";
+      directory = "#f38d70";
+      symlink = "#85dacc";
+      pipe = "#72696a";
+      block_device = "#fd6883";
+      char_device = "#fd6883";
+      socket = "#403838";
+      special = "#a8a9eb";
+      executable = "#adda78";
+      mount_point = "#9bf1e1";
+    };
+    perms = {
+      user_read = "#e6d9db";
+      user_write = "#f9cc6c";
+      user_execute_file = "#adda78";
+      user_execute_other = "#adda78";
+      group_read = "#e6d9db";
+      group_write = "#f9cc6c";
+      group_execute = "#adda78";
+      other_read = "#f1e5e7";
+      other_write = "#f9cc6c";
+      other_execute = "#adda78";
+      special_user_file = "#a8a9eb";
+      special_other = "#72696a";
+      attribute = "#e6d9db";
+    };
+    size = {
+      major = "#e6d9db";
+      minor = "#85dacc";
+      number_byte = "#e6d9db";
+      number_kilo = "#e6d9db";
+      number_mega = "#f38d70";
+      number_giga = "#a8a9eb";
+      number_huge = "#a8a9eb";
+      unit_byte = "#e6d9db";
+      unit_kilo = "#f38d70";
+      unit_mega = "#a8a9eb";
+      unit_giga = "#a8a9eb";
+      unit_huge = "#9bf1e1";
+    };
+    users = {
+      user_you = "#e6d9db";
+      user_root = "#fd6883";
+      user_other = "#a8a9eb";
+      group_yours = "#e6d9db";
+      group_other = "#72696a";
+      group_root = "#fd6883";
+    };
+    links = {
+      normal = "#85dacc";
+      multi_link_file = "#9bf1e1";
+    };
+    git = {
+      new = "#adda78";
+      modified = "#f9cc6c";
+      deleted = "#fd6883";
+      renamed = "#85dacc";
+      typechange = "#a8a9eb";
+      ignored = "#72696a";
+      conflicted = "#ff8297";
+    };
+    git_repo = {
+      branch_main = "#e6d9db";
+      branch_other = "#a8a9eb";
+      git_clean = "#adda78";
+      git_dirty = "#fd6883";
+    };
+    security_context = {
+      colon = "#72696a";
+      user = "#e6d9db";
+      role = "#a8a9eb";
+      typ = "#403838";
+      range = "#a8a9eb";
+    };
+    file_type = {
+      image = "#f9cc6c";
+      video = "#fd6883";
+      music = "#adda78";
+      lossless = "#85dacc";
+      crypto = "#72696a";
+      document = "#e6d9db";
+      compressed = "#a8a9eb";
+      temp = "#ff8297";
+      compiled = "#f8a788";
+      build = "#72696a";
+      source = "#f38d70";
+    };
+    punctuation = "#72696a";
+    date = "#f9cc6c";
+    inode = "#e6d9db";
+    blocks = "#72696a";
+    header = "#e6d9db";
+    octal = "#85dacc";
+    flags = "#a8a9eb";
+    symlink_path = "#85dacc";
+    control_char = "#f38d70";
+    broken_symlink = "#fd6883";
+    broken_path_overlay = "#72696a";
+  };
+
+  # Wallpapers
+  # To add wallpapers for this theme:
+  # 1. Create directory: mkdir -p modules/home-manager/hyprland/wallpapers/ristretto
+  # 2. Add image files (JPG or PNG) to the directory
+  # 3. List them here: wallpapers = [ "1-my-wallpaper.jpg" "2-another.png" ];
+  # 4. Use Super+Ctrl+Space to rotate through backgrounds
   wallpapers = [ ];
 }
