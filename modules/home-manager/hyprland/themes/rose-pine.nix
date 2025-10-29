@@ -98,39 +98,39 @@
 
   # Mako notification colors
   mako = {
-    textColor = "#575279";
-    borderColor = "#575279";
-    backgroundColor = "#faf4ed";
-    progressColor = "#575279";
+    textColor = "#e0def4";
+    borderColor = "#c4a7e7";
+    backgroundColor = "#232136";
+    progressColor = "#e0def4";
   };
 
   # SwayOSD colors
   swayosd = {
-    backgroundColor = "#faf4ed";
-    borderColor = "#575279";
-    textColor = "#575279";
+    backgroundColor = "#232136";
+    borderColor = "#c4a7e7";
+    textColor = "#e0def4";
   };
 
   # Hyprlock colors
   hyprlock = {
-    general = "#faf4ed";
-    input = "#faf4ed";
-    innerColor = "#faf4edcc";
-    outerColor = "#39344f";
-    fontColor = "#39344f";
-    checkColor = "#88c0d0";
+    general = "#232136";
+    input = "#232136";
+    innerColor = "#232136cc";
+    outerColor = "#e0def4";
+    fontColor = "#e0def4";
+    checkColor = "#9ccfd8";
     failColor = "#eb6f92";
   };
 
   # btop system monitor colors
   btop = {
-    main_bg = "#faf4ed";
-    main_fg = "#575279";
-    title = "#908caa";
-    hi_fg = "#e0def4";
-    selected_bg = "#524f67";
-    selected_fg = "#f6c177";
-    inactive_fg = "#403d52";
+    main_bg = "#232136";
+    main_fg = "#e0def4";
+    title = "#c4a7e7";
+    hi_fg = "#f6c177";
+    selected_bg = "#393552";
+    selected_fg = "#c4a7e7";
+    inactive_fg = "#6e6a86";
     graph_text = "#9ccfd8";
     meter_bg = "#9ccfd8";
     proc_misc = "#c4a7e7";

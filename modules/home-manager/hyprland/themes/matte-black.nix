@@ -115,7 +115,7 @@
 
   # btop system monitor colors
   btop = {
-    main_bg = "";
+    main_bg = "#121212";
     main_fg = "#EAEAEA";
     title = "#8a8a8d";
     hi_fg = "#f59e0b";
