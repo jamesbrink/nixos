@@ -72,10 +72,10 @@ if pgrep -x swayosd-server &>/dev/null; then
   echo "  ✓ Reloaded SwayOSD"
 fi
 
-# Signal Alacritty to reload config
+# Reload Alacritty (send SIGUSR1 to trigger live reload)
 if pgrep -x alacritty &>/dev/null; then
-  touch ~/.config/alacritty/alacritty.toml 2>/dev/null
-  echo "  ✓ Signaled Alacritty reload"
+  pkill -USR1 alacritty
+  echo "  ✓ Reloaded Alacritty"
 fi
 
 # Update VSCode theme
@@ -95,6 +95,17 @@ if [[ -f "$THEME_PATH/neovim.lua" ]] && [[ -f "$HOME/.config/nvim/lua/plugins/th
   if [[ -n "$new_nvim_theme" ]]; then
     # Update Neovim theme.lua with new colorscheme
     sed -i "s/colorscheme = \".*\"/colorscheme = \"$new_nvim_theme\"/" "$HOME/.config/nvim/lua/plugins/theme.lua"
+
+    # Reload colorscheme in running Neovim instances
+    # Find all nvim server sockets and send colorscheme command
+    if command -v nvim &>/dev/null; then
+      for socket in /run/user/"$(id -u)"/nvim.*.0; do
+        if [[ -S "$socket" ]]; then
+          nvim --server "$socket" --remote-send "<Cmd>colorscheme $new_nvim_theme<CR>" &>/dev/null || true
+        fi
+      done
+    fi
+
     echo "  ✓ Updated Neovim theme"
   fi
 fi
