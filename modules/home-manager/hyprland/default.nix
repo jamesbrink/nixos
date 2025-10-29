@@ -103,6 +103,10 @@ in
         # Fix some dragging issues with XWayland
         "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
 
+        # Terminal scroll sensitivity (touchpad)
+        "scrolltouchpad 1.5, class:(Alacritty|kitty)"
+        "scrolltouchpad 0.2, class:com.mitchellh.ghostty"
+
         # Browser types - tag identification
         "tag +chromium-based-browser, class:([cC]hrom(e|ium)|[bB]rave-browser|Microsoft-edge|Vivaldi-stable)"
         "tag +firefox-based-browser, class:([fF]irefox|zen|librewolf)"
@@ -295,6 +299,15 @@ in
         "$mod, mouse:272, movewindow"
         "$mod, mouse:273, resizewindow"
       ];
+
+      # TODO: Enable gesture bindings when Hyprland is upgraded to 0.51+
+      # Gesture bindings (3-finger swipes) for fullscreen toggle
+      # These require Hyprland 0.51+ with the new gesture system
+      # Current version: 0.49.0 - commenting out until upgrade
+      # gesture = [
+      #   "3, up, fullscreen" # Swipe up to toggle fullscreen
+      #   "3, down, fullscreen" # Swipe down to toggle fullscreen
+      # ];
 
       # Touchpad gestures (3-finger swipe)
       gestures = {
@@ -800,9 +813,9 @@ in
   home.file.".local/bin/waybar-recording-indicator" = {
     text = ''
       #!/usr/bin/env bash
-      # Check if screen recording is active (wl-screenrec or wf-recorder)
+      # Check if screen recording is active (wf-recorder)
 
-      if ${pkgs.procps}/bin/pgrep -x wl-screenrec >/dev/null || ${pkgs.procps}/bin/pgrep -x wf-recorder >/dev/null; then
+      if ${pkgs.procps}/bin/pgrep -x wf-recorder >/dev/null; then
         echo '{"text": "󰻂", "tooltip": "Stop recording", "class": "active"}'
       else
         echo '{"text": ""}'
@@ -826,11 +839,11 @@ in
     executable = true;
   };
 
-  # Screen recording (Omarchy-style: wl-screenrec)
+  # Screen recording (using wf-recorder for NVIDIA GPU compatibility)
   home.file.".local/bin/screen-record" = {
     text = ''
       #!/usr/bin/env bash
-      # Screen recording using wl-screenrec (Omarchy-style)
+      # Screen recording using wf-recorder (better NVIDIA GPU support)
 
       OUTPUT_DIR="$HOME/Videos"
       SCOPE="''${1:-region}"  # region or output
@@ -847,16 +860,15 @@ in
           audio_flag="--audio"
         fi
 
-        # Use wl-screenrec with libx264 encoding
-        ${pkgs.wl-screenrec}/bin/wl-screenrec $audio_flag -f "$filename" \
-          --ffmpeg-encoder-options="-c:v libx264 -crf 23 -preset medium -movflags +faststart" "$@" &
+        # Use wf-recorder with libx264 software encoding
+        # Note: wl-screenrec doesn't work with NVIDIA GPUs due to VAAPI issues
+        ${pkgs.wf-recorder}/bin/wf-recorder $audio_flag -f "$filename" "$@" &
 
         # Update waybar indicator
         ${pkgs.procps}/bin/pkill -RTMIN+8 waybar 2>/dev/null || true
       }
 
       stop_screenrecording() {
-        ${pkgs.procps}/bin/pkill -x wl-screenrec
         ${pkgs.procps}/bin/pkill -x wf-recorder
 
         ${pkgs.libnotify}/bin/notify-send "Screen recording saved to $OUTPUT_DIR" -t 3000 2>/dev/null || true
@@ -867,18 +879,17 @@ in
       }
 
       screenrecording_active() {
-        ${pkgs.procps}/bin/pgrep -x wl-screenrec >/dev/null || ${pkgs.procps}/bin/pgrep -x wf-recorder >/dev/null
+        ${pkgs.procps}/bin/pgrep -x wf-recorder >/dev/null
       }
 
       # Toggle recording
       if screenrecording_active; then
         stop_screenrecording
       elif [[ "$SCOPE" == "output" ]]; then
-        # Full screen - select output with slurp
-        output=$(${pkgs.slurp}/bin/slurp -o) || exit 1
-        start_screenrecording -g "$output"
+        # Full screen recording (no slurp needed)
+        start_screenrecording
       else
-        # Region selection
+        # Region selection with slurp
         region=$(${pkgs.slurp}/bin/slurp) || exit 1
         start_screenrecording -g "$region"
       fi
