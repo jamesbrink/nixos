@@ -35,6 +35,20 @@ in
     version = 8;
   };
 
+  # Colorscheme plugins configuration
+  xdg.configFile."nvim/lua/plugins/colorschemes.lua".text = ''
+    return {
+      -- Install all colorscheme plugins for runtime theme switching
+      { "folke/tokyonight.nvim", lazy = true },
+      { "catppuccin/nvim", name = "catppuccin", lazy = true },
+      { "ellisonleao/gruvbox.nvim", lazy = true },
+      { "EdenEast/nightfox.nvim", lazy = true }, -- Provides nordfox
+      { "rose-pine/neovim", name = "rose-pine", lazy = true },
+      { "sainnhe/everforest", lazy = true },
+      { "rebelot/kanagawa.nvim", lazy = true },
+    }
+  '';
+
   # Theme configuration (matches selected theme)
   xdg.configFile."nvim/lua/plugins/theme.lua".text = ''
     return {
