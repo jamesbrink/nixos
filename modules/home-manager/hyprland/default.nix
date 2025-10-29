@@ -244,6 +244,9 @@ in
         # Background rotation (Omarchy-style)
         "$mod CTRL, SPACE, exec, rotate-background"
 
+        # Theme picker (Omarchy-style)
+        "$mod SHIFT CTRL, SPACE, exec, theme-picker"
+
         # Captures (screenshots) - Omarchy-style with hyprshot + satty
         ", PRINT, exec, screenshot-annotate region"
         "SHIFT, PRINT, exec, screenshot-annotate window"
@@ -329,6 +332,15 @@ in
         };
       };
     };
+
+    # Runtime theme switching support (Omarchy-style)
+    # This allows switching themes without rebuilding NixOS
+    # Source order: NixOS theme (above) → Runtime theme (below)
+    # Runtime theme overrides NixOS theme when symlink exists
+    extraConfig = ''
+      # Source runtime theme if it exists (for theme-set command)
+      source = ~/.config/omarchy/current/theme/hyprland.conf
+    '';
   };
 
   # Walker configuration (Omarchy-style launcher)
@@ -599,8 +611,8 @@ in
       opacity: 0;
     }
 
-    /* Import theme-specific colors from external file (must be last!) */
-    @import url("file://${config.home.homeDirectory}/.config/walker/themes/tokyo-night.css");
+    /* Import runtime theme colors from symlink (must be last!) */
+    @import url("file://${config.home.homeDirectory}/.config/omarchy/current/theme/walker.css");
   '';
 
   # Walker theme - Tokyo Night colors (separate file for proper CSS variable order)
@@ -834,6 +846,79 @@ in
         ${pkgs.systemd}/bin/systemctl --user stop waybar.service
       else
         ${pkgs.systemd}/bin/systemctl --user start waybar.service
+      fi
+    '';
+    executable = true;
+  };
+
+  # Theme picker (Omarchy-style)
+  home.file.".local/bin/theme-picker" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Interactive theme picker using Walker (Omarchy-style)
+
+      THEMES_DIR="${config.home.homeDirectory}/.config/omarchy/themes"
+      CURRENT_THEME_LINK="${config.home.homeDirectory}/.config/omarchy/current/theme"
+
+      # Get list of themes with proper formatting (Title Case with spaces)
+      get_theme_list() {
+        ${pkgs.findutils}/bin/find "$THEMES_DIR" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) 2>/dev/null | \
+          ${pkgs.coreutils}/bin/sort | \
+          while read -r path; do
+            ${pkgs.coreutils}/bin/basename "$path" | \
+              ${pkgs.gnused}/bin/sed -E 's/(^|-)([a-z])/\1\u\2/g; s/-/ /g'
+          done
+      }
+
+      # Get current theme name with proper formatting
+      get_current_theme() {
+        if [[ -L "$CURRENT_THEME_LINK" ]]; then
+          ${pkgs.coreutils}/bin/basename "$(${pkgs.coreutils}/bin/readlink "$CURRENT_THEME_LINK")" | \
+            ${pkgs.gnused}/bin/sed -E 's/(^|-)([a-z])/\1\u\2/g; s/-/ /g'
+        fi
+      }
+
+      # Check if themes directory exists
+      if [[ ! -d "$THEMES_DIR" ]]; then
+        ${pkgs.libnotify}/bin/notify-send "No themes found" "Run generate-themes first" -t 3000
+        exit 1
+      fi
+
+      # Get theme list
+      THEME_LIST=$(get_theme_list)
+      if [[ -z "$THEME_LIST" ]]; then
+        ${pkgs.libnotify}/bin/notify-send "No themes found" "Run generate-themes first" -t 3000
+        exit 1
+      fi
+
+      # Get current theme for default selection
+      CURRENT_THEME=$(get_current_theme)
+
+      # Calculate the index of the current theme (0-based, Walker -a expects an index)
+      CURRENT_INDEX=0
+      if [[ -n "$CURRENT_THEME" ]]; then
+        CURRENT_INDEX=$(echo "$THEME_LIST" | ${pkgs.coreutils}/bin/cat -n | \
+          ${pkgs.gnugrep}/bin/grep -F "$CURRENT_THEME" | \
+          ${pkgs.gawk}/bin/awk '{print $1-1}' || echo 0)
+      fi
+
+      # Show theme picker with Walker (suppress GTK warnings, -a expects index not name)
+      SELECTED_THEME=$(echo "$THEME_LIST" | \
+        ${pkgs.walker}/bin/walker --dmenu -p "Theme" -a "$CURRENT_INDEX" 2>/dev/null)
+
+      # If selection was made (not cancelled), apply theme
+      if [[ -n "$SELECTED_THEME" && "$SELECTED_THEME" != "CNCLD" ]]; then
+        # Convert display name back to directory name (lowercase with dashes)
+        THEME_NAME=$(echo "$SELECTED_THEME" | \
+          ${pkgs.gnused}/bin/sed -E 's/ /-/g' | \
+          ${pkgs.coreutils}/bin/tr '[:upper:]' '[:lower:]')
+
+        # Apply theme using theme-set script
+        if [[ -x "${config.home.homeDirectory}/.local/bin/theme-set" ]]; then
+          ${config.home.homeDirectory}/.local/bin/theme-set "$THEME_NAME"
+        else
+          ${pkgs.libnotify}/bin/notify-send "Theme switcher not found" "theme-set script is missing" -t 3000
+        fi
       fi
     '';
     executable = true;
@@ -1198,33 +1283,15 @@ in
     }
   '';
 
-  # SwayOSD styling (theme-integrated)
-  xdg.configFile."swayosd/style.css".text = ''
-    window {
-      background-color: ${themeConfig.swayosd.backgroundColor};
-      border: 2px solid ${themeConfig.swayosd.borderColor};
-      border-radius: 0;
-    }
+  # SwayOSD styling with runtime theme support (Omarchy-style)
+  xdg.configFile."swayosd/style.css".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/omarchy/current/theme/swayosd.css";
 
-    label, image {
-      color: ${themeConfig.swayosd.textColor};
-    }
-
-    progressbar {
-      background-color: ${themeConfig.swayosd.backgroundColor};
-    }
-
-    trough {
-      background-color: ${themeConfig.swayosd.borderColor};
-    }
-
-    progress {
-      background-color: ${themeConfig.swayosd.textColor};
-    }
-  '';
-
-  # hyprlock screen locker (theme-integrated)
+  # hyprlock screen locker with runtime theme support (Omarchy-style)
   xdg.configFile."hypr/hyprlock.conf".text = ''
+    # Source runtime theme colors (symlink updates without rebuild)
+    source = ${config.home.homeDirectory}/.config/omarchy/current/theme/hyprlock.conf
+
     general {
       grace = 0
       hide_cursor = true
@@ -1233,47 +1300,42 @@ in
     }
 
     background {
+      monitor =
+      color = $color
       path = screenshot
       blur_passes = 3
       blur_size = 3
     }
 
+    animations {
+      enabled = false
+    }
+
     input-field {
-      size = 250, 50
-      outline_thickness = 2
-      dots_size = 0.25
-      dots_spacing = 0.25
-      outer_color = ${themeConfig.hyprlock.outerColor}
-      inner_color = ${themeConfig.hyprlock.innerColor}
-      font_color = ${themeConfig.hyprlock.fontColor}
-      check_color = ${themeConfig.hyprlock.checkColor}
-      fail_color = ${themeConfig.hyprlock.failColor}
+      monitor =
+      size = 600, 100
+      position = 0, 0
+      halign = center
+      valign = center
+
+      inner_color = $inner_color
+      outer_color = $outer_color
+      outline_thickness = 4
+
+      font_family = ${fontFamily}
+      font_color = $font_color
+
+      placeholder_text =   Enter Password 󰈷
+      check_color = $check_color
+      fail_text = <i>$PAMFAIL ($ATTEMPTS)</i>
+
+      rounding = 0
+      shadow_passes = 0
       fade_on_empty = false
-      placeholder_text = <span foreground="##${themeConfig.hyprlock.fontColor}">Enter password...</span>
-      hide_input = false
-      position = 0, 50
-      halign = center
-      valign = center
     }
 
-    label {
-      text = $TIME
-      color = ${themeConfig.hyprlock.fontColor}
-      font_size = 64
-      font_family = ${fontFamily}
-      position = 0, 150
-      halign = center
-      valign = center
-    }
-
-    label {
-      text = Hi, $USER
-      color = ${themeConfig.hyprlock.fontColor}
-      font_size = 24
-      font_family = ${fontFamily}
-      position = 0, -50
-      halign = center
-      valign = center
+    auth {
+      fingerprint:enabled = true
     }
   '';
 
@@ -1301,75 +1363,62 @@ in
   };
 
   # Alacritty terminal configuration
-  programs.alacritty = {
-    enable = true;
-    settings = lib.mkForce {
-      env = {
-        TERM = "xterm-256color";
-      };
+  programs.alacritty.enable = true;
 
-      window = {
-        padding = {
-          x = 10;
-          y = 10;
-        };
-        decorations = "full";
-        opacity = 0.95;
-      };
+  # Alacritty config with runtime theme import (Omarchy-style)
+  xdg.configFile."alacritty/alacritty.toml".text = ''
+    # Import runtime theme colors (symlink updates without rebuild)
+    general.import = [ "${config.home.homeDirectory}/.config/omarchy/current/theme/alacritty.toml" ]
 
-      font = {
-        normal = {
-          family = fontFamily;
-          style = "Regular";
-        };
-        bold = {
-          family = fontFamily;
-          style = "Bold";
-        };
-        italic = {
-          family = fontFamily;
-          style = "Italic";
-        };
-        bold_italic = {
-          family = fontFamily;
-          style = "Bold Italic";
-        };
-        size = fontSize * 1.0;
-      };
+    [env]
+    TERM = "xterm-256color"
 
-      # Theme-based color scheme
-      colors = {
-        primary = themeConfig.alacritty.primary;
-        normal = themeConfig.alacritty.normal;
-        bright = themeConfig.alacritty.bright;
-        indexed_colors = themeConfig.alacritty.indexed_colors;
-      };
+    [window.padding]
+    x = 10
+    y = 10
 
-      cursor = {
-        style = "Block";
-        unfocused_hollow = true;
-      };
+    [window]
+    decorations = "full"
+    opacity = 0.95
 
-      selection = {
-        save_to_clipboard = true;
-      };
+    [font.normal]
+    family = "${fontFamily}"
+    style = "Regular"
 
-      keyboard.bindings = [
-        # SUPER+C for copy (same as Ctrl+Shift+C)
-        {
-          key = "C";
-          mods = "Super";
-          action = "Copy";
-        }
-        # SUPER+V for paste (same as Ctrl+Shift+V)
-        {
-          key = "V";
-          mods = "Super";
-          action = "Paste";
-        }
-      ];
-    };
-  };
+    [font.bold]
+    family = "${fontFamily}"
+    style = "Bold"
+
+    [font.italic]
+    family = "${fontFamily}"
+    style = "Italic"
+
+    [font.bold_italic]
+    family = "${fontFamily}"
+    style = "Bold Italic"
+
+    [font]
+    size = ${toString (fontSize * 1.0)}
+
+    [cursor]
+    style = "Block"
+    unfocused_hollow = true
+
+    [selection]
+    save_to_clipboard = true
+
+    # SUPER+C for copy (Omarchy-style)
+    [[keyboard.bindings]]
+    key = "C"
+    mods = "Super"
+    action = "Copy"
+
+    # SUPER+V for paste (Omarchy-style)
+    [[keyboard.bindings]]
+    key = "V"
+    mods = "Super"
+    action = "Paste"
+  '';
 
   # Waybar configuration (Omarchy-style)
   programs.waybar = {
@@ -1559,6 +1608,9 @@ in
     };
 
     style = ''
+      /* Import runtime theme colors (Omarchy-style) */
+      @import "${config.home.homeDirectory}/.config/omarchy/current/theme/waybar.css";
+
       * {
         border: none;
         border-radius: 0;
@@ -1568,44 +1620,44 @@ in
       }
 
       window#waybar {
-        background: ${themeConfig.waybar.background};
-        color: ${themeConfig.waybar.foreground};
+        background: @background;
+        color: @foreground;
       }
 
       tooltip {
-        background: ${themeConfig.waybar.background};
-        border: 1px solid ${themeConfig.waybar.foreground};
+        background: @background;
+        border: 1px solid @foreground;
         border-radius: 0;
         opacity: 0.95;
       }
 
       tooltip label {
-        color: ${themeConfig.waybar.foreground};
+        color: @foreground;
       }
 
       #workspaces button {
         padding: 0 8px;
-        color: ${themeConfig.waybar.foreground};
+        color: @foreground;
         background: transparent;
         border-bottom: 2px solid transparent;
         opacity: 0.5;
       }
 
       #workspaces button.active {
-        color: ${themeConfig.waybar.foreground};
-        border-bottom: 2px solid ${themeConfig.waybar.foreground};
+        color: @foreground;
+        border-bottom: 2px solid @foreground;
         opacity: 1.0;
       }
 
       #workspaces button:hover {
-        background: ${themeConfig.waybar.foreground};
-        color: ${themeConfig.waybar.background};
+        background: @foreground;
+        color: @background;
         opacity: 0.1;
       }
 
       #window {
         padding: 0 15px;
-        color: ${themeConfig.waybar.foreground};
+        color: @foreground;
         font-weight: normal;
       }
 
@@ -1619,7 +1671,7 @@ in
       #pulseaudio,
       #tray {
         padding: 0 10px;
-        color: ${themeConfig.waybar.foreground};
+        color: @foreground;
       }
 
       #temperature.critical {
@@ -1657,41 +1709,30 @@ in
     '';
   };
 
-  # Mako notification daemon (theme-integrated)
-  services.mako = {
-    enable = true;
+  # Mako notification daemon with runtime theme support
+  services.mako.enable = true;
 
-    settings = {
-      # Theme colors
-      text-color = themeConfig.mako.textColor;
-      border-color = themeConfig.mako.borderColor;
-      background-color = themeConfig.mako.backgroundColor;
-      progress-color = themeConfig.mako.progressColor;
+  # Mako core configuration (Omarchy-style)
+  xdg.configFile."mako/core.ini".text = ''
+    # Base Mako settings (included by theme configs)
+    font=${fontFamily} 11
+    padding=15
+    border-size=2
+    border-radius=0
+    max-icon-size=48
+    default-timeout=5000
+    ignore-timeout=0
+    anchor=top-right
+    margin=10
+    group-by=app-name
+    max-visible=5
+    actions=1
+    format=<b>%s</b>\n%b
+  '';
 
-      # Omarchy-style settings
-      font = "${fontFamily} 11";
-      padding = "15";
-      border-size = 2;
-      border-radius = 0; # Sharp corners like Omarchy
-      max-icon-size = 48;
-      default-timeout = 5000;
-      ignore-timeout = false;
-
-      # Position
-      anchor = "top-right";
-      margin = "10";
-
-      # Grouping
-      group-by = "app-name";
-      max-visible = 5;
-
-      # Interaction
-      actions = true;
-
-      # Format
-      format = "<b>%s</b>\\n%b";
-    };
-  };
+  # Mako config symlink to runtime theme (Omarchy-style)
+  xdg.configFile."mako/config".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/omarchy/current/theme/mako.ini";
 
   # tmux theme integration (override shell module's hardcoded colors)
   programs.tmux.extraConfig = lib.mkForce ''

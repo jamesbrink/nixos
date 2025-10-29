@@ -27,38 +27,9 @@ in
       ];
 
       # Alacritty terminal configuration
-      programs.alacritty = {
-        enable = true;
-        settings = {
-          env.TERM = "xterm-256color";
-
-          keyboard.bindings = [
-            # SUPER+C for copy (macOS-style)
-            {
-              key = "C";
-              mods = "Super";
-              action = "Copy";
-            }
-            # SUPER+V for paste (macOS-style)
-            {
-              key = "V";
-              mods = "Super";
-              action = "Paste";
-            }
-            # Keep default Ctrl+Shift+C/V as well
-            {
-              key = "C";
-              mods = "Control|Shift";
-              action = "Copy";
-            }
-            {
-              key = "V";
-              mods = "Control|Shift";
-              action = "Paste";
-            }
-          ];
-        };
-      };
+      # NOTE: Alacritty is now configured in modules/home-manager/hyprland/default.nix
+      # with runtime theme support (Omarchy-style). This module only enables the package.
+      programs.alacritty.enable = lib.mkForce false; # Disabled to allow runtime theme imports
 
       # SSH configuration files
       home.file."${homeDir}/.ssh/config_external" = {
