@@ -72,10 +72,12 @@ if pgrep -x swayosd-server &>/dev/null; then
   echo "  ✓ Reloaded SwayOSD"
 fi
 
-# Reload Alacritty (send SIGUSR1 to trigger live reload)
+# Reload Alacritty (Alacritty watches config files and reloads automatically)
+# Touch the imported theme file to trigger reload
 if pgrep -x alacritty &>/dev/null; then
-  pkill -USR1 alacritty
-  echo "  ✓ Reloaded Alacritty"
+  # Touch the theme file that's imported by alacritty.toml
+  touch "$HOME/.config/omarchy/current/theme/alacritty.toml" 2>/dev/null
+  echo "  ✓ Signaled Alacritty reload"
 fi
 
 # Update VSCode theme
