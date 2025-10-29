@@ -13,7 +13,8 @@ mkdir -p "$THEMES_DEST"
 extract_value() {
   local file="$1"
   local key="$2"
-  grep -A1 "$key" "$file" | tail -1 | sed 's/.*= "\(.*\)";/\1/' | sed 's/.*= \(.*\);/\1/' | tr -d '"'
+  # Extract value and strip Nix comments (after semicolon)
+  grep -A1 "$key" "$file" | tail -1 | sed 's/;\s*#.*/;/' | sed 's/.*= "\(.*\)";/\1/' | sed 's/.*= \(.*\);/\1/' | tr -d '"'
 }
 
 # Function to extract nested value
@@ -21,7 +22,8 @@ extract_nested() {
   local file="$1"
   local section="$2"
   local key="$3"
-  awk "/$section = {/,/};/" "$file" | grep -w "$key" | sed 's/.*= "\(.*\)";/\1/' | sed 's/.*= \(.*\);/\1/' | tr -d '"'
+  # Extract value and strip Nix comments (after semicolon)
+  awk "/$section = {/,/};/" "$file" | grep -w "$key" | sed 's/;\s*#.*/;/' | sed 's/.*= "\(.*\)";/\1/' | sed 's/.*= \(.*\);/\1/' | tr -d '"'
 }
 
 # Parse Nix theme files and generate config files
