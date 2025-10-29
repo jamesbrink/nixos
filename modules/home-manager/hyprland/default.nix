@@ -145,7 +145,7 @@ in
 
       # Startup services
       "exec-once" = [
-        "waybar" # Status bar
+        # Waybar is now managed by systemd service (see programs.waybar.systemd.enable below)
         # Mako is now managed by services.mako (see below)
         "swayosd-server" # OSD server for volume/brightness overlays
         "wl-paste --type text --watch cliphist store" # Clipboard history for text
@@ -779,12 +779,12 @@ in
   home.file.".local/bin/toggle-waybar" = {
     text = ''
       #!/usr/bin/env bash
-      # Toggle waybar visibility
+      # Toggle waybar visibility using systemd service
 
-      if ${pkgs.procps}/bin/pgrep -x waybar >/dev/null; then
-        ${pkgs.procps}/bin/pkill -x waybar
+      if ${pkgs.systemd}/bin/systemctl --user is-active --quiet waybar.service; then
+        ${pkgs.systemd}/bin/systemctl --user stop waybar.service
       else
-        ${pkgs.waybar}/bin/waybar >/dev/null 2>&1 &
+        ${pkgs.systemd}/bin/systemctl --user start waybar.service
       fi
     '';
     executable = true;
@@ -1192,6 +1192,7 @@ in
   # Waybar configuration (Omarchy-style)
   programs.waybar = {
     enable = true;
+    systemd.enable = true; # Manage waybar via systemd service for proper toggling
 
     settings = {
       mainBar = {
@@ -1460,8 +1461,15 @@ in
       }
 
       @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
       }
     '';
   };
