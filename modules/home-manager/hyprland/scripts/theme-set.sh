@@ -72,13 +72,11 @@ if pgrep -x swayosd-server &>/dev/null; then
   echo "  ✓ Reloaded SwayOSD"
 fi
 
-# Reload Alacritty (touch main config to trigger mtime-based reload)
-# Alacritty watches the main config file and reloads when mtime changes
+# Reload Alacritty (touch mutable wrapper to trigger reload)
+# Alacritty watches alacritty.toml for changes and reloads automatically
 if pgrep -x alacritty &>/dev/null; then
-  # Touch the main config file (not the imported theme file)
-  # This triggers Alacritty's config watcher for NEW terminal instances
-  touch "$HOME/.config/alacritty/alacritty.toml" 2>/dev/null
-  echo "  ✓ Signaled Alacritty reload (new terminals)"
+  touch "$HOME/.config/alacritty/alacritty.toml" 2>/dev/null && \
+    echo "  ✓ Reloaded Alacritty (all windows)"
 fi
 
 # Update VSCode theme
@@ -156,4 +154,4 @@ fi
 
 echo ""
 echo "Theme switched to: $THEME_NAME"
-echo "Note: Spawn new Alacritty terminals to see theme. VSCode/Neovim update automatically."
+echo "All applications updated. Check your terminal colors!"

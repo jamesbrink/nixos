@@ -1354,82 +1354,115 @@ in
   # VSCode theme configuration
   programs.vscode = {
     enable = true;
-    profiles.default = {
-      userSettings = {
-        "workbench.colorTheme" = themeConfig.vscode.theme;
-        "workbench.iconTheme" = "material-icon-theme";
-        "terminal.integrated.fontFamily" = "'${fontFamily}'";
-        "terminal.integrated.fontSize" = fontSize + 1;
-        "editor.fontFamily" = "'${fontFamily}', 'monospace'";
-        "editor.fontSize" = fontSize + 2;
-        "editor.fontLigatures" = true;
-        "editor.formatOnSave" = true;
-        "editor.minimap.enabled" = true;
-        "workbench.startupEditor" = "none";
-      };
-      extensions = with pkgs.vscode-extensions; [
-        enkia.tokyo-night
-        pkief.material-icon-theme
-      ];
+    mutableExtensionsDir = false;
+    extensions = with pkgs.vscode-extensions; [
+      enkia.tokyo-night
+      pkief.material-icon-theme
+    ];
+  };
+
+  # VSCode settings template (mutable for theme switching)
+  home.file.".config/Code/User/settings.json.template" = {
+    text = builtins.toJSON {
+      "workbench.colorTheme" = themeConfig.vscode.theme;
+      "workbench.iconTheme" = "material-icon-theme";
+      "terminal.integrated.fontFamily" = "'${fontFamily}'";
+      "terminal.integrated.fontSize" = fontSize + 1;
+      "editor.fontFamily" = "'${fontFamily}', 'monospace'";
+      "editor.fontSize" = fontSize + 2;
+      "editor.fontLigatures" = true;
+      "editor.formatOnSave" = true;
+      "editor.minimap.enabled" = true;
+      "workbench.startupEditor" = "none";
     };
   };
+
+  # Create mutable VSCode settings
+  home.activation.createMutableVSCode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    CONFIG_FILE="${config.home.homeDirectory}/.config/Code/User/settings.json"
+    TEMPLATE_FILE="${config.home.homeDirectory}/.config/Code/User/settings.json.template"
+    mkdir -p "${config.home.homeDirectory}/.config/Code/User"
+
+    if [[ -L "$CONFIG_FILE" ]] || [[ ! -f "$CONFIG_FILE" ]]; then
+      $DRY_RUN_CMD rm -f "$CONFIG_FILE"
+      $DRY_RUN_CMD cp "$TEMPLATE_FILE" "$CONFIG_FILE"
+      $DRY_RUN_CMD chmod 644 "$CONFIG_FILE"
+      echo "Created mutable VSCode settings"
+    fi
+  '';
 
   # Alacritty terminal configuration
   programs.alacritty.enable = true;
 
   # Alacritty config with runtime theme import (Omarchy-style)
-  xdg.configFile."alacritty/alacritty.toml".text = ''
-    # Import runtime theme colors (symlink updates without rebuild)
-    general.import = [ "${config.home.homeDirectory}/.config/omarchy/current/theme/alacritty.toml" ]
+  # Template file that will be copied to create a mutable config
+  home.file.".config/alacritty/alacritty.toml.template" = {
+    text = ''
+      # Import runtime theme colors (symlink updates without rebuild)
+      general.import = [ "${config.home.homeDirectory}/.config/omarchy/current/theme/alacritty.toml" ]
 
-    [env]
-    TERM = "xterm-256color"
+      [env]
+      TERM = "xterm-256color"
 
-    [window.padding]
-    x = 10
-    y = 10
+      [window.padding]
+      x = 10
+      y = 10
 
-    [window]
-    decorations = "full"
-    opacity = 0.95
+      [window]
+      decorations = "full"
+      opacity = 0.95
 
-    [font.normal]
-    family = "${fontFamily}"
-    style = "Regular"
+      [font.normal]
+      family = "${fontFamily}"
+      style = "Regular"
 
-    [font.bold]
-    family = "${fontFamily}"
-    style = "Bold"
+      [font.bold]
+      family = "${fontFamily}"
+      style = "Bold"
 
-    [font.italic]
-    family = "${fontFamily}"
-    style = "Italic"
+      [font.italic]
+      family = "${fontFamily}"
+      style = "Italic"
 
-    [font.bold_italic]
-    family = "${fontFamily}"
-    style = "Bold Italic"
+      [font.bold_italic]
+      family = "${fontFamily}"
+      style = "Bold Italic"
 
-    [font]
-    size = ${toString (fontSize * 1.0)}
+      [font]
+      size = ${toString (fontSize * 1.0)}
 
-    [cursor]
-    style = "Block"
-    unfocused_hollow = true
+      [cursor]
+      style = "Block"
+      unfocused_hollow = true
 
-    [selection]
-    save_to_clipboard = true
+      [selection]
+      save_to_clipboard = true
 
-    # SUPER+C for copy (Omarchy-style)
-    [[keyboard.bindings]]
-    key = "C"
-    mods = "Super"
-    action = "Copy"
+      # SUPER+C for copy (Omarchy-style)
+      [[keyboard.bindings]]
+      key = "C"
+      mods = "Super"
+      action = "Copy"
 
-    # SUPER+V for paste (Omarchy-style)
-    [[keyboard.bindings]]
-    key = "V"
-    mods = "Super"
-    action = "Paste"
+      # SUPER+V for paste (Omarchy-style)
+      [[keyboard.bindings]]
+      key = "V"
+      mods = "Super"
+      action = "Paste"
+    '';
+  };
+
+  # Copy template to create mutable alacritty.toml
+  home.activation.createMutableAlacritty = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    CONFIG_FILE="${config.home.homeDirectory}/.config/alacritty/alacritty.toml"
+    TEMPLATE_FILE="${config.home.homeDirectory}/.config/alacritty/alacritty.toml.template"
+
+    if [[ -L "$CONFIG_FILE" ]] || [[ ! -f "$CONFIG_FILE" ]]; then
+      $DRY_RUN_CMD rm -f "$CONFIG_FILE"
+      $DRY_RUN_CMD cp "$TEMPLATE_FILE" "$CONFIG_FILE"
+      $DRY_RUN_CMD chmod 644 "$CONFIG_FILE"
+      echo "Created mutable Alacritty config"
+    fi
   '';
 
   # Waybar configuration (Omarchy-style)

@@ -49,8 +49,8 @@ in
     }
   '';
 
-  # Theme configuration (matches selected theme)
-  xdg.configFile."nvim/lua/plugins/theme.lua".text = ''
+  # Theme configuration template (mutable for theme switching)
+  home.file.".config/nvim/lua/plugins/theme.lua.template".text = ''
     return {
       {
         "LazyVim/LazyVim",
@@ -62,6 +62,20 @@ in
         },
       },
     }
+  '';
+
+  # Create mutable neovim theme config
+  home.activation.createMutableNeovimTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    CONFIG_FILE="${config.home.homeDirectory}/.config/nvim/lua/plugins/theme.lua"
+    TEMPLATE_FILE="${config.home.homeDirectory}/.config/nvim/lua/plugins/theme.lua.template"
+    mkdir -p "${config.home.homeDirectory}/.config/nvim/lua/plugins"
+
+    if [[ -L "$CONFIG_FILE" ]] || [[ ! -f "$CONFIG_FILE" ]]; then
+      $DRY_RUN_CMD rm -f "$CONFIG_FILE"
+      $DRY_RUN_CMD cp "$TEMPLATE_FILE" "$CONFIG_FILE"
+      $DRY_RUN_CMD chmod 644 "$CONFIG_FILE"
+      echo "Created mutable Neovim theme config"
+    fi
   '';
 
   # Disable animated scrolling (Omarchy preference)
