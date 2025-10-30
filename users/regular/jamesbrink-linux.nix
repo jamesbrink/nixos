@@ -149,6 +149,79 @@ in
           nwg-look # GTK theme configuration
           wdisplays # Display configuration GUI
         ];
+
+      # Custom desktop entries (Omarchy-style)
+      xdg.desktopEntries = {
+        imv = {
+          name = "Image Viewer";
+          exec = "imv %F";
+          icon = "imv";
+          type = "Application";
+          mimeType = [
+            "image/png"
+            "image/jpeg"
+            "image/jpg"
+            "image/gif"
+            "image/bmp"
+            "image/webp"
+            "image/tiff"
+            "image/x-xcf"
+            "image/x-portable-pixmap"
+            "image/x-xbitmap"
+          ];
+          terminal = false;
+          categories = [
+            "Graphics"
+            "Viewer"
+          ];
+        };
+
+        mpv = {
+          name = "Media Player";
+          genericName = "Multimedia player";
+          comment = "Play movies and songs";
+          exec = "mpv --player-operation-mode=pseudo-gui -- %U";
+          icon = "mpv";
+          type = "Application";
+          terminal = false;
+          startupNotify = true;
+          categories = [
+            "AudioVideo"
+            "Audio"
+            "Video"
+            "Player"
+            "TV"
+          ];
+          mimeType = [
+            "application/ogg"
+            "audio/aac"
+            "audio/mp3"
+            "audio/mpeg"
+            "audio/wav"
+            "video/mp4"
+            "video/mpeg"
+            "video/x-matroska"
+            "video/webm"
+          ];
+        };
+
+        typora = {
+          name = "Typora";
+          genericName = "Markdown Editor";
+          exec = "typora --enable-wayland-ime %U";
+          icon = "typora";
+          type = "Application";
+          startupNotify = true;
+          categories = [
+            "Office"
+            "WordProcessor"
+          ];
+          mimeType = [
+            "text/markdown"
+            "text/x-markdown"
+          ];
+        };
+      };
     };
 
   # Linux-specific sudo configuration

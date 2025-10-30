@@ -56,6 +56,44 @@
     ];
   };
 
+  # Kitty terminal colors
+  kitty = {
+    foreground = "#CDD6F4";
+    background = "#1E1E2E";
+    selection_foreground = "#1E1E2E";
+    selection_background = "#F5E0DC";
+    cursor = "#F5E0DC";
+    cursor_text_color = "#1E1E2E";
+    url_color = "#B4BEFE";
+    active_border_color = "#CBA6F7";
+    inactive_border_color = "#8E95B3";
+    active_tab_foreground = "#11111B";
+    active_tab_background = "#CBA6F7";
+    inactive_tab_foreground = "#CDD6F4";
+    inactive_tab_background = "#181825";
+    color0 = "#43465A";
+    color1 = "#F38BA8";
+    color2 = "#A6E3A1";
+    color3 = "#F9E2AF";
+    color4 = "#87B0F9";
+    color5 = "#F5C2E7";
+    color6 = "#94E2D5";
+    color7 = "#CDD6F4";
+    color8 = "#43465A";
+    color9 = "#F38BA8";
+    color10 = "#A6E3A1";
+    color11 = "#F9E2AF";
+    color12 = "#87B0F9";
+    color13 = "#F5C2E7";
+    color14 = "#94E2D5";
+    color15 = "#A1A8C9";
+  };
+
+  # Ghostty terminal theme
+  ghostty = {
+    theme = "Catppuccin Mocha";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Catppuccin Macchiato";

@@ -46,6 +46,44 @@
     indexed_colors = [ ];
   };
 
+  # Kitty terminal colors
+  kitty = {
+    foreground = "#d3c6aa";
+    background = "#272e33";
+    selection_foreground = "#9da9a0";
+    selection_background = "#464e53";
+    cursor = "#d3c6aa";
+    cursor_text_color = "#2e383c";
+    url_color = "#7fbbb3";
+    active_border_color = "#a7c080";
+    inactive_border_color = "#4f5b58";
+    active_tab_background = "#272e33";
+    active_tab_foreground = "#d3c6aa";
+    inactive_tab_background = "#374145";
+    inactive_tab_foreground = "#9da9a0";
+    color0 = "#343f44";
+    color1 = "#e67e80";
+    color2 = "#a7c080";
+    color3 = "#dbbc7f";
+    color4 = "#7fbbb3";
+    color5 = "#d699b6";
+    color6 = "#83c092";
+    color7 = "#859289";
+    color8 = "#868d80";
+    color9 = "#e67e80";
+    color10 = "#a7c080";
+    color11 = "#dbbc7f";
+    color12 = "#7fbbb3";
+    color13 = "#d699b6";
+    color14 = "#83c092";
+    color15 = "#9da9a0";
+  };
+
+  # Ghostty terminal theme
+  ghostty = {
+    theme = "Everforest Dark Hard";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Everforest Dark";

@@ -46,6 +46,67 @@
     indexed_colors = [ ];
   };
 
+  # Kitty terminal colors
+  kitty = {
+    foreground = "#bebebe";
+    background = "#121212";
+    selection_foreground = "#121212";
+    selection_background = "#333333";
+    cursor = "#eaeaea";
+    cursor_text_color = "#121212";
+    url_color = "#bebebe";
+    active_border_color = "#595959";
+    inactive_border_color = "#595959";
+    active_tab_foreground = "#bebebe";
+    active_tab_background = "#121212";
+    inactive_tab_foreground = "#bebebe";
+    inactive_tab_background = "#121212";
+    color0 = "#333333";
+    color1 = "#D35F5F";
+    color2 = "#FFC107";
+    color3 = "#b91c1c";
+    color4 = "#e68e0d";
+    color5 = "#D35F5F";
+    color6 = "#bebebe";
+    color7 = "#bebebe";
+    color8 = "#8a8a8d";
+    color9 = "#B91C1C";
+    color10 = "#FFC107";
+    color11 = "#b90a0a";
+    color12 = "#f59e0b";
+    color13 = "#B91C1C";
+    color14 = "#eaeaea";
+    color15 = "#ffffff";
+  };
+
+  # Ghostty terminal theme (custom colors - no built-in theme)
+  ghostty = {
+    background = "#121212";
+    foreground = "#BEBEBE";
+    cursor-color = "#EAEAEA";
+    cursor-text = "#121212";
+    selection-background = "#333333";
+    selection-foreground = "#EAEAEA";
+    palette = [
+      "0=#333333"
+      "1=#D35F5F"
+      "2=#FFC107"
+      "3=#B91C1C"
+      "4=#E68E0D"
+      "5=#D35F5F"
+      "6=#BEBEBE"
+      "7=#BEBEBE"
+      "8=#8A8A8D"
+      "9=#B91C1C"
+      "10=#FFC107"
+      "11=#B90A0A"
+      "12=#F59E0B"
+      "13=#B91C1C"
+      "14=#EAEAEA"
+      "15=#FFFFFF"
+    ];
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Matte Black";

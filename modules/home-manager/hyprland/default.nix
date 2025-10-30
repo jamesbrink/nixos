@@ -1465,6 +1465,111 @@ in
     fi
   '';
 
+  # Kitty terminal configuration (manual config management)
+  # Note: Not using programs.kitty to avoid conflicts with our mutable config pattern
+
+  # Kitty config with runtime theme import (Omarchy-style)
+  # Template file that will be copied to create a mutable config
+  home.file.".config/kitty/kitty.conf.template" = {
+    text = ''
+      # Import runtime theme colors (symlink updates without rebuild)
+      include ''${HOME}/.config/omarchy/current/theme/kitty.conf
+
+      # Font
+      font_family ${fontFamily}
+      bold_italic_font auto
+      font_size ${toString (fontSize * 1.0)}
+
+      # Window
+      window_padding_width 14
+      window_padding_height 14
+      hide_window_decorations yes
+      show_window_resize_notification no
+      confirm_os_window_close 0
+
+      # Keybindings
+      map ctrl+insert copy_to_clipboard
+      map shift+insert paste_from_clipboard
+
+      # Allow remote access
+      single_instance yes
+      allow_remote_control yes
+
+      # Aesthetics
+      cursor_shape block
+      enable_audio_bell no
+
+      # Minimal Tab bar styling
+      tab_bar_edge bottom
+      tab_bar_style powerline
+      tab_powerline_style slanted
+      tab_title_template {title}{''' :{}:'''.format(num_windows) if num_windows > 1 else ''''''}
+    '';
+  };
+
+  # Copy template to create mutable kitty.conf
+  home.activation.createMutableKitty = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    CONFIG_FILE="${config.home.homeDirectory}/.config/kitty/kitty.conf"
+    TEMPLATE_FILE="${config.home.homeDirectory}/.config/kitty/kitty.conf.template"
+
+    if [[ -L "$CONFIG_FILE" ]] || [[ ! -f "$CONFIG_FILE" ]]; then
+      $DRY_RUN_CMD rm -f "$CONFIG_FILE"
+      $DRY_RUN_CMD cp "$TEMPLATE_FILE" "$CONFIG_FILE"
+      $DRY_RUN_CMD chmod 644 "$CONFIG_FILE"
+      echo "Created mutable Kitty config"
+    fi
+  '';
+
+  # Ghostty terminal configuration (manual config management)
+  # Note: Not using programs.ghostty to avoid conflicts with our mutable config pattern
+
+  # Ghostty config with runtime theme import (Omarchy-style)
+  # Template file that will be copied to create a mutable config
+  home.file.".config/ghostty/config.template" = {
+    text = ''
+      # Dynamic theme colors
+      config-file = ?"''${HOME}/.config/omarchy/current/theme/ghostty.conf"
+
+      # Font
+      font-family = "${fontFamily}"
+      font-style = Regular
+      font-size = ${toString (fontSize * 1.0)}
+
+      # Window
+      window-theme = ghostty
+      window-padding-x = 14
+      window-padding-y = 14
+      confirm-close-surface=false
+      resize-overlay = never
+      gtk-toolbar-style = flat
+
+      # Cursor styling
+      cursor-style = "block"
+      cursor-style-blink = false
+
+      # Cursor styling + SSH session terminfo
+      # (all shell integration options must be passed together)
+      shell-integration-features = no-cursor,ssh-env
+
+      # Keyboard bindings
+      keybind = shift+insert=paste_from_clipboard
+      keybind = control+insert=copy_to_clipboard
+    '';
+  };
+
+  # Copy template to create mutable ghostty config
+  home.activation.createMutableGhostty = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    CONFIG_FILE="${config.home.homeDirectory}/.config/ghostty/config"
+    TEMPLATE_FILE="${config.home.homeDirectory}/.config/ghostty/config.template"
+
+    if [[ -L "$CONFIG_FILE" ]] || [[ ! -f "$CONFIG_FILE" ]]; then
+      $DRY_RUN_CMD rm -f "$CONFIG_FILE"
+      $DRY_RUN_CMD cp "$TEMPLATE_FILE" "$CONFIG_FILE"
+      $DRY_RUN_CMD chmod 644 "$CONFIG_FILE"
+      echo "Created mutable Ghostty config"
+    fi
+  '';
+
   # Waybar configuration (Omarchy-style)
   programs.waybar = {
     enable = true;
@@ -2163,4 +2268,26 @@ in
       }
     ];
   };
+
+  # Deploy custom application icons (Omarchy-style)
+  # Web service icons for better desktop integration
+  xdg.dataFile."icons/hicolor/256x256/apps/basecamp.png".source = ./icons/Basecamp.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/chatgpt.png".source = ./icons/ChatGPT.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/discord.png".source = ./icons/Discord.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/disk-usage.png".source = ./icons + "/Disk Usage.png";
+  xdg.dataFile."icons/hicolor/256x256/apps/docker.png".source = ./icons/Docker.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/figma.png".source = ./icons/Figma.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/github.png".source = ./icons/GitHub.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/google-contacts.png".source =
+    ./icons + "/Google Contacts.png";
+  xdg.dataFile."icons/hicolor/256x256/apps/google-messages.png".source =
+    ./icons + "/Google Messages.png";
+  xdg.dataFile."icons/hicolor/256x256/apps/google-photos.png".source = ./icons + "/Google Photos.png";
+  xdg.dataFile."icons/hicolor/256x256/apps/hey.png".source = ./icons/HEY.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/imv.png".source = ./icons/imv.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/whatsapp.png".source = ./icons/WhatsApp.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/windows.png".source = ./icons/windows.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/x.png".source = ./icons/X.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/youtube.png".source = ./icons/YouTube.png;
+  xdg.dataFile."icons/hicolor/256x256/apps/zoom.png".source = ./icons/Zoom.png;
 }

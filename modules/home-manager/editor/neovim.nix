@@ -10,10 +10,17 @@ let
   # Maps our theme names to LazyVim colorschemes
   themeToColorscheme = {
     tokyo-night = "tokyonight";
-    catppuccin = "catppuccin";
+    catppuccin = "catppuccin-mocha";
+    catppuccin-latte = "catppuccin-latte";
     gruvbox = "gruvbox";
     nord = "nordfox";
     rose-pine = "rose-pine";
+    everforest = "everforest";
+    kanagawa = "kanagawa";
+    matte-black = "tokyonight-night";
+    osaka-jade = "tokyonight";
+    ristretto = "monokai-pro-ristretto";
+    flexoki-light = "flexoki-light";
   };
 
   # Get the selected theme from hyprland module if it exists
@@ -46,6 +53,8 @@ in
       { "rose-pine/neovim", name = "rose-pine", lazy = true },
       { "sainnhe/everforest", lazy = true },
       { "rebelot/kanagawa.nvim", lazy = true },
+      { "loctvl842/monokai-pro.nvim", lazy = true }, -- Provides monokai-pro-ristretto
+      { "kepano/flexoki-neovim", name = "flexoki", lazy = true },
     }
   '';
 

@@ -4,12 +4,22 @@
 THEMES_DIR="$HOME/.config/omarchy/themes"
 CURRENT_THEME_DIR="$HOME/.config/omarchy/current/theme"
 
+# Enable debug mode
+DEBUG=false
+if [[ "$1" == "--debug" || "$1" == "-d" ]]; then
+  DEBUG=true
+  shift
+fi
+
 # Show help
 if [[ "$1" == "--help" || "$1" == "-h" ]]; then
-  echo "Usage: theme-set <theme-name>"
+  echo "Usage: theme-set [--debug] <theme-name>"
   echo "       theme-set --list"
   echo ""
   echo "Switch themes instantly without rebuilding NixOS"
+  echo ""
+  echo "Options:"
+  echo "  --debug, -d    Enable verbose debug output"
   exit 0
 fi
 
@@ -79,6 +89,24 @@ if pgrep -x alacritty &>/dev/null; then
     echo "  ✓ Reloaded Alacritty (all windows)"
 fi
 
+# Reload Kitty (touch mutable config to trigger reload)
+# Kitty watches kitty.conf for changes with remote control enabled
+if pgrep -x kitty &>/dev/null; then
+  touch "$HOME/.config/kitty/kitty.conf" 2>/dev/null
+  # Reload all kitty instances using remote control
+  for socket in /tmp/kitty-*; do
+    [[ -e "$socket" ]] && kitty @ --to "unix:$socket" load-config &>/dev/null || true
+  done
+  echo "  ✓ Reloaded Kitty (all windows)"
+fi
+
+# Reload Ghostty (touch mutable config to trigger reload)
+# Ghostty watches config files with config-file = ?path
+if pgrep -x ghostty &>/dev/null; then
+  touch "$HOME/.config/ghostty/config" 2>/dev/null && \
+    echo "  ✓ Reloaded Ghostty (all windows)"
+fi
+
 # Update VSCode theme
 if [[ -f "$THEME_PATH/vscode.json" ]] && [[ -f "$HOME/.config/Code/User/settings.json" ]]; then
   new_theme=$(jq -r '.["workbench.colorTheme"]' "$THEME_PATH/vscode.json")
@@ -98,16 +126,51 @@ if [[ -f "$THEME_PATH/neovim.lua" ]] && [[ -f "$HOME/.config/nvim/lua/plugins/th
     sed -i "s/colorscheme = \".*\"/colorscheme = \"$new_nvim_theme\"/" "$HOME/.config/nvim/lua/plugins/theme.lua"
 
     # Reload colorscheme in running Neovim instances
-    # Find all nvim server sockets and send colorscheme command
+    # Note: Using --remote-expr instead of --remote-send because <Cmd> syntax
+    # has a known bug with --remote-send (see neovim/neovim#31238)
     if command -v nvim &>/dev/null; then
+      nvim_reloaded=0
+      nvim_failed=0
+
+      [[ "$DEBUG" == "true" ]] && echo "  [DEBUG] Searching for Neovim sockets in /run/user/$(id -u)/"
+
       for socket in /run/user/"$(id -u)"/nvim.*.0; do
         if [[ -S "$socket" ]]; then
-          nvim --server "$socket" --remote-send "<Cmd>colorscheme $new_nvim_theme<CR>" &>/dev/null || true
+          [[ "$DEBUG" == "true" ]] && echo "  [DEBUG] Found socket: $socket"
+
+          # Get current colorscheme for debug output
+          if [[ "$DEBUG" == "true" ]]; then
+            current_scheme=$(nvim --server "$socket" --remote-expr "execute('colorscheme')" 2>&1 | tr -d '\n' | xargs)
+            echo "  [DEBUG]   Current colorscheme: $current_scheme"
+            echo "  [DEBUG]   Changing to: $new_nvim_theme"
+          fi
+
+          # Use --remote-expr with execute() - this actually works
+          if nvim --server "$socket" --remote-expr "execute('colorscheme $new_nvim_theme')" &>/dev/null; then
+            nvim_reloaded=$((nvim_reloaded + 1))
+
+            # Verify change for debug output
+            if [[ "$DEBUG" == "true" ]]; then
+              new_scheme=$(nvim --server "$socket" --remote-expr "execute('colorscheme')" 2>&1 | tr -d '\n' | xargs)
+              echo "  [DEBUG]   New colorscheme: $new_scheme"
+              echo "  [DEBUG]   ✓ Successfully reloaded"
+            fi
+          else
+            nvim_failed=$((nvim_failed + 1))
+            [[ "$DEBUG" == "true" ]] && echo "  [DEBUG]   ✗ Failed to reload (theme may not be installed)"
+          fi
         fi
       done
-    fi
 
-    echo "  ✓ Updated Neovim theme"
+      if [[ $nvim_reloaded -gt 0 ]]; then
+        echo "  ✓ Updated Neovim theme (reloaded $nvim_reloaded instance(s))"
+        [[ "$DEBUG" == "true" ]] && [[ $nvim_failed -gt 0 ]] && echo "  [DEBUG] Failed to reload $nvim_failed instance(s)"
+      else
+        echo "  ✓ Updated Neovim theme (no running instances)"
+      fi
+    else
+      echo "  ✓ Updated Neovim theme"
+    fi
   fi
 fi
 

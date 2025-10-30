@@ -46,6 +46,44 @@
     indexed_colors = [ ];
   };
 
+  # Kitty terminal colors
+  kitty = {
+    foreground = "#e6d9db";
+    background = "#2c2525";
+    selection_foreground = "#e6d9db";
+    selection_background = "#403e41";
+    cursor = "#c3b7b8";
+    cursor_text_color = "#c3b7b8";
+    url_color = "#e6d9db";
+    active_border_color = "#e6d9db";
+    inactive_border_color = "#595959";
+    active_tab_foreground = "#2c2525";
+    active_tab_background = "#f9cc6c";
+    inactive_tab_foreground = "#e6d9db";
+    inactive_tab_background = "#2c2525";
+    color0 = "#72696a";
+    color1 = "#fd6883";
+    color2 = "#adda78";
+    color3 = "#f9cc6c";
+    color4 = "#f38d70";
+    color5 = "#a8a9eb";
+    color6 = "#85dacc";
+    color7 = "#e6d9db";
+    color8 = "#948a8b";
+    color9 = "#ff8297";
+    color10 = "#c8e292";
+    color11 = "#fcd675";
+    color12 = "#f8a788";
+    color13 = "#bebffd";
+    color14 = "#9bf1e1";
+    color15 = "#f1e5e7";
+  };
+
+  # Ghostty terminal theme
+  ghostty = {
+    theme = "Monokai Pro Ristretto";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Monokai Pro (Filter Ristretto)";

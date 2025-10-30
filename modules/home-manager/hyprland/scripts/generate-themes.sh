@@ -107,6 +107,160 @@ cyan = "$bright_cyan"
 white = "$bright_white"
 EOF
 
+  # Generate kitty.conf - extract all colors
+  kitty_fg=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "foreground" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_bg=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "background" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_sel_fg=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "selection_foreground" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_sel_bg=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "selection_background" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_cursor=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "cursor " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_cursor_text=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "cursor_text_color" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_url=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "url_color" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_active_border=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "active_border_color" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_inactive_border=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "inactive_border_color" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_active_tab_fg=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "active_tab_foreground" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_active_tab_bg=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "active_tab_background" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_inactive_tab_fg=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "inactive_tab_foreground" | sed 's/.*= "\(.*\)";/\1/')
+  kitty_inactive_tab_bg=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "inactive_tab_background" | sed 's/.*= "\(.*\)";/\1/')
+
+  # Kitty 16 colors
+  kitty_color0=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color0 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color1=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color1 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color2=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color2 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color3=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color3 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color4=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color4 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color5=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color5 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color6=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color6 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color7=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color7 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color8=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color8 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color9=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color9 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color10=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color10 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color11=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color11 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color12=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color12 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color13=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color13 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color14=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color14 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color15=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color15 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color16=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color16 " | sed 's/.*= "\(.*\)";/\1/')
+  kitty_color17=$(awk '/kitty = {/,/^  };/' "$theme_file" | grep "color17 " | sed 's/.*= "\(.*\)";/\1/')
+
+  cat > "$theme_dir/kitty.conf" <<EOF
+# Kitty colors for $theme_name
+
+# Basic colors
+foreground $kitty_fg
+background $kitty_bg
+selection_foreground $kitty_sel_fg
+selection_background $kitty_sel_bg
+
+# Cursor colors
+cursor $kitty_cursor
+cursor_text_color $kitty_cursor_text
+EOF
+
+  # Add url_color if defined
+  if [[ -n "$kitty_url" ]]; then
+    echo "url_color $kitty_url" >> "$theme_dir/kitty.conf"
+  fi
+
+  cat >> "$theme_dir/kitty.conf" <<EOF
+
+# Border colors
+active_border_color $kitty_active_border
+inactive_border_color $kitty_inactive_border
+
+# Tab bar colors
+active_tab_foreground $kitty_active_tab_fg
+active_tab_background $kitty_active_tab_bg
+inactive_tab_foreground $kitty_inactive_tab_fg
+inactive_tab_background $kitty_inactive_tab_bg
+
+# The basic 16 colors
+# black
+color0 $kitty_color0
+color8 $kitty_color8
+
+# red
+color1 $kitty_color1
+color9 $kitty_color9
+
+# green
+color2 $kitty_color2
+color10 $kitty_color10
+
+# yellow
+color3 $kitty_color3
+color11 $kitty_color11
+
+# blue
+color4 $kitty_color4
+color12 $kitty_color12
+
+# magenta
+color5 $kitty_color5
+color13 $kitty_color13
+
+# cyan
+color6 $kitty_color6
+color14 $kitty_color14
+
+# white
+color7 $kitty_color7
+color15 $kitty_color15
+EOF
+
+  # Add extended colors if defined
+  if [[ -n "$kitty_color16" ]]; then
+    echo "" >> "$theme_dir/kitty.conf"
+    echo "# Extended colors" >> "$theme_dir/kitty.conf"
+    echo "color16 $kitty_color16" >> "$theme_dir/kitty.conf"
+  fi
+  if [[ -n "$kitty_color17" ]]; then
+    echo "color17 $kitty_color17" >> "$theme_dir/kitty.conf"
+  fi
+
+  # Generate ghostty.conf
+  # Check if theme has a simple theme name or custom colors
+  ghostty_theme=$(awk '/ghostty = {/,/^  };/' "$theme_file" | grep "theme " | sed 's/.*= "\(.*\)";/\1/')
+
+  if [[ -n "$ghostty_theme" ]]; then
+    # Simple theme name
+    echo "theme = $ghostty_theme" > "$theme_dir/ghostty.conf"
+  else
+    # Custom colors (for matte-black and osaka-jade)
+    ghostty_bg=$(awk '/ghostty = {/,/^  };/' "$theme_file" | grep "background " | sed 's/.*= "\(.*\)";/\1/')
+    ghostty_fg=$(awk '/ghostty = {/,/^  };/' "$theme_file" | grep "foreground " | sed 's/.*= "\(.*\)";/\1/')
+    ghostty_cursor=$(awk '/ghostty = {/,/^  };/' "$theme_file" | grep "cursor-color " | sed 's/.*= "\(.*\)";/\1/')
+    ghostty_cursor_text=$(awk '/ghostty = {/,/^  };/' "$theme_file" | grep "cursor-text " | sed 's/.*= "\(.*\)";/\1/')
+    ghostty_sel_bg=$(awk '/ghostty = {/,/^  };/' "$theme_file" | grep "selection-background " | sed 's/.*= "\(.*\)";/\1/')
+    ghostty_sel_fg=$(awk '/ghostty = {/,/^  };/' "$theme_file" | grep "selection-foreground " | sed 's/.*= "\(.*\)";/\1/')
+
+    # Extract palette colors from the array
+    palette_colors=$(awk '/ghostty = {/,/^  };/' "$theme_file" | grep "\"[0-9].*=\"" | sed 's/.*"\(.*\)".*/\1/')
+
+    cat > "$theme_dir/ghostty.conf" <<EOF
+background = $ghostty_bg
+foreground = $ghostty_fg
+
+cursor-color = $ghostty_cursor
+cursor-text = $ghostty_cursor_text
+EOF
+
+    # Add selection colors if defined
+    if [[ -n "$ghostty_sel_bg" ]]; then
+      echo "" >> "$theme_dir/ghostty.conf"
+      echo "selection-background = $ghostty_sel_bg" >> "$theme_dir/ghostty.conf"
+      echo "selection-foreground = $ghostty_sel_fg" >> "$theme_dir/ghostty.conf"
+    fi
+
+    # Add palette colors
+    if [[ -n "$palette_colors" ]]; then
+      echo "" >> "$theme_dir/ghostty.conf"
+      echo "# normal colors" >> "$theme_dir/ghostty.conf"
+      echo "$palette_colors" | while read -r palette_entry; do
+        echo "palette = $palette_entry" >> "$theme_dir/ghostty.conf"
+      done
+    fi
+  fi
+
   # Generate walker.css
   walker_selected=$(extract_nested "$theme_file" "walker" "selectedText")
   walker_text=$(extract_nested "$theme_file" "walker" "text")
@@ -232,7 +386,8 @@ EOF
   # Map theme names to LazyVim colorschemes (matches neovim.nix mapping)
   case "$theme_name" in
     tokyo-night) nvim_colorscheme="tokyonight" ;;
-    catppuccin|catppuccin-latte) nvim_colorscheme="catppuccin" ;;
+    catppuccin) nvim_colorscheme="catppuccin-mocha" ;;
+    catppuccin-latte) nvim_colorscheme="catppuccin-latte" ;;
     gruvbox) nvim_colorscheme="gruvbox" ;;
     nord) nvim_colorscheme="nordfox" ;;
     rose-pine) nvim_colorscheme="rose-pine" ;;
@@ -240,7 +395,8 @@ EOF
     kanagawa) nvim_colorscheme="kanagawa" ;;
     matte-black) nvim_colorscheme="tokyonight-night" ;;
     osaka-jade) nvim_colorscheme="tokyonight" ;;
-    ristretto) nvim_colorscheme="tokyonight" ;;
+    ristretto) nvim_colorscheme="monokai-pro-ristretto" ;;
+    flexoki-light) nvim_colorscheme="flexoki-light" ;;
     *) nvim_colorscheme="tokyonight" ;;
   esac
   echo "return \"$nvim_colorscheme\"" > "$theme_dir/neovim.lua"

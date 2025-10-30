@@ -40,8 +40,7 @@
     ];
   };
 
-  # Home-manager configuration
-  home-manager.backupFileExtension = "backup";
+  # Home-manager configuration (no backupFileExtension - activation scripts handle it)
 
   # services.keychron-keyboard = {
   #   enable = true;
