@@ -43,6 +43,7 @@ in
       rsync
       screen
       speedtest-cli
+      tmuxinator
       # restic-browser wrapper added below with credential isolation
       terraform
       tree
