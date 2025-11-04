@@ -65,7 +65,7 @@
   programs = {
     eza = {
       enable = true;
-      enableZshIntegration = false;
+      enableZshIntegration = false; # Using custom aliases in zsh.nix instead
       git = true;
       icons = "auto";
     };

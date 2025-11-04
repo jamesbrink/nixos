@@ -34,12 +34,12 @@ in
     };
 
     shellAliases = {
-      # Basic aliases
-      ll = "ls -l";
-      la = "ls -la";
-      lt = "ls -ltr";
-
-      # eza aliases (modern ls replacement)
+      # eza aliases (modern ls replacement with ls-compatible shortcuts)
+      ll = "eza -l";
+      la = "eza -la";
+      lt = "eza -l --sort=modified";
+      ltr = "eza -l --sort=modified --reverse";
+      lart = "eza -la --sort=modified --reverse"; # Your favorite!
       l = "eza -l";
       tree = "eza --tree";
 
@@ -137,6 +137,43 @@ in
       # Nix shell helper
       shell() {
         nix-shell '<nixpkgs>' -A "$1"
+      }
+
+      # ls wrapper function to translate GNU ls flags to eza
+      # Remove any existing ls alias first
+      unalias ls 2>/dev/null || true
+
+      ls() {
+        local args=()
+        local sort_by_time=false
+        local reverse=false
+
+        # Parse arguments
+        for arg in "$@"; do
+          if [[ "$arg" =~ ^-[a-zA-Z]*t[a-zA-Z]*$ ]]; then
+            # Contains -t flag, extract other flags
+            sort_by_time=true
+            local flags="''${arg#-}"
+            flags="''${flags//t/}"  # Remove 't'
+            [[ "$flags" =~ r ]] && reverse=true
+            [[ -n "$flags" ]] && args+=("-$flags")
+          elif [[ "$arg" == "-"* ]]; then
+            [[ "$arg" =~ r ]] && reverse=true
+            args+=("$arg")
+          else
+            args+=("$arg")
+          fi
+        done
+
+        # Add eza-specific flags
+        if $sort_by_time; then
+          args+=(--sort=modified)
+        fi
+        if $reverse; then
+          args+=(--reverse)
+        fi
+
+        ${pkgs.eza}/bin/eza "''${args[@]}"
       }
 
       # Source Nix daemon if available

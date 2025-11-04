@@ -358,6 +358,8 @@
     # Add explicit firewall rules
     firewall = {
       enable = true;
+      # Trust all traffic from Tailscale interface
+      trustedInterfaces = [ "tailscale0" ];
       allowedTCPPorts = [
         22
         80 # HTTP
@@ -465,6 +467,10 @@
           ];
         };
       };
+      # Allow all traffic from local 10.x network (nftables rules)
+      extraInputRules = ''
+        ip saddr 10.0.0.0/8 counter accept comment "Accept all from local 10.x network"
+      '';
     };
   };
 

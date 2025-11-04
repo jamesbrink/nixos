@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Check for files larger than 5MB
-LARGE_FILES=$(find . -type f -size +5000k | grep -v "^\./(\.git|result|result-|secrets|nix-secrets|nixos-old)" || true)
+LARGE_FILES=$(find . -type f -size +5000k | grep -vE "^\./\.(git|nix-profile)" | grep -vE "^\./(result|result-|secrets|nix-secrets|nixos-old)" || true)
 
 if [ -n "$LARGE_FILES" ]; then
     echo "Error: Large files detected (>5MB):"
