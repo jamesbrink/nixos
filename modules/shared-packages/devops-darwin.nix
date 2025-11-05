@@ -7,7 +7,7 @@ let
     import
       (builtins.fetchTarball {
         url = "https://github.com/NixOS/nixpkgs/archive/3016b4b15d13f3089db8a41ef937b13a9e33a8df.tar.gz";
-        # sha256 will be computed on first build
+        sha256 = "11p1dpmm7nk15mb60m1ii4jywydy3g7x5qpyr9yarlzfl2c91x1z";
       })
       {
         system = pkgs.system;

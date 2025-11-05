@@ -27,9 +27,10 @@ in
       ];
 
       # Alacritty terminal configuration
-      # NOTE: Alacritty is now configured in modules/home-manager/hyprland/default.nix
-      # with runtime theme support (Omarchy-style). This module only enables the package.
-      programs.alacritty.enable = lib.mkForce false; # Disabled to allow runtime theme imports
+      # NOTE: On Linux, Alacritty is configured in modules/home-manager/hyprland/default.nix
+      # with runtime theme support (Omarchy-style). On Darwin, the shell module provides config.
+      # Only disable on Linux to avoid conflicts with Hyprland theme system.
+      programs.alacritty.enable = lib.mkIf pkgs.stdenv.isLinux (lib.mkForce false);
 
       # SSH configuration files
       home.file."${homeDir}/.ssh/config_external" = {
