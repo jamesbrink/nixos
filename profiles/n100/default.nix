@@ -13,7 +13,7 @@
     ../../modules/restic-backups.nix
     ../../modules/services/samba-server.nix
     ../../profiles/server/default.nix
-    ../../profiles/desktop/default.nix
+    # Desktop profile removed - n100 nodes are headless servers
     ../../users/regular/jamesbrink.nix
   ];
 
