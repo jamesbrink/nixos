@@ -3,12 +3,15 @@
   pkgs,
   lib,
   secretsPath,
+  inputs,
   ...
 }:
 
 {
   # RustDesk client configuration with permanent password
-  # This module sets up RustDesk in server mode with a permanent password from agenix
+  # This module sets up RustDesk in headless mode with dummy X driver
+  # Based on RustDesk's official headless Linux support documentation:
+  # https://github.com/rustdesk/rustdesk/wiki/Headless-Linux-Support
 
   # Decrypt the RustDesk password from secrets
   # Mode 0444 (world-readable) allows user services to access it
@@ -18,77 +21,118 @@
     owner = "root";
   };
 
-  # Install RustDesk
-  environment.systemPackages = [ pkgs.rustdesk ];
+  # Install RustDesk from unstable (latest version) and dummy X driver
+  environment.systemPackages = [
+    inputs.nixos-unstable.legacyPackages.${pkgs.system}.rustdesk
+    pkgs.xorg.xf86videodummy
+  ];
 
-  # Setup service to configure RustDesk with permanent password
-  # RustDesk will encrypt the plaintext password on first startup
-  # This service runs at boot and creates the config file for all users
-  systemd.services.rustdesk-password-setup = {
-    description = "Set RustDesk permanent password for all users";
+  # Force X server to use dummy driver for headless operation
+  # This overrides auto-detection and forces use of the virtual display
+  services.xserver.videoDrivers = lib.mkOverride 40 [ "dummy" ];
+
+  # Configure dummy X driver for headless virtual display
+  # This creates a virtual display that behaves like a real GPU
+  services.xserver.deviceSection = ''
+    VideoRam 256000
+  '';
+
+  services.xserver.monitorSection = ''
+    HorizSync 28.0-80.0
+    VertRefresh 48.0-75.0
+    # 1920x1080 @ 60.00 Hz (GTF) hsync: 67.08 kHz; pclk: 172.80 MHz
+    Modeline "1920x1080_60.00" 172.80 1920 2040 2248 2576 1080 1081 1084 1118 -HSync +Vsync
+  '';
+
+  services.xserver.screenSection = ''
+    DefaultDepth 24
+    SubSection "Display"
+      Depth 24
+      Modes "1920x1080_60.00"
+    EndSubSection
+  '';
+
+  # Setup service to configure RustDesk with headless mode and password
+  # Based on official documentation at https://github.com/rustdesk/rustdesk/wiki/Headless-Linux-Support
+  # This service runs at boot and enables headless mode + sets the password
+  systemd.services.rustdesk-setup = {
+    description = "Configure RustDesk for headless operation";
     wantedBy = [ "multi-user.target" ];
-    after = [ "local-fs.target" ];
+    after = [
+      "local-fs.target"
+      "display-manager.service"
+    ];
+    wants = [ "display-manager.service" ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
+      Environment = [
+        "DISPLAY=:0"
+        "XAUTHORITY=/run/user/132/gdm/Xauthority"
+      ];
     };
     script = ''
-            # Read password from agenix secret
-            RUSTDESK_PASSWORD=$(${pkgs.coreutils}/bin/cat ${config.age.secrets.rustdesk-password.path})
+      # Read password from agenix secret
+      RUSTDESK_PASSWORD=$(${pkgs.coreutils}/bin/cat ${config.age.secrets.rustdesk-password.path})
+      RUSTDESK_BIN="${inputs.nixos-unstable.legacyPackages.${pkgs.system}.rustdesk}/bin/rustdesk"
 
-            # Create RustDesk config for each user in /home
-            for user_home in /home/*; do
-              if [ -d "$user_home" ]; then
-                username=$(basename "$user_home")
-                config_dir="$user_home/.config/rustdesk"
-                config_file="$config_dir/RustDesk.toml"
+      # Wait for display to be ready
+      for i in {1..30}; do
+        if ${pkgs.xorg.xdpyinfo}/bin/xdpyinfo -display :0 >/dev/null 2>&1; then
+          echo "Display :0 is ready"
+          break
+        fi
+        echo "Waiting for display :0 to be ready... ($i/30)"
+        sleep 2
+      done
 
-                # Create config directory
-                mkdir -p "$config_dir"
+      # Enable headless mode (required for headless operation)
+      echo "Enabling RustDesk headless mode..."
+      $RUSTDESK_BIN --option allow-linux-headless Y
 
-                # Only create config if it doesn't exist or password is not set
-                if [ ! -f "$config_file" ] || ! grep -q "^password = " "$config_file"; then
-                  # Write plaintext password - RustDesk will encrypt it on startup
-                  cat > "$config_file" <<EOF
-      [options]
-      password = "$RUSTDESK_PASSWORD"
-      direct-server = true
-      relay-server = ""
-      EOF
-                  # Set proper ownership and permissions
-                  chown "$username:users" "$config_file"
-                  chmod 600 "$config_file"
-                  echo "RustDesk password configured for $username"
-                fi
-              fi
-            done
+      # Set the permanent password
+      echo "Setting RustDesk password..."
+      $RUSTDESK_BIN --password "$RUSTDESK_PASSWORD"
+
+      # Get and display the RustDesk ID for connection
+      echo "RustDesk ID:"
+      $RUSTDESK_BIN --get-id
+
+      echo "RustDesk headless configuration complete"
     '';
   };
 
-  # RustDesk system service for headless startup
-  # Runs as system service for each user, starts at boot without requiring graphical session
+  # RustDesk system service for headless operation
+  # Runs the main RustDesk process after configuration
+  # Based on official documentation - no special flags needed
   systemd.services.rustdesk = {
-    description = "RustDesk Remote Desktop Server (Headless)";
+    description = "RustDesk Remote Desktop (Headless)";
     wantedBy = [ "multi-user.target" ];
     after = [
       "network.target"
-      "rustdesk-password-setup.service"
+      "rustdesk-setup.service"
+      "display-manager.service"
     ];
-    wants = [ "rustdesk-password-setup.service" ];
+    wants = [
+      "rustdesk-setup.service"
+      "display-manager.service"
+    ];
     serviceConfig = {
       Type = "simple";
-      # Run as jamesbrink user
-      User = "jamesbrink";
-      Group = "users";
-      # Set home directory for config file access
-      WorkingDirectory = "/home/jamesbrink";
+      User = "root";
+      Group = "root";
+      WorkingDirectory = "/root";
       Environment = [
-        "HOME=/home/jamesbrink"
-        "RUSTDESK_DISPLAY_BACKEND=x11"
+        "HOME=/root"
+        "DISPLAY=:0"
+        "XAUTHORITY=/run/user/132/gdm/Xauthority"
       ];
-      ExecStart = "${pkgs.rustdesk}/bin/rustdesk --server";
+      # Run RustDesk normally - configuration is done by rustdesk-setup service
+      ExecStart = "${inputs.nixos-unstable.legacyPackages.${pkgs.system}.rustdesk}/bin/rustdesk";
       Restart = "always";
-      RestartSec = 5;
+      RestartSec = 10;
+      # Give it time to start properly
+      TimeoutStartSec = 30;
     };
   };
 
@@ -97,8 +141,8 @@
     RUSTDESK_DISPLAY_BACKEND = "x11";
   };
 
-  # Create rustdesk data directory for jamesbrink user
+  # Create rustdesk data directory for root user
   systemd.tmpfiles.rules = [
-    "d /home/jamesbrink/.local/share/rustdesk 0755 jamesbrink users - -"
+    "d /root/.local/share/rustdesk 0755 root root - -"
   ];
 }

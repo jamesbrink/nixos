@@ -71,9 +71,10 @@
         variant = "";
       };
 
-      # LightDM display manager (lighter than GDM)
+      # GDM display manager with X11 (required for RustDesk headless support)
       displayManager = {
-        lightdm.enable = true;
+        gdm.enable = true;
+        gdm.wayland = false;
       };
 
       # XFCE desktop environment
