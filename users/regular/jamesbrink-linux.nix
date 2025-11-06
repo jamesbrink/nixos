@@ -76,7 +76,6 @@ in
             && config.networking.hostName != "n100-02"
             && config.networking.hostName != "n100-03"
             && config.networking.hostName != "n100-04"
-            && config.networking.hostName != "hal9000" # Main server is also headless
           )
           [ ../../modules/home-manager/hyprland ];
 
