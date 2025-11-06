@@ -67,8 +67,8 @@
       Type = "oneshot";
       RemainAfterExit = true;
       Environment = [
-        "DISPLAY=:0"
-        "XAUTHORITY=/run/user/132/gdm/Xauthority"
+        "DISPLAY=:1"
+        "XAUTHORITY=/run/user/1000/gdm/Xauthority"
       ];
     };
     script = ''
@@ -119,13 +119,13 @@
     ];
     serviceConfig = {
       Type = "simple";
-      User = "root";
-      Group = "root";
-      WorkingDirectory = "/root";
+      User = "jamesbrink";
+      Group = "users";
+      WorkingDirectory = "/home/jamesbrink";
       Environment = [
-        "HOME=/root"
-        "DISPLAY=:0"
-        "XAUTHORITY=/run/user/132/gdm/Xauthority"
+        "HOME=/home/jamesbrink"
+        "DISPLAY=:1"
+        "XAUTHORITY=/run/user/1000/gdm/Xauthority"
       ];
       # Run RustDesk normally - configuration is done by rustdesk-setup service
       ExecStart = "${inputs.nixos-unstable.legacyPackages.${pkgs.system}.rustdesk}/bin/rustdesk";
@@ -141,8 +141,8 @@
     RUSTDESK_DISPLAY_BACKEND = "x11";
   };
 
-  # Create rustdesk data directory for root user
+  # Create rustdesk data directory for jamesbrink user
   systemd.tmpfiles.rules = [
-    "d /root/.local/share/rustdesk 0755 root root - -"
+    "d /home/jamesbrink/.local/share/rustdesk 0755 jamesbrink users - -"
   ];
 }
