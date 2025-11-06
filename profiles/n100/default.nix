@@ -83,6 +83,15 @@
     AllowSuspendThenHibernate=no
   '';
 
+  # Power management for Intel N100
+  powerManagement = {
+    enable = true;
+    cpuFreqGovernor = "schedutil"; # Modern adaptive CPU frequency scaling
+  };
+
+  # Intel thermal management daemon for better thermal control
+  services.thermald.enable = true;
+
   # Networking
   networking = {
     domain = "home.urandom.io";
