@@ -86,7 +86,7 @@
   # Power management for Intel N100
   powerManagement = {
     enable = true;
-    cpuFreqGovernor = "schedutil"; # Modern adaptive CPU frequency scaling
+    cpuFreqGovernor = "performance"; # N100's intel_pstate only supports performance/powersave
   };
 
   # Intel thermal management daemon for better thermal control
