@@ -69,16 +69,16 @@ in
     { pkgs, ... }:
     {
       imports =
-        # Import Hyprland desktop module on desktop systems (not headless servers or n100-01 which uses i3)
-        (lib.optionals (
-          config.networking.hostName != "n100-01" # Uses i3 instead
-          && config.networking.hostName != "n100-02"
-          && config.networking.hostName != "n100-03"
-          && config.networking.hostName != "n100-04"
-          && config.networking.hostName != "hal9000" # Main server is also headless
-        ) [ ../../modules/home-manager/hyprland ])
-        # Import i3 desktop module for n100-01
-        ++ (lib.optionals (config.networking.hostName == "n100-01") [ ../../modules/home-manager/i3 ]);
+        lib.optionals
+          # Only import Hyprland desktop module on desktop systems (not headless servers)
+          (
+            config.networking.hostName != "n100-01"
+            && config.networking.hostName != "n100-02"
+            && config.networking.hostName != "n100-03"
+            && config.networking.hostName != "n100-04"
+            && config.networking.hostName != "hal9000" # Main server is also headless
+          )
+          [ ../../modules/home-manager/hyprland ];
 
       # Make inputs available to home-manager
       _module.args = {
