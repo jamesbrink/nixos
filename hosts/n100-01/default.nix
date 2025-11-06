@@ -10,6 +10,8 @@
   imports = [
     ./hardware-configuration.nix
     ../../profiles/n100/default.nix
+    # Enable XFCE desktop for RustDesk server mode testing
+    ../../profiles/desktop/xfce.nix
   ];
 
   # Host-specific configuration

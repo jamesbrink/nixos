@@ -352,8 +352,15 @@
               {
                 name = "secrets-edit";
                 category = "secrets";
-                help = "Edit a secret file";
+                help = "Edit a secret file (auto-adds to secrets.nix if new)";
                 command = ''$PRJ_ROOT/scripts/secrets-edit.sh "$@"'';
+              }
+
+              {
+                name = "secrets-add";
+                category = "secrets";
+                help = "Create a new secret (deprecated: use secrets-edit instead)";
+                command = ''$PRJ_ROOT/scripts/secrets-add.sh "$@"'';
               }
 
               {

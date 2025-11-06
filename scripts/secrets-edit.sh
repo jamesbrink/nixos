@@ -28,6 +28,23 @@ cd secrets
 if [ ! -f "$SECRET_FILE" ]; then
   echo "Creating new secret: $SECRET_FILE"
   mkdir -p "$(dirname "$SECRET_FILE")"
+
+  # Check if secret entry exists in secrets.nix
+  if ! grep -q "\"$SECRET_FILE\"" secrets.nix; then
+    echo "Adding new secret entry to secrets.nix..."
+
+    # Backup secrets.nix
+    cp secrets.nix secrets.nix.backup
+
+    # Find the last existing secret entry and add after it
+    # Insert before the closing brace of the attribute set
+    awk -v new_line="  \"$SECRET_FILE\".publicKeys = allKeys;" '
+      /^}$/ { print new_line; print; next }
+      { print }
+    ' secrets.nix > secrets.nix.new && mv secrets.nix.new secrets.nix
+
+    echo "✓ Added entry to secrets.nix"
+  fi
 fi
 
 # Use proper agenix syntax - use ed25519 by default

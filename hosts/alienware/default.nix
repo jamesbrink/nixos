@@ -14,7 +14,7 @@
   ];
   imports = [
     ./hardware-configuration.nix
-    ../../profiles/desktop/default-stable.nix
+    ../../profiles/desktop/hyprland.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix

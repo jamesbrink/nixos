@@ -13,7 +13,8 @@
     ../../modules/restic-backups.nix
     ../../modules/services/samba-server.nix
     ../../profiles/server/default.nix
-    # Desktop profile removed - n100 nodes are headless servers
+    # Desktop profile - uncomment for RustDesk server mode (X11/XFCE)
+    # ../../profiles/desktop/xfce.nix
     ../../users/regular/jamesbrink.nix
   ];
 
