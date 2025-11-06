@@ -45,10 +45,6 @@
 
       displayManager = {
         gdm.enable = true;
-        autoLogin = {
-          enable = true;
-          user = "jamesbrink";
-        };
       };
 
       desktopManager.gnome.enable = true;

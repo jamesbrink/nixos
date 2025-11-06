@@ -54,7 +54,20 @@
     nerd-fonts.fira-code
   ];
 
+  # PolicyKit rules to allow LightDM to access accounts-daemon
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if (action.id == "org.freedesktop.DisplayManager.AccountsService.ReadAny" ||
+          action.id == "org.freedesktop.DisplayManager.AccountsService.WriteAny") {
+        return polkit.Result.YES;
+      }
+    });
+  '';
+
   services = {
+    # Accounts daemon required for LightDM user management
+    accounts-daemon.enable = true;
+
     # XRDP for Windows Remote Desktop Protocol access
     xrdp = {
       enable = true;
@@ -71,10 +84,9 @@
         variant = "";
       };
 
-      # GDM display manager with X11 (required for RustDesk headless support)
+      # LightDM display manager with X11 (better for XFCE)
       displayManager = {
-        gdm.enable = true;
-        gdm.wayland = false;
+        lightdm.enable = true;
       };
 
       # XFCE desktop environment

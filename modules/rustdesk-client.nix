@@ -66,9 +66,11 @@
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
+      User = "root";
       Environment = [
-        "DISPLAY=:1"
-        "XAUTHORITY=/run/user/1000/gdm/Xauthority"
+        "DISPLAY=:0"
+        "HOME=/root"
+        "XAUTHORITY=/run/lightdm/root/:0"
       ];
     };
     script = ''
@@ -102,7 +104,7 @@
     '';
   };
 
-  # RustDesk system service for headless operation
+  # RustDesk system service for headless operation (runs as root for emergency console access)
   # Runs the main RustDesk process after configuration
   # Based on official documentation - no special flags needed
   systemd.services.rustdesk = {
@@ -119,16 +121,16 @@
     ];
     serviceConfig = {
       Type = "simple";
-      User = "jamesbrink";
-      Group = "users";
-      WorkingDirectory = "/home/jamesbrink";
+      User = "root";
+      Group = "root";
+      WorkingDirectory = "/root";
       Environment = [
-        "HOME=/home/jamesbrink"
-        "DISPLAY=:1"
-        "XAUTHORITY=/run/user/1000/gdm/Xauthority"
+        "HOME=/root"
+        "DISPLAY=:0"
+        "XAUTHORITY=/run/lightdm/root/:0"
       ];
-      # Run RustDesk normally - configuration is done by rustdesk-setup service
-      ExecStart = "${inputs.nixos-unstable.legacyPackages.${pkgs.system}.rustdesk}/bin/rustdesk";
+      # Run RustDesk in service mode without GUI window
+      ExecStart = "${inputs.nixos-unstable.legacyPackages.${pkgs.system}.rustdesk}/bin/rustdesk --server";
       Restart = "always";
       RestartSec = 10;
       # Give it time to start properly
@@ -141,8 +143,8 @@
     RUSTDESK_DISPLAY_BACKEND = "x11";
   };
 
-  # Create rustdesk data directory for jamesbrink user
+  # Create rustdesk data directory for root user (emergency console access)
   systemd.tmpfiles.rules = [
-    "d /home/jamesbrink/.local/share/rustdesk 0755 jamesbrink users - -"
+    "d /root/.local/share/rustdesk 0755 root root - -"
   ];
 }
