@@ -53,6 +53,7 @@ in
     ../../modules/ssh-keys.nix
     ../../modules/nfs-mounts.nix
     ../../modules/local-hosts.nix
+    ../../users/root.nix
   ];
 
   # Hyprland desktop environment

@@ -26,6 +26,9 @@
         "flakes"
       ];
       auto-optimise-store = true;
+      # Limit build parallelism for N100's 4-core CPU to prevent kernel hangs
+      max-jobs = 2; # Maximum parallel builds
+      cores = 2; # CPU cores per build job
     };
     gc = {
       automatic = true;
@@ -59,7 +62,16 @@
 
     # Pin to LTS kernel for ZFS stability (6.6 is LTS until Dec 2026)
     kernelPackages = pkgs.linuxPackages_6_6;
-    kernel.sysctl."kernel.dmesg_restrict" = 0;
+
+    # Kernel parameters for stability and auto-recovery
+    kernel.sysctl = {
+      "kernel.dmesg_restrict" = 0;
+      "kernel.panic" = 30; # Auto-reboot 30 seconds after kernel panic
+      "kernel.panic_on_oops" = 1; # Treat oops as panic to trigger reboot
+    };
+
+    # Load iTCO watchdog module
+    kernelModules = [ "iTCO_wdt" ];
   };
 
   # ZFS services
@@ -82,6 +94,19 @@
     AllowHybridSleep=no
     AllowSuspendThenHibernate=no
   '';
+
+  # Enable hardware watchdog for automatic recovery from hangs
+  systemd.watchdog = {
+    runtimeTime = "60s"; # Ping watchdog every 60 seconds
+    rebootTime = "2min"; # Force reboot if no ping for 2 minutes
+  };
+
+  # Enable systemd-oomd for memory pressure handling
+  systemd.oomd = {
+    enable = true;
+    enableRootSlice = true;
+    enableUserSlices = true;
+  };
 
   # Power management for Intel N100
   powerManagement = {

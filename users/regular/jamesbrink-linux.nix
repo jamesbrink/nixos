@@ -37,6 +37,7 @@ in
     uid = 1000;
     description = "James Brink";
     createHome = true;
+    hashedPasswordFile = config.age.secrets."jamesbrink-hashed-password".path;
     extraGroups = [
       "docker"
       "incus-admin"
@@ -297,6 +298,13 @@ in
     file = "${effectiveSecretsPath}/global/infracost/api-key.age";
     owner = "jamesbrink";
     group = "users";
+    mode = "0600";
+  };
+
+  age.secrets."jamesbrink-hashed-password" = {
+    file = "${effectiveSecretsPath}/jamesbrink/hashed-password.age";
+    owner = "root";
+    group = "root";
     mode = "0600";
   };
 

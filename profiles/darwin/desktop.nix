@@ -75,6 +75,7 @@
       # Utilities
       "aerial"
       "bartender"
+      "hammerspoon"
       "little-snitch"
       "balenaetcher"
 
