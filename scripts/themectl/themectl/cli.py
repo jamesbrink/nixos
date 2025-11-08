@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import shutil
-import subprocess
 from pathlib import Path
 from typing import Optional
 
@@ -18,6 +16,8 @@ from . import __version__
 from .assets import sync_assets
 from .config import ThemectlConfig, get_home, load_config
 from .state import read_current_theme
+from .hooks import run_reload_hooks
+from .macos import MacOSModeController, ensure_yabai_sa
 from .themes import Theme, ThemeRepository, load_theme_metadata
 
 console = Console()
@@ -84,30 +84,6 @@ def _cycle_theme(cfg: ThemectlConfig, repo: ThemeRepository, direction: str) -> 
     else:
         idx = (idx + 1) % len(order)
     return repo.get(order[idx])
-
-
-def _ensure_yabai_sa() -> bool:
-    yabai = shutil.which("yabai")
-    if not yabai:
-        console.print("[yellow]yabai not found; skipping SA check[/yellow]")
-        return True
-    sudo = shutil.which("sudo") or "/usr/bin/sudo"
-    result = subprocess.run(
-        [sudo, yabai, "--load-sa"],
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode == 0:
-        console.print("[green]✓[/green] Ensured yabai scripting addition is loaded")
-        return True
-    console.print(
-        Panel(
-            f"Unable to load yabai scripting addition:\n{result.stderr.strip()}",
-            title="yabai",
-            border_style="red",
-        )
-    )
-    return False
 
 
 @app.callback()
@@ -185,6 +161,7 @@ def apply(
         console.print(f"[red]Theme '{theme}' not found in {cfg.metadata_path}[/red]")
         raise Exit(1)
     _apply_theme(match, cfg)
+    run_reload_hooks(match, cfg, console)
     console.print(
         Panel(
             f"[cyan]Applied[/cyan] {match.display_name} on {cfg.platform}",
@@ -208,6 +185,7 @@ def cycle(
         console.print("[yellow]No themes available to cycle[/yellow]")
         raise Exit(1)
     _apply_theme(target, cfg)
+    run_reload_hooks(target, cfg, console)
     console.print(
         Panel(
             f"[cyan]Cycled[/cyan] to {target.display_name} ({direction})",
@@ -243,16 +221,18 @@ def macos_mode(
     mode: str = typer.Argument(..., help="bsp or native"),
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ) -> None:
-    """Toggle macOS BSP/native mode (placeholder)."""
+    """Toggle macOS BSP/native mode."""
 
     cfg = _load(config)
-    console.print(
-        Panel(
-            f"[cyan]macos-mode[/cyan] {mode} on {cfg.platform}\n"
-            "Hammerspoon currently owns the actual toggle.",
-            title="themectl",
-        )
-    )
+    if cfg.platform != "darwin":
+        console.print("[red]macos-mode is only available on macOS[/red]")
+        raise Exit(1)
+    controller = MacOSModeController(console=console)
+    try:
+        controller.switch(mode)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise Exit(1)
 
 
 @app.command()
@@ -271,7 +251,7 @@ def doctor(
         console.print("[red]No themes available; run sync-assets after fixing metadata[/red]")
         ok = False
     if cfg.platform == "darwin":
-        ok = _ensure_yabai_sa() and ok
+        ok = ensure_yabai_sa(console) and ok
     if ok:
         console.print(Panel("All checks passed", title="themectl", border_style="green"))
     else:

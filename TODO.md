@@ -2,7 +2,7 @@
 
 This document tracks the current macOS/Hyprland parity effort. Check off items as they are completed and capture new cleanup work as it appears.
 
-## Theme Automation Rewrite (Planned)
+## Theme Automation Rewrite (In Progress)
 
 - [x] **Design Python CLI architecture** – sketch `scripts/themectl/` layout with subcommands (`apply`, `sync-assets`, `status`, `macos-space-mode`) and define how it imports Omarchy themes + Nix-provided metadata.
 - [x] **Add Python dev tooling to flake** – include Ruff (lint/format), BasedPyright (fast Rust Pyright), and Markdownlint; wire them into `devShells` + `treefmt`.
@@ -26,7 +26,7 @@ This document tracks the current macOS/Hyprland parity effort. Check off items a
 ## Active / Upcoming
 
 - [ ] **Walker launcher parity** – confirm the macOS launcher UX (fzf + Raycast fallback) matches the Linux walker configuration and document any gaps.
-- [ ] **Finder appearance sync** – Finder still ignores light/dark flips triggered by `cycle-theme`; inspect defaults domains or add a launchagent shim.
+- [ ] **Finder appearance sync** – Finder still ignores light/dark flips triggered by `themectl cycle`; inspect defaults domains or add a launchagent shim.
 - [ ] **Karabiner/AltTab configs** – both apps are installed but unconfigured; capture desired mappings (Hyper key, window previews) and produce managed config files.
 - [ ] **Document theme sync workflow** – add README/docs notes on using `external/omarchy` + `generate-themes.sh` so future updates stay reproducible.
 - [ ] **VSCode/Cursor live reload** – AppleScript automation still feels flaky; capture a more reliable trigger (or upstream issue) so theme switching is 100% hands-off.
@@ -42,6 +42,9 @@ This document tracks the current macOS/Hyprland parity effort. Check off items a
 - [x] **Wallpaper cleanup** – removed duplicated images under `modules/home-manager/hyprland/wallpapers` and now reference the Omarchy assets (with optional local overrides).
 - [x] **Runtime theme tooling** – refreshed `generate-themes.sh` to derive paths from the repo root, ensure the submodule exists, and link backgrounds from `external/omarchy`.
 - [x] **Neovim/Ghostty parity** – added `nvr`-powered live reloads plus Ghostty theme-name fixes/custom theme files (matte-black + osaka-jade), then wired `ghostty +reload-config` so macOS mirrors Hyprland immediately.
+- [x] **macOS mode automation** – `themectl macos-mode` now flips BSP/native by driving launchctl, Dock/Finder defaults, yabai SA, and Ghostty chrome, with the Hammerspoon hotkey shelling out to the CLI.
+- [x] **Editor/terminal reload hooks** – `themectl apply/cycle` rewrites VSCode/Cursor settings, runs the AppleScript reloaders, updates Neovim via `nvr`, rewrites `~/.tmux.conf.local`, and forces `ghostty +reload-config`.
+- [x] **Package + module integration** – flake builds the Python CLI, `programs.themectl` installs it + config/state, and Darwin/Hyprland modules now depend on the packaged tool.
 
 ## Notes
 

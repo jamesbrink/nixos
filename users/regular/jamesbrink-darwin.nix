@@ -41,6 +41,10 @@ in
   home-manager.users.jamesbrink =
     { pkgs, ... }:
     {
+      _module.args = {
+        inputs = inputs;
+      };
+
       imports = [
         ../../modules/home-manager/darwin/unified-themes.nix
         ../../modules/home-manager/darwin/hammerspoon.nix

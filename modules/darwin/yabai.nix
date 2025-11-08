@@ -316,7 +316,7 @@ in
       cmd + shift - y : open -na "Google Chrome" --args --new-window https://youtube.com
 
       # Theme cycling (cmd + shift + t)
-      cmd + shift - t : /Users/jamesbrink/.local/bin/cycle-theme
+      cmd + shift - t : /usr/bin/env themectl cycle
 
       # System monitor (cmd + alt + t)
       cmd + alt - t : ${alacrittyCwdLauncher}/bin/alacritty-cwd-launch -e btop

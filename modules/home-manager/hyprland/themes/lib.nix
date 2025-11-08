@@ -102,16 +102,75 @@ let
       ) themeFiles
     )
   );
-  slugify = name: builtins.replaceStrings [ " " "_" "/" ] [ "-" "-" "-" ] (builtins.toLower name);
+  lowercase =
+    str:
+    builtins.replaceStrings
+      [
+        "A"
+        "B"
+        "C"
+        "D"
+        "E"
+        "F"
+        "G"
+        "H"
+        "I"
+        "J"
+        "K"
+        "L"
+        "M"
+        "N"
+        "O"
+        "P"
+        "Q"
+        "R"
+        "S"
+        "T"
+        "U"
+        "V"
+        "W"
+        "X"
+        "Y"
+        "Z"
+      ]
+      [
+        "a"
+        "b"
+        "c"
+        "d"
+        "e"
+        "f"
+        "g"
+        "h"
+        "i"
+        "j"
+        "k"
+        "l"
+        "m"
+        "n"
+        "o"
+        "p"
+        "q"
+        "r"
+        "s"
+        "t"
+        "u"
+        "v"
+        "w"
+        "x"
+        "y"
+        "z"
+      ]
+      str;
+
+  slugify = name: builtins.replaceStrings [ " " "_" "/" ] [ "-" "-" "-" ] (lowercase name);
 
   themeDefs = map (themeFile: import themeFile) themeFiles;
 
   buildMetadata =
     theme:
     let
-      slug = builtins.toLower (
-        if theme ? slug && theme.slug != "" then theme.slug else slugify theme.name
-      );
+      slug = lowercase (if theme ? slug && theme.slug != "" then theme.slug else slugify theme.name);
       wallpapers = map (wallpaper: getWallpaperSource theme.name wallpaper) (theme.wallpapers or [ ]);
     in
     {

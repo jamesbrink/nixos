@@ -4,23 +4,24 @@
 
 ## Integration
 
-- **Metadata** – The flake now publishes `packages.<system>.themectl-theme-data`, a JSON document built from `modules/home-manager/hyprland/themes/lib.nix`. Home Manager installs it at `~/.config/themectl/themes.json`, and `themectl` reads from there by default.
-- **Config** – `~/.config/themectl/config.toml` (managed via Home Manager) sets the platform (`darwin` or `linux`), metadata path, state file, and optional cycle order. Override the location at runtime with `--config` if needed.
+- **Metadata** – The flake now publishes `packages.<system>.themectl-theme-data`, a JSON document built from `modules/home-manager/hyprland/themes/lib.nix`. The `programs.themectl` Home Manager module installs it at `~/.config/themectl/themes.json`.
+- **Config** – The same module provisions `~/.config/themectl/config.toml`, the mutable `.current-theme` file, and ensures the Python CLI is on `$PATH`. Override the location at runtime with `--config` if needed.
 - **Assets** – `themectl sync-assets` renders Hyprland/Waybar/Alacritty/Kitty/Ghostty/Mako/SwayOSD/Hyprlock/VSCodium assets and mirrors wallpapers into `~/.config/omarchy/themes/<slug>/`. `themectl apply <theme>` updates `~/.config/omarchy/current/{theme,background}` symlinks and the `.current-theme` tracker.
-- **macOS watchdog** – `themectl doctor` ensures the yabai scripting addition is loaded (`sudo yabai --load-sa`) so Cmd+number space switching stays reliable after reboots.
+- **Runtime automation** – `themectl apply`/`cycle` now rewrite VSCode + Cursor settings, poke the AppleScript reloaders, refresh Neovim via `nvr`, rewrite `~/.tmux.conf.local`, and call `ghostty +reload-config` for instant visual parity.
+- **macOS watchdog** – `themectl doctor` ensures the yabai scripting addition is loaded (`sudo yabai --load-sa`) so Cmd+number space switching stays reliable after reboots. `themectl macos-mode` controls BSP/native toggles (launchctl, Dock/Finder defaults, Ghostty chrome) and replaces the bespoke Hammerspoon glue.
 
 Home Manager modules (`modules/home-manager/hyprland/default.nix` and `modules/home-manager/darwin/unified-themes.nix`) now drop the metadata file into `~/.config/themectl/` so the CLI works out of the box on every host.
 
 ## Commands
 
-| Command                           | Purpose                                                                            |
-| --------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `themectl status`                 | Show current platform, metadata path, and available themes (Rich table).           |
-| `themectl sync-assets`            | Generate per-theme configs and wallpapers under `~/.config/omarchy/themes`.        |
-| `themectl apply <theme>`          | Point `~/.config/omarchy/current/{theme,background}` to the chosen theme.          |
-| `themectl cycle [--direction next | prev]`                                                                             | Cycle through the configured order or the full theme list. |
-| `themectl doctor`                 | Run sanity checks (metadata present, yabai SA loaded on macOS).                    |
-| `themectl macos-mode`             | Placeholder for the future BSP/native toggle (still handled by Hammerspoon today). |
+| Command                           | Purpose                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `themectl status`                 | Show current platform, metadata path, and available themes (Rich table).                    |
+| `themectl sync-assets`            | Generate per-theme configs and wallpapers under `~/.config/omarchy/themes`.                 |
+| `themectl apply <theme>`          | Update the runtime symlinks **and** trigger VSCode/Cursor/Neovim/tmux/Ghostty reload hooks. |
+| `themectl cycle [--direction next | prev]`                                                                                      | Iterate through the configured order (or all themes) with the same reload hooks as `apply`. |
+| `themectl doctor`                 | Run sanity checks (metadata present, yabai SA loaded on macOS).                             |
+| `themectl macos-mode <bsp         | macos                                                                                       | toggle>`                                                                                    | Control BSP/native mode by touching launchctl, Dock/Finder defaults, yabai SA, and Ghostty chrome. |
 
 `THEMECTL_HOME` overrides the home directory used for config/state, which keeps the CLI test-friendly.
 
@@ -42,6 +43,6 @@ Future work will add mocks for AppleScript/`nvr` so automation hooks can be vali
 
 ## Roadmap
 
-- Wire `macos-mode` into launchctl/Hammerspoon for full BSP/native control.
-- Add Linux-side hooks (`hyprctl`, `swww`) plus Neovim/VSCode/Ghostty live reloads.
-- Ship a `themectl` Python package (via `buildPythonApplication`) and a Home Manager module to expose the CLI consistently across hosts.
+- Add Linux-side hooks (`hyprctl`, `swww`, wallpaper helpers) plus integration tests for the new reload pipeline.
+- Harden the AppleScript automation (better failure reporting, retries when Accessibility permissions are missing).
+- Fold the remaining Hyprland launcher helpers into pure `themectl` subcommands once CLI coverage is vetted.

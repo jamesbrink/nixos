@@ -63,6 +63,15 @@ let
       null;
 in
 {
+  imports = [
+    ../themectl.nix
+  ];
+
+  programs.themectl = {
+    enable = true;
+    platform = "linux";
+  };
+
   # Hyprland window manager
   wayland.windowManager.hyprland = {
     enable = true;
@@ -703,10 +712,6 @@ in
   '';
 
   # Custom scripts
-  home.file.".config/themectl/themes.json" = {
-    source = inputs.self.packages.${pkgs.stdenv.system}.themectl-theme-data;
-  };
-
   home.file.".local/bin/spawn-terminal-here" = {
     text = ''
       #!/usr/bin/env bash

@@ -183,6 +183,7 @@ def test_apply_known_theme(tmp_path: Path, monkeypatch) -> None:
     state = home / ".config" / "themes" / ".current-theme"
     cfg = _write_config(home, metadata, state)
 
+    monkeypatch.setattr("themectl.cli.run_reload_hooks", lambda *args, **kwargs: None)
     sync_result = runner.invoke(app, ["sync-assets", "--config", str(cfg)])
     assert sync_result.exit_code == 0
 

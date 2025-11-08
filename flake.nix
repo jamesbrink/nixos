@@ -569,10 +569,32 @@
             inherit system;
             config.allowUnfree = true;
           };
+          python = pkgs.python311Packages;
           themeLib = import ./modules/home-manager/hyprland/themes/lib.nix { };
           themeData = pkgs.writeText "themectl-themes.json" themeLib.themeMetadataJSON;
+          themectlPkg = python.buildPythonApplication {
+            pname = "themectl";
+            version = "0.1.0";
+            format = "pyproject";
+            src = ./scripts/themectl;
+            nativeBuildInputs = [ python."flit-core" ];
+            propagatedBuildInputs = [
+              python.typer
+              python.rich
+              python."tomli-w"
+            ];
+            nativeCheckInputs = [
+              python.pytest
+              python."pytest-mock"
+            ];
+            pythonImportsCheck = [ "themectl" ];
+            checkPhase = ''
+              pytest
+            '';
+          };
         in
         {
+          themectl = themectlPkg;
           themectl-theme-data = themeData;
         }
       );
