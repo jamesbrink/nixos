@@ -175,6 +175,50 @@ On Apple Silicon Macs, you may need boot arguments instead of fully disabling SI
 
 **Note**: This approach maintains some SIP protections while allowing the yabai scripting addition.
 
+### Sudoers Configuration (Fully Nix-Managed & Reproducible)
+
+The scripting addition requires `sudo` to load, but this configuration is **100% automated and reproducible via Nix**:
+
+**What it does:**
+
+- Creates `/etc/sudoers.d/010-yabai-sa` allowing passwordless `yabai --load-sa`
+- Applies to all users in the `%admin` group
+- No manual configuration needed
+
+**Nix Configuration** (`modules/darwin/yabai.nix:276-278`):
+
+```nix
+environment.etc."sudoers.d/010-yabai-sa".text = ''
+  %admin ALL=(root) NOPASSWD: /opt/homebrew/bin/yabai --load-sa
+'';
+```
+
+**Verification:**
+
+```bash
+# Check the sudoers file is Nix-managed (should be a symlink to /nix/store)
+ls -la /etc/sudoers.d/010-yabai-sa
+
+# Verify the symlink chain (fully managed by Nix)
+# /etc/sudoers.d/010-yabai-sa → /etc/static/sudoers.d/010-yabai-sa → /nix/store/...
+
+# View content
+cat /etc/sudoers.d/010-yabai-sa
+
+# Test passwordless sudo
+sudo yabai --load-sa  # Should work without password prompt
+
+# Check sudo permissions
+sudo -l | grep yabai
+```
+
+**Reproducibility:**
+
+- ✅ The sudoers file is managed by nix-darwin via `environment.etc`
+- ✅ It's a Nix store symlink, recreated on every deployment
+- ✅ No manual configuration needed across different machines
+- ✅ Works identically on all Darwin hosts in this configuration
+
 ### After Disabling SIP:
 
 Window borders and active opacity will work. The configuration already includes:

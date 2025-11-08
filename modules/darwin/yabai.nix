@@ -4,9 +4,18 @@
 # IMPORTANT: Scripting Addition Requirements
 # -----------------------------------------
 # The yabai scripting addition (SA) is required for space focus commands (cmd+1,2,3...).
+#
+# Automatic SA Loading (fully managed by Nix):
 # This configuration automatically loads the SA when:
-#   1. Toggling to BSP mode via Hammerspoon (cmd+shift+space)
-#   2. Manually restarting yabai (cmd+ctrl+r)
+#   1. Yabai service starts (via extraConfig line 73)
+#   2. Toggling to BSP mode via Hammerspoon (cmd+shift+space)
+#   3. Manually restarting yabai (cmd+ctrl+r)
+#
+# Sudoers Configuration (Nix-managed, fully reproducible):
+#   A sudoers file is created at /etc/sudoers.d/010-yabai-sa by nix-darwin
+#   This allows passwordless execution of: sudo yabai --load-sa
+#   Configuration: environment.etc."sudoers.d/010-yabai-sa" (see lines 276-278)
+#   Scope: All users in %admin group can load SA without password
 #
 # Boot Arguments (required for SA on Apple Silicon):
 #   The scripting addition requires boot args to disable certain protections.
@@ -15,6 +24,11 @@
 #   Required args may include: amfi_get_out_of_my_way=1 (or similar)
 #
 #   CAUTION: Modifying boot args reduces system security. Only use if needed.
+#
+# Verification:
+#   Check sudoers file: cat /etc/sudoers.d/010-yabai-sa
+#   Check sudo permissions: sudo -l | grep yabai
+#   Test SA loading: sudo yabai --load-sa (should work without password)
 #
 # Manual SA Loading:
 #   If automatic loading fails, run: sudo yabai --load-sa
