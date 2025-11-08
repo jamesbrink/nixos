@@ -170,34 +170,37 @@ let
           fi
         fi
 
-        # Toggle macOS appearance based on theme
+        # Toggle macOS appearance based on theme (macOS Tahoe 26 compatible)
         if [[ "$NEXT_THEME" =~ (latte|light) ]]; then
           # Set to light mode
           osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to false'
           defaults delete NSGlobalDomain AppleInterfaceStyle 2>/dev/null || true
+          # Set icon appearance for light mode (macOS Tahoe 26)
+          defaults write NSGlobalDomain AppleIconAppearanceTheme -string "RegularLight"
         else
           # Set to dark mode
           osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to true'
           defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"
+          # Set icon appearance for dark mode (macOS Tahoe 26)
+          defaults write NSGlobalDomain AppleIconAppearanceTheme -string "RegularDark"
         fi
 
-        # Restart Dock and SystemUIServer to apply changes immediately
+        # Restart Dock, SystemUIServer, and ControlCenter to apply changes immediately
         killall Dock 2>/dev/null || true
         killall SystemUIServer 2>/dev/null || true
+        killall ControlCenter 2>/dev/null || true
 
-        # Update VSCode/Cursor theme (use sed to handle JSONC with comments)
+        # Update VSCode/Cursor theme (strip comments, use jq like Hyprland)
         if [[ -f "$VSCODE_THEME_MAP" ]]; then
           VSCODE_THEME=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"]" "$VSCODE_THEME_MAP")
           if [[ -n "$VSCODE_THEME" && "$VSCODE_THEME" != "null" ]]; then
             for SETTINGS_FILE in "$HOME/Library/Application Support/Code/User/settings.json" "$HOME/Library/Application Support/Cursor/User/settings.json"; do
               if [[ -f "$SETTINGS_FILE" ]]; then
-                # Use sed to update theme, preserving comments and JSONC format
-                if grep -q "workbench.colorTheme" "$SETTINGS_FILE"; then
-                  sed -i.bak "s|\"workbench.colorTheme\": *\"[^\"]*\"|\"workbench.colorTheme\": \"$VSCODE_THEME\"|" "$SETTINGS_FILE"
-                else
-                  # Add theme setting before the last closing brace
-                  sed -i.bak "$ s/}/    \"workbench.colorTheme\": \"$VSCODE_THEME\"\n}/" "$SETTINGS_FILE"
-                fi
+                # Strip line comments and use jq (like Hyprland does)
+                grep -v '^\s*//' "$SETTINGS_FILE" > "$SETTINGS_FILE.nocomments"
+                ${pkgs.jq}/bin/jq --arg theme "$VSCODE_THEME" '.["workbench.colorTheme"] = $theme' "$SETTINGS_FILE.nocomments" > "$SETTINGS_FILE.new"
+                mv "$SETTINGS_FILE.new" "$SETTINGS_FILE"
+                rm -f "$SETTINGS_FILE.nocomments"
               fi
             done
           fi
