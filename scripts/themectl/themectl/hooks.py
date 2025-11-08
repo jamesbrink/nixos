@@ -256,6 +256,56 @@ def _update_tmux_config(theme: Theme, console: Console) -> None:
     console.print("[green]✓[/green] Reloaded tmux theme")
 
 
+def _find_binary(name: str, extra_paths: Iterable[Path]) -> str | None:
+    binary = shutil.which(name)
+    if binary:
+        return binary
+    for candidate in extra_paths:
+        if candidate.exists():
+            return str(candidate)
+    return None
+
+
+def reload_alacritty(console: Console) -> None:
+    binary = _find_binary(
+        "alacritty",
+        [
+            Path("/run/current-system/sw/bin/alacritty"),
+            Path("/nix/var/nix/profiles/default/bin/alacritty"),
+            Path("/Applications/Alacritty.app/Contents/MacOS/alacritty"),
+        ],
+    )
+    if not binary:
+        console.print("[cyan]-[/cyan] Alacritty not found; skipping reload")
+        return
+    result = subprocess.run(
+        [binary, "msg", "config", "reload"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        console.print("[green]✓[/green] Reloaded Alacritty config")
+        return
+    signaler = shutil.which("pkill") or shutil.which("killall")
+    if not signaler:
+        console.print(
+            Panel(
+                "Unable to reload Alacritty config: message API failed and pkill/killall not available.",
+                title="Alacritty reload",
+                border_style="yellow",
+            )
+        )
+        return
+    names = ["alacritty", "Alacritty"]
+    for name in names:
+        subprocess.run(
+            [signaler, "-USR1", name],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    console.print("[yellow]![/yellow] Sent SIGUSR1 to Alacritty (msg reload failed)")
+
+
 def _discover_hypr_signature() -> str | None:
     signature = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
     if signature:
@@ -402,6 +452,7 @@ def run_reload_hooks(theme: Theme, cfg: ThemectlConfig, console: Console) -> Non
         ("Cursor", lambda: _refresh_cursor(theme, cfg, console)),
         ("Neovim", lambda: _refresh_neovim(theme, cfg, console)),
         ("tmux", lambda: _update_tmux_config(theme, console)),
+        ("Alacritty", lambda: reload_alacritty(console)),
         ("Hyprland", lambda: reload_hyprland(console)),
         ("Wallpaper", lambda: update_wallpaper(console)),
         ("Ghostty", lambda: reload_ghostty(console)),

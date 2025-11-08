@@ -39,6 +39,7 @@ This document tracks the current macOS/Hyprland parity effort. Check off items a
 ## Recently Completed
 
 - [x] **Hyprland reload hooks** – `themectl apply/cycle` now shell into `hyprctl reload` and `swww img ~/.config/omarchy/current/background` so Linux hosts pick up theme changes immediately without manual wallpaper refreshes.
+- [x] **Alacritty live reload** – `themectl` issues `alacritty msg config reload` (or SIGUSR1 fallback) so existing terminals update colors in-place on Linux/macos hosts.
 - [x] **macOS screenshots** – mapped Cmd+Shift+3/4/5 (and clipboard variants) to `macos-screenshot` so captures land in `~/Pictures/Screenshots` or the clipboard under versioned control.
 - [x] **Walker asset verification** – `themectl doctor` now validates Linux walker.css assets and the runtime theme symlink so Walker picks up synced themes without manual fixes.
 - [x] **Hotkey manifest exporters** – `config/hotkeys.yaml` feeds SKHD/Hammerspoon/Hyprland bindings plus the new `themectl hotkeys` command, so theme/picker chords stay in sync across platforms.
