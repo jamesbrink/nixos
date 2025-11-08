@@ -3,17 +3,14 @@
   config,
   lib,
   pkgs,
+  hotkeysBundle ? null,
   ...
 }:
 
 let
-  inherit (lib) attrByPath;
-  hotkeysBundle = attrByPath [ "_module" "args" "hotkeysBundle" ] null config;
-  hotkeysData =
-    if hotkeysBundle == null then
-      throw "hotkeysBundle not provided to darwin/hammerspoon module"
-    else
-      hotkeysBundle.data;
+  resolvedHotkeys =
+    if hotkeysBundle != null then hotkeysBundle else import ../../../lib/hotkeys.nix { inherit pkgs; };
+  hotkeysData = resolvedHotkeys.data;
   darwinPlatform = hotkeysData.platforms.darwin;
   darwinMode = darwinPlatform.default_mode or "bsp";
   expandBindings =

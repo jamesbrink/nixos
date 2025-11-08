@@ -37,17 +37,14 @@
   config,
   pkgs,
   lib,
+  hotkeysBundle ? null,
   ...
 }:
 
 let
-  inherit (lib) attrByPath;
-  hotkeysBundle = attrByPath [ "_module" "args" "hotkeysBundle" ] null config;
-  hotkeysData =
-    if hotkeysBundle == null then
-      throw "hotkeysBundle not provided to modules/darwin/yabai.nix"
-    else
-      hotkeysBundle.data;
+  resolvedHotkeys =
+    if hotkeysBundle != null then hotkeysBundle else import ../../lib/hotkeys.nix { inherit pkgs; };
+  hotkeysData = resolvedHotkeys.data;
   # Hotkey helper: spawns Alacritty windows using the current workspace's terminal cwd
   alacrittyCwdLauncher = pkgs.writeShellApplication {
     name = "alacritty-cwd-launch";
