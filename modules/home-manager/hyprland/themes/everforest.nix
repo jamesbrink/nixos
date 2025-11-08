@@ -81,7 +81,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "Everforest Dark Hard";
+    theme = "Everforest Dark - Hard";
   };
 
   # VSCode theme name

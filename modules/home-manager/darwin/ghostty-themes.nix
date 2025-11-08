@@ -14,20 +14,6 @@ let
 
   wallpaperSource = hyprThemes.getWallpaperSource;
 
-  # Generate Ghostty theme config mapping
-  themeMapping = builtins.listToAttrs (
-    map (
-      themeFile:
-      let
-        themeDef = import themeFile;
-      in
-      {
-        name = themeDef.name;
-        value = themeDef.ghostty.theme;
-      }
-    ) themeFiles
-  );
-
   # Theme cycle script
   cycleScript = pkgs.writeScriptBin "ghostty-cycle-theme" ''
     #!/usr/bin/env bash
@@ -37,21 +23,36 @@ let
     CURRENT_THEME_FILE="$HOME/.config/ghostty/.current-theme"
     WALLPAPERS_DIR="$HOME/.config/ghostty/wallpapers"
     VSCODE_THEME_MAP="$HOME/.config/ghostty/vscode-themes.json"
+    mkdir -p "$HOME/.config/ghostty/themes"
+
+    reload_ghostty_config() {
+      local ghostty_bin=""
+
+      if command -v ghostty >/dev/null 2>&1; then
+        ghostty_bin="$(command -v ghostty)"
+      elif [[ -x "/Applications/Ghostty.app/Contents/MacOS/ghostty" ]]; then
+        ghostty_bin="/Applications/Ghostty.app/Contents/MacOS/ghostty"
+      fi
+
+      [[ -z "$ghostty_bin" ]] && return
+      pgrep -x Ghostty >/dev/null 2>&1 || return
+      "$ghostty_bin" +reload-config >/dev/null 2>&1 || true
+    }
 
     # Theme name to Ghostty built-in theme mapping
     declare -A THEME_MAP=(
       ["catppuccin-latte"]="catppuccin-latte"
       ["catppuccin"]="catppuccin-mocha"
-      ["everforest"]="Everforest Dark"
-      ["flexoki-light"]="Flexoki Light"
+      ["everforest"]="Everforest Dark - Hard"
+      ["flexoki-light"]="flexoki-light"
       ["gruvbox"]="GruvboxDark"
-      ["kanagawa"]="Kanagawa"
-      ["matte-black"]="Darcula"
+      ["kanagawa"]="Kanagawa Wave"
+      ["matte-black"]="matte-black"
       ["nord"]="nord"
-      ["osaka-jade"]="Material"
+      ["osaka-jade"]="osaka-jade"
       ["ristretto"]="Monokai Pro Ristretto"
-      ["rose-pine"]="Rosé Pine"
-      ["tokyo-night"]="Tokyo Night"
+      ["rose-pine"]="rose-pine"
+      ["tokyo-night"]="tokyonight_night"
     )
 
     # Get list of themes (sorted keys)
@@ -100,6 +101,7 @@ let
 
       # Reload Ghostty config (Ghostty auto-reloads on config change)
       touch "$CONFIG_FILE"
+      reload_ghostty_config
 
       # Set wallpaper if theme has one
       if [[ -d "$WALLPAPERS_DIR/$NEXT_THEME" ]]; then
@@ -184,5 +186,6 @@ in
           [ ]
       ) themeFiles
     )
-  );
+  )
+  // hyprThemes.ghosttyCustomThemes;
 }

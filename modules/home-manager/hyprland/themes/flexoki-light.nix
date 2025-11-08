@@ -80,7 +80,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "Flexoki Light";
+    theme = "flexoki-light";
   };
 
   # VSCode theme name

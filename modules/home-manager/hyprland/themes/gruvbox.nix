@@ -88,7 +88,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "Gruvbox Dark";
+    theme = "GruvboxDark";
   };
 
   # VSCode theme name

@@ -35,7 +35,82 @@ let
     ./rose-pine.nix
     ./tokyo-night.nix
   ];
+
+  ghosttyConfigText =
+    ghosttyDef:
+    let
+      scalarFields = [
+        "background"
+        "foreground"
+        "cursor-color"
+        "cursor-text"
+        "selection-background"
+        "selection-foreground"
+      ];
+      renderField = field: if ghosttyDef ? ${field} then "${field} = ${ghosttyDef.${field}}\n" else "";
+      paletteLines =
+        if ghosttyDef ? palette then
+          builtins.concatStringsSep "" (map (entry: "palette = ${entry}\n") ghosttyDef.palette)
+        else
+          "";
+      themeLine = if ghosttyDef ? theme then "theme = ${ghosttyDef.theme}\n" else "";
+    in
+    themeLine + builtins.concatStringsSep "" (map renderField scalarFields) + paletteLines;
+
+  ghosttyThemeName =
+    themeDef:
+    let
+      ghosttyDef = themeDef.ghostty or { };
+      attrCount = builtins.length (builtins.attrNames ghosttyDef);
+    in
+    if ghosttyDef ? theme && attrCount == 1 then ghosttyDef.theme else themeDef.name;
+
+  ghosttyThemeMap = builtins.listToAttrs (
+    map (
+      themeFile:
+      let
+        themeDef = import themeFile;
+      in
+      {
+        name = themeDef.name;
+        value = ghosttyThemeName themeDef;
+      }
+    ) themeFiles
+  );
+
+  ghosttyCustomThemes = builtins.listToAttrs (
+    builtins.concatLists (
+      map (
+        themeFile:
+        let
+          themeDef = import themeFile;
+          ghosttyDef = themeDef.ghostty or { };
+          attrCount = builtins.length (builtins.attrNames ghosttyDef);
+          needsFile = attrCount > 0 && (!(ghosttyDef ? theme && attrCount == 1));
+        in
+        if needsFile then
+          [
+            {
+              name = ".config/ghostty/themes/${themeDef.name}";
+              value = {
+                text = ghosttyConfigText ghosttyDef;
+              };
+            }
+          ]
+        else
+          [ ]
+      ) themeFiles
+    )
+  );
 in
 {
-  inherit themeFiles omarchyThemesDir getWallpaperSource;
+  inherit
+    themeFiles
+    omarchyThemesDir
+    getWallpaperSource
+    ghosttyConfigText
+    ghosttyThemeName
+    ghosttyThemeMap
+    ghosttyCustomThemes
+    ;
 }

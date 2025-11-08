@@ -91,7 +91,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "Catppuccin Mocha";
+    theme = "catppuccin-mocha";
   };
 
   # VSCode theme name

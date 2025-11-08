@@ -92,7 +92,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "TokyoNight";
+    theme = "tokyonight_night";
   };
 
   # VSCode theme name
