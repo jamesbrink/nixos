@@ -7,24 +7,13 @@
 }:
 
 let
-  # Import all Hyprland theme definitions
-  themeFiles = [
-    ../hyprland/themes/catppuccin-latte.nix
-    ../hyprland/themes/catppuccin.nix
-    ../hyprland/themes/everforest.nix
-    ../hyprland/themes/flexoki-light.nix
-    ../hyprland/themes/gruvbox.nix
-    ../hyprland/themes/kanagawa.nix
-    ../hyprland/themes/matte-black.nix
-    ../hyprland/themes/nord.nix
-    ../hyprland/themes/osaka-jade.nix
-    ../hyprland/themes/ristretto.nix
-    ../hyprland/themes/rose-pine.nix
-    ../hyprland/themes/tokyo-night.nix
-  ];
+  hyprThemes = import ../hyprland/themes/lib.nix { };
 
-  # Wallpapers base directory
-  wallpapersBaseDir = ../hyprland/wallpapers;
+  # Import all Hyprland theme definitions
+  themeFiles = hyprThemes.themeFiles;
+
+  # Wallpaper lookup helper (prefers local overrides, falls back to Omarchy submodule)
+  wallpaperSource = hyprThemes.getWallpaperSource;
 
   # Generate Alacritty TOML config for a theme
   themeToToml = themeDef: ''
@@ -195,17 +184,18 @@ let
         killall SystemUIServer 2>/dev/null || true
         killall ControlCenter 2>/dev/null || true
 
-        # Update VSCode/Cursor theme (strip comments, use jq like Hyprland)
+        # Update VSCode/Cursor theme (preserve inode for file watchers)
         if [[ -f "$VSCODE_THEME_MAP" ]]; then
           VSCODE_THEME=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"]" "$VSCODE_THEME_MAP")
           if [[ -n "$VSCODE_THEME" && "$VSCODE_THEME" != "null" ]]; then
             for SETTINGS_FILE in "$HOME/Library/Application Support/Code/User/settings.json" "$HOME/Library/Application Support/Cursor/User/settings.json"; do
               if [[ -f "$SETTINGS_FILE" ]]; then
-                # Strip line comments and use jq (like Hyprland does)
+                # Strip line comments and use jq
+                # IMPORTANT: Use cat to overwrite in-place to preserve inode (VSCode file watcher needs this)
                 grep -v '^\s*//' "$SETTINGS_FILE" > "$SETTINGS_FILE.nocomments"
-                ${pkgs.jq}/bin/jq --arg theme "$VSCODE_THEME" '.["workbench.colorTheme"] = $theme' "$SETTINGS_FILE.nocomments" > "$SETTINGS_FILE.new"
-                mv "$SETTINGS_FILE.new" "$SETTINGS_FILE"
+                ${pkgs.jq}/bin/jq --arg theme "$VSCODE_THEME" '.["workbench.colorTheme"] = $theme' "$SETTINGS_FILE.nocomments" | cat > "$SETTINGS_FILE"
                 rm -f "$SETTINGS_FILE.nocomments"
+                echo "Updated VSCode/Cursor theme to: $VSCODE_THEME"
               fi
             done
           fi
@@ -371,13 +361,12 @@ in
           themeDef = import themeFile;
           themeName = themeDef.name;
           wallpapers = themeDef.wallpapers or [ ];
-          wallpaperDir = "${wallpapersBaseDir}/${themeName}";
         in
         if wallpapers != [ ] then
           map (wallpaper: {
             name = ".config/themes/wallpapers/${themeName}/${wallpaper}";
             value = {
-              source = "${wallpaperDir}/${wallpaper}";
+              source = wallpaperSource themeName wallpaper;
             };
           }) wallpapers
         else

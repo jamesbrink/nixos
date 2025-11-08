@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
 # Generate Omarchy-style theme files from NixOS theme definitions
 
-set -e
+set -euo pipefail
 
-THEMES_SOURCE="/home/jamesbrink/Projects/jamesbrink/nixos/modules/home-manager/hyprland/themes"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+
+THEMES_SOURCE="$REPO_ROOT/modules/home-manager/hyprland/themes"
+OMARCHY_THEMES="$REPO_ROOT/external/omarchy/themes"
 THEMES_DEST="$HOME/.config/omarchy/themes"
+
+if [[ ! -d "$OMARCHY_THEMES" ]]; then
+  echo "Error: Omarchy submodule not found at $OMARCHY_THEMES"
+  echo "Run 'git submodule update --init --recursive' and try again."
+  exit 1
+fi
 
 # Create themes directory
 mkdir -p "$THEMES_DEST"
@@ -209,9 +219,11 @@ EOF
 
   # Add extended colors if defined
   if [[ -n "$kitty_color16" ]]; then
-    echo "" >> "$theme_dir/kitty.conf"
-    echo "# Extended colors" >> "$theme_dir/kitty.conf"
-    echo "color16 $kitty_color16" >> "$theme_dir/kitty.conf"
+    {
+      echo ""
+      echo "# Extended colors"
+      echo "color16 $kitty_color16"
+    } >> "$theme_dir/kitty.conf"
   fi
   if [[ -n "$kitty_color17" ]]; then
     echo "color17 $kitty_color17" >> "$theme_dir/kitty.conf"
@@ -246,15 +258,19 @@ EOF
 
     # Add selection colors if defined
     if [[ -n "$ghostty_sel_bg" ]]; then
-      echo "" >> "$theme_dir/ghostty.conf"
-      echo "selection-background = $ghostty_sel_bg" >> "$theme_dir/ghostty.conf"
-      echo "selection-foreground = $ghostty_sel_fg" >> "$theme_dir/ghostty.conf"
+      {
+        echo ""
+        echo "selection-background = $ghostty_sel_bg"
+        echo "selection-foreground = $ghostty_sel_fg"
+      } >> "$theme_dir/ghostty.conf"
     fi
 
     # Add palette colors
     if [[ -n "$palette_colors" ]]; then
-      echo "" >> "$theme_dir/ghostty.conf"
-      echo "# normal colors" >> "$theme_dir/ghostty.conf"
+      {
+        echo ""
+        echo "# normal colors"
+      } >> "$theme_dir/ghostty.conf"
       echo "$palette_colors" | while read -r palette_entry; do
         echo "palette = $palette_entry" >> "$theme_dir/ghostty.conf"
       done
@@ -402,7 +418,7 @@ EOF
   echo "return \"$nvim_colorscheme\"" > "$theme_dir/neovim.lua"
 
   # Create backgrounds symlink (point to Omarchy's backgrounds if they exist)
-  OMARCHY_BACKGROUNDS="$HOME/Projects/jamesbrink/notsure/omarchy/themes/$theme_name/backgrounds"
+  OMARCHY_BACKGROUNDS="$OMARCHY_THEMES/$theme_name/backgrounds"
   if [[ -d "$OMARCHY_BACKGROUNDS" ]]; then
     ln -nsf "$OMARCHY_BACKGROUNDS" "$theme_dir/backgrounds"
   fi

@@ -7,24 +7,12 @@
 }:
 
 let
-  # Import all Hyprland theme definitions
-  themeFiles = [
-    ../hyprland/themes/catppuccin-latte.nix
-    ../hyprland/themes/catppuccin.nix
-    ../hyprland/themes/everforest.nix
-    ../hyprland/themes/flexoki-light.nix
-    ../hyprland/themes/gruvbox.nix
-    ../hyprland/themes/kanagawa.nix
-    ../hyprland/themes/matte-black.nix
-    ../hyprland/themes/nord.nix
-    ../hyprland/themes/osaka-jade.nix
-    ../hyprland/themes/ristretto.nix
-    ../hyprland/themes/rose-pine.nix
-    ../hyprland/themes/tokyo-night.nix
-  ];
+  hyprThemes = import ../hyprland/themes/lib.nix { };
 
-  # Wallpapers base directory
-  wallpapersBaseDir = ../hyprland/wallpapers;
+  # Import all Hyprland theme definitions
+  themeFiles = hyprThemes.themeFiles;
+
+  wallpaperSource = hyprThemes.getWallpaperSource;
 
   # Generate Ghostty theme config mapping
   themeMapping = builtins.listToAttrs (
@@ -184,13 +172,12 @@ in
           themeDef = import themeFile;
           themeName = themeDef.name;
           wallpapers = themeDef.wallpapers or [ ];
-          wallpaperDir = "${wallpapersBaseDir}/${themeName}";
         in
         if wallpapers != [ ] then
           map (wallpaper: {
             name = ".config/ghostty/wallpapers/${themeName}/${wallpaper}";
             value = {
-              source = "${wallpaperDir}/${wallpaper}";
+              source = wallpaperSource themeName wallpaper;
             };
           }) wallpapers
         else

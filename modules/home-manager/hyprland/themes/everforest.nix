@@ -310,10 +310,7 @@
   };
 
   # Wallpapers
-  # To add wallpapers for this theme:
-  # 1. Create directory: mkdir -p modules/home-manager/hyprland/wallpapers/everforest
-  # 2. Add image files (JPG or PNG) to the directory
-  # 3. List them here: wallpapers = [ "1-my-wallpaper.jpg" "2-another.png" ];
-  # 4. Use Super+Ctrl+Space to rotate through backgrounds
-  wallpapers = [ ];
+  wallpapers = [
+    "1-everforest.jpg"
+  ];
 }

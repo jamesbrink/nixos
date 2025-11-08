@@ -1,3 +1,6 @@
 [submodule "secrets"]
 	path = secrets
 	url = git@github.com:jamesbrink/nix-secrets.git
+[submodule "external/omarchy"]
+	path = external/omarchy
+	url = https://github.com/basecamp/omarchy.git
