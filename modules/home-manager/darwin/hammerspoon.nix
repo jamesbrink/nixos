@@ -26,6 +26,44 @@
       end
     end)
 
+    local function reloadGhostty()
+      hs.osascript.applescript([[
+        tell application "System Events"
+          if exists process "Ghostty" then
+            set frontApp to first application process whose frontmost is true
+            set frontName to name of frontApp
+            tell application "Ghostty" to activate
+            delay 0.05
+            keystroke "," using {command down, shift down}
+            delay 0.05
+            if frontName is not "Ghostty" then
+              tell application frontName to activate
+            end if
+          end if
+        end tell
+      ]])
+    end
+
+    local function setGhosttyMode(mode)
+      local home = os.getenv("HOME")
+      local style = mode == "bsp" and "hidden" or "transparent"
+      local script = string.format([[
+        /bin/bash -lc '
+          CONFIG="%s/.config/ghostty/config"
+          STYLE="%s"
+          if [ -f "$CONFIG" ]; then
+            if grep -q "^macos-titlebar-style" "$CONFIG"; then
+              sed -i "" "s/^macos-titlebar-style = .*/macos-titlebar-style = %s/" "$CONFIG"
+            else
+              printf "\nmacos-titlebar-style = %s\n" >> "$CONFIG"
+            fi
+          fi
+        '
+      ]], home, style, style, style)
+      hs.execute(script)
+      reloadGhostty()
+    end
+
     -- Toggle between BSP tiling and native macOS mode
     -- Bind Cmd+Shift+Space to toggle
     hs.hotkey.bind({"cmd", "shift"}, "space", function()
@@ -52,6 +90,7 @@
         hs.execute("defaults write com.apple.finder CreateDesktop -bool true")
         hs.execute("killall Dock")
         hs.execute("killall Finder")
+        setGhosttyMode("macos")
 
         -- Save state
         local f = io.open(STATE_FILE, "w")
@@ -78,6 +117,7 @@
           hs.timer.doAfter(1, function()
             hs.execute("sudo yabai --load-sa 2>/dev/null || true")
           end)
+          setGhosttyMode("bsp")
 
           -- Save state
           local f = io.open(STATE_FILE, "w")
