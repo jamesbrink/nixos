@@ -73,6 +73,12 @@ in
       default = "tokyo-night";
       description = "Initial theme written to the state file when it is missing.";
     };
+
+    autoSyncAssets = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Whether to run `themectl sync-assets` during activation.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -110,5 +116,16 @@ in
         echo "Initialized theme state at $STATE"
       fi
     '';
+
+    home.activation.themectlAssets = lib.mkIf (cfg.autoSyncAssets && themectlPkg != null) (
+      lib.hm.dag.entryAfter [ "themectlState" ] ''
+        if [[ ! -f "${cfg.metadataPath}" ]]; then
+          echo "Skipping themectl sync-assets; metadata missing at ${cfg.metadataPath}"
+        else
+          echo "Syncing theme assets via themectl..."
+          $DRY_RUN_CMD ${themectlPkg}/bin/themectl sync-assets >/dev/null || true
+        fi
+      ''
+    );
   };
 }
