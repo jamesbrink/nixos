@@ -10,6 +10,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys.
 
 ### Applications
 
+- `Cmd+D` - Application launcher (fzf-based, Rofi/Walker equivalent)
 - `Cmd+Return` - Terminal (Alacritty)
 - `Cmd+Shift+F` - File manager (Finder)
 - `Cmd+Shift+B` - Browser (Chrome), `Cmd+Shift+Alt+B` - Browser incognito
@@ -19,6 +20,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys.
 - `Cmd+Shift+Y` - YouTube
 - `Cmd+Shift+T` - Theme cycling
 - `Cmd+Alt+T` - btop (system monitor)
+- `Cmd+Space` - Alternative launchers (Spotlight/Alfred/Raycast)
 
 ### Window Management
 

@@ -138,9 +138,12 @@ Goal: Match Linux Hyprland look and feel on macOS Darwin as closely as possible.
   - ✓ Workspace indicators
   - ✓ Clock/date
 
-- [ ] **Walker launcher** - Rofi/dmenu equivalent for macOS
-  - Currently using Alfred (GUI)
-  - Consider: Raycast API, custom solution
+- [x] **Walker launcher** - Rofi/dmenu equivalent for macOS
+  - ✓ Custom fzf-based launcher (cmd+d)
+  - ✓ Keyboard-driven, fully scriptable
+  - ✓ Lists all .app bundles from /Applications, ~/Applications, /System/Applications
+  - ✓ Nix-managed via modules/darwin/fzf-launcher.nix
+  - Alternative: Raycast installed for GUI-based launcher (cmd+space)
 
 ### GTK/Qt Theming
 

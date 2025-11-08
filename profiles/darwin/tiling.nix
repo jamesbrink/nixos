@@ -12,6 +12,7 @@
     ../../modules/darwin/yabai.nix
     ../../modules/darwin/sketchybar.nix
     ../../modules/darwin/productivity-apps.nix
+    ../../modules/darwin/fzf-launcher.nix
   ];
 
   # Mission Control settings for yabai compatibility

@@ -11,8 +11,9 @@
   # Install productivity apps via Homebrew
   homebrew.casks = [
     "maccy" # Clipboard manager (cliphist equivalent)
-    "alt-tab" # Windows-style alt-tab with previews
+    "alt-tab" # Windows-style alt-tab with previews (OPTIONAL: only useful in macOS mode; BSP mode has visible tiles + yabai cycling)
     "karabiner-elements" # Advanced keyboard remapping
+    "raycast" # Modern launcher (alternative to Alfred/Spotlight)
   ];
 
   # Maccy configuration

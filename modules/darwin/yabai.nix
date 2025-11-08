@@ -151,8 +151,13 @@
       # System monitor (cmd + alt + t)
       cmd + alt - t : open -na Alacritty --args -e btop
 
-      # Application launcher (cmd + space) - Using macOS Spotlight/Alfred/Raycast
-      # cmd - space : (handled by macOS/Alfred)
+      # Application launcher (cmd + d) - fzf-based launcher (Rofi/Walker equivalent)
+      cmd - d : open -na Alacritty --args -e macos-launcher
+
+      # Alternative launchers available:
+      # cmd + space - macOS Spotlight (default)
+      # cmd + space - Alfred (if configured to override Spotlight)
+      # cmd + space - Raycast (if configured to override Spotlight)
 
       # ====================
       # WINDOW MANAGEMENT
