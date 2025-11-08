@@ -51,4 +51,4 @@ nixos-old/
 
 # Claude settings
 .claude/settings.local.json
-CLAUDE.local.md
+CLAUDE.local.mdtest-bsp-toggle.sh

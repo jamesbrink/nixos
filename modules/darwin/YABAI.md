@@ -64,7 +64,8 @@ All keybindings use `cmd` (⌘) as the modifier (equivalent to Hyprland's `SUPER
 
 ### System
 
-- `cmd + ctrl + r` - Restart yabai
+- `cmd + shift + space` - Toggle between BSP tiling mode and native macOS mode
+- `cmd + ctrl + r` - Restart yabai and SKHD (auto-loads scripting addition)
 
 ## Features
 
@@ -80,11 +81,11 @@ All keybindings use `cmd` (⌘) as the modifier (equivalent to Hyprland's `SUPER
 - ✅ Gaps and padding
 - ✅ Application rules
 
-### Requires SIP Disabled:
+### Requires SIP Disabled (or Boot Args):
 
 - ❌ Window borders (colored)
 - ❌ Window opacity changes (active)
-- ❌ Scripting additions
+- ✅ Scripting additions (auto-loaded on BSP mode toggle and restart)
 - ❌ Window animations
 
 ## macOS Setup Requirements
@@ -149,10 +150,30 @@ launchctl kickstart -k "gui/${UID}/org.nixos.skhd"
    sudo yabai --load-sa
    ```
 
+   **Note**: The scripting addition is automatically loaded when:
+
+   - Toggling to BSP mode (cmd+shift+space)
+   - Restarting yabai (cmd+ctrl+r)
+
 6. Verify:
    ```bash
    csrutil status  # Should show "disabled"
    ```
+
+### Boot Arguments (Apple Silicon Alternative to SIP Disable):
+
+On Apple Silicon Macs, you may need boot arguments instead of fully disabling SIP:
+
+1. Boot into Recovery Mode (hold power button during startup)
+2. Open Terminal from Utilities menu
+3. Set boot arguments:
+   ```bash
+   nvram boot-args="amfi_get_out_of_my_way=1"
+   ```
+4. Restart your Mac
+5. Verify: `sudo nvram boot-args`
+
+**Note**: This approach maintains some SIP protections while allowing the yabai scripting addition.
 
 ### After Disabling SIP:
 

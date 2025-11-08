@@ -43,7 +43,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys.
 
 ### Layout Management
 
-- `Cmd+Ctrl+Space` - Toggle between tiling (BSP) and floating (normal macOS)
+- `Cmd+Shift+Space` - Toggle between BSP tiling mode and native macOS mode
 - `Cmd+R` - Rotate tree 90°
 - `Cmd+X` - Mirror tree X-axis, `Cmd+Y` - Mirror tree Y-axis
 - `Cmd+E` - Balance windows

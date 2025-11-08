@@ -26,6 +26,71 @@
       end
     end)
 
+    -- Toggle between BSP tiling and native macOS mode
+    -- Bind Cmd+Shift+Space to toggle
+    hs.hotkey.bind({"cmd", "shift"}, "space", function()
+      local STATE_FILE = os.getenv("HOME") .. "/.bsp-mode-state"
+
+      -- Read current mode
+      local f = io.open(STATE_FILE, "r")
+      local currentMode = "bsp"  -- default
+      if f then
+        currentMode = f:read("*all"):gsub("%s+", "")
+        f:close()
+      end
+
+      if currentMode == "bsp" then
+        -- Switch to native macOS mode
+        hs.execute("launchctl unload ~/Library/LaunchAgents/org.nixos.yabai.plist 2>/dev/null || true")
+        hs.execute("launchctl unload ~/Library/LaunchAgents/org.nixos.skhd.plist 2>/dev/null || true")
+        hs.execute("launchctl unload ~/Library/LaunchAgents/org.nixos.sketchybar.plist 2>/dev/null || true")
+        hs.execute("killall yabai 2>/dev/null || true")
+        hs.execute("killall skhd 2>/dev/null || true")
+        hs.execute("killall sketchybar 2>/dev/null || true")
+
+        hs.execute("defaults write com.apple.dock autohide -bool false")
+        hs.execute("defaults write com.apple.finder CreateDesktop -bool true")
+        hs.execute("killall Dock")
+        hs.execute("killall Finder")
+
+        -- Save state
+        local f = io.open(STATE_FILE, "w")
+        if f then
+          f:write("macos")
+          f:close()
+        end
+
+        hs.notify.new({title = "Window Manager", informativeText = "Native macOS mode"}):send()
+      else
+        -- Switch to BSP tiling mode
+        hs.execute("defaults write com.apple.dock autohide -bool true")
+        hs.execute("defaults write com.apple.finder CreateDesktop -bool false")
+        hs.execute("killall Dock")
+        hs.execute("killall Finder")
+
+        -- Wait for Dock to restart with auto-hide
+        hs.timer.doAfter(3, function()
+          hs.execute("launchctl load -w ~/Library/LaunchAgents/org.nixos.sketchybar.plist 2>/dev/null || true")
+          hs.execute("launchctl load -w ~/Library/LaunchAgents/org.nixos.yabai.plist 2>/dev/null || true")
+          hs.execute("launchctl load -w ~/Library/LaunchAgents/org.nixos.skhd.plist 2>/dev/null || true")
+
+          -- Load yabai scripting addition after yabai starts
+          hs.timer.doAfter(1, function()
+            hs.execute("sudo yabai --load-sa 2>/dev/null || true")
+          end)
+
+          -- Save state
+          local f = io.open(STATE_FILE, "w")
+          if f then
+            f:write("bsp")
+            f:close()
+          end
+
+          hs.notify.new({title = "Window Manager", informativeText = "BSP tiling mode"}):send()
+        end)
+      end
+    end)
+
     -- Manual Hammerspoon reload
     -- Bind Cmd+Ctrl+Option+R to reload configuration
     hs.hotkey.bind({"cmd", "ctrl", "alt"}, "R", function()
@@ -36,7 +101,7 @@
     -- Show notification on startup
     hs.notify.new({
       title = "Hammerspoon",
-      informativeText = "Config loaded\nCmd+Shift+T: Cycle themes\nCmd+Ctrl+Option+R: Reload"
+      informativeText = "Config loaded\nCmd+Shift+T: Cycle themes\nCmd+Shift+Space: Toggle WM\nCmd+Ctrl+Option+R: Reload"
     }):send()
   '';
 

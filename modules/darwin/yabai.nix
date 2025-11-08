@@ -1,5 +1,24 @@
 # Yabai tiling window manager for macOS
 # Mirrors Hyprland configuration from Linux setup
+#
+# IMPORTANT: Scripting Addition Requirements
+# -----------------------------------------
+# The yabai scripting addition (SA) is required for space focus commands (cmd+1,2,3...).
+# This configuration automatically loads the SA when:
+#   1. Toggling to BSP mode via Hammerspoon (cmd+shift+space)
+#   2. Manually restarting yabai (cmd+ctrl+r)
+#
+# Boot Arguments (required for SA on Apple Silicon):
+#   The scripting addition requires boot args to disable certain protections.
+#   If space switching doesn't work, verify boot args with:
+#     sudo nvram boot-args
+#   Required args may include: amfi_get_out_of_my_way=1 (or similar)
+#
+#   CAUTION: Modifying boot args reduces system security. Only use if needed.
+#
+# Manual SA Loading:
+#   If automatic loading fails, run: sudo yabai --load-sa
+#
 {
   config,
   pkgs,
@@ -50,6 +69,9 @@
     };
 
     extraConfig = ''
+      # Load scripting addition on startup
+      sudo yabai --load-sa 2>/dev/null || true
+
       # Rules for specific applications (similar to Hyprland windowrules)
 
       # Float specific apps
@@ -211,26 +233,8 @@
       # LAYOUT MANAGEMENT
       # ====================
 
-      # Toggle between tiling and floating layout (cmd + ctrl + space)
-      cmd + ctrl - space : ${pkgs.writeShellScript "toggle-layout.sh" ''
-        #!/bin/bash
-        CURRENT=$(yabai -m query --spaces --space | ${pkgs.jq}/bin/jq -r '.type')
-        if [ "$CURRENT" = "bsp" ]; then
-          # Switch to floating mode - show dock and desktop icons
-          yabai -m space --layout float
-          defaults write com.apple.dock autohide -bool false
-          defaults write com.apple.finder CreateDesktop -bool true
-          killall Dock
-          killall Finder
-        else
-          # Switch to tiling mode - hide dock and desktop icons
-          yabai -m space --layout bsp
-          defaults write com.apple.dock autohide -bool true
-          defaults write com.apple.finder CreateDesktop -bool false
-          killall Dock
-          killall Finder
-        fi
-      ''}
+      # Note: BSP/macOS mode toggle moved to Hammerspoon (cmd + shift + space)
+      # This provides full toggle between yabai and native macOS window management
 
       # Rotate tree (cmd + r)
       cmd - r : yabai -m space --rotate 90
@@ -251,6 +255,8 @@
         #!/bin/bash
         launchctl kickstart -k "gui/''${UID}/org.nixos.yabai"
         launchctl kickstart -k "gui/''${UID}/org.nixos.skhd"
+        sleep 1
+        sudo yabai --load-sa 2>/dev/null || true
         osascript -e 'display notification "Restarted window manager" with title "Yabai"'
       ''}
 
@@ -264,4 +270,10 @@
     "koekeishiya/formulae/yabai"
     "koekeishiya/formulae/skhd"
   ];
+
+  # Allow yabai to load scripting addition without password
+  # This enables automatic SA loading on startup and toggle
+  environment.etc."sudoers.d/010-yabai-sa".text = ''
+    %admin ALL=(root) NOPASSWD: /opt/homebrew/bin/yabai --load-sa
+  '';
 }

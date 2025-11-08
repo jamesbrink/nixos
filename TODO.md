@@ -90,10 +90,12 @@ Goal: Match Linux Hyprland look and feel on macOS Darwin as closely as possible.
   - Workspace management (1-10) - cmd+1 through cmd+0 working ✓
   - All Hyprland-compatible keybindings
   - Requires SIP disabled for borders/opacity
-  - Scripting addition enabled with boot-args for workspace switching
-  - Desktop icons hidden in BSP mode, shown in float mode
-  - Dock auto-hides in BSP mode, visible in float mode
-  - macOS menu bar hidden (SketchyBar replaces it)
+  - Scripting addition enabled and auto-loaded on BSP mode toggle
+  - Desktop icons hidden in BSP mode, shown in macOS mode
+  - Dock auto-hides in BSP mode, visible in macOS mode
+  - macOS menu bar auto-hides in BSP mode (requires manual System Settings on macOS 26 Tahoe)
+  - SketchyBar replaces native menu bar in BSP mode
+  - BSP/macOS mode toggle with cmd+shift+space
   - Alacritty title bar hidden (buttonless decorations)
 
 - [x] **Light/Dark mode switching** - System appearance changes work correctly

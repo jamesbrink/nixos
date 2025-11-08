@@ -385,4 +385,30 @@ in
       ) themeFiles
     )
   );
+
+  # LaunchAgent to restore wallpaper on login
+  launchd.agents.restore-wallpaper = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "${pkgs.bash}/bin/bash"
+        "-c"
+        ''
+          CURRENT_THEME_FILE="$HOME/.config/themes/.current-theme"
+          WALLPAPERS_DIR="$HOME/.config/themes/wallpapers"
+
+          if [[ -f "$CURRENT_THEME_FILE" ]]; then
+            CURRENT_THEME=$(cat "$CURRENT_THEME_FILE")
+            if [[ -d "$WALLPAPERS_DIR/$CURRENT_THEME" ]]; then
+              FIRST_WALLPAPER=$(ls -1 "$WALLPAPERS_DIR/$CURRENT_THEME" | head -1)
+              if [[ -n "$FIRST_WALLPAPER" ]]; then
+                ${pkgs.desktoppr}/bin/desktoppr "$WALLPAPERS_DIR/$CURRENT_THEME/$FIRST_WALLPAPER"
+              fi
+            fi
+          fi
+        ''
+      ];
+      RunAtLoad = true;
+    };
+  };
 }
