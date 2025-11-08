@@ -25,27 +25,26 @@ let
         VSCODE_THEME_MAP="$HOME/.config/ghostty/vscode-themes.json"
         mkdir -p "$HOME/.config/ghostty/themes"
 
-        reload_ghostty_config() {
-          if ! pgrep -x Ghostty >/dev/null 2>&1; then
-            return
-          fi
+    reload_ghostty_config() {
+      if ! pgrep -x Ghostty >/dev/null 2>&1; then
+        return
+      fi
 
-          /usr/bin/osascript <<'APPLESCRIPT' >/dev/null 2>&1
-    tell application "System Events"
-      if exists process "Ghostty" then
-        set frontApp to first application process whose frontmost is true
-        set frontName to name of frontApp
-        tell application "Ghostty" to activate
-        delay 0.05
-        keystroke "," using {command down, shift down}
-        delay 0.05
-        if frontName is not "Ghostty" then
-          tell application frontName to activate
-        end if
-      end if
-    end tell
-    APPLESCRIPT
-        }
+      /usr/bin/osascript >/dev/null 2>&1 \
+        -e 'tell application "System Events"' \
+        -e '  if exists process "Ghostty" then' \
+        -e '    set frontApp to first application process whose frontmost is true' \
+        -e '    set frontName to name of frontApp' \
+        -e '    tell application "Ghostty" to activate' \
+        -e '    delay 0.05' \
+        -e '    keystroke "," using {command down, shift down}' \
+        -e '    delay 0.05' \
+        -e '    if frontName is not "Ghostty" then' \
+        -e '      tell application frontName to activate' \
+        -e '    end if' \
+        -e '  end if' \
+        -e 'end tell'
+    }
 
         # Theme name to Ghostty built-in theme mapping
         declare -A THEME_MAP=(
