@@ -51,6 +51,9 @@
     };
   };
 
+  # Home-manager configuration
+  home-manager.backupFileExtension = "backup";
+
   # Boot configuration
   boot = {
     loader = {
