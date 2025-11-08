@@ -13,6 +13,7 @@
     ../../profiles/darwin/desktop.nix # Use full desktop profile
     ../../modules/darwin/packages.nix
     ../../modules/darwin/dock.nix
+    ../../modules/darwin/yabai.nix
     ../../modules/darwin/restic-backups.nix
     ../../modules/ssh-keys.nix
     ../../users/regular/jamesbrink-darwin.nix
