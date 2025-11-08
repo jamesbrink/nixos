@@ -21,8 +21,15 @@ let
     if resolvedInputs != null then resolvedInputs.self.packages.${pkgs.stdenv.system}.${name} else null;
   themeData = packageFor "themectl-theme-data";
   themectlPkg = packageFor "themectl";
+  hotkeysBundleArg = attrByPath [ "_module" "args" "hotkeysBundle" ] null config;
+  hotkeysBundle =
+    if hotkeysBundleArg != null then
+      hotkeysBundleArg
+    else
+      import ../../lib/hotkeys.nix { inherit pkgs; };
   defaultMetadata = "${config.home.homeDirectory}/.config/themectl/themes.json";
   defaultState = "${config.home.homeDirectory}/.config/themes/.current-theme";
+  defaultHotkeys = "${config.home.homeDirectory}/.config/themectl/hotkeys.json";
 in
 {
   options.programs.themectl = {
@@ -49,6 +56,12 @@ in
       description = "Path to the mutable file that tracks the current theme.";
     };
 
+    hotkeysFile = mkOption {
+      type = types.str;
+      default = defaultHotkeys;
+      description = "Path to the hotkey manifest YAML consumed by themectl.";
+    };
+
     cycle = mkOption {
       type = types.listOf types.str;
       default = [ ];
@@ -68,6 +81,9 @@ in
     xdg.configFile."themectl/themes.json" = lib.mkIf (themeData != null) {
       source = themeData;
     };
+    xdg.configFile."themectl/hotkeys.json" = lib.mkIf (cfg.hotkeysFile == defaultHotkeys) {
+      source = hotkeysBundle.jsonPath;
+    };
 
     xdg.configFile."themectl/config.toml".text =
       let
@@ -77,6 +93,7 @@ in
         platform = "${cfg.platform}"
         theme_metadata = "${cfg.metadataPath}"
         state_file = "${cfg.stateFile}"
+        hotkeys_file = "${cfg.hotkeysFile}"
 
         [order]
         cycle = [${cycleList}]

@@ -27,3 +27,11 @@ build-backend = "flit_core.buildapi"
 [tool.pytest.ini_options]
 addopts = "-q"
 python_files = ["test_*.py"]
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+include = ["themectl"]
+extraPaths = ["themectl", "typings"]
+reportMissingImports = "warning"
+stubPath = "typings"

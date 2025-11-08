@@ -242,8 +242,9 @@ def _render_hyprlock(theme: Theme, fallback_hex: str) -> str:
     font = _hex_to_rgb(hyprlock.get("fontColor", fallback_hex))
     check = _hex_to_rgb(hyprlock.get("checkColor", fallback_hex))
     base = _hex_to_rgb(fallback_hex)
-    if not all([outer, inner, font, check, base]):
+    if any(value is None for value in (outer, inner, font, check, base)):
         return ""
+    assert outer and inner and font and check and base
 
     def rgba(values: tuple[int, int, int], alpha: float = 1.0) -> str:
         return f"rgba({values[0]},{values[1]},{values[2]},{alpha})"
@@ -274,14 +275,16 @@ def _copy_wallpapers(theme: Theme, dest_dir: Path, console: Console) -> None:
 
 
 def sync_assets(repo: ThemeRepository, console: Console | None = None) -> None:
-    console = console or Console()
+    active_console = console or Console()
     base = get_home() / ".config" / "omarchy"
     themes_root = base / "themes"
     _ensure_dir(themes_root)
 
     for theme in repo:
         dest = themes_root / theme.slug
-        if dest.exists():
+        if dest.is_symlink():
+            dest.unlink()
+        elif dest.exists():
             shutil.rmtree(dest)
         dest.mkdir(parents=True)
 
@@ -339,6 +342,6 @@ def sync_assets(repo: ThemeRepository, console: Console | None = None) -> None:
         if hyprlock:
             _write_text(dest / "hyprlock.conf", hyprlock)
 
-        _copy_wallpapers(theme, dest / "backgrounds", console)
+        _copy_wallpapers(theme, dest / "backgrounds", active_console)
 
-        console.print(f"[green]•[/green] Synced {theme.display_name}")
+        active_console.print(f"[green]•[/green] Synced {theme.display_name}")

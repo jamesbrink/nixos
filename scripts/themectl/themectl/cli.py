@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
-from typing import Optional
+from typing import Any, Mapping, Optional
 
 import typer
 from rich import box
@@ -15,9 +16,10 @@ from typer import Exit
 from . import __version__
 from .assets import sync_assets
 from .config import ThemectlConfig, get_home, load_config
-from .state import read_current_theme
+from .hotkeys import flatten_bindings, load_manifest
 from .hooks import run_reload_hooks
 from .macos import MacOSModeController, ensure_yabai_sa
+from .state import read_current_theme
 from .themes import Theme, ThemeRepository, load_theme_metadata
 
 console = Console()
@@ -39,10 +41,69 @@ def _write_state(cfg: ThemectlConfig, slug: str) -> None:
 
 
 def _safe_symlink(target: Path, link: Path) -> None:
-    if link.is_symlink() or link.exists():
+    if link.is_symlink():
         link.unlink()
+    elif link.exists():
+        if link.is_dir():
+            shutil.rmtree(link)
+        else:
+            link.unlink()
     link.parent.mkdir(parents=True, exist_ok=True)
     link.symlink_to(target)
+
+
+def _walker_assets_ok(cfg: ThemectlConfig, console: Console) -> bool:
+    if cfg.platform != "linux":
+        return True
+
+    home = get_home()
+    themes_root = home / ".config" / "omarchy" / "themes"
+    current_theme = home / ".config" / "omarchy" / "current" / "theme"
+
+    if not themes_root.exists():
+        console.print("[red]Walker assets missing under ~/.config/omarchy/themes. Run `themectl sync-assets`.[/red]")
+        return False
+
+    ok = True
+    missing = sorted(
+        path.name
+        for path in themes_root.iterdir()
+        if path.is_dir() and not (path / "walker.css").exists()
+    )
+    if missing:
+        console.print(
+            Panel(
+                "Walker CSS not found for:\n- " + "\n- ".join(missing),
+                title="Walker themes incomplete",
+                border_style="red",
+            )
+        )
+        ok = False
+
+    if not current_theme.is_symlink():
+        console.print(
+            Panel(
+                "Current theme symlink is missing. Run `themectl apply <theme>` so Walker picks up runtime colors.",
+                title="Walker symlink missing",
+                border_style="yellow",
+            )
+        )
+        ok = False
+    else:
+        try:
+            target = current_theme.resolve()
+        except OSError:
+            target = None
+        if not target or not (target / "walker.css").exists():
+            console.print(
+                Panel(
+                    "Active theme lacks walker.css. Re-run `themectl sync-assets` and `themectl apply <theme>`.",
+                    title="Walker runtime theme missing",
+                    border_style="red",
+                )
+            )
+            ok = False
+    return ok
 
 
 def _apply_theme(theme: Theme, cfg: ThemectlConfig) -> None:
@@ -84,6 +145,39 @@ def _cycle_theme(cfg: ThemectlConfig, repo: ThemeRepository, direction: str) -> 
     else:
         idx = (idx + 1) % len(order)
     return repo.get(order[idx])
+
+
+def _platform_manifest_key(name: str) -> str:
+    return "darwin" if name == "darwin" else "linux-hyprland"
+
+
+def _manifest_bindings(
+    manifest: Mapping[str, Any],
+    platform_key: str,
+    mode_override: str | None = None,
+) -> tuple[str | None, Mapping[str, Any]]:
+    platforms = manifest.get("platforms")
+    if not isinstance(platforms, Mapping):
+        raise KeyError(platform_key)
+    target = platforms.get(platform_key)
+    if not isinstance(target, Mapping):
+        raise KeyError(platform_key)
+    if platform_key == "darwin":
+        modes = target.get("modes", {})
+        if not isinstance(modes, Mapping):
+            raise KeyError(platform_key)
+        mode_name = mode_override or target.get("default_mode") or "bsp"
+        mode = modes.get(mode_name)
+        if not isinstance(mode, Mapping):
+            raise KeyError(mode_name)
+        bindings = mode.get("bindings", {})
+        if not isinstance(bindings, Mapping):
+            raise KeyError(mode_name)
+        return mode_name, bindings
+    bindings = target.get("bindings", {})
+    if not isinstance(bindings, Mapping):
+        raise KeyError(platform_key)
+    return None, bindings
 
 
 @app.callback()
@@ -252,7 +346,48 @@ def doctor(
         ok = False
     if cfg.platform == "darwin":
         ok = ensure_yabai_sa(console) and ok
+    if cfg.platform == "linux":
+        ok = _walker_assets_ok(cfg, console) and ok
     if ok:
         console.print(Panel("All checks passed", title="themectl", border_style="green"))
     else:
         raise Exit(1)
+
+
+@app.command()
+def hotkeys(
+    config: Optional[Path] = typer.Option(None, "--config", "-c"),
+    platform: Optional[str] = typer.Option(
+        None,
+        "--platform",
+        "-p",
+        help="Override platform key (darwin or linux-hyprland) when listing hotkeys.",
+    ),
+) -> None:
+    """Show hotkey bindings from the manifest."""
+
+    cfg = _load(config)
+    manifest = load_manifest(cfg.hotkeys_path)
+    target = platform or _platform_manifest_key(cfg.platform)
+    try:
+        mode, bindings = _manifest_bindings(manifest, target)
+    except KeyError:
+        console.print(f"[red]No hotkey bindings defined for {target}[/red]")
+        raise Exit(1)
+
+    rows = flatten_bindings(bindings)
+    if not rows:
+        console.print(f"[yellow]No bindings declared for {target}[/yellow]")
+        raise Exit(1)
+
+    subtitle = f"{target}{f'/{mode}' if mode else ''}"
+    table = Table(
+        title=f"Hotkeys ({subtitle})",
+        box=box.MINIMAL_DOUBLE_HEAD,
+        header_style="bold cyan",
+    )
+    table.add_column("Action")
+    table.add_column("Chord")
+    for action, chord in rows:
+        table.add_row(action, chord)
+    console.print(table)

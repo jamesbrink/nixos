@@ -111,6 +111,19 @@
           })
         ];
       };
+      pkgsAarch64Darwin = import nixpkgs {
+        system = "aarch64-darwin";
+        config.allowUnfree = true;
+      };
+      pkgsX86Darwin = import nixpkgs {
+        system = "x86_64-darwin";
+        config.allowUnfree = true;
+      };
+      hotkeysBundles = {
+        x86_64-linux = import ./lib/hotkeys.nix { inherit pkgs; };
+        aarch64-darwin = import ./lib/hotkeys.nix { pkgs = pkgsAarch64Darwin; };
+        x86_64-darwin = import ./lib/hotkeys.nix { pkgs = pkgsX86Darwin; };
+      };
     in
     {
       #########################################################################
@@ -610,10 +623,12 @@
           specialArgs = {
             inherit inputs agenix claude-desktop;
             secretsPath = "${inputs.secrets}";
+            hotkeysBundle = hotkeysBundles."x86_64-linux";
           };
 
           modules = [
             home-manager.nixosModules.home-manager
+            ./modules/home-manager/hotkeys-extra-args.nix
             agenix.nixosModules.default
             disko.nixosModules.disko
             ./hosts/n100-01/default.nix
@@ -639,10 +654,12 @@
           specialArgs = {
             inherit inputs agenix claude-desktop;
             secretsPath = "${inputs.secrets}";
+            hotkeysBundle = hotkeysBundles."x86_64-linux";
           };
 
           modules = [
             home-manager.nixosModules.home-manager
+            ./modules/home-manager/hotkeys-extra-args.nix
             agenix.nixosModules.default
             disko.nixosModules.disko
             ./hosts/n100-02/default.nix
@@ -668,10 +685,12 @@
           specialArgs = {
             inherit inputs agenix claude-desktop;
             secretsPath = "${inputs.secrets}";
+            hotkeysBundle = hotkeysBundles."x86_64-linux";
           };
 
           modules = [
             home-manager.nixosModules.home-manager
+            ./modules/home-manager/hotkeys-extra-args.nix
             agenix.nixosModules.default
             disko.nixosModules.disko
             ./hosts/n100-03/default.nix
@@ -702,10 +721,12 @@
               claude-desktop
               ;
             secretsPath = "${inputs.secrets}";
+            hotkeysBundle = hotkeysBundles."x86_64-linux";
           };
 
           modules = [
             home-manager.nixosModules.home-manager
+            ./modules/home-manager/hotkeys-extra-args.nix
             agenix.nixosModules.default
             disko.nixosModules.disko
             vscode-server.nixosModules.default
@@ -744,10 +765,12 @@
               config.allowUnfree = true;
               overlays = [ ];
             };
+            hotkeysBundle = hotkeysBundles."x86_64-linux";
           };
 
           modules = [
             home-manager.nixosModules.home-manager
+            ./modules/home-manager/hotkeys-extra-args.nix
             agenix.nixosModules.default
             vscode-server.nixosModules.default
             ./modules/vscode-server.nix
@@ -779,10 +802,12 @@
               claude-desktop
               ;
             secretsPath = "${inputs.secrets}";
+            hotkeysBundle = hotkeysBundles."x86_64-linux";
           };
 
           modules = [
             home-manager.nixosModules.home-manager
+            ./modules/home-manager/hotkeys-extra-args.nix
             agenix.nixosModules.default
             vscode-server.nixosModules.default
             ./modules/vscode-server.nix
@@ -821,10 +846,12 @@
               config.allowUnfree = true;
               overlays = [ ];
             };
+            hotkeysBundle = hotkeysBundles."aarch64-darwin";
           };
 
           modules = [
             home-manager-unstable.darwinModules.home-manager
+            ./modules/home-manager/hotkeys-extra-args.nix
             agenix.darwinModules.default
             nix-homebrew.darwinModules.nix-homebrew
             {
@@ -867,10 +894,12 @@
               config.allowUnfree = true;
               overlays = [ ];
             };
+            hotkeysBundle = hotkeysBundles."x86_64-darwin";
           };
 
           modules = [
             home-manager-unstable.darwinModules.home-manager
+            ./modules/home-manager/hotkeys-extra-args.nix
             agenix.darwinModules.default
             nix-homebrew.darwinModules.nix-homebrew
             {

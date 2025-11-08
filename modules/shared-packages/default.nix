@@ -30,6 +30,7 @@ in
       lf
       lsof
       neofetch
+      neovim-remote
       netcat
       nixfmt-rfc-style
       nixpkgs-fmt

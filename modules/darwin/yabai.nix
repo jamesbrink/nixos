@@ -41,6 +41,13 @@
 }:
 
 let
+  inherit (lib) attrByPath;
+  hotkeysBundle = attrByPath [ "_module" "args" "hotkeysBundle" ] null config;
+  hotkeysData =
+    if hotkeysBundle == null then
+      throw "hotkeysBundle not provided to modules/darwin/yabai.nix"
+    else
+      hotkeysBundle.data;
   # Hotkey helper: spawns Alacritty windows using the current workspace's terminal cwd
   alacrittyCwdLauncher = pkgs.writeShellApplication {
     name = "alacritty-cwd-launch";
@@ -209,6 +216,41 @@ let
       fi
     '';
   };
+  darwinPlatform = hotkeysData.platforms.darwin;
+  darwinMode = darwinPlatform.default_mode or "bsp";
+  expandBindings =
+    bindings:
+    lib.foldl' (
+      acc: name:
+      let
+        value = bindings.${name};
+        path = lib.splitString "." name;
+      in
+      lib.recursiveUpdate acc (lib.setAttrByPath path value)
+    ) { } (builtins.attrNames bindings);
+  darwinBindings = expandBindings darwinPlatform.modes.${darwinMode}.bindings;
+  toLower = lib.strings.toLower;
+  formatKey =
+    key:
+    let
+      lower = toLower key;
+    in
+    if lower == "space" then
+      "space"
+    else if lower == "return" then
+      "return"
+    else
+      lower;
+  formatMod = mod: toLower mod;
+  skhdChord =
+    chord:
+    let
+      parts = map toLower (lib.splitString "+" chord);
+      key = formatKey (lib.last parts);
+      mods = map formatMod (lib.init parts);
+      modPart = lib.concatStringsSep " + " mods;
+    in
+    if mods == [ ] then key else "${modPart} - ${key}";
 in
 {
   # Enable yabai service
@@ -300,14 +342,14 @@ in
       # $mod = cmd (macOS equivalent of SUPER)
 
       # Terminal (cmd + return)
-      cmd - return : ${alacrittyCwdLauncher}/bin/alacritty-cwd-launch
+      ${skhdChord darwinBindings.launcher.terminal} : ${alacrittyCwdLauncher}/bin/alacritty-cwd-launch
 
       # File manager (cmd + shift + f)
       cmd + shift - f : open -a Finder
 
       # Browser (cmd + shift + b)
-      cmd + shift - b : open -a "Google Chrome"
-      cmd + shift + alt - b : open -na "Google Chrome" --args --incognito
+      ${skhdChord darwinBindings.launcher.browser.default} : open -a "Google Chrome"
+      ${skhdChord darwinBindings.launcher.browser.incognito} : open -na "Google Chrome" --args --incognito
 
       # Apps
       cmd + shift - m : open -a Spotify
@@ -315,14 +357,13 @@ in
       cmd + shift - o : open -a Obsidian
       cmd + shift - y : open -na "Google Chrome" --args --new-window https://youtube.com
 
-      # Theme cycling (cmd + shift + t)
-      cmd + shift - t : /usr/bin/env themectl cycle
+      # Theme cycling lives in Hammerspoon so automation + notifications run from a single daemon.
 
       # System monitor (cmd + alt + t)
       cmd + alt - t : ${alacrittyCwdLauncher}/bin/alacritty-cwd-launch -e btop
 
       # Application launcher (cmd + d) - fzf-based launcher (Rofi/Walker equivalent)
-      cmd - d : ${alacrittyCwdLauncher}/bin/alacritty-cwd-launch -e macos-launcher
+      ${skhdChord darwinBindings.launcher.walker} : ${alacrittyCwdLauncher}/bin/alacritty-cwd-launch -e macos-launcher
 
       # Alternative launchers available:
       # cmd + space - macOS Spotlight (default)
@@ -334,12 +375,12 @@ in
       # ====================
 
       # Save to file (Pictures/Screenshots)
-      cmd + shift - 3 : ${macScreenshotHelper}/bin/macos-screenshot full
-      cmd + shift - 4 : ${macScreenshotHelper}/bin/macos-screenshot selection
+      ${skhdChord darwinBindings.screenshot.full_save} : ${macScreenshotHelper}/bin/macos-screenshot full
+      ${skhdChord darwinBindings.screenshot.region_save} : ${macScreenshotHelper}/bin/macos-screenshot selection
 
       # Copy to clipboard
-      cmd + shift + ctrl - 3 : ${macScreenshotHelper}/bin/macos-screenshot full --clipboard
-      cmd + shift + ctrl - 4 : ${macScreenshotHelper}/bin/macos-screenshot selection --clipboard
+      ${skhdChord darwinBindings.screenshot.full_clipboard} : ${macScreenshotHelper}/bin/macos-screenshot full --clipboard
+      ${skhdChord darwinBindings.screenshot.region_clipboard} : ${macScreenshotHelper}/bin/macos-screenshot selection --clipboard
 
       # Screenshot UI (Screenshot.app toolbar)
       cmd + shift - 5 : ${macScreenshotHelper}/bin/macos-screenshot ui

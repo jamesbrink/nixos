@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import json
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterator, Mapping
 
 
 @dataclass(slots=True)
@@ -50,7 +50,7 @@ class ThemeRepository:
         key = query.lower()
         return self._index.get(key)
 
-    def __iter__(self) -> Iterable[Theme]:
+    def __iter__(self) -> Iterator[Theme]:
         return iter(self.themes)
 
 

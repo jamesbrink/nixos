@@ -24,8 +24,10 @@
 - Enforce Ruff for lint/format, Pyright for type checking (use type hints everywhere), and pytest for tests. Keep zero global state; use dependency-injected paths/configs.
 - Commands must be deterministic, print structured logs, and never require network access unless explicitly stated.
 - Provide lightweight fixtures/mocks so CI and agents can run tests without live GUI apps.
+- Keep Python files focused: aim for <800 lines, and never exceed ~1,500 lines. When approaching that ceiling, split helpers into modules/packages so each file covers a single concern.
 
 ## Reviews & Commits
 
 - Use Conventional Commits, scope paths when helpful (`docs(core): add standards reference`).
 - Before pushing: run `format`, `nix flake check`, and any module-specific tests (e.g., `pytest scripts/themectl` once it exists). Document deviations in PR descriptions or TODO entries.
+- Always stage relevant files (`git add ...`) before running `deploy`, `nixos-rebuild`, or `darwin-rebuild` so remote builds pull the intended config and avoid “missing file” failures.

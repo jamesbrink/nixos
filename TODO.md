@@ -25,16 +25,26 @@ This document tracks the current macOS/Hyprland parity effort. Check off items a
 
 ## Active / Upcoming
 
+- [ ] **Safeguard themectl symlink handling** – update `_safe_symlink` (and associated tests) so replacing `~/.config/omarchy/current/{theme,background}` removes directories safely instead of calling `unlink()` and blowing up on pre-existing folders; ensure `sync-assets` stops following symlinks before `shutil.rmtree`.
+- [ ] **Deduplicate macOS theme hotkey** – remove the duplicate Cmd+Shift+T binding so only one daemon (preferably Hammerspoon invoking `themectl cycle`) handles theme changes; keep SKHD focused on tiling/window actions.
 - [ ] **Walker launcher parity** – confirm the macOS launcher UX (fzf + Raycast fallback) matches the Linux walker configuration and document any gaps.
+- [ ] **Backlog grooming check** – once the above land, revisit Finder sync, Ghostty/VSC reload reliability, and the deployment CLI refresh to keep the Theme Automation track moving without blockers.
 - [ ] **Finder appearance sync** – Finder still ignores light/dark flips triggered by `themectl cycle`; inspect defaults domains or add a launchagent shim.
 - [ ] **Karabiner/AltTab configs** – both apps are installed but unconfigured; capture desired mappings (Hyper key, window previews) and produce managed config files.
-- [ ] **Document theme sync workflow** – add README/docs notes on using `external/omarchy` + `generate-themes.sh` so future updates stay reproducible.
+- [ ] **Document theme sync workflow** – add README/docs notes on using `external/omarchy` + `themectl sync-assets` so future updates stay reproducible.
 - [ ] **VSCode/Cursor live reload** – AppleScript automation still feels flaky; capture a more reliable trigger (or upstream issue) so theme switching is 100% hands-off.
 - [ ] **Ghostty automation polish** – AppleScript reload + opacity tweaks work but still feel brittle; revisit after a cooldown (maybe watch for `ghostty +list-actions` updates or expose a direct CLI).
+- [ ] **Yabai focus behavior toggle** – surface the “focus-follows-update”/auto-jump option (whatever yabai flag controls the terminal stealing focus) in `config/hotkeys.yaml` + Nix so BSP mode can keep focus pinned when background windows update.
 
 ## Recently Completed
 
+- [x] **Hyprland reload hooks** – `themectl apply/cycle` now shell into `hyprctl reload` and `swww img ~/.config/omarchy/current/background` so Linux hosts pick up theme changes immediately without manual wallpaper refreshes.
 - [x] **macOS screenshots** – mapped Cmd+Shift+3/4/5 (and clipboard variants) to `macos-screenshot` so captures land in `~/Pictures/Screenshots` or the clipboard under versioned control.
+- [x] **Walker asset verification** – `themectl doctor` now validates Linux walker.css assets and the runtime theme symlink so Walker picks up synced themes without manual fixes.
+- [x] **Hotkey manifest exporters** – `config/hotkeys.yaml` feeds SKHD/Hammerspoon/Hyprland bindings plus the new `themectl hotkeys` command, so theme/picker chords stay in sync across platforms.
+- [x] **Deduplicate macOS theme hotkey** – removed the redundant SKHD theme binding so only Hammerspoon invokes `themectl cycle`, preventing double theme flips.
+- [x] **Walker workflow uses themectl** – Linux Walker picker now shells into `themectl apply` and the legacy `generate-themes.sh` / `theme-set.sh` helpers were removed so Omarchy assets stay managed by the Python CLI.
+- [x] **BasedPyright hygiene** – added `[tool.pyright]` config (Python 3.11, CLI-only include) plus type fixes so `cd scripts/themectl && basedpyright` passes alongside pytest/ruff.
 - [x] **Alacritty font scaling** – added Cmd+Option+=/- bindings to grow/shrink text without touching the existing Cmd± tiling shortcuts.
 - [x] **Alacritty workspace CWD** – new `alacritty-cwd-launch` helper reads the focused space's terminal cwd via Yabai/pgrep/lsof so cmd+Return/launcher hotkeys open in the same path.
 - [x] **Omarchy submodule** – cloned the upstream repo into `external/omarchy` for canonical icons, wallpapers, and scripts.

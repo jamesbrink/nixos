@@ -1,0 +1,131 @@
+version: 0.1
+metadata:
+  owner: jamesbrink
+  source: config/hotkeys.yaml
+  description: >
+    Canonical hotkey manifest for Omarchy-style hosts. themectl will consume
+    this file to render SKHD, Hammerspoon, Hyprland, and Walker configs so macOS
+    BSP/native and Linux stay aligned without drift.
+  targets:
+    - skhd
+    - hammerspoon
+    - hyprland
+    - walker
+    - themectl
+
+actions:
+  theme:
+    cycle:
+      description: Cycle the active theme and trigger reload hooks.
+      command: "themectl cycle --direction {next|prev}"
+      tags: [theme, automation]
+    picker:
+      description: Walker menu that shells into `themectl apply <slug>`.
+      command: "~/.local/bin/theme-picker"
+      tags: [theme, walker]
+  macos_mode:
+    toggle:
+      description: Toggle between BSP tiling and native macOS window management.
+      command: "themectl macos-mode toggle"
+      macos_only: true
+      tags: [macos, automation]
+  launcher:
+    terminal:
+      description: Spawn terminal in the focused workspace's CWD.
+      commands:
+        darwin: "alacritty-cwd-launch"
+        linux: "spawn-terminal-here"
+    walker:
+      description: Open Walker/Rofi-style launcher.
+      command: "walker"
+    browser:
+      default:
+        description: Launch the default Chromium browser window.
+        commands:
+          darwin: 'open -a "Google Chrome"'
+          linux: "google-chrome-stable"
+      incognito:
+        description: Launch an incognito/private browser window.
+        commands:
+          darwin: 'open -na "Google Chrome" --args --incognito'
+          linux: "google-chrome-stable --incognito"
+  workspace:
+    focus:
+      description: Focus workspace/Space by number.
+      template:
+        chord: "{mod}+{digit}"
+        digits: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+    move:
+      description: Move the focused window to a workspace/Space.
+      template:
+        chord: "{mod}+shift+{digit}"
+        digits: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+  screenshot:
+    full_save:
+      description: Capture the entire display to disk.
+      commands:
+        darwin: "macos-screenshot full"
+        linux: "screenshot-direct output"
+    region_save:
+      description: Capture a selection to disk.
+      commands:
+        darwin: "macos-screenshot selection"
+        linux: "screenshot-annotate region"
+    full_clipboard:
+      description: Capture the entire display to the clipboard.
+      commands:
+        darwin: "macos-screenshot full --clipboard"
+        linux: "screenshot-direct output --clipboard"
+    region_clipboard:
+      description: Capture a selection to the clipboard.
+      commands:
+        darwin: "macos-screenshot selection --clipboard"
+        linux: "screenshot-annotate region --clipboard"
+
+platforms:
+  darwin:
+    default_mode: bsp
+    targets: [skhd, hammerspoon]
+    notes: >
+      Cmd+Shift+T lives in Hammerspoon to keep theme automation + notifications
+      in one daemon. SKHD owns core tiling bindings and defer to this manifest.
+    modes:
+      bsp:
+        bindings:
+          theme.cycle: "cmd+shift+t"
+          macos_mode.toggle: "cmd+shift+space"
+          launcher.terminal: "cmd+return"
+          launcher.walker: "cmd+d"
+          launcher.browser.default: "cmd+shift+b"
+          launcher.browser.incognito: "cmd+shift+alt+b"
+          screenshot.full_save: "cmd+shift+3"
+          screenshot.region_save: "cmd+shift+4"
+          screenshot.full_clipboard: "cmd+shift+ctrl+3"
+          screenshot.region_clipboard: "cmd+shift+ctrl+4"
+          workspace.focus:
+            chord: "cmd+{digit}"
+          workspace.move:
+            chord: "cmd+shift+{digit}"
+      native:
+        inherits: bsp
+        notes: >
+          Same bindings as BSP, but scripts may disable yabai/skhd and fall back
+          to the stock macOS behaviors. themectl macos-mode <native> manages the
+          transitions.
+
+  linux-hyprland:
+    default_mode: tiling
+    targets: [hyprland, walker]
+    bindings:
+      theme.cycle: "super+ctrl+alt+t"
+      theme.picker: "super+shift+ctrl+space"
+      launcher.terminal: "super+return"
+      launcher.walker: "super+space"
+      launcher.browser.default: "super+shift+b"
+      launcher.browser.incognito: "super+shift+alt+b"
+      screenshot.region_save: "super+s"
+      screenshot.region_clipboard: "super+ctrl+s"
+      workspace.focus:
+        chord: "super+{digit}"
+      workspace.move:
+        chord: "super+shift+{digit}"

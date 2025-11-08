@@ -64,11 +64,15 @@ class MacOSModeController:
 
     def __post_init__(self) -> None:
         self.home = get_home()
-        self.state_path = self.state_path or (self.home / ".bsp-mode-state")
+        self._state_path: Path = self.state_path or (self.home / ".bsp-mode-state")
+
+    @property
+    def statefile(self) -> Path:
+        return self._state_path
 
     def current_mode(self) -> str:
         try:
-            value = self.state_path.read_text().strip().lower()
+            value = self.statefile.read_text().strip().lower()
             if value in ("bsp", "macos"):
                 return value
         except FileNotFoundError:
@@ -76,8 +80,8 @@ class MacOSModeController:
         return "bsp"
 
     def _write_state(self, mode: str) -> None:
-        self.state_path.parent.mkdir(parents=True, exist_ok=True)
-        self.state_path.write_text(mode)
+        self.statefile.parent.mkdir(parents=True, exist_ok=True)
+        self.statefile.write_text(mode)
 
     def _launchctl(self, action: str, agents: Iterable[str]) -> None:
         for name in agents:

@@ -71,7 +71,7 @@ def _process_running(name: str) -> bool:
     return result.returncode == 0
 
 
-def _read_settings(path: Path) -> Mapping[str, Any] | None:
+def _read_settings(path: Path) -> dict[str, Any] | None:
     try:
         raw = path.read_text()
     except FileNotFoundError:
@@ -79,7 +79,10 @@ def _read_settings(path: Path) -> Mapping[str, Any] | None:
     cleaned = "\n".join(line for line in raw.splitlines() if not line.strip().startswith("//"))
     if not cleaned.strip():
         return {}
-    return json.loads(cleaned)
+    data = json.loads(cleaned)
+    if isinstance(data, dict):
+        return dict(data)
+    return None
 
 
 def _write_settings(path: Path, data: Mapping[str, Any]) -> None:
@@ -253,6 +256,95 @@ def _update_tmux_config(theme: Theme, console: Console) -> None:
     console.print("[green]✓[/green] Reloaded tmux theme")
 
 
+def _discover_hypr_signature() -> str | None:
+    signature = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+    if signature:
+        return signature
+    runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
+    if not runtime_dir:
+        return None
+    hypr_dir = Path(runtime_dir) / "hypr"
+    if not hypr_dir.exists():
+        return None
+    try:
+        candidates = sorted(
+            (entry for entry in hypr_dir.iterdir() if entry.is_dir()),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )
+    except OSError:
+        return None
+    if not candidates:
+        return None
+    return candidates[0].name
+
+
+def reload_hyprland(console: Console) -> None:
+    if platform.system() != "Linux":
+        return
+    binary = shutil.which("hyprctl")
+    if not binary:
+        console.print("[cyan]-[/cyan] hyprctl not found; skipping Hyprland reload")
+        return
+    signature = _discover_hypr_signature()
+    if not signature:
+        console.print("[cyan]-[/cyan] Hyprland signature unavailable; skipping reload")
+        return
+    env = os.environ.copy()
+    env["HYPRLAND_INSTANCE_SIGNATURE"] = signature
+    result = subprocess.run(
+        [binary, "-i", signature, "reload"],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    if result.returncode == 0:
+        console.print("[green]✓[/green] Reloaded Hyprland config")
+    else:
+        console.print(
+            Panel(
+                result.stderr.strip() or "hyprctl reload failed",
+                title="Hyprland reload",
+                border_style="yellow",
+            )
+        )
+
+
+def update_wallpaper(console: Console) -> None:
+    if platform.system() != "Linux":
+        return
+    background = get_home() / ".config" / "omarchy" / "current" / "background"
+    if not background.exists():
+        return
+    binary = shutil.which("swww")
+    if not binary:
+        console.print("[cyan]-[/cyan] swww not found; skipping wallpaper refresh")
+        return
+    result = subprocess.run(
+        [
+            binary,
+            "img",
+            str(background),
+            "--transition-type",
+            "simple",
+            "--transition-step",
+            "255",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        console.print("[green]✓[/green] Updated wallpaper via swww")
+    else:
+        console.print(
+            Panel(
+                result.stderr.strip() or "swww img failed",
+                title="Wallpaper reload",
+                border_style="yellow",
+            )
+        )
+
+
 def reload_ghostty(console: Console) -> None:
     config = get_home() / ".config" / "ghostty" / "config"
     if not config.exists():
@@ -310,6 +402,8 @@ def run_reload_hooks(theme: Theme, cfg: ThemectlConfig, console: Console) -> Non
         ("Cursor", lambda: _refresh_cursor(theme, cfg, console)),
         ("Neovim", lambda: _refresh_neovim(theme, cfg, console)),
         ("tmux", lambda: _update_tmux_config(theme, console)),
+        ("Hyprland", lambda: reload_hyprland(console)),
+        ("Wallpaper", lambda: update_wallpaper(console)),
         ("Ghostty", lambda: reload_ghostty(console)),
     )
     for label, action in actions:

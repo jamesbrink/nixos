@@ -28,6 +28,7 @@
 }:
 
 let
+  inherit (lib) attrByPath;
   # Select theme - change this to switch themes
   selectedTheme = "ristretto";
 
@@ -61,6 +62,69 @@ let
       "${./wallpapers}/${selectedTheme}/${builtins.head themeConfig.wallpapers}"
     else
       null;
+  hotkeysBundleArg = attrByPath [ "_module" "args" "hotkeysBundle" ] null config;
+  hotkeysBundle =
+    if hotkeysBundleArg != null then
+      hotkeysBundleArg
+    else
+      import ../../../lib/hotkeys.nix { inherit pkgs; };
+  hotkeysData = hotkeysBundle.data;
+  linuxPlatform = hotkeysData.platforms."linux-hyprland";
+  expandBindings =
+    bindings:
+    lib.foldl' (
+      acc: name:
+      let
+        value = bindings.${name};
+        path = lib.splitString "." name;
+      in
+      lib.recursiveUpdate acc (lib.setAttrByPath path value)
+    ) { } (builtins.attrNames bindings);
+  linuxBindings = expandBindings linuxPlatform.bindings;
+  requireBinding =
+    path:
+    let
+      value = lib.attrByPath path null linuxBindings;
+    in
+    if value == null then
+      throw "Missing hotkey binding at ${lib.concatStringsSep "." path} for linux-hyprland platform"
+    else
+      value;
+  themeCycleBinding = requireBinding [
+    "theme"
+    "cycle"
+  ];
+  themePickerBinding = requireBinding [
+    "theme"
+    "picker"
+  ];
+  toLower = lib.strings.toLower;
+  hyprMod =
+    mod:
+    let
+      lower = toLower mod;
+    in
+    if lower == "super" then "$mod" else lib.strings.toUpper lower;
+  hyprKey =
+    key:
+    let
+      lower = toLower key;
+    in
+    if lower == "space" then
+      "SPACE"
+    else if lower == "return" then
+      "RETURN"
+    else
+      lib.strings.toUpper lower;
+  hyprChord =
+    chord:
+    let
+      parts = map toLower (lib.splitString "+" chord);
+      key = hyprKey (lib.last parts);
+      mods = map hyprMod (lib.init parts);
+      modPart = lib.concatStringsSep " " mods;
+    in
+    if modPart == "" then ", ${key}" else "${modPart}, ${key}";
 in
 {
   imports = [
@@ -254,8 +318,9 @@ in
         # Background rotation (Omarchy-style)
         "$mod CTRL, SPACE, exec, rotate-background"
 
-        # Theme picker (Omarchy-style)
-        "$mod SHIFT CTRL, SPACE, exec, theme-picker"
+        # Theme automation via themectl (manifest-driven)
+        "${hyprChord themeCycleBinding}, exec, themectl cycle"
+        "${hyprChord themePickerBinding}, exec, theme-picker"
 
         # Captures (screenshots) - Omarchy-style with hyprshot + satty
         ", PRINT, exec, screenshot-annotate region"
@@ -348,7 +413,7 @@ in
     # Source order: NixOS theme (above) → Runtime theme (below)
     # Runtime theme overrides NixOS theme when symlink exists
     extraConfig = ''
-      # Source runtime theme if it exists (for theme-set command)
+      # Source runtime theme if it exists (managed by themectl apply)
       source = ~/.config/omarchy/current/theme/hyprland.conf
     '';
   };
@@ -861,26 +926,19 @@ in
     executable = true;
   };
 
-  # Runtime theme generation (Omarchy-style)
-  home.file.".local/bin/generate-themes" = {
-    source = ./scripts/generate-themes.sh;
-    executable = true;
-  };
-
-  # Runtime theme switcher (Omarchy-style)
-  home.file.".local/bin/theme-set" = {
-    source = ./scripts/theme-set.sh;
-    executable = true;
-  };
-
   # Theme picker (Omarchy-style)
   home.file.".local/bin/theme-picker" = {
     text = ''
       #!/usr/bin/env bash
-      # Interactive theme picker using Walker (Omarchy-style)
+      # Interactive theme picker using Walker + themectl
 
       THEMES_DIR="${config.home.homeDirectory}/.config/omarchy/themes"
       CURRENT_THEME_LINK="${config.home.homeDirectory}/.config/omarchy/current/theme"
+
+      if ! command -v themectl &>/dev/null; then
+        ${pkgs.libnotify}/bin/notify-send "themectl unavailable" "Ensure programs.themectl is enabled" -t 3000
+        exit 1
+      fi
 
       # Get list of themes with proper formatting (Title Case with spaces)
       get_theme_list() {
@@ -902,14 +960,14 @@ in
 
       # Check if themes directory exists
       if [[ ! -d "$THEMES_DIR" ]]; then
-        ${pkgs.libnotify}/bin/notify-send "No themes found" "Run generate-themes first" -t 3000
+        ${pkgs.libnotify}/bin/notify-send "No themes found" "Run themectl sync-assets first" -t 3000
         exit 1
       fi
 
       # Get theme list
       THEME_LIST=$(get_theme_list)
       if [[ -z "$THEME_LIST" ]]; then
-        ${pkgs.libnotify}/bin/notify-send "No themes found" "Run generate-themes first" -t 3000
+        ${pkgs.libnotify}/bin/notify-send "No themes found" "Run themectl sync-assets first" -t 3000
         exit 1
       fi
 
@@ -935,11 +993,8 @@ in
           ${pkgs.gnused}/bin/sed -E 's/ /-/g' | \
           ${pkgs.coreutils}/bin/tr '[:upper:]' '[:lower:]')
 
-        # Apply theme using theme-set script
-        if [[ -x "${config.home.homeDirectory}/.local/bin/theme-set" ]]; then
-          ${config.home.homeDirectory}/.local/bin/theme-set "$THEME_NAME"
-        else
-          ${pkgs.libnotify}/bin/notify-send "Theme switcher not found" "theme-set script is missing" -t 3000
+        if ! themectl apply "$THEME_NAME"; then
+          ${pkgs.libnotify}/bin/notify-send "Failed to apply theme" "$THEME_NAME" -t 3000
         fi
       fi
     '';

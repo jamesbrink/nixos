@@ -53,6 +53,7 @@
       watchexec # Execute commands on file change
       tealdeer # Fast tldr client (provides tldr command)
       choose # Human-friendly cut
+      neovim-remote # `nvr` helper for live Neovim automation
 
     ]
     ++ lib.optionals (!pkgs.stdenv.isx86_64) [

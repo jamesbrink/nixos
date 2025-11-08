@@ -81,9 +81,7 @@ in
           [ ../../modules/home-manager/hyprland ];
 
       # Make inputs available to home-manager
-      _module.args = {
-        inputs = effectiveInputs;
-      };
+      _module.args.inputs = effectiveInputs;
 
       # Allow unfree packages in home-manager
       nixpkgs.config.allowUnfree = true;

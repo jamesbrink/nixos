@@ -1,6 +1,6 @@
 # HOTKEYS Cheat Sheet
 
-Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys.
+Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `config/hotkeys.yaml` for the canonical manifest that future tooling (themectl, SKHD exporters, Hyprland generators) will read.
 
 ---
 

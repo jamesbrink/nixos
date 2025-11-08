@@ -6,6 +6,44 @@
   ...
 }:
 
+let
+  inherit (lib) attrByPath;
+  hotkeysBundle = attrByPath [ "_module" "args" "hotkeysBundle" ] null config;
+  hotkeysData =
+    if hotkeysBundle == null then
+      throw "hotkeysBundle not provided to darwin/hammerspoon module"
+    else
+      hotkeysBundle.data;
+  darwinPlatform = hotkeysData.platforms.darwin;
+  darwinMode = darwinPlatform.default_mode or "bsp";
+  expandBindings =
+    bindings:
+    lib.foldl' (
+      acc: name:
+      let
+        value = bindings.${name};
+        path = lib.splitString "." name;
+      in
+      lib.recursiveUpdate acc (lib.setAttrByPath path value)
+    ) { } (builtins.attrNames bindings);
+  darwinBindings = expandBindings darwinPlatform.modes.${darwinMode}.bindings;
+  hsHotkey =
+    chord:
+    let
+      parts = map lib.strings.toLower (lib.splitString "+" chord);
+      keyToken = lib.last parts;
+      mods = lib.init parts;
+      key = if lib.stringLength keyToken == 1 then lib.strings.toUpper keyToken else keyToken;
+      modList =
+        if mods == [ ] then "{ }" else "{ " + (lib.concatStringsSep ", " (map (m: ''"${m}"'') mods)) + " }";
+    in
+    {
+      mods = modList;
+      key = key;
+    };
+  hsThemeCycle = hsHotkey darwinBindings.theme.cycle;
+  hsModeToggle = hsHotkey darwinBindings.macos_mode.toggle;
+in
 {
   # Deploy hammerspoon init.lua
   home.file.".hammerspoon/init.lua".text = ''
@@ -30,13 +68,13 @@
 
     -- Unified theme cycling (Alacritty + Ghostty + VSCode + Wallpaper + System Appearance)
     -- Bind Cmd+Shift+T to cycle all themes via themectl
-    hs.hotkey.bind({"cmd", "shift"}, "T", function()
+    hs.hotkey.bind(${hsThemeCycle.mods}, "${hsThemeCycle.key}", function()
       runThemectl("cycle", "Cycled theme")
     end)
 
     -- Toggle between BSP tiling and native macOS mode
     -- Bind Cmd+Shift+Space to toggle via themectl
-    hs.hotkey.bind({"cmd", "shift"}, "space", function()
+    hs.hotkey.bind(${hsModeToggle.mods}, "${hsModeToggle.key}", function()
       runThemectl("macos-mode toggle", "Toggled window manager mode")
     end)
 
