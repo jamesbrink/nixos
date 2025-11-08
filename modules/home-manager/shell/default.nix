@@ -131,6 +131,7 @@
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         option_as_alt = "Both";
+        decorations = "buttonless"; # Hide title bar on macOS for cleaner look
       };
 
       font = {

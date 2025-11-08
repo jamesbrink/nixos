@@ -1,6 +1,66 @@
 # HOTKEYS Cheat Sheet
 
-Quick reference for Hyprland, tmux, and Vim/Neovim hotkeys.
+Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys.
+
+---
+
+## macOS Window Manager (Yabai + SKHD)
+
+**Modifier:** `Cmd` (Command key)
+
+### Applications
+
+- `Cmd+Return` - Terminal (Alacritty)
+- `Cmd+Shift+F` - File manager (Finder)
+- `Cmd+Shift+B` - Browser (Chrome), `Cmd+Shift+Alt+B` - Browser incognito
+- `Cmd+Shift+M` - Spotify
+- `Cmd+Shift+N` - Neovim (terminal)
+- `Cmd+Shift+O` - Obsidian
+- `Cmd+Shift+Y` - YouTube
+- `Cmd+Shift+T` - Theme cycling
+- `Cmd+Alt+T` - btop (system monitor)
+
+### Window Management
+
+- `Cmd+W` - Close window
+- `Cmd+T` - Toggle float
+- `Cmd+F` - Fullscreen (zoom), `Cmd+Ctrl+F` - Native fullscreen
+- `Cmd+J` - Toggle split orientation
+- `Cmd+Arrows` - Move focus between windows
+- `Cmd+Shift+Arrows` - Swap windows
+- `Cmd+Minus/Equal` - Resize width (-40/+40px)
+- `Cmd+Shift+Minus/Equal` - Resize height (-40/+40px)
+
+### Workspaces (Spaces)
+
+- `Cmd+1-9,0` - Switch to workspace 1-10
+- `Cmd+Shift+1-9,0` - Move window to workspace 1-10
+- `Cmd+Tab` - Next workspace, `Cmd+Shift+Tab` - Previous workspace
+
+### Window Cycling
+
+- `Alt+Tab` - Cycle next window, `Alt+Shift+Tab` - Cycle previous
+
+### Layout Management
+
+- `Cmd+Ctrl+Space` - Toggle between tiling (BSP) and floating (normal macOS)
+- `Cmd+R` - Rotate tree 90°
+- `Cmd+X` - Mirror tree X-axis, `Cmd+Y` - Mirror tree Y-axis
+- `Cmd+E` - Balance windows
+
+### Clipboard & Productivity
+
+- `Cmd+Shift+V` - Clipboard history (Maccy)
+
+### Yabai Control
+
+- `Cmd+Ctrl+R` - Restart yabai
+- `Cmd+Ctrl+Q` - Stop/start yabai
+
+### Mouse Actions
+
+- `Cmd+Left Drag` - Move window
+- `Cmd+Right Drag` - Resize window
 
 ---
 

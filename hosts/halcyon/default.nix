@@ -13,6 +13,9 @@
     ../../profiles/darwin/desktop.nix # Use full desktop profile
     ../../modules/darwin/packages.nix
     ../../modules/darwin/dock.nix
+    ../../modules/darwin/yabai.nix
+    ../../modules/darwin/sketchybar.nix
+    ../../modules/darwin/productivity-apps.nix
     ../../modules/darwin/restic-backups.nix
     ../../modules/ssh-keys.nix
     ../../users/regular/jamesbrink-darwin.nix
@@ -77,6 +80,15 @@
 
   # Time zone
   time.timeZone = "America/Phoenix";
+
+  # Dock auto-hide by default (yabai starts in BSP/tiling mode)
+  system.defaults.dock.autohide = lib.mkForce true;
+
+  # Hide native macOS menu bar (SketchyBar replaces it)
+  system.defaults.NSGlobalDomain._HIHideMenuBar = true;
+
+  # Hide desktop icons by default (yabai starts in BSP/tiling mode)
+  system.defaults.finder.CreateDesktop = false;
 
   # Copy authorized_keys to standard location for compatibility
   system.activationScripts.postActivation.text = lib.mkAfter ''
