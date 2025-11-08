@@ -116,6 +116,9 @@
       set -g @continuum-boot 'on'
       set -g @prefix_highlight_show_copy_mode 'on'
       set -g @prefix_highlight_copy_mode_attr 'fg=black,bg=yellow,bold'
+
+      # Source local theme overrides (managed by cycle-theme script)
+      if-shell "test -f ~/.tmux.conf.local" "source-file ~/.tmux.conf.local"
     '';
   };
 }

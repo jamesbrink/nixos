@@ -71,120 +71,194 @@ let
 
   # Unified theme cycle script
   cycleScript = pkgs.writeScriptBin "cycle-theme" ''
-    #!/usr/bin/env bash
-    # Unified theme cycling for macOS (Alacritty + Ghostty + VSCode + Wallpaper + System Appearance)
+        #!/usr/bin/env bash
+        # Unified theme cycling for macOS (Alacritty + Ghostty + VSCode + Wallpaper + System Appearance)
 
-    THEMES_DIR="$HOME/.config/themes"
-    CURRENT_THEME_FILE="$HOME/.config/themes/.current-theme"
-    WALLPAPERS_DIR="$HOME/.config/themes/wallpapers"
-    VSCODE_THEME_MAP="$HOME/.config/themes/vscode-themes.json"
-    GHOSTTY_THEME_MAP="$HOME/.config/themes/ghostty-themes.json"
+        THEMES_DIR="$HOME/.config/themes"
+        CURRENT_THEME_FILE="$HOME/.config/themes/.current-theme"
+        WALLPAPERS_DIR="$HOME/.config/themes/wallpapers"
+        VSCODE_THEME_MAP="$HOME/.config/themes/vscode-themes.json"
+        GHOSTTY_THEME_MAP="$HOME/.config/themes/ghostty-themes.json"
 
-    ALACRITTY_CONFIG="$HOME/.config/alacritty/alacritty.toml"
-    GHOSTTY_CONFIG="$HOME/.config/ghostty/config"
+        ALACRITTY_CONFIG="$HOME/.config/alacritty/alacritty.toml"
+        GHOSTTY_CONFIG="$HOME/.config/ghostty/config"
 
-    # Get list of themes
-    THEMES=($(ls -1 "$THEMES_DIR" | grep -v "^\." | grep -v ".json" | sort))
-
-    if [[ ''${#THEMES[@]} -eq 0 ]]; then
-      echo "No themes found in $THEMES_DIR"
-      exit 1
-    fi
-
-    # Read current theme
-    CURRENT_THEME=""
-    if [[ -f "$CURRENT_THEME_FILE" ]]; then
-      CURRENT_THEME=$(cat "$CURRENT_THEME_FILE")
-    fi
-
-    # Find next theme
-    NEXT_INDEX=0
-    if [[ -n "$CURRENT_THEME" ]]; then
-      for i in "''${!THEMES[@]}"; do
-        if [[ "''${THEMES[$i]}" == "$CURRENT_THEME" ]]; then
-          NEXT_INDEX=$(( (i + 1) % ''${#THEMES[@]} ))
-          break
-        fi
-      done
-    fi
-
-    NEXT_THEME="''${THEMES[$NEXT_INDEX]}"
-
-    # Update Alacritty theme
-    if [[ -f "$ALACRITTY_CONFIG" && -f "$THEMES_DIR/$NEXT_THEME" ]]; then
-      # Remove old [colors] section
-      awk '/^\[colors/ {skip=1} /^\[/ && !/^\[colors/ {skip=0} !skip' "$ALACRITTY_CONFIG" > "$ALACRITTY_CONFIG.tmp"
-      mv "$ALACRITTY_CONFIG.tmp" "$ALACRITTY_CONFIG"
-
-      # Append new theme colors
-      cat "$THEMES_DIR/$NEXT_THEME" >> "$ALACRITTY_CONFIG"
-
-      # Set opacity
-      if grep -q "^opacity = " "$ALACRITTY_CONFIG"; then
-        sed -i.bak 's/^opacity = .*/opacity = 0.97/' "$ALACRITTY_CONFIG"
-      else
-        awk '/^\[window\]/ {print; print "opacity = 0.97"; next} 1' "$ALACRITTY_CONFIG" > "$ALACRITTY_CONFIG.tmp"
-        mv "$ALACRITTY_CONFIG.tmp" "$ALACRITTY_CONFIG"
-      fi
-
-      touch "$ALACRITTY_CONFIG"
-    fi
-
-    # Update Ghostty theme
-    if [[ -f "$GHOSTTY_CONFIG" && -f "$GHOSTTY_THEME_MAP" ]]; then
-      GHOSTTY_THEME=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"]" "$GHOSTTY_THEME_MAP")
-      if [[ -n "$GHOSTTY_THEME" && "$GHOSTTY_THEME" != "null" ]]; then
-        # Update or add theme line
-        if grep -q "^theme = " "$GHOSTTY_CONFIG"; then
-          sed -i.bak "s|^theme = .*|theme = $GHOSTTY_THEME|" "$GHOSTTY_CONFIG"
-        else
-          echo "theme = $GHOSTTY_THEME" >> "$GHOSTTY_CONFIG"
-        fi
-
-        # Update or add background opacity
-        if grep -q "^background-opacity = " "$GHOSTTY_CONFIG"; then
-          sed -i.bak "s|^background-opacity = .*|background-opacity = 0.97|" "$GHOSTTY_CONFIG"
-        else
-          echo "background-opacity = 0.97" >> "$GHOSTTY_CONFIG"
-        fi
-
-        touch "$GHOSTTY_CONFIG"
-      fi
-    fi
-
-    # Set wallpaper if theme has one
-    if [[ -d "$WALLPAPERS_DIR/$NEXT_THEME" ]]; then
-      FIRST_WALLPAPER=$(ls -1 "$WALLPAPERS_DIR/$NEXT_THEME" | head -1)
-      if [[ -n "$FIRST_WALLPAPER" ]]; then
-        ${pkgs.desktoppr}/bin/desktoppr "$WALLPAPERS_DIR/$NEXT_THEME/$FIRST_WALLPAPER"
-      fi
-    fi
-
-    # Toggle macOS appearance based on theme
-    if [[ "$NEXT_THEME" =~ (latte|light) ]]; then
-      osascript -e 'tell app "System Events" to tell appearance preferences to set dark mode to false'
-    else
-      osascript -e 'tell app "System Events" to tell appearance preferences to set dark mode to true'
-    fi
-
-    # Update VSCode/Cursor theme
-    if [[ -f "$VSCODE_THEME_MAP" ]]; then
-      VSCODE_THEME=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"]" "$VSCODE_THEME_MAP")
-      if [[ -n "$VSCODE_THEME" && "$VSCODE_THEME" != "null" ]]; then
-        for SETTINGS_FILE in "$HOME/Library/Application Support/Code/User/settings.json" "$HOME/Library/Application Support/Cursor/User/settings.json"; do
-          if [[ -f "$SETTINGS_FILE" ]]; then
-            ${pkgs.jq}/bin/jq --arg theme "$VSCODE_THEME" '.["workbench.colorTheme"] = $theme' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
-          fi
+        # Get list of themes (exclude directories and JSON files)
+        THEMES=()
+        for item in "$THEMES_DIR"/*; do
+          [[ -f "$item" ]] && [[ ! "$item" =~ \.json$ ]] && [[ ! "$(basename "$item")" =~ ^\. ]] && THEMES+=("$(basename "$item")")
         done
-      fi
-    fi
+        THEMES=($(printf '%s\n' "''${THEMES[@]}" | sort))
 
-    # Save current theme
-    echo "$NEXT_THEME" > "$CURRENT_THEME_FILE"
+        if [[ ''${#THEMES[@]} -eq 0 ]]; then
+          echo "No themes found in $THEMES_DIR"
+          exit 1
+        fi
 
-    # Show notification
-    echo "Switched to theme: $NEXT_THEME"
-    osascript -e "display notification \"$NEXT_THEME\" with title \"Theme\""
+        # Read current theme, default to tokyo-night if not set
+        CURRENT_THEME=""
+        if [[ -f "$CURRENT_THEME_FILE" ]]; then
+          CURRENT_THEME=$(cat "$CURRENT_THEME_FILE")
+        fi
+
+        # Set default to tokyo-night if no current theme
+        if [[ -z "$CURRENT_THEME" ]]; then
+          CURRENT_THEME="tokyo-night"
+          echo "$CURRENT_THEME" > "$CURRENT_THEME_FILE"
+        fi
+
+        # Find next theme
+        NEXT_INDEX=0
+        if [[ -n "$CURRENT_THEME" ]]; then
+          for i in "''${!THEMES[@]}"; do
+            if [[ "''${THEMES[$i]}" == "$CURRENT_THEME" ]]; then
+              NEXT_INDEX=$(( (i + 1) % ''${#THEMES[@]} ))
+              break
+            fi
+          done
+        fi
+
+        NEXT_THEME="''${THEMES[$NEXT_INDEX]}"
+
+        # Update Alacritty theme
+        if [[ -f "$ALACRITTY_CONFIG" && -f "$THEMES_DIR/$NEXT_THEME" ]]; then
+          # Remove old [colors] section
+          awk '/^\[colors/ {skip=1} /^\[/ && !/^\[colors/ {skip=0} !skip' "$ALACRITTY_CONFIG" > "$ALACRITTY_CONFIG.tmp"
+          mv "$ALACRITTY_CONFIG.tmp" "$ALACRITTY_CONFIG"
+
+          # Append new theme colors
+          cat "$THEMES_DIR/$NEXT_THEME" >> "$ALACRITTY_CONFIG"
+
+          # Set opacity
+          if grep -q "^opacity = " "$ALACRITTY_CONFIG"; then
+            sed -i.bak 's/^opacity = .*/opacity = 0.97/' "$ALACRITTY_CONFIG"
+          else
+            awk '/^\[window\]/ {print; print "opacity = 0.97"; next} 1' "$ALACRITTY_CONFIG" > "$ALACRITTY_CONFIG.tmp"
+            mv "$ALACRITTY_CONFIG.tmp" "$ALACRITTY_CONFIG"
+          fi
+
+          touch "$ALACRITTY_CONFIG"
+        fi
+
+        # Update Ghostty theme
+        if [[ -f "$GHOSTTY_CONFIG" && -f "$GHOSTTY_THEME_MAP" ]]; then
+          GHOSTTY_THEME=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"]" "$GHOSTTY_THEME_MAP")
+          if [[ -n "$GHOSTTY_THEME" && "$GHOSTTY_THEME" != "null" ]]; then
+            # Update or add theme line
+            if grep -q "^theme = " "$GHOSTTY_CONFIG"; then
+              sed -i.bak "s|^theme = .*|theme = $GHOSTTY_THEME|" "$GHOSTTY_CONFIG"
+            else
+              echo "theme = $GHOSTTY_THEME" >> "$GHOSTTY_CONFIG"
+            fi
+
+            # Update or add background opacity
+            if grep -q "^background-opacity = " "$GHOSTTY_CONFIG"; then
+              sed -i.bak "s|^background-opacity = .*|background-opacity = 0.97|" "$GHOSTTY_CONFIG"
+            else
+              echo "background-opacity = 0.97" >> "$GHOSTTY_CONFIG"
+            fi
+
+            touch "$GHOSTTY_CONFIG"
+          fi
+        fi
+
+        # Set wallpaper if theme has one
+        if [[ -d "$WALLPAPERS_DIR/$NEXT_THEME" ]]; then
+          FIRST_WALLPAPER=$(ls -1 "$WALLPAPERS_DIR/$NEXT_THEME" | head -1)
+          if [[ -n "$FIRST_WALLPAPER" ]]; then
+            ${pkgs.desktoppr}/bin/desktoppr "$WALLPAPERS_DIR/$NEXT_THEME/$FIRST_WALLPAPER"
+          fi
+        fi
+
+        # Toggle macOS appearance based on theme
+        if [[ "$NEXT_THEME" =~ (latte|light) ]]; then
+          # Set to light mode
+          osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to false'
+          defaults delete NSGlobalDomain AppleInterfaceStyle 2>/dev/null || true
+        else
+          # Set to dark mode
+          osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to true'
+          defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"
+        fi
+
+        # Restart Dock and SystemUIServer to apply changes immediately
+        killall Dock 2>/dev/null || true
+        killall SystemUIServer 2>/dev/null || true
+
+        # Update VSCode/Cursor theme (use sed to handle JSONC with comments)
+        if [[ -f "$VSCODE_THEME_MAP" ]]; then
+          VSCODE_THEME=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"]" "$VSCODE_THEME_MAP")
+          if [[ -n "$VSCODE_THEME" && "$VSCODE_THEME" != "null" ]]; then
+            for SETTINGS_FILE in "$HOME/Library/Application Support/Code/User/settings.json" "$HOME/Library/Application Support/Cursor/User/settings.json"; do
+              if [[ -f "$SETTINGS_FILE" ]]; then
+                # Use sed to update theme, preserving comments and JSONC format
+                if grep -q "workbench.colorTheme" "$SETTINGS_FILE"; then
+                  sed -i.bak "s|\"workbench.colorTheme\": *\"[^\"]*\"|\"workbench.colorTheme\": \"$VSCODE_THEME\"|" "$SETTINGS_FILE"
+                else
+                  # Add theme setting before the last closing brace
+                  sed -i.bak "$ s/}/    \"workbench.colorTheme\": \"$VSCODE_THEME\"\n}/" "$SETTINGS_FILE"
+                fi
+              fi
+            done
+          fi
+        fi
+
+        # Update Neovim theme
+        NEOVIM_THEME_MAP="$HOME/.config/themes/neovim-themes.json"
+        if [[ -f "$NEOVIM_THEME_MAP" ]]; then
+          NEOVIM_THEME=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"]" "$NEOVIM_THEME_MAP")
+          if [[ -n "$NEOVIM_THEME" && "$NEOVIM_THEME" != "null" ]]; then
+            NVIM_THEME_FILE="$HOME/.config/nvim/lua/plugins/theme.lua"
+            if [[ -f "$NVIM_THEME_FILE" ]]; then
+              cat > "$NVIM_THEME_FILE" <<EOF
+    return {
+      {
+        "LazyVim/LazyVim",
+        opts = {
+          colorscheme = "$NEOVIM_THEME",
+          news = {
+            lazyvim = false,
+          },
+        },
+      },
+    }
+    EOF
+            fi
+          fi
+        fi
+
+        # Update Tmux theme
+        TMUX_THEME_MAP="$HOME/.config/themes/tmux-themes.json"
+        if [[ -f "$TMUX_THEME_MAP" ]]; then
+          # Extract individual color values directly from JSON
+          STATUS_BG=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"].statusBackground" "$TMUX_THEME_MAP")
+          STATUS_FG=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"].statusForeground" "$TMUX_THEME_MAP")
+          WINDOW_CURRENT=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"].windowStatusCurrent" "$TMUX_THEME_MAP")
+          PANE_ACTIVE=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"].paneActiveBorder" "$TMUX_THEME_MAP")
+          PANE_INACTIVE=$(${pkgs.jq}/bin/jq -r ".[\"$NEXT_THEME\"].paneInactiveBorder" "$TMUX_THEME_MAP")
+
+          if [[ -n "$STATUS_BG" && "$STATUS_BG" != "null" ]]; then
+
+            # Update tmux.conf.local with theme colors
+            cat > "$HOME/.tmux.conf.local" <<EOF
+    # Tmux theme colors (managed by cycle-theme)
+    set -g status-style "bg=$STATUS_BG,fg=$STATUS_FG"
+    set -g window-status-current-style "bg=$WINDOW_CURRENT,fg=$STATUS_BG"
+    set -g pane-active-border-style "fg=$PANE_ACTIVE"
+    set -g pane-border-style "fg=$PANE_INACTIVE"
+    EOF
+
+            # Reload tmux if running
+            ${pkgs.tmux}/bin/tmux source-file "$HOME/.tmux.conf" 2>/dev/null || true
+          fi
+        fi
+
+        # Save current theme
+        echo "$NEXT_THEME" > "$CURRENT_THEME_FILE"
+
+        # Show notification
+        echo "Switched to theme: $NEXT_THEME"
+        osascript -e "display notification \"$NEXT_THEME\" with title \"Theme\""
   '';
 in
 {
@@ -196,6 +270,18 @@ in
 
   # Set initial Alacritty opacity
   programs.alacritty.settings.window.opacity = lib.mkForce 0.97;
+
+  # Create mutable .current-theme file with tokyo-night as default
+  home.activation.createCurrentThemeFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    CURRENT_THEME_FILE="${config.home.homeDirectory}/.config/themes/.current-theme"
+    mkdir -p "${config.home.homeDirectory}/.config/themes"
+
+    if [[ ! -f "$CURRENT_THEME_FILE" ]]; then
+      $DRY_RUN_CMD echo "tokyo-night" > "$CURRENT_THEME_FILE"
+      $DRY_RUN_CMD chmod 644 "$CURRENT_THEME_FILE"
+      echo "Created default theme file (tokyo-night)"
+    fi
+  '';
 
   # Generate theme files and mappings
   home.file = {
@@ -221,6 +307,38 @@ in
 
     # Ghostty theme mapping
     ".config/themes/ghostty-themes.json".text = builtins.toJSON ghosttyThemeMap;
+
+    # Neovim colorscheme mapping
+    ".config/themes/neovim-themes.json".text = builtins.toJSON {
+      "tokyo-night" = "tokyonight";
+      "catppuccin" = "catppuccin-mocha";
+      "catppuccin-latte" = "catppuccin-latte";
+      "gruvbox" = "gruvbox";
+      "nord" = "nordfox";
+      "rose-pine" = "rose-pine";
+      "everforest" = "everforest";
+      "kanagawa" = "kanagawa";
+      "matte-black" = "tokyonight-night";
+      "osaka-jade" = "tokyonight";
+      "ristretto" = "monokai-pro-ristretto";
+      "flexoki-light" = "flexoki-light";
+    };
+
+    # Tmux theme mapping (colors from theme definitions)
+    ".config/themes/tmux-themes.json".text = builtins.toJSON (
+      builtins.listToAttrs (
+        map (
+          themeFile:
+          let
+            themeDef = import themeFile;
+          in
+          {
+            name = themeDef.name;
+            value = themeDef.tmux;
+          }
+        ) themeFiles
+      )
+    );
   }
   // lib.listToAttrs (
     map (

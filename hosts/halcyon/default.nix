@@ -154,6 +154,11 @@
   # NFS mounts configuration - mount to /mnt to avoid conflicts with Finder's /Volumes
   # Note: On macOS, automounts appear at /System/Volumes/Data/mnt due to firmlinks
   system.activationScripts.preActivation.text = ''
+        # Clean up old home-manager backup files
+        echo "Cleaning up old home-manager backup files..."
+        sudo -u jamesbrink find /Users/jamesbrink/.config -name "*.backup" -type f -delete 2>/dev/null || true
+        echo "Backup cleanup complete"
+
         # Create /mnt directory if it doesn't exist
         sudo mkdir -p /mnt
         

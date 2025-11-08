@@ -17,7 +17,13 @@
     -- Unified theme cycling (Alacritty + Ghostty + VSCode + Wallpaper + System Appearance)
     -- Bind Cmd+Shift+T to cycle all themes
     hs.hotkey.bind({"cmd", "shift"}, "T", function()
-      hs.task.new("${config.home.homeDirectory}/.local/bin/cycle-theme", nil):start()
+      local output, status = hs.execute("${config.home.homeDirectory}/.local/bin/cycle-theme 2>&1", true)
+      if output and output ~= "" then
+        print("Theme cycle output:", output)
+      end
+      if not status then
+        hs.notify.new({title = "Theme Error", informativeText = "Script failed"}):send()
+      end
     end)
 
     -- Manual Hammerspoon reload
