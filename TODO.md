@@ -87,9 +87,14 @@ Goal: Match Linux Hyprland look and feel on macOS Darwin as closely as possible.
   - SKHD hotkey daemon with cmd as mod key
   - Window borders: 2px with Tokyo Night colors
   - Window opacity: active 0.97, inactive 0.90
-  - Workspace management (1-10)
+  - Workspace management (1-10) - cmd+1 through cmd+0 working ✓
   - All Hyprland-compatible keybindings
   - Requires SIP disabled for borders/opacity
+  - Scripting addition enabled with boot-args for workspace switching
+  - Desktop icons hidden in BSP mode, shown in float mode
+  - Dock auto-hides in BSP mode, visible in float mode
+  - macOS menu bar hidden (SketchyBar replaces it)
+  - Alacritty title bar hidden (buttonless decorations)
 
 - [x] **Light/Dark mode switching** - System appearance changes work correctly
 

@@ -27,8 +27,8 @@
     end)
 
     -- Manual Hammerspoon reload
-    -- Bind Cmd+Ctrl+R to reload configuration
-    hs.hotkey.bind({"cmd", "ctrl"}, "R", function()
+    -- Bind Cmd+Ctrl+Option+R to reload configuration
+    hs.hotkey.bind({"cmd", "ctrl", "alt"}, "R", function()
       hs.reload()
       hs.notify.new({title = "Hammerspoon", informativeText = "Config reloaded"}):send()
     end)
@@ -36,7 +36,7 @@
     -- Show notification on startup
     hs.notify.new({
       title = "Hammerspoon",
-      informativeText = "Config loaded\nCmd+Shift+T: Cycle themes\nCmd+Ctrl+R: Reload"
+      informativeText = "Config loaded\nCmd+Shift+T: Cycle themes\nCmd+Ctrl+Option+R: Reload"
     }):send()
   '';
 

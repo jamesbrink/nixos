@@ -54,8 +54,12 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys.
 
 ### Yabai Control
 
-- `Cmd+Ctrl+R` - Restart yabai
+- `Cmd+Ctrl+R` - Restart yabai and SKHD (fixes focus issues after menu bar appears)
 - `Cmd+Ctrl+Q` - Stop/start yabai
+
+### Hammerspoon
+
+- `Cmd+Ctrl+Alt+R` - Reload Hammerspoon configuration
 
 ### Mouse Actions
 

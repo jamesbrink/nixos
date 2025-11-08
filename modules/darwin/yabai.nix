@@ -246,8 +246,13 @@
       # YABAI CONTROL
       # ====================
 
-      # Restart yabai (cmd + ctrl + r)
-      cmd + ctrl - r : launchctl kickstart -k "gui/''${UID}/org.nixos.yabai"
+      # Restart yabai and SKHD (cmd + ctrl + r) - fixes focus issues after menu bar appears
+      cmd + ctrl - r : ${pkgs.writeShellScript "restart-wm.sh" ''
+        #!/bin/bash
+        launchctl kickstart -k "gui/''${UID}/org.nixos.yabai"
+        launchctl kickstart -k "gui/''${UID}/org.nixos.skhd"
+        osascript -e 'display notification "Restarted window manager" with title "Yabai"'
+      ''}
 
       # Stop/start yabai (cmd + ctrl + q)
       cmd + ctrl - q : yabai --stop-service && yabai --start-service

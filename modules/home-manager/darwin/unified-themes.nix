@@ -162,12 +162,17 @@ let
           fi
         fi
 
-        # Set wallpaper if theme has one
+        # Set wallpaper for ALL desktops/screens if theme has one
         if [[ -d "$WALLPAPERS_DIR/$NEXT_THEME" ]]; then
           FIRST_WALLPAPER=$(ls -1 "$WALLPAPERS_DIR/$NEXT_THEME" | head -1)
           if [[ -n "$FIRST_WALLPAPER" ]]; then
-            ${pkgs.desktoppr}/bin/desktoppr "$WALLPAPERS_DIR/$NEXT_THEME/$FIRST_WALLPAPER"
+            WALLPAPER_PATH="$WALLPAPERS_DIR/$NEXT_THEME/$FIRST_WALLPAPER"
+            # desktoppr sets wallpaper for all spaces and all displays by default
+            ${pkgs.desktoppr}/bin/desktoppr "$WALLPAPER_PATH"
+            echo "Set wallpaper to: $WALLPAPER_PATH"
           fi
+        else
+          echo "No wallpaper found for theme: $NEXT_THEME"
         fi
 
         # Toggle macOS appearance based on theme (macOS Tahoe 26 compatible)
