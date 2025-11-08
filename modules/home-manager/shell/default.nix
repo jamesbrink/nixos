@@ -201,6 +201,17 @@
             mods = "Command";
             chars = "\\u000c";
           }
+          # Font scaling for BSP mode (avoid cmd +/- tiling bindings)
+          {
+            key = "Equals";
+            mods = "Command|Option";
+            action = "IncreaseFontSize";
+          }
+          {
+            key = "Minus";
+            mods = "Command|Option";
+            action = "DecreaseFontSize";
+          }
         ];
       };
     };

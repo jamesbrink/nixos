@@ -47,5 +47,5 @@
   ];
 
   # Note: Add to SKHD config to bind hotkey (e.g., cmd + d)
-  # cmd - d : open -na Alacritty --args -e macos-launcher
+  # cmd - d : alacritty-cwd-launch -e macos-launcher
 }

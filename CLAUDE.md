@@ -218,6 +218,13 @@ Run `pre-commit-install` once to set up automatic security checks on every commi
 - **Secret Scanning**: Uses both TruffleHog and GitLeaks to detect potential secrets
 - **File Checks**: Prevents commits of large files (>5MB)
 
+## Core References
+
+- `VISION.md` – statement of intent for the fleet and IaC strategy.
+- `TECH_STACK.md` – authoritative list of supported tools, languages, and services.
+- `DESIGN.md` – layout of hosts, modules, profiles, and scripts.
+- `STANDARDS.md` – enforceable coding, documentation, and testing rules (including Python `themectl` guidance).
+
 ### Manual Security Scans
 
 - `scan-secrets`: Quick scan using TruffleHog (verified secrets only by default)
@@ -550,7 +557,7 @@ services.windows11-vm = {
 
 ### Adding a New Host to Secrets
 
-#### Quick Method (using built-in commands):
+#### Quick Method (using built-in commands)
 
 1. Run `secrets-add-host <hostname>` to get the host's SSH key
 2. Add the key to `secrets/secrets.nix` in the host keys section
@@ -558,7 +565,7 @@ services.windows11-vm = {
 4. Run `secrets-rekey` to re-encrypt all secrets
 5. Commit and push changes in the secrets submodule
 
-#### Manual Method (for advanced cases):
+#### Manual Method (for advanced cases)
 
 1. Clone the secrets repository if working outside the submodule:
 
@@ -609,7 +616,7 @@ services.windows11-vm = {
 - To create a new secret: `secrets-edit <new-path>` or manually: `agenix -e <new-secret-file>`
 - Always commit and push changes to the secrets repository
 
-### Security Notes
+### Secrets Security Notes
 
 - Never commit plaintext secrets to the repository
 - The secrets submodule is private and should remain so (Repository: `git@github.com:jamesbrink/nix-secrets.git`)

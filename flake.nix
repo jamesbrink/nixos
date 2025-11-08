@@ -160,6 +160,7 @@
               openssh
               bash
               nodePackages.prettier # For JSON and HTML formatting
+              nodePackages.markdownlint-cli # Markdown linting
               jq # For JSON processing
               age # For secrets encryption
               (pkgs.callPackage "${inputs.agenix}/pkgs/agenix.nix" { }) # agenix from flake input

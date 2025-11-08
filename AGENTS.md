@@ -41,3 +41,10 @@
 - Access encrypted material through `scripts/secrets-edit.sh <path>`; never edit `.age` files manually. Regenerate recipients with `scripts/secrets-rekey.sh` after key rotations.
 - Keep `NIXPKGS_ALLOW_UNFREE=1` (already set in the dev shell) when running `nix` commands so unfree packages resolve consistently.
 - Run `scripts/scan-gitleaks.sh` or `scripts/scan-secrets.sh --all` before publishing branches to prevent accidental leakage.
+
+## Core References
+
+- `VISION.md` – fleet-wide goals and philosophy.
+- `TECH_STACK.md` – canonical list of supported platforms, languages, and tooling.
+- `DESIGN.md` – repo structure and division of responsibility.
+- `STANDARDS.md` – required coding, documentation, and testing practices (including the Python `themectl` module rules).

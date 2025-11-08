@@ -40,6 +40,176 @@
   ...
 }:
 
+let
+  # Hotkey helper: spawns Alacritty windows using the current workspace's terminal cwd
+  alacrittyCwdLauncher = pkgs.writeShellApplication {
+    name = "alacritty-cwd-launch";
+    runtimeInputs = [ pkgs.jq ];
+    text = ''
+      set -euo pipefail
+
+      PATH="/run/current-system/sw/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+
+      args=("$@")
+      open_bin="/usr/bin/open"
+      [[ -x "$open_bin" ]] || open_bin="$(command -v open || true)"
+
+      if [[ -z "$open_bin" ]]; then
+        echo "[alacritty-cwd-launch] Unable to find 'open' command" >&2
+        exit 1
+      fi
+
+      yabai_bin="$(command -v yabai || true)"
+      pgrep_bin="$(command -v pgrep || true)"
+      lsof_bin="$(command -v lsof || true)"
+
+      determine_workspace_cwd() {
+        local windows_json
+        windows_json="$("$yabai_bin" -m query --windows --space 2>/dev/null)" || return 1
+
+        mapfile -t candidate_pids < <(
+          printf '%s' "$windows_json" | jq -r '
+            if type == "array" then
+              map(select(.app == "Alacritty"))
+            else
+              []
+            end
+            | sort_by(.focused // 0)
+            | reverse
+            | .[].pid
+          '
+        )
+
+        if [[ ''${#candidate_pids[@]} -eq 0 ]]; then
+          return 1
+        fi
+
+        for pid in "''${candidate_pids[@]}"; do
+          if dir="$(trace_shell_cwd "$pid")"; then
+            printf '%s\n' "$dir"
+            return 0
+          fi
+        done
+
+        return 1
+      }
+
+      trace_shell_cwd() {
+        local root_pid="$1"
+        local queue=("$root_pid")
+        local visited=" $root_pid "
+
+        while [[ ''${#queue[@]} -gt 0 ]]; do
+          local current="''${queue[0]}"
+          queue=("''${queue[@]:1}")
+
+          local children
+          children="$("$pgrep_bin" -P "$current" 2>/dev/null || true)"
+          if [[ -z "$children" ]]; then
+            continue
+          fi
+
+          for child in $children; do
+            if [[ " $visited " == *" $child "* ]]; then
+              continue
+            fi
+            visited+=" $child "
+
+            local cwd
+            cwd="$("$lsof_bin" -a -d cwd -p "$child" -Fn 2>/dev/null | sed -n 's/^n//p' | head -n1 || true)"
+            if [[ -n "$cwd" && -d "$cwd" && "$cwd" != "/" ]]; then
+              printf '%s\n' "$cwd"
+              return 0
+            fi
+
+            queue+=("$child")
+          done
+        done
+
+        return 1
+      }
+
+      target_dir="$HOME"
+      if [[ -n "$yabai_bin" && -n "$pgrep_bin" && -n "$lsof_bin" ]]; then
+        if workspace_dir="$(determine_workspace_cwd)"; then
+          target_dir="$workspace_dir"
+        fi
+      fi
+
+      exec "$open_bin" -na Alacritty --args --working-directory "$target_dir" "''${args[@]}"
+    '';
+  };
+
+  macScreenshotHelper = pkgs.writeShellApplication {
+    name = "macos-screenshot";
+    runtimeInputs = [ pkgs.coreutils ];
+    text = ''
+      set -euo pipefail
+
+      PATH="/run/current-system/sw/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+
+      mode="full"
+      clipboard=0
+
+      while [[ $# -gt 0 ]]; do
+        case "$1" in
+          full|selection|window|ui)
+            mode="$1"
+            ;;
+          --clipboard)
+            clipboard=1
+            ;;
+          *)
+            echo "Usage: macos-screenshot [full|selection|window|ui] [--clipboard]" >&2
+            exit 1
+            ;;
+        esac
+        shift
+      done
+
+      if [[ "$mode" == "ui" ]]; then
+        open -a Screenshot
+        exit 0
+      fi
+
+      screencapture_bin="$(command -v screencapture || true)"
+      if [[ -z "$screencapture_bin" ]]; then
+        echo "[macos-screenshot] 'screencapture' not found" >&2
+        exit 1
+      fi
+
+      screenshot_dir="$HOME/Pictures/Screenshots"
+      mkdir -p "$screenshot_dir"
+      timestamp="$(${pkgs.coreutils}/bin/date +'%Y-%m-%d_%H-%M-%S')"
+      output="$screenshot_dir/Screenshot-$timestamp.png"
+
+      args=(-x)
+      case "$mode" in
+        selection|window)
+          args+=(-i)
+          ;;
+        *)
+          ;;
+      esac
+
+      if [[ "$clipboard" -eq 1 ]]; then
+        args+=(-c)
+      else
+        args+=("$output")
+      fi
+
+      if "$screencapture_bin" "''${args[@]}"; then
+        if [[ "$clipboard" -eq 1 ]]; then
+          /usr/bin/osascript -e 'display notification "Copied screenshot to clipboard" with title "Screenshot"'
+        else
+          /usr/bin/osascript -e 'display notification "Saved to Pictures/Screenshots" with title "Screenshot"'
+        fi
+      else
+        exit 1
+      fi
+    '';
+  };
+in
 {
   # Enable yabai service
   services.yabai = {
@@ -130,7 +300,7 @@
       # $mod = cmd (macOS equivalent of SUPER)
 
       # Terminal (cmd + return)
-      cmd - return : open -na Alacritty
+      cmd - return : ${alacrittyCwdLauncher}/bin/alacritty-cwd-launch
 
       # File manager (cmd + shift + f)
       cmd + shift - f : open -a Finder
@@ -141,7 +311,7 @@
 
       # Apps
       cmd + shift - m : open -a Spotify
-      cmd + shift - n : open -na Alacritty --args -e nvim
+      cmd + shift - n : ${alacrittyCwdLauncher}/bin/alacritty-cwd-launch -e nvim
       cmd + shift - o : open -a Obsidian
       cmd + shift - y : open -na "Google Chrome" --args --new-window https://youtube.com
 
@@ -149,15 +319,31 @@
       cmd + shift - t : /Users/jamesbrink/.local/bin/cycle-theme
 
       # System monitor (cmd + alt + t)
-      cmd + alt - t : open -na Alacritty --args -e btop
+      cmd + alt - t : ${alacrittyCwdLauncher}/bin/alacritty-cwd-launch -e btop
 
       # Application launcher (cmd + d) - fzf-based launcher (Rofi/Walker equivalent)
-      cmd - d : open -na Alacritty --args -e macos-launcher
+      cmd - d : ${alacrittyCwdLauncher}/bin/alacritty-cwd-launch -e macos-launcher
 
       # Alternative launchers available:
       # cmd + space - macOS Spotlight (default)
       # cmd + space - Alfred (if configured to override Spotlight)
       # cmd + space - Raycast (if configured to override Spotlight)
+
+      # ====================
+      # SCREENSHOTS (macOS defaults)
+      # ====================
+
+      # Save to file (Pictures/Screenshots)
+      cmd + shift - 3 : ${macScreenshotHelper}/bin/macos-screenshot full
+      cmd + shift - 4 : ${macScreenshotHelper}/bin/macos-screenshot selection
+
+      # Copy to clipboard
+      cmd + shift + ctrl - 3 : ${macScreenshotHelper}/bin/macos-screenshot full --clipboard
+      cmd + shift + ctrl - 4 : ${macScreenshotHelper}/bin/macos-screenshot selection --clipboard
+
+      # Screenshot UI (Screenshot.app toolbar)
+      cmd + shift - 5 : ${macScreenshotHelper}/bin/macos-screenshot ui
+      cmd + shift + ctrl - 5 : ${macScreenshotHelper}/bin/macos-screenshot ui
 
       # ====================
       # WINDOW MANAGEMENT

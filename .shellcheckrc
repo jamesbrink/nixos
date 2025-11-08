@@ -1,0 +1,12 @@
+# Use bash semantics by default
+shell=bash
+
+# Allow sourcing files discovered at runtime (common in scripts/)
+external-sources=all
+source-path=scripts
+
+# Ignore dynamic source path warnings we intentionally require
+disable=SC1090,SC1091
+
+# Treat style issues as warnings to keep CI noise manageable
+severity=style
