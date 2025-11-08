@@ -125,6 +125,13 @@
             overlays = [ devshell.overlays.default ];
             config.allowUnfree = true;
           };
+          pythonEnv = pkgs.python313.withPackages (ps: [
+            ps.typer
+            ps.rich
+            ps."tomli-w"
+            ps.pytest
+            ps."pytest-mock"
+          ]);
 
         in
         # Note: We can't detect hostname at evaluation time in pure Nix
@@ -162,6 +169,9 @@
               nodePackages.prettier # For JSON and HTML formatting
               nodePackages.markdownlint-cli # Markdown linting
               jq # For JSON processing
+              pythonEnv
+              ruff
+              basedpyright
               age # For secrets encryption
               (pkgs.callPackage "${inputs.agenix}/pkgs/agenix.nix" { }) # agenix from flake input
               nixos-anywhere # For initial deployments with disko
@@ -545,6 +555,25 @@
               }
             ];
           };
+        }
+      );
+
+      #########################################################################
+      # Packages                                                              #
+      #########################################################################
+
+      packages = lib.genAttrs [ "x86_64-linux" "aarch64-darwin" "x86_64-darwin" ] (
+        system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+          themeLib = import ./modules/home-manager/hyprland/themes/lib.nix { };
+          themeData = pkgs.writeText "themectl-themes.json" themeLib.themeMetadataJSON;
+        in
+        {
+          themectl-theme-data = themeData;
         }
       );
 

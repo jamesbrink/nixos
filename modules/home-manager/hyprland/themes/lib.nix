@@ -102,12 +102,51 @@ let
       ) themeFiles
     )
   );
+  slugify = name: builtins.replaceStrings [ " " "_" "/" ] [ "-" "-" "-" ] (builtins.toLower name);
+
+  themeDefs = map (themeFile: import themeFile) themeFiles;
+
+  buildMetadata =
+    theme:
+    let
+      slug = builtins.toLower (
+        if theme ? slug && theme.slug != "" then theme.slug else slugify theme.name
+      );
+      wallpapers = map (wallpaper: getWallpaperSource theme.name wallpaper) (theme.wallpapers or [ ]);
+    in
+    {
+      inherit slug wallpapers;
+      name = theme.name;
+      displayName = theme.displayName or theme.name;
+      kind = theme.kind or null;
+      nvim = theme.nvim or { };
+      vscode = theme.vscode or { };
+      cursor = theme.cursor or { };
+      alacritty = theme.alacritty or { };
+      ghostty = theme.ghostty or { };
+      kitty = theme.kitty or { };
+      hyprland = theme.hyprland or { };
+      waybar = theme.waybar or { };
+      tmux = theme.tmux or { };
+      walker = theme.walker or { };
+      btop = theme.btop or { };
+    };
+
+  themeMetadata = map buildMetadata themeDefs;
+
+  themeMetadataJSON = builtins.toJSON {
+    version = 1;
+    themes = themeMetadata;
+  };
 in
 {
   inherit
     themeFiles
     omarchyThemesDir
     getWallpaperSource
+    themeDefs
+    themeMetadata
+    themeMetadataJSON
     ghosttyConfigText
     ghosttyThemeName
     ghosttyThemeMap

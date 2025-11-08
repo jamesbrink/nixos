@@ -4,12 +4,15 @@ This document tracks the current macOS/Hyprland parity effort. Check off items a
 
 ## Theme Automation Rewrite (Planned)
 
-- [ ] **Design Python CLI architecture** – sketch `scripts/themectl/` layout with subcommands (`apply`, `sync-assets`, `status`, `macos-space-mode`) and define how it imports Omarchy themes + Nix-provided metadata.
-- [ ] **Add Python dev tooling to flake** – include Ruff (lint/format), BasedPyright (fast Rust Pyright), and Markdownlint; wire them into `devShells` + `treefmt`.
-- [ ] **CLI integration points** – document how Hyprland, nix-darwin, and Hammerspoon call the tool (activation hooks vs. on-demand), including BSP/native toggle glue on macOS.
-- [ ] **Asset sync refactor** – replace `generate-themes.sh` / ad-hoc rsync with a Python `themectl sync-assets` command that mirrors Omarchy wallpapers, fonts, and templates idempotently.
-- [ ] **Testing strategy** – outline pytest-style unit tests for parsers + command routing, plus fixture-based tests for VSCode/Ghostty/Alacritty config rewrites without needing a live GUI.
-- [ ] **macOS SA watchdog** – ensure the CLI can detect when the yabai scripting addition drops (e.g., after reboot) and re-run `sudo yabai --load-sa`/`launchctl kickstart` as part of its macOS mode subcommand or a `themectl doctor`.
+- [x] **Design Python CLI architecture** – sketch `scripts/themectl/` layout with subcommands (`apply`, `sync-assets`, `status`, `macos-space-mode`) and define how it imports Omarchy themes + Nix-provided metadata.
+- [x] **Add Python dev tooling to flake** – include Ruff (lint/format), BasedPyright (fast Rust Pyright), and Markdownlint; wire them into `devShells` + `treefmt`.
+- [x] **Scaffold themectl package** – create `pyproject.toml`, Typer entrypoint, config/theme loaders, and pytest harness as the baseline for future commands.
+- [x] **Metadata/status MVP** – parse the generated theme JSON, track current theme state, and present Rich tables via `themectl status`.
+- [x] **`apply` stub + sync placeholder** – resolve theme names through the repository, emit structured panels, and prep `sync-assets` for real copying.
+- [x] **CLI integration points** – document how Hyprland, nix-darwin, and Hammerspoon call the tool (activation hooks vs. on-demand), including BSP/native toggle glue on macOS.
+- [x] **Asset sync refactor** – replace `generate-themes.sh` / ad-hoc rsync with a Python `themectl sync-assets` command that mirrors Omarchy wallpapers, fonts, and templates idempotently.
+- [x] **Testing strategy** – outline pytest-style unit tests for parsers + command routing, plus fixture-based tests for VSCode/Ghostty/Alacritty config rewrites without needing a live GUI.
+- [x] **macOS SA watchdog** – ensure the CLI can detect when the yabai scripting addition drops (e.g., after reboot) and re-run `sudo yabai --load-sa`/`launchctl kickstart` as part of its macOS mode subcommand or a `themectl doctor`.
 
 ## Deployment Tooling Refresh (Planned)
 

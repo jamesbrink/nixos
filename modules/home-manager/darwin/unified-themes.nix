@@ -4,6 +4,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -376,6 +377,8 @@ in
 
   # Generate theme files and mappings
   home.file = {
+    ".config/themectl/themes.json".source =
+      inputs.self.packages.${pkgs.stdenv.system}.themectl-theme-data;
     ".local/bin/cycle-theme" = {
       source = "${cycleScript}/bin/cycle-theme";
     };

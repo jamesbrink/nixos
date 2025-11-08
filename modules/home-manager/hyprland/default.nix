@@ -23,6 +23,7 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }:
 
@@ -702,6 +703,10 @@ in
   '';
 
   # Custom scripts
+  home.file.".config/themectl/themes.json" = {
+    source = inputs.self.packages.${pkgs.stdenv.system}.themectl-theme-data;
+  };
+
   home.file.".local/bin/spawn-terminal-here" = {
     text = ''
       #!/usr/bin/env bash
