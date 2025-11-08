@@ -20,6 +20,9 @@
     ../../modules/shared-packages/devops-darwin.nix
   ];
 
+  # Home-manager configuration
+  home-manager.backupFileExtension = "backup";
+
   # Networking
   networking = {
     hostName = "halcyon";

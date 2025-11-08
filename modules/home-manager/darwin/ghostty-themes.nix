@@ -1,4 +1,4 @@
-# Alacritty theme cycling support for Darwin
+# Ghostty theme cycling support for Darwin
 {
   config,
   lib,
@@ -26,49 +26,51 @@ let
   # Wallpapers base directory
   wallpapersBaseDir = ../hyprland/wallpapers;
 
-  # Generate Alacritty TOML config for a theme
-  themeToToml = themeDef: ''
-    [colors.primary]
-    background = "${themeDef.alacritty.primary.background}"
-    foreground = "${themeDef.alacritty.primary.foreground}"
-
-    [colors.normal]
-    black = "${themeDef.alacritty.normal.black}"
-    red = "${themeDef.alacritty.normal.red}"
-    green = "${themeDef.alacritty.normal.green}"
-    yellow = "${themeDef.alacritty.normal.yellow}"
-    blue = "${themeDef.alacritty.normal.blue}"
-    magenta = "${themeDef.alacritty.normal.magenta}"
-    cyan = "${themeDef.alacritty.normal.cyan}"
-    white = "${themeDef.alacritty.normal.white}"
-
-    [colors.bright]
-    black = "${themeDef.alacritty.bright.black}"
-    red = "${themeDef.alacritty.bright.red}"
-    green = "${themeDef.alacritty.bright.green}"
-    yellow = "${themeDef.alacritty.bright.yellow}"
-    blue = "${themeDef.alacritty.bright.blue}"
-    magenta = "${themeDef.alacritty.bright.magenta}"
-    cyan = "${themeDef.alacritty.bright.cyan}"
-    white = "${themeDef.alacritty.bright.white}"
-  '';
+  # Generate Ghostty theme config mapping
+  themeMapping = builtins.listToAttrs (
+    map (
+      themeFile:
+      let
+        themeDef = import themeFile;
+      in
+      {
+        name = themeDef.name;
+        value = themeDef.ghostty.theme;
+      }
+    ) themeFiles
+  );
 
   # Theme cycle script
-  cycleScript = pkgs.writeScriptBin "alacritty-cycle-theme" ''
+  cycleScript = pkgs.writeScriptBin "ghostty-cycle-theme" ''
     #!/usr/bin/env bash
-    # Cycle through Alacritty themes on macOS
+    # Cycle through Ghostty themes on macOS
 
-    THEMES_DIR="$HOME/.config/alacritty/themes"
-    CONFIG_FILE="$HOME/.config/alacritty/alacritty.toml"
-    CURRENT_THEME_FILE="$HOME/.config/alacritty/.current-theme"
-    WALLPAPERS_DIR="$HOME/.config/alacritty/wallpapers"
-    VSCODE_THEME_MAP="$HOME/.config/alacritty/vscode-themes.json"
+    CONFIG_FILE="$HOME/.config/ghostty/config"
+    CURRENT_THEME_FILE="$HOME/.config/ghostty/.current-theme"
+    WALLPAPERS_DIR="$HOME/.config/ghostty/wallpapers"
+    VSCODE_THEME_MAP="$HOME/.config/ghostty/vscode-themes.json"
 
-    # Get list of themes
-    THEMES=($(ls -1 "$THEMES_DIR" | sort))
+    # Theme name to Ghostty built-in theme mapping
+    declare -A THEME_MAP=(
+      ["catppuccin-latte"]="catppuccin-latte"
+      ["catppuccin"]="catppuccin-mocha"
+      ["everforest"]="Everforest Dark"
+      ["flexoki-light"]="Flexoki Light"
+      ["gruvbox"]="GruvboxDark"
+      ["kanagawa"]="Kanagawa"
+      ["matte-black"]="Darcula"
+      ["nord"]="nord"
+      ["osaka-jade"]="Material"
+      ["ristretto"]="Monokai Pro Ristretto"
+      ["rose-pine"]="Rosé Pine"
+      ["tokyo-night"]="Tokyo Night"
+    )
+
+    # Get list of themes (sorted keys)
+    THEMES=($(printf '%s\n' "''${!THEME_MAP[@]}" | sort))
 
     if [[ ''${#THEMES[@]} -eq 0 ]]; then
-      echo "No themes found in $THEMES_DIR"
+      echo "No themes configured"
       exit 1
     fi
 
@@ -90,26 +92,25 @@ let
     fi
 
     NEXT_THEME="''${THEMES[$NEXT_INDEX]}"
+    GHOSTTY_THEME="''${THEME_MAP[$NEXT_THEME]}"
 
-    # Update config with new theme colors
-    if [[ -f "$THEMES_DIR/$NEXT_THEME" ]]; then
-      # Remove old [colors] section using awk (handles TOML sections properly)
-      awk '/^\[colors/ {skip=1} /^\[/ && !/^\[colors/ {skip=0} !skip' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
-      mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
-
-      # Append new theme colors
-      cat "$THEMES_DIR/$NEXT_THEME" >> "$CONFIG_FILE"
-
-      # Set Alacritty opacity to 0.97 (matching Hyprland)
-      if grep -q "^opacity = " "$CONFIG_FILE"; then
-        sed -i.bak 's/^opacity = .*/opacity = 0.97/' "$CONFIG_FILE"
+    # Update Ghostty config
+    if [[ -n "$GHOSTTY_THEME" ]]; then
+      # Update or add theme line
+      if grep -q "^theme = " "$CONFIG_FILE"; then
+        sed -i.bak "s|^theme = .*|theme = $GHOSTTY_THEME|" "$CONFIG_FILE"
       else
-        # Add opacity to [window] section if it doesn't exist
-        awk '/^\[window\]/ {print; print "opacity = 0.97"; next} 1' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
-        mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
+        echo "theme = $GHOSTTY_THEME" >> "$CONFIG_FILE"
       fi
 
-      # Touch the file to ensure Alacritty detects the change
+      # Update or add background opacity
+      if grep -q "^background-opacity = " "$CONFIG_FILE"; then
+        sed -i.bak "s|^background-opacity = .*|background-opacity = 0.97|" "$CONFIG_FILE"
+      else
+        echo "background-opacity = 0.97" >> "$CONFIG_FILE"
+      fi
+
+      # Reload Ghostty config (Ghostty auto-reloads on config change)
       touch "$CONFIG_FILE"
 
       # Set wallpaper if theme has one
@@ -120,7 +121,7 @@ let
         fi
       fi
 
-      # Toggle macOS appearance based on theme (light themes get light mode, dark themes get dark mode)
+      # Toggle macOS appearance based on theme
       if [[ "$NEXT_THEME" =~ (latte|light) ]]; then
         osascript -e 'tell app "System Events" to tell appearance preferences to set dark mode to false'
       else
@@ -152,19 +153,15 @@ in
 {
   home.packages = [
     cycleScript
-    pkgs.desktoppr
     pkgs.jq
   ];
 
-  # Set initial Alacritty opacity (override shell module setting)
-  programs.alacritty.settings.window.opacity = lib.mkForce 0.97;
-
-  # Generate theme files from Hyprland theme definitions and create symlink
+  # Generate wallpaper symlinks and script symlink
   home.file = {
-    ".local/bin/alacritty-cycle-theme" = {
-      source = "${cycleScript}/bin/alacritty-cycle-theme";
+    ".local/bin/ghostty-cycle-theme" = {
+      source = "${cycleScript}/bin/ghostty-cycle-theme";
     };
-    ".config/alacritty/vscode-themes.json".text = builtins.toJSON (
+    ".config/ghostty/vscode-themes.json".text = builtins.toJSON (
       builtins.listToAttrs (
         map (
           themeFile:
@@ -180,21 +177,6 @@ in
     );
   }
   // lib.listToAttrs (
-    map (
-      themeFile:
-      let
-        themeDef = import themeFile;
-        themeName = themeDef.name;
-      in
-      {
-        name = ".config/alacritty/themes/${themeName}";
-        value = {
-          text = themeToToml themeDef;
-        };
-      }
-    ) themeFiles
-  )
-  // lib.listToAttrs (
     lib.flatten (
       map (
         themeFile:
@@ -206,7 +188,7 @@ in
         in
         if wallpapers != [ ] then
           map (wallpaper: {
-            name = ".config/alacritty/wallpapers/${themeName}/${wallpaper}";
+            name = ".config/ghostty/wallpapers/${themeName}/${wallpaper}";
             value = {
               source = "${wallpaperDir}/${wallpaper}";
             };

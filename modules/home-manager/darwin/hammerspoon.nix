@@ -14,16 +14,23 @@
     hs.loadSpoon("ReloadConfiguration")
     spoon.ReloadConfiguration:start()
 
-    -- Alacritty theme cycling
-    -- Bind Cmd+Shift+T to cycle themes
+    -- Unified theme cycling (Alacritty + Ghostty + VSCode + Wallpaper + System Appearance)
+    -- Bind Cmd+Shift+T to cycle all themes
     hs.hotkey.bind({"cmd", "shift"}, "T", function()
-      hs.task.new("${config.home.homeDirectory}/.local/bin/alacritty-cycle-theme", nil):start()
+      hs.task.new("${config.home.homeDirectory}/.local/bin/cycle-theme", nil):start()
+    end)
+
+    -- Manual Hammerspoon reload
+    -- Bind Cmd+Ctrl+R to reload configuration
+    hs.hotkey.bind({"cmd", "ctrl"}, "R", function()
+      hs.reload()
+      hs.notify.new({title = "Hammerspoon", informativeText = "Config reloaded"}):send()
     end)
 
     -- Show notification on startup
     hs.notify.new({
       title = "Hammerspoon",
-      informativeText = "Config loaded\nCmd+Shift+T: Cycle Alacritty theme"
+      informativeText = "Config loaded\nCmd+Shift+T: Cycle themes\nCmd+Ctrl+R: Reload"
     }):send()
   '';
 

@@ -42,7 +42,7 @@ in
     { pkgs, ... }:
     {
       imports = [
-        ../../modules/home-manager/darwin/alacritty-themes.nix
+        ../../modules/home-manager/darwin/unified-themes.nix
         ../../modules/home-manager/darwin/hammerspoon.nix
       ];
 

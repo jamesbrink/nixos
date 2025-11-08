@@ -98,7 +98,7 @@
     # Mac App Store apps
     masApps = {
       "Amphetamine" = 937984704;
-      "Spark Desktop" = 6445813049; # New Spark Mail app with AI features
+      # "Spark Desktop" = 6445813049; # Disabled - fails to install via mas
       "Xcode" = 497799835;
     };
   };
