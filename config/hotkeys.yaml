@@ -189,7 +189,7 @@ platforms:
     modes:
       bsp:
         bindings:
-          theme.cycle: "cmd+shift+t"
+          theme.cycle: "cmd+shift+ctrl+space"
           macos_mode.toggle: "cmd+shift+space"
           launcher.terminal: "cmd+return"
           launcher.walker: "cmd+d"
