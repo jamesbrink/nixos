@@ -215,7 +215,7 @@ let
   };
   yabaiSpaceHelper = pkgs.runCommandLocal "yabai-space-helper" { } ''
     mkdir -p $out/bin
-    ${pkgs.coreutils}/bin/install -m755 ${../../scripts/themectl/contrib/yabai-space-helper.sh} $out/bin/yabai-space-helper
+    ${pkgs.coreutils}/bin/install -m755 ${../../scripts/themectl/themectl/contrib/yabai-space-helper.sh} $out/bin/yabai-space-helper
   '';
   darwinPlatform = hotkeysData.platforms.darwin;
   darwinMode = darwinPlatform.default_mode or "bsp";

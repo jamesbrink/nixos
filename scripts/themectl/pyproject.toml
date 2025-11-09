@@ -29,6 +29,12 @@ build-backend = "flit_core.buildapi"
 addopts = "-q"
 python_files = ["test_*.py"]
 
+[tool.flit.sdist]
+include = [
+  "themectl/contrib/*.sh",
+  "tests/*.py",
+]
+
 [tool.pyright]
 pythonVersion = "3.11"
 typeCheckingMode = "standard"

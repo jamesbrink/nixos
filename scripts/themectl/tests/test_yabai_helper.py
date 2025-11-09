@@ -6,7 +6,12 @@ import os
 import subprocess
 from pathlib import Path
 
-HELPER = Path(__file__).resolve().parents[1] / "contrib" / "yabai-space-helper.sh"
+HELPER = (
+    Path(__file__).resolve().parents[1]
+    / "themectl"
+    / "contrib"
+    / "yabai-space-helper.sh"
+)
 
 
 def _write_exec(path: Path, content: str) -> Path:

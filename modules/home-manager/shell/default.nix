@@ -47,6 +47,15 @@
     matchBlocks."*".compression = true;
 
     extraConfig = ''
+      # Propagate locale/terminal information to remote hosts
+      SendEnv LANG
+      SendEnv LC_*
+      SendEnv TERM
+      SendEnv COLORTERM
+      SendEnv LC_TERMINAL
+      SendEnv LC_TERMINAL_VERSION
+      SendEnv COLORFGBG
+
       # Security settings
       Protocol 2
       HashKnownHosts yes
