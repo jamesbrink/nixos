@@ -64,3 +64,4 @@ This document tracks the current macOS/Hyprland parity effort. Check off items a
 
 - Keep this list tight and actionable; dump longer-form research in `docs/` if needed.
 - When you finish a task, move it to **Recently Completed** with a short note so we have an audit trail.
+- Verification commands: `cd scripts/themectl && ruff check .` / `cd scripts/themectl && basedpyright` (pyright still warns about missing `yaml` stubs until the dev shell ships them).
