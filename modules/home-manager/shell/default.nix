@@ -35,11 +35,20 @@
   };
 
   # SSH configuration
+  # TODO: Research which specific option(s) were causing SSH hangs on Darwin (halcyon)
+  # The following options were disabled to resolve connection issues:
+  # - ControlMaster/ControlPath/ControlPersist (connection multiplexing)
+  # - SendEnv directives (environment variable propagation)
+  # - Protocol 2 (deprecated)
+  # - Custom Ciphers and MACs lists
+  # - ForwardAgent
+  # Once identified, we can selectively re-enable the non-problematic options
   programs.ssh = {
     enable = true;
-    controlMaster = "auto";
-    controlPath = "~/.ssh/sockets/%r@%h-%p";
-    controlPersist = "600";
+    # COMMENTED OUT: ControlMaster can cause connection issues
+    # controlMaster = "auto";
+    # controlPath = "~/.ssh/sockets/%r@%h-%p";
+    # controlPersist = "600";
     serverAliveInterval = 60;
     serverAliveCountMax = 2;
 
@@ -47,26 +56,30 @@
     matchBlocks."*".compression = true;
 
     extraConfig = ''
-      # Propagate locale/terminal information to remote hosts
-      SendEnv LANG
-      SendEnv LC_*
-      SendEnv TERM
-      SendEnv COLORTERM
-      SendEnv LC_TERMINAL
-      SendEnv LC_TERMINAL_VERSION
-      SendEnv COLORFGBG
+      # COMMENTED OUT: SendEnv can cause issues if remote server doesn't accept these
+      # # Propagate locale/terminal information to remote hosts
+      # SendEnv LANG
+      # SendEnv LC_*
+      # SendEnv TERM
+      # SendEnv COLORTERM
+      # SendEnv LC_TERMINAL
+      # SendEnv LC_TERMINAL_VERSION
+      # SendEnv COLORFGBG
 
       # Security settings
-      Protocol 2
+      # COMMENTED OUT: Protocol 2 is deprecated (SSH2 is the only protocol now)
+      # Protocol 2
       HashKnownHosts yes
 
-      # Performance
-      Ciphers aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-      MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,umac-128-etm@openssh.com
+      # COMMENTED OUT: Custom cipher/MAC lists can cause compatibility issues
+      # # Performance
+      # Ciphers aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+      # MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,umac-128-etm@openssh.com
 
       # Convenience
       AddKeysToAgent yes
-      ForwardAgent yes
+      # COMMENTED OUT: ForwardAgent can cause issues and is a security risk
+      # ForwardAgent yes
 
       # Local NixOS/Darwin hosts
       # NOTE: Using only FQDNs here for VSCode Remote SSH compatibility
