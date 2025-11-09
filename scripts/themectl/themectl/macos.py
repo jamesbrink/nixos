@@ -91,7 +91,8 @@ class MacOSModeController:
             if not plist.exists():
                 continue
             cmd = ["launchctl", action]
-            if action == "load":
+            # Use -w flag for both load and unload to persist state across reboots
+            if action in ("load", "unload"):
                 cmd.append("-w")
             cmd.append(str(plist))
             subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

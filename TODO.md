@@ -2,6 +2,34 @@
 
 This document tracks the current macOS/Hyprland parity effort. Check off items as they are completed and capture new cleanup work as it appears.
 
+## Deprecation Warnings (Urgent)
+
+The following warnings appear during `darwin-rebuild switch` and need to be addressed:
+
+### SSH Configuration
+
+- [ ] `programs.ssh.serverAliveCountMax` → `programs.ssh.matchBlocks.*.serverAliveCountMax` (in `modules/home-manager/shell`)
+- [ ] `programs.ssh.serverAliveInterval` → `programs.ssh.matchBlocks.*.serverAliveInterval` (in `modules/home-manager/shell`)
+- [ ] `programs.ssh` default values will be removed - set `programs.ssh.enableDefaultConfig = false` and manually set defaults at `programs.ssh.matchBlocks."*"`
+
+### Git Configuration
+
+- [ ] `programs.git.aliases` → `programs.git.settings.alias` (in `modules/home-manager/cli-tools.nix`)
+- [ ] `programs.git.userEmail` → `programs.git.settings.user.email` (in `users/regular/jamesbrink-shared.nix`)
+- [ ] `programs.git.userName` → `programs.git.settings.user.name` (in `users/regular/jamesbrink-shared.nix`)
+- [ ] `programs.git.extraConfig` → `programs.git.settings` (in `modules/home-manager/cli-tools.nix`)
+
+### Git Delta Configuration
+
+- [ ] `programs.git.delta.options` → `programs.delta.options` (in `modules/home-manager/cli-tools.nix`)
+- [ ] `programs.git.delta.enable` → `programs.delta.enable` (in `modules/home-manager/cli-tools.nix`)
+- [ ] `programs.delta.enableGitIntegration` needs explicit enablement (currently deprecated auto-enable)
+
+### System References
+
+- [ ] Replace `system` with `stdenv.hostPlatform.system` (2 occurrences)
+- [ ] Fix `builtins.toFile` usage for `options.json` - need proper store context instead of referencing `/nix/store/1wnxdqr2n1pj80lirh9pzsymslx8zd9l-source`
+
 ## Theme Automation Rewrite (In Progress)
 
 - [x] **Design Python CLI architecture** – sketch `scripts/themectl/` layout with subcommands (`apply`, `sync-assets`, `status`, `macos-space-mode`) and define how it imports Omarchy themes + Nix-provided metadata.
