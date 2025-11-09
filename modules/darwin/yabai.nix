@@ -292,8 +292,8 @@ let
   );
   restartWmScript = pkgs.writeShellScript "restart-wm.sh" ''
     #!/bin/bash
-    launchctl kickstart -k "gui/${UID}/org.nixos.yabai"
-    launchctl kickstart -k "gui/${UID}/org.nixos.skhd"
+    launchctl kickstart -k "gui/''${UID}/org.nixos.yabai"
+    launchctl kickstart -k "gui/''${UID}/org.nixos.skhd"
     sleep 1
     sudo yabai --load-sa 2>/dev/null || true
     osascript -e 'display notification "Restarted window manager" with title "Yabai"'
