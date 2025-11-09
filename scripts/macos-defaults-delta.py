@@ -32,8 +32,8 @@ CURATED_SETTINGS = [
     Setting(
         "NSGlobalDomain",
         "_HIHideMenuBar",
-        1,
-        "Menu bar visible (INVERTED: 1=visible, 0=hide)",
+        0,
+        "Menu bar visible (0=visible, 1=hide)",
     ),
     Setting(
         "NSGlobalDomain",

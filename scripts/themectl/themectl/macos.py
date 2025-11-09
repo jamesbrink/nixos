@@ -119,6 +119,56 @@ class MacOSModeController:
             stderr=subprocess.DEVNULL,
         )
 
+    def _set_menubar_autohide(self, hide: bool) -> None:
+        """Set menu bar auto-hide state and post darwin notification.
+
+        Args:
+            hide: True to hide menu bar, False to show it
+        """
+        # Set all four menu bar preference keys
+        # _HIHideMenuBar: 0=visible, 1=hide
+        subprocess.run(
+            [
+                "defaults",
+                "write",
+                "NSGlobalDomain",
+                "_HIHideMenuBar",
+                "-int",
+                "1" if hide else "0",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        # AppleMenuBarAutoHide: false=visible, true=hide
+        self._set_defaults("NSGlobalDomain", "AppleMenuBarAutoHide", hide)
+        # Dock autohide-menu-bar: false=visible, true=hide
+        self._set_defaults("com.apple.Dock", "autohide-menu-bar", hide)
+        # AutoHideMenuBarOption: 3=Never, 0=Always
+        subprocess.run(
+            [
+                "defaults",
+                "write",
+                "com.apple.controlcenter",
+                "AutoHideMenuBarOption",
+                "-int",
+                "0" if hide else "3",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        # Post darwin notification (same as System Preferences)
+        notification = (
+            "com.apple.HIToolbox.hideFrontMenuBar"
+            if hide
+            else "com.apple.HIToolbox.showFrontMenuBar"
+        )
+        subprocess.run(
+            ["notifyutil", "-p", notification],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
     def _restart_dock_and_finder(self) -> None:
         for name in ("Dock", "Finder"):
             subprocess.run(
@@ -200,16 +250,20 @@ class MacOSModeController:
         self._kill_processes(PROCESSES)
         self._set_defaults("com.apple.dock", "autohide", False)
         self._set_defaults("com.apple.finder", "CreateDesktop", True)
+        self._set_menubar_autohide(hide=False)  # Show menu bar in native mode
         self._restart_dock_and_finder()
         self._update_ghostty_mode("macos")
         self._update_alacritty_mode("macos")
         self._write_state("macos")
-        self.console.print("[green]✓[/green] Native mode ready (Dock/Finder restored)")
+        self.console.print(
+            "[green]✓[/green] Native mode ready (Dock/Finder/MenuBar restored)"
+        )
 
     def _enter_bsp(self) -> None:
         self.console.print("[cyan]→[/cyan] Switching to BSP tiling mode")
         self._set_defaults("com.apple.dock", "autohide", True)
         self._set_defaults("com.apple.finder", "CreateDesktop", False)
+        self._set_menubar_autohide(hide=True)  # Hide menu bar in BSP mode
         self._restart_dock_and_finder()
         time.sleep(3)
         self._launchctl("load", LAUNCH_AGENTS)
@@ -219,7 +273,7 @@ class MacOSModeController:
         self._update_alacritty_mode("bsp")
         self._write_state("bsp")
         self.console.print(
-            "[green]✓[/green] BSP mode ready (yabai/skhd/sketchybar loaded)"
+            "[green]✓[/green] BSP mode ready (yabai/skhd/sketchybar/MenuBar hidden)"
         )
 
     def switch(self, requested: str) -> None:

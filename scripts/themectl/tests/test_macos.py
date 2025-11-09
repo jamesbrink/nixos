@@ -1,5 +1,6 @@
 from io import StringIO
 from pathlib import Path
+from unittest.mock import MagicMock, call
 
 from rich.console import Console
 
@@ -67,3 +68,167 @@ def test_update_alacritty_mode_inserts_section_when_missing(
     text = config_file.read_text()
     assert "[window]" in text
     assert 'decorations = "full"' in text
+
+
+def test_set_menubar_autohide_show(tmp_path: Path, monkeypatch) -> None:
+    """Test showing menu bar sets correct defaults and posts notification."""
+    import subprocess
+
+    home = tmp_path / "home"
+    controller = _controller(monkeypatch, home)
+
+    # Mock subprocess.run
+    mock_run = MagicMock()
+    monkeypatch.setattr(subprocess, "run", mock_run)
+
+    controller._set_menubar_autohide(hide=False)
+
+    # Verify all four defaults are set correctly for showing menu bar
+    assert (
+        call(
+            ["defaults", "write", "NSGlobalDomain", "_HIHideMenuBar", "-int", "0"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        in mock_run.call_args_list
+    )
+
+    assert (
+        call(
+            [
+                "defaults",
+                "write",
+                "NSGlobalDomain",
+                "AppleMenuBarAutoHide",
+                "-bool",
+                "false",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        in mock_run.call_args_list
+    )
+
+    assert (
+        call(
+            [
+                "defaults",
+                "write",
+                "com.apple.Dock",
+                "autohide-menu-bar",
+                "-bool",
+                "false",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        in mock_run.call_args_list
+    )
+
+    assert (
+        call(
+            [
+                "defaults",
+                "write",
+                "com.apple.controlcenter",
+                "AutoHideMenuBarOption",
+                "-int",
+                "3",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        in mock_run.call_args_list
+    )
+
+    # Verify darwin notification is posted
+    assert (
+        call(
+            ["notifyutil", "-p", "com.apple.HIToolbox.showFrontMenuBar"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        in mock_run.call_args_list
+    )
+
+
+def test_set_menubar_autohide_hide(tmp_path: Path, monkeypatch) -> None:
+    """Test hiding menu bar sets correct defaults and posts notification."""
+    import subprocess
+
+    home = tmp_path / "home"
+    controller = _controller(monkeypatch, home)
+
+    # Mock subprocess.run
+    mock_run = MagicMock()
+    monkeypatch.setattr(subprocess, "run", mock_run)
+
+    controller._set_menubar_autohide(hide=True)
+
+    # Verify all four defaults are set correctly for hiding menu bar
+    assert (
+        call(
+            ["defaults", "write", "NSGlobalDomain", "_HIHideMenuBar", "-int", "1"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        in mock_run.call_args_list
+    )
+
+    assert (
+        call(
+            [
+                "defaults",
+                "write",
+                "NSGlobalDomain",
+                "AppleMenuBarAutoHide",
+                "-bool",
+                "true",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        in mock_run.call_args_list
+    )
+
+    assert (
+        call(
+            [
+                "defaults",
+                "write",
+                "com.apple.Dock",
+                "autohide-menu-bar",
+                "-bool",
+                "true",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        in mock_run.call_args_list
+    )
+
+    assert (
+        call(
+            [
+                "defaults",
+                "write",
+                "com.apple.controlcenter",
+                "AutoHideMenuBarOption",
+                "-int",
+                "0",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        in mock_run.call_args_list
+    )
+
+    # Verify darwin notification is posted
+    assert (
+        call(
+            ["notifyutil", "-p", "com.apple.HIToolbox.hideFrontMenuBar"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        in mock_run.call_args_list
+    )

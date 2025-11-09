@@ -146,6 +146,7 @@
             ps.typer
             ps.rich
             ps."tomli-w"
+            ps.pyyaml
             ps.pytest
             ps."pytest-mock"
           ]);

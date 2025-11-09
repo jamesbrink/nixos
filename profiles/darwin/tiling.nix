@@ -28,10 +28,9 @@
   #
   # IMPORTANT: After extensive testing, discovered menu bar auto-hide is controlled by FOUR settings:
   #
-  # 1. NSGlobalDomain._HIHideMenuBar (LEGACY - INVERTED LOGIC!)
-  #    - true (1)  = Menu bar VISIBLE (don't auto-hide) ← Counter-intuitive!
-  #    - false (0) = Menu bar AUTO-HIDES
-  #    This is a double-negative - the name says "Hide" but true means "don't hide"
+  # 1. NSGlobalDomain._HIHideMenuBar (LEGACY)
+  #    - false (0) = Menu bar VISIBLE (don't auto-hide)
+  #    - true (1)  = Menu bar AUTO-HIDES
   #
   # 2. NSGlobalDomain.AppleMenuBarAutoHide (PRIMARY CONTROL)
   #    - false (0) = Menu bar visible
@@ -51,7 +50,7 @@
   # CRITICAL: Per-host settings (defaults -currentHost) override global settings!
   # macOS checks: -currentHost first, then global domain
   #
-  system.defaults.NSGlobalDomain._HIHideMenuBar = true; # INVERTED: true = visible!
+  system.defaults.NSGlobalDomain._HIHideMenuBar = false; # false = visible
   system.defaults.CustomUserPreferences = {
     "NSGlobalDomain" = {
       AppleMenuBarAutoHide = false; # false = visible
