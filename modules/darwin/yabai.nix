@@ -213,6 +213,10 @@ let
       fi
     '';
   };
+  yabaiSpaceHelper = pkgs.runCommandLocal "yabai-space-helper" { } ''
+    mkdir -p $out/bin
+    ${pkgs.coreutils}/bin/install -m755 ${../../scripts/themectl/contrib/yabai-space-helper.sh} $out/bin/yabai-space-helper
+  '';
   darwinPlatform = hotkeysData.platforms.darwin;
   darwinMode = darwinPlatform.default_mode or "bsp";
   expandBindings =
@@ -285,10 +289,10 @@ let
       )
       + "\n";
   workspaceFocusBindings = skhdDigitBindings workspaceFocusChord workspaceFocusDigits (
-    digit: "yabai -m space --focus ${spaceIndex digit}"
+    digit: "${yabaiSpaceHelper}/bin/yabai-space-helper focus ${spaceIndex digit}"
   );
   workspaceMoveBindings = skhdDigitBindings workspaceMoveChord workspaceMoveDigits (
-    digit: "yabai -m window --space ${spaceIndex digit}"
+    digit: "${yabaiSpaceHelper}/bin/yabai-space-helper move ${spaceIndex digit}"
   );
   restartWmScript = pkgs.writeShellScript "restart-wm.sh" ''
     #!/bin/bash
@@ -303,8 +307,16 @@ let
     key:
     let
       lower = toLower key;
+      isHex = lib.hasPrefix "0x" lower;
+      uppercaseHex =
+        let
+          hexPart = lib.substring 2 ((lib.stringLength key) - 2) key;
+        in
+        "0x" + lib.toUpper hexPart;
     in
-    if lower == "space" then
+    if isHex then
+      uppercaseHex
+    else if lower == "space" then
       "space"
     else if lower == "return" then
       "return"

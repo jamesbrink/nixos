@@ -614,6 +614,41 @@
       );
 
       #########################################################################
+      # Checks                                                                #
+      #########################################################################
+
+      checks = lib.genAttrs [ "aarch64-darwin" ] (
+        system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+          skhdConfigText = self.darwinConfigurations.halcyon.config.services.skhd.skhdConfig;
+        in
+        {
+          skhdHexKeycase =
+            pkgs.runCommand "skhd-hex-keycase"
+              {
+                inherit skhdConfigText;
+                passAsFile = [ "skhdConfigText" ];
+              }
+              ''
+                    set -euo pipefail
+                if ! grep -Fq 'cmd - 0x1B :' "$skhdConfigTextPath"; then
+                  echo "expected uppercase 0x1B chord in workspace focus bindings" >&2
+                  exit 1
+                fi
+                if ! grep -Fq 'cmd + shift - 0x1B :' "$skhdConfigTextPath"; then
+                  echo "expected uppercase 0x1B chord in workspace move bindings" >&2
+                  exit 1
+                fi
+                    touch "$out"
+              '';
+        }
+      );
+
+      #########################################################################
       # NixOS Configurations                                                  #
       #########################################################################
 
