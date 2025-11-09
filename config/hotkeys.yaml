@@ -81,6 +81,103 @@ actions:
       commands:
         darwin: "macos-screenshot selection --clipboard"
         linux: "screenshot-annotate region --clipboard"
+  window:
+    close:
+      description: Close the focused window.
+      command: "yabai -m window --close"
+    float:
+      toggle:
+        description: Toggle floating for the focused window.
+        command: "yabai -m window --toggle float"
+    fullscreen:
+      toggle:
+        description: Toggle Yabai zoom fullscreen.
+        command: "yabai -m window --toggle zoom-fullscreen"
+    native_fullscreen:
+      toggle:
+        description: Toggle native macOS fullscreen.
+        command: "yabai -m window --toggle native-fullscreen"
+    split:
+      toggle:
+        description: Toggle split orientation.
+        command: "yabai -m window --toggle split"
+    focus:
+      west:
+        description: Focus window to the west.
+        command: "yabai -m window --focus west"
+      east:
+        description: Focus window to the east.
+        command: "yabai -m window --focus east"
+      north:
+        description: Focus window to the north.
+        command: "yabai -m window --focus north"
+      south:
+        description: Focus window to the south.
+        command: "yabai -m window --focus south"
+    swap:
+      west:
+        description: Swap with window to the west.
+        command: "yabai -m window --swap west"
+      east:
+        description: Swap with window to the east.
+        command: "yabai -m window --swap east"
+      north:
+        description: Swap with window to the north.
+        command: "yabai -m window --swap north"
+      south:
+        description: Swap with window to the south.
+        command: "yabai -m window --swap south"
+    resize:
+      horizontal:
+        decrease:
+          description: Shrink horizontally.
+          command: "yabai -m window --resize right:-40:0 || yabai -m window --resize left:-40:0"
+        increase:
+          description: Grow horizontally.
+          command: "yabai -m window --resize right:40:0 || yabai -m window --resize left:40:0"
+      vertical:
+        decrease:
+          description: Shrink vertically.
+          command: "yabai -m window --resize bottom:0:-40 || yabai -m window --resize top:0:-40"
+        increase:
+          description: Grow vertically.
+          command: "yabai -m window --resize bottom:0:40 || yabai -m window --resize top:0:40"
+  space:
+    cycle:
+      next:
+        description: Focus next space (wraps).
+        command: "yabai -m space --focus next || yabai -m space --focus first"
+      prev:
+        description: Focus previous space (wraps).
+        command: "yabai -m space --focus prev || yabai -m space --focus last"
+  window_cycle:
+    next:
+      description: Focus next window (wraps).
+      command: "yabai -m window --focus next || yabai -m window --focus first"
+    prev:
+      description: Focus previous window (wraps).
+      command: "yabai -m window --focus prev || yabai -m window --focus last"
+  layout:
+    rotate:
+      description: Rotate BSP tree 90°.
+      command: "yabai -m space --rotate 90"
+    mirror:
+      x:
+        description: Mirror layout over X axis.
+        command: "yabai -m space --mirror x-axis"
+      y:
+        description: Mirror layout over Y axis.
+        command: "yabai -m space --mirror y-axis"
+    balance:
+      description: Balance all window sizes.
+      command: "yabai -m space --balance"
+  wm:
+    restart:
+      description: Restart yabai/skhd services.
+      command: 'launchctl kickstart -k "gui/${UID}/org.nixos.yabai"; launchctl kickstart -k "gui/${UID}/org.nixos.skhd"; sleep 1; sudo yabai --load-sa 2>/dev/null || true; osascript -e ''display notification "Restarted window manager" with title "Yabai"'''
+    reload:
+      description: Stop and start yabai service.
+      command: "yabai --stop-service && yabai --start-service"
 
 platforms:
   darwin:
@@ -102,6 +199,33 @@ platforms:
           screenshot.region_save: "cmd+shift+4"
           screenshot.full_clipboard: "cmd+shift+ctrl+3"
           screenshot.region_clipboard: "cmd+shift+ctrl+4"
+          window.close: "cmd+w"
+          window.float.toggle: null
+          window.fullscreen.toggle: "cmd+f"
+          window.native_fullscreen.toggle: "cmd+ctrl+f"
+          window.split.toggle: "cmd+j"
+          window.focus.west: "cmd+left"
+          window.focus.east: "cmd+right"
+          window.focus.north: "cmd+up"
+          window.focus.south: "cmd+down"
+          window.swap.west: "cmd+shift+left"
+          window.swap.east: "cmd+shift+right"
+          window.swap.north: "cmd+shift+up"
+          window.swap.south: "cmd+shift+down"
+          window.resize.horizontal.decrease: "cmd+0x1B"
+          window.resize.horizontal.increase: "cmd+0x18"
+          window.resize.vertical.decrease: "cmd+shift+0x1B"
+          window.resize.vertical.increase: "cmd+shift+0x18"
+          space.cycle.next: "cmd+tab"
+          space.cycle.prev: "cmd+shift+tab"
+          window_cycle.next: "alt+tab"
+          window_cycle.prev: "alt+shift+tab"
+          layout.rotate: "cmd+r"
+          layout.mirror.x: "cmd+x"
+          layout.mirror.y: "cmd+y"
+          layout.balance: "cmd+e"
+          wm.restart: "cmd+ctrl+r"
+          wm.reload: "cmd+ctrl+q"
           workspace.focus:
             chord: "cmd+{digit}"
           workspace.move:

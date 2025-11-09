@@ -226,6 +226,78 @@ let
       lib.recursiveUpdate acc (lib.setAttrByPath path value)
     ) { } (builtins.attrNames bindings);
   darwinBindings = expandBindings darwinPlatform.modes.${darwinMode}.bindings;
+  hasBinding = path: lib.attrsets.hasAttrByPath path darwinBindings;
+  bindingOrDefault =
+    path: default:
+    if hasBinding path then lib.attrsets.attrByPath path null darwinBindings else default;
+  skhdBinding =
+    chord: command:
+    lib.optionalString (chord != null) ''
+      ${skhdChord chord} : ${command}
+    '';
+  skhdBindingFromPath =
+    path: default: command:
+    skhdBinding (bindingOrDefault path default) command;
+  workspaceFocusChord = bindingOrDefault [ "workspace" "focus" "chord" ] "cmd+{digit}";
+  workspaceMoveChord = bindingOrDefault [ "workspace" "move" "chord" ] "cmd+shift+{digit}";
+  defaultDigits = [
+    "1"
+    "2"
+    "3"
+    "4"
+    "5"
+    "6"
+    "7"
+    "8"
+    "9"
+    "0"
+  ];
+  workspaceFocusDigits = lib.attrsets.attrByPath [
+    "actions"
+    "workspace"
+    "focus"
+    "template"
+    "digits"
+  ] defaultDigits hotkeysData;
+  workspaceMoveDigits = lib.attrsets.attrByPath [
+    "actions"
+    "workspace"
+    "move"
+    "template"
+    "digits"
+  ] defaultDigits hotkeysData;
+  spaceIndex = digit: if digit == "0" then "10" else digit;
+  skhdDigitBindings =
+    chordTemplate: digits: commandBuilder:
+    if chordTemplate == null then
+      ""
+    else
+      lib.concatStringsSep "\n" (
+        map (
+          digit:
+          let
+            chord = lib.replaceStrings [ "{digit}" ] [ digit ] chordTemplate;
+          in
+          ''
+            ${skhdChord chord} : ${commandBuilder digit}
+          ''
+        ) digits
+      )
+      + "\n";
+  workspaceFocusBindings = skhdDigitBindings workspaceFocusChord workspaceFocusDigits (
+    digit: "yabai -m space --focus ${spaceIndex digit}"
+  );
+  workspaceMoveBindings = skhdDigitBindings workspaceMoveChord workspaceMoveDigits (
+    digit: "yabai -m window --space ${spaceIndex digit}"
+  );
+  restartWmScript = pkgs.writeShellScript "restart-wm.sh" ''
+    #!/bin/bash
+    launchctl kickstart -k "gui/${UID}/org.nixos.yabai"
+    launchctl kickstart -k "gui/${UID}/org.nixos.skhd"
+    sleep 1
+    sudo yabai --load-sa 2>/dev/null || true
+    osascript -e 'display notification "Restarted window manager" with title "Yabai"'
+  '';
   toLower = lib.strings.toLower;
   formatKey =
     key:
@@ -387,124 +459,137 @@ in
       # WINDOW MANAGEMENT
       # ====================
 
-      # Close window (cmd + w)
-      cmd - w : yabai -m window --close
+      # Close window
+      ${skhdBindingFromPath [ "window" "close" ] "cmd+w" "yabai -m window --close"}
 
-      # Toggle float (cmd + t)
-      cmd - t : yabai -m window --toggle float
+      # Toggle float
+      ${skhdBindingFromPath [ "window" "float" "toggle" ] "cmd+t" "yabai -m window --toggle float"}
 
-      # Toggle fullscreen (cmd + f)
-      cmd - f : yabai -m window --toggle zoom-fullscreen
+      # Toggle fullscreen
+      ${skhdBindingFromPath [
+        "window"
+        "fullscreen"
+        "toggle"
+      ] "cmd+f" "yabai -m window --toggle zoom-fullscreen"}
 
-      # Toggle native fullscreen (cmd + ctrl + f)
-      cmd + ctrl - f : yabai -m window --toggle native-fullscreen
+      # Toggle native fullscreen
+      ${skhdBindingFromPath [
+        "window"
+        "native_fullscreen"
+        "toggle"
+      ] "cmd+ctrl+f" "yabai -m window --toggle native-fullscreen"}
 
-      # Toggle split orientation (cmd + j)
-      cmd - j : yabai -m window --toggle split
+      # Toggle split orientation
+      ${skhdBindingFromPath [ "window" "split" "toggle" ] "cmd+j" "yabai -m window --toggle split"}
 
       # ====================
       # FOCUS WINDOWS
       # ====================
 
-      # Focus window in direction (cmd + arrows)
-      cmd - left : yabai -m window --focus west
-      cmd - right : yabai -m window --focus east
-      cmd - up : yabai -m window --focus north
-      cmd - down : yabai -m window --focus south
+      # Focus window in direction
+      ${skhdBindingFromPath [ "window" "focus" "west" ] "cmd+left" "yabai -m window --focus west"}
+      ${skhdBindingFromPath [ "window" "focus" "east" ] "cmd+right" "yabai -m window --focus east"}
+      ${skhdBindingFromPath [ "window" "focus" "north" ] "cmd+up" "yabai -m window --focus north"}
+      ${skhdBindingFromPath [ "window" "focus" "south" ] "cmd+down" "yabai -m window --focus south"}
 
       # ====================
       # SWAP WINDOWS
       # ====================
 
-      # Swap windows (cmd + shift + arrows)
-      cmd + shift - left : yabai -m window --swap west
-      cmd + shift - right : yabai -m window --swap east
-      cmd + shift - up : yabai -m window --swap north
-      cmd + shift - down : yabai -m window --swap south
+      # Swap windows
+      ${skhdBindingFromPath [ "window" "swap" "west" ] "cmd+shift+left" "yabai -m window --swap west"}
+      ${skhdBindingFromPath [ "window" "swap" "east" ] "cmd+shift+right" "yabai -m window --swap east"}
+      ${skhdBindingFromPath [ "window" "swap" "north" ] "cmd+shift+up" "yabai -m window --swap north"}
+      ${skhdBindingFromPath [ "window" "swap" "south" ] "cmd+shift+down" "yabai -m window --swap south"}
 
       # ====================
       # WORKSPACES (SPACES)
       # ====================
 
       # Switch to workspace (cmd + 1-9,0)
-      cmd - 1 : yabai -m space --focus 1
-      cmd - 2 : yabai -m space --focus 2
-      cmd - 3 : yabai -m space --focus 3
-      cmd - 4 : yabai -m space --focus 4
-      cmd - 5 : yabai -m space --focus 5
-      cmd - 6 : yabai -m space --focus 6
-      cmd - 7 : yabai -m space --focus 7
-      cmd - 8 : yabai -m space --focus 8
-      cmd - 9 : yabai -m space --focus 9
-      cmd - 0 : yabai -m space --focus 10
+      ${workspaceFocusBindings}
 
       # Move window to workspace (cmd + shift + 1-9,0)
-      cmd + shift - 1 : yabai -m window --space 1
-      cmd + shift - 2 : yabai -m window --space 2
-      cmd + shift - 3 : yabai -m window --space 3
-      cmd + shift - 4 : yabai -m window --space 4
-      cmd + shift - 5 : yabai -m window --space 5
-      cmd + shift - 6 : yabai -m window --space 6
-      cmd + shift - 7 : yabai -m window --space 7
-      cmd + shift - 8 : yabai -m window --space 8
-      cmd + shift - 9 : yabai -m window --space 9
-      cmd + shift - 0 : yabai -m window --space 10
+      ${workspaceMoveBindings}
 
-      # Cycle workspaces (cmd + tab / cmd + shift + tab)
-      cmd - tab : yabai -m space --focus next || yabai -m space --focus first
-      cmd + shift - tab : yabai -m space --focus prev || yabai -m space --focus last
+      # Cycle workspaces
+      ${skhdBindingFromPath [
+        "space"
+        "cycle"
+        "next"
+      ] "cmd+tab" "yabai -m space --focus next || yabai -m space --focus first"}
+      ${skhdBindingFromPath [
+        "space"
+        "cycle"
+        "prev"
+      ] "cmd+shift+tab" "yabai -m space --focus prev || yabai -m space --focus last"}
 
       # ====================
       # WINDOW CYCLING
       # ====================
 
-      # Cycle windows (alt + tab)
-      alt - tab : yabai -m window --focus next || yabai -m window --focus first
-      alt + shift - tab : yabai -m window --focus prev || yabai -m window --focus last
+      # Cycle windows
+      ${skhdBindingFromPath [
+        "window_cycle"
+        "next"
+      ] "alt+tab" "yabai -m window --focus next || yabai -m window --focus first"}
+      ${skhdBindingFromPath [
+        "window_cycle"
+        "prev"
+      ] "alt+shift+tab" "yabai -m window --focus prev || yabai -m window --focus last"}
 
       # ====================
       # WINDOW RESIZING
       # ====================
 
-      # Resize windows (cmd + minus/equal)
-      cmd - 0x1B : yabai -m window --resize right:-40:0 || yabai -m window --resize left:-40:0  # minus
-      cmd - 0x18 : yabai -m window --resize right:40:0 || yabai -m window --resize left:40:0    # equal
-      cmd + shift - 0x1B : yabai -m window --resize bottom:0:-40 || yabai -m window --resize top:0:-40  # shift+minus
-      cmd + shift - 0x18 : yabai -m window --resize bottom:0:40 || yabai -m window --resize top:0:40    # shift+equal
+      # Resize windows
+      ${skhdBindingFromPath [
+        "window"
+        "resize"
+        "horizontal"
+        "decrease"
+      ] "cmd+0x1B" "yabai -m window --resize right:-40:0 || yabai -m window --resize left:-40:0"}
+      ${skhdBindingFromPath [
+        "window"
+        "resize"
+        "horizontal"
+        "increase"
+      ] "cmd+0x18" "yabai -m window --resize right:40:0 || yabai -m window --resize left:40:0"}
+      ${skhdBindingFromPath [
+        "window"
+        "resize"
+        "vertical"
+        "decrease"
+      ] "cmd+shift+0x1B" "yabai -m window --resize bottom:0:-40 || yabai -m window --resize top:0:-40"}
+      ${skhdBindingFromPath [
+        "window"
+        "resize"
+        "vertical"
+        "increase"
+      ] "cmd+shift+0x18" "yabai -m window --resize bottom:0:40 || yabai -m window --resize top:0:40"}
 
       # ====================
       # LAYOUT MANAGEMENT
       # ====================
 
-      # Note: BSP/macOS mode toggle moved to Hammerspoon (cmd + shift + space)
-      # This provides full toggle between yabai and native macOS window management
-
-      # Rotate tree (cmd + r)
-      cmd - r : yabai -m space --rotate 90
-
-      # Mirror tree (cmd + x / cmd + y)
-      cmd - x : yabai -m space --mirror x-axis
-      cmd - y : yabai -m space --mirror y-axis
-
-      # Balance windows (cmd + e)
-      cmd - e : yabai -m space --balance
+      # Rotate/mirror/balance layouts
+      ${skhdBindingFromPath [ "layout" "rotate" ] "cmd+r" "yabai -m space --rotate 90"}
+      ${skhdBindingFromPath [ "layout" "mirror" "x" ] "cmd+x" "yabai -m space --mirror x-axis"}
+      ${skhdBindingFromPath [ "layout" "mirror" "y" ] "cmd+y" "yabai -m space --mirror y-axis"}
+      ${skhdBindingFromPath [ "layout" "balance" ] "cmd+e" "yabai -m space --balance"}
 
       # ====================
       # YABAI CONTROL
       # ====================
 
-      # Restart yabai and SKHD (cmd + ctrl + r) - fixes focus issues after menu bar appears
-      cmd + ctrl - r : ${pkgs.writeShellScript "restart-wm.sh" ''
-        #!/bin/bash
-        launchctl kickstart -k "gui/''${UID}/org.nixos.yabai"
-        launchctl kickstart -k "gui/''${UID}/org.nixos.skhd"
-        sleep 1
-        sudo yabai --load-sa 2>/dev/null || true
-        osascript -e 'display notification "Restarted window manager" with title "Yabai"'
-      ''}
+      # Restart yabai/skhd
+      ${skhdBindingFromPath [ "wm" "restart" ] "cmd+ctrl+r" restartWmScript}
 
-      # Stop/start yabai (cmd + ctrl + q)
-      cmd + ctrl - q : yabai --stop-service && yabai --start-service
+      # Stop/start yabai
+      ${skhdBindingFromPath [
+        "wm"
+        "reload"
+      ] "cmd+ctrl+q" "yabai --stop-service && yabai --start-service"}
     '';
   };
 
