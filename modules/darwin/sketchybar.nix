@@ -152,6 +152,39 @@ let
                --set network icon=󰖩 \
                              label.drawing=off
 
+    # Tailscale status
+    sketchybar --add item tailscale right \
+               --set tailscale update_freq=5 \
+                               icon=󰛳 \
+                               script="${pkgs.writeShellScript "tailscale.sh" ''
+                                 #!/bin/bash
+                                 # Check if Tailscale is installed and running
+                                 if command -v tailscale &> /dev/null; then
+                                   # Get Tailscale status
+                                   STATUS=$(tailscale status --json 2>/dev/null | ${pkgs.jq}/bin/jq -r '.BackendState' 2>/dev/null || echo "Stopped")
+
+                                   case "$STATUS" in
+                                     "Running")
+                                       # Get IP address (first line of status)
+                                       IP=$(tailscale ip -4 2>/dev/null | head -n1)
+                                       if [ -n "$IP" ]; then
+                                         sketchybar --set tailscale label="$IP" icon.color=0xff9ece6a
+                                       else
+                                         sketchybar --set tailscale label="Connected" icon.color=0xff9ece6a
+                                       fi
+                                       ;;
+                                     "Stopped"|"NeedsLogin")
+                                       sketchybar --set tailscale label="Disconnected" icon.color=0xfff7768e
+                                       ;;
+                                     *)
+                                       sketchybar --set tailscale label="$STATUS" icon.color=0xffe0af68
+                                       ;;
+                                   esac
+                                 else
+                                   sketchybar --set tailscale label="Not installed" icon.color=0xff565f89
+                                 fi
+                               ''}"
+
     # Separator
     sketchybar --add item separator_right right \
                --set separator_right icon="│" \
