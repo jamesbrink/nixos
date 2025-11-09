@@ -59,6 +59,9 @@
       AddKeysToAgent yes
       ForwardAgent yes
 
+      # Send TERM environment variable to remote hosts
+      SendEnv TERM
+
       # Local NixOS/Darwin hosts
       # NOTE: Using only FQDNs here for VSCode Remote SSH compatibility
       # VSCode has issues parsing multiple hostnames per Host entry
