@@ -65,13 +65,13 @@ in
 
     -- Unified theme cycling (Alacritty + Ghostty + VSCode + Wallpaper + System Appearance)
     -- Bind Cmd+Shift+T to cycle all themes via themectl
-    hs.hotkey.bind(${hsThemeCycle.mods}, "${hsThemeCycle.key}", function()
+    hs.hotkey.bind(${hsThemeCycle.mods}, "${hsThemeCycle.key}", nil, function()
       runThemectl("cycle", "Cycled theme")
     end)
 
     -- Toggle between BSP tiling and native macOS mode
     -- Bind Cmd+Shift+Space to toggle via themectl
-    hs.hotkey.bind(${hsModeToggle.mods}, "${hsModeToggle.key}", function()
+    hs.hotkey.bind(${hsModeToggle.mods}, "${hsModeToggle.key}", nil, function()
       runThemectl("macos-mode toggle", "Toggled window manager mode")
     end)
 
