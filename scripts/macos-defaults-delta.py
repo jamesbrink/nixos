@@ -53,19 +53,19 @@ CURATED_SETTINGS = [
         3,
         "Menu bar mode (0=Always, 1=Desktop, 2=Fullscreen, 3=Never)",
     ),
-    # Per-host menu bar settings
+    # Per-host menu bar settings (should be "not set" to allow global to apply)
     Setting(
         "NSGlobalDomain",
         "_HIHideMenuBar",
-        1,
-        "Menu bar visible [per-host]",
+        None,
+        "Menu bar visible [per-host should be unset]",
         current_host=True,
     ),
     Setting(
         "NSGlobalDomain",
         "AppleMenuBarAutoHide",
-        0,
-        "Menu bar auto-hide [per-host]",
+        None,
+        "Menu bar auto-hide [per-host should be unset]",
         current_host=True,
     ),
     # Dock Settings
@@ -91,16 +91,51 @@ DOMAINS_TO_SCAN = [
     "com.apple.WindowManager",
 ]
 
-# Known macOS factory defaults for settings we track
-FACTORY_DEFAULTS: dict[tuple[str, str], Any] = {
-    ("NSGlobalDomain", "_HIHideMenuBar"): 0,  # Factory default is auto-hide
-    ("NSGlobalDomain", "AppleMenuBarAutoHide"): None,  # Not set by default
-    ("com.apple.Dock", "autohide-menu-bar"): None,  # Not set by default
-    ("com.apple.controlcenter", "AutoHideMenuBarOption"): 2,  # In Full Screen Only
-    ("com.apple.dock", "autohide"): 0,  # Dock visible by default
-    ("com.apple.dock", "autohide-delay"): 0.5,  # Default delay
-    ("com.apple.dock", "autohide-time-modifier"): 0.5,  # Default animation time
-}
+# User Template paths to check for factory defaults
+USER_TEMPLATE_PATHS = [
+    "/System/Library/User Template/English.lproj/Library/Preferences",
+    "/System/Library/User Template/Non_localized/Library/Preferences",
+]
+
+# Cache for factory defaults read from User Template
+_factory_defaults_cache: dict[tuple[str, str], Any] = {}
+
+
+def get_factory_default(domain: str, key: str) -> Any:
+    """Get factory default value from User Template.
+
+    Args:
+        domain: The preference domain
+        key: The preference key
+
+    Returns:
+        The factory default value, or None if not set
+    """
+    cache_key = (domain, key)
+    if cache_key in _factory_defaults_cache:
+        return _factory_defaults_cache[cache_key]
+
+    # Map domain to plist filename
+    if domain == "NSGlobalDomain":
+        plist_name = ".GlobalPreferences.plist"
+    else:
+        plist_name = f"{domain}.plist"
+
+    # Try reading from User Template paths
+    for template_path in USER_TEMPLATE_PATHS:
+        plist_file = f"{template_path}/{plist_name}"
+        try:
+            with open(plist_file, "rb") as f:
+                data = plistlib.load(f)
+                value = data.get(key)
+                _factory_defaults_cache[cache_key] = value
+                return value
+        except (FileNotFoundError, PermissionError, plistlib.InvalidFileException):
+            continue
+
+    # Not found in any template - factory default is "not set"
+    _factory_defaults_cache[cache_key] = None
+    return None
 
 
 def get_default_value(domain: str, key: str, current_host: bool = False) -> Any:
@@ -196,23 +231,26 @@ def get_all_domain_settings(domain: str) -> dict[str, Any]:
 
 
 def show_curated_settings(console: Console) -> None:
-    """Show curated settings with current, factory, and nix expected values."""
+    """Show curated settings with current, global, factory, and nix expected values."""
     table = Table(
         title="macOS Defaults Delta (Curated)", show_header=True, header_style="bold"
     )
-    table.add_column("Domain", style="cyan", width=25)
-    table.add_column("Key", style="blue", width=30)
-    table.add_column("Current", justify="center", width=12)
-    table.add_column("Factory", justify="center", width=12)
-    table.add_column("Nix Expected", justify="center", width=12)
-    table.add_column("Description", width=40)
+    table.add_column("Domain", style="cyan", width=22)
+    table.add_column("Key", style="blue", width=25)
+    table.add_column("Current", justify="center", width=10)
+    table.add_column("Global", justify="center", width=10)
+    table.add_column("Factory", justify="center", width=10)
+    table.add_column("Nix Expected", justify="center", width=10)
+    table.add_column("Description", width=35)
 
     mismatches = 0
     for setting in CURATED_SETTINGS:
         current = get_default_value(setting.domain, setting.key, setting.current_host)
-        factory = FACTORY_DEFAULTS.get((setting.domain, setting.key))
+        global_val = get_default_value(setting.domain, setting.key, False)
+        factory = get_factory_default(setting.domain, setting.key)
 
         current_str = format_value(current)
+        global_str = format_value(global_val)
         factory_str = format_value(factory)
         expected_str = format_value(setting.expected)
 
@@ -229,6 +267,7 @@ def show_curated_settings(console: Console) -> None:
             setting.domain,
             setting.key,
             f"[{current_color}]{current_str}[/]",
+            f"[dim]{global_str}[/]",
             f"[dim]{factory_str}[/]",
             f"[dim]{expected_str}[/]",
             f"[dim]{setting.description}[/]",
@@ -256,28 +295,31 @@ def show_all_settings(console: Console) -> None:
             continue
 
         table = Table(title=f"{domain}", show_header=True, header_style="bold cyan")
-        table.add_column("Key", style="blue", width=30)
-        table.add_column("Current", justify="center", width=12)
-        table.add_column("Factory", justify="center", width=12)
-        table.add_column("Nix Expected", justify="center", width=12)
-        table.add_column("Description", width=40)
+        table.add_column("Key", style="blue", width=25)
+        table.add_column("Current", justify="center", width=10)
+        table.add_column("Global", justify="center", width=10)
+        table.add_column("Factory", justify="center", width=10)
+        table.add_column("Nix Expected", justify="center", width=10)
+        table.add_column("Description", width=35)
 
         for key, value in sorted(settings.items()):
             # Check if we have expected value and factory default
             lookup_key = (domain, key, False)
             expected_info = expected_map.get(lookup_key)
-            factory = FACTORY_DEFAULTS.get((domain, key))
+            factory = get_factory_default(domain, key)
+            global_val = get_default_value(domain, key, False)
 
             # Format current value
             if isinstance(value, (dict, list)):
                 current_str = (
-                    str(value)[:9] + "..." if len(str(value)) > 12 else str(value)
+                    str(value)[:7] + "..." if len(str(value)) > 10 else str(value)
                 )
             elif isinstance(value, bytes):
                 current_str = "binary"
             else:
                 current_str = format_value(value)
 
+            global_str = format_value(global_val)
             factory_str = format_value(factory)
 
             if expected_info:
@@ -295,15 +337,17 @@ def show_all_settings(console: Console) -> None:
                 table.add_row(
                     key,
                     f"[{current_color}]{current_str}[/]",
+                    f"[dim]{global_str}[/]",
                     f"[dim]{factory_str}[/]",
                     f"[dim]{expected_str}[/]",
                     f"[dim]{description}[/]",
                 )
             else:
-                # No expected value - just show current and factory
+                # No expected value - just show current, global, and factory
                 table.add_row(
                     key,
                     f"[dim]{current_str}[/]",
+                    f"[dim]{global_str}[/]",
                     f"[dim]{factory_str}[/]",
                     "[dim]-[/]",
                     "[dim]-[/]",
