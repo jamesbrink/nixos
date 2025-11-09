@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
+import importlib.resources
 import os
 import subprocess
 from pathlib import Path
+import sys
 
-HELPER = (
-    Path(__file__).resolve().parents[1]
-    / "themectl"
-    / "contrib"
-    / "yabai-space-helper.sh"
+import pytest
+
+pytestmark = pytest.mark.skipif(
+    sys.platform != "darwin", reason="yabai helper only runs on macOS"
+)
+
+HELPER_RESOURCE = (
+    importlib.resources.files("themectl.contrib")
+    .joinpath("yabai-space-helper.sh")
 )
 
 
@@ -58,8 +64,14 @@ exec "$@"
     env["YABAI_BIN"] = str(yabai_stub)
     env["SUDO_BIN"] = str(sudo_stub)
 
+    helper_copy = tmp_path / "yabai-space-helper.sh"
+    with importlib.resources.as_file(HELPER_RESOURCE) as helper_path:
+        helper_copy.write_text(helper_path.read_text())
+    helper_copy.chmod(0o755)
+    assert helper_copy.exists()
+
     result = subprocess.run(
-        [str(HELPER), "focus", "3"],
+        [str(helper_copy), "focus", "3"],
         check=True,
         text=True,
         capture_output=True,
