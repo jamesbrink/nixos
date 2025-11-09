@@ -20,12 +20,12 @@
   system.defaults.spaces.spans-displays = false; # Displays have separate Spaces (false = separate, true = unified)
 
   # Dock auto-hide by default (yabai starts in BSP/tiling mode)
-  system.defaults.dock.autohide = lib.mkForce true;
+  # NOTE: Commented out - now managed dynamically by themectl macos-mode
+  # system.defaults.dock.autohide = lib.mkForce true;
 
-  # Auto-hide native macOS menu bar (SketchyBar replaces it in BSP mode)
-  # Note: macOS 26 Tahoe requires manual setting in System Settings > Desktop & Dock > Menu Bar
-  # The _HIHideMenuBar preference seems to be ignored/conflicted in Tahoe
-  # system.defaults.NSGlobalDomain._HIHideMenuBar = true;
+  # Keep macOS menu bar visible (set to default)
+  # Note: Even though SketchyBar is available in BSP mode, keep native menu bar visible
+  system.defaults.NSGlobalDomain._HIHideMenuBar = false;
 
   # Hide desktop icons by default (yabai starts in BSP/tiling mode)
   system.defaults.finder.CreateDesktop = false;

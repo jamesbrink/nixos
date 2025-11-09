@@ -69,7 +69,6 @@
       "visual-studio-code"
 
       # Media
-      "spotify"
       "vlc"
 
       # Utilities
