@@ -595,6 +595,7 @@
               python.typer
               python.rich
               python."tomli-w"
+              python.pyyaml
             ];
             nativeCheckInputs = [
               python.pytest

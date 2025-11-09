@@ -212,3 +212,120 @@ def test_update_wallpaper_runs_swww(tmp_path: Path, monkeypatch) -> None:
     assert calls, "swww should be invoked"
     assert str(background) in calls[0]
     assert "Updated wallpaper" in console.export_text()
+
+
+def test_update_wallpaper_macos_prefers_desktoppr(tmp_path: Path, monkeypatch) -> None:
+    home = tmp_path / "home"
+    background = home / ".config" / "omarchy" / "current" / "background"
+    real = home / "wallpapers" / "catppuccin.png"
+    real.parent.mkdir(parents=True)
+    real.write_text("fake-image")
+    background.parent.mkdir(parents=True)
+    background.symlink_to(real)
+
+    monkeypatch.setenv("THEMECTL_HOME", str(home))
+    monkeypatch.setattr("themectl.hooks.platform.system", lambda: "Darwin")
+    monkeypatch.setattr(
+        "themectl.hooks.shutil.which",
+        lambda name: "/usr/local/bin/desktoppr" if name == "desktoppr" else None,
+    )
+
+    calls: list[list[str]] = []
+
+    class Result:
+        returncode = 0
+        stderr = ""
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        return Result()
+
+    def fail_osascript(*args, **kwargs):
+        raise AssertionError("osascript should not run when desktoppr is available")
+
+    monkeypatch.setattr("themectl.hooks._run_osascript", fail_osascript)
+    monkeypatch.setattr("themectl.hooks.subprocess.run", fake_run)
+
+    console = _console()
+    update_wallpaper(console)
+
+    assert calls[0][0] == "/usr/local/bin/desktoppr"
+    assert str(real) in calls[0]
+    assert "desktoppr" in console.export_text()
+
+
+def test_update_wallpaper_macos_uses_osascript(tmp_path: Path, monkeypatch) -> None:
+    home = tmp_path / "home"
+    background = home / ".config" / "omarchy" / "current" / "background"
+    real = home / "wallpapers" / "nord.png"
+    real.parent.mkdir(parents=True)
+    real.write_text("fake-image")
+    background.parent.mkdir(parents=True)
+    background.symlink_to(real)
+
+    monkeypatch.setenv("THEMECTL_HOME", str(home))
+    monkeypatch.setattr("themectl.hooks.platform.system", lambda: "Darwin")
+    monkeypatch.setattr("themectl.hooks.shutil.which", lambda name: None)
+
+    captured: dict[str, list[str]] = {}
+
+    def fake_run(script: str, args: list[str]) -> bool:
+        captured["script"] = [script]
+        captured["args"] = args
+        return True
+
+    monkeypatch.setattr("themectl.hooks._run_osascript", fake_run)
+
+    def fail_run(*args, **kwargs):
+        raise AssertionError("subprocess.run should not be called")
+
+    monkeypatch.setattr("themectl.hooks.subprocess.run", fail_run)
+
+    console = _console()
+    update_wallpaper(console)
+
+    assert captured["args"][0] == str(real)
+    assert "macOS wallpaper" in console.export_text()
+
+
+def test_update_wallpaper_macos_fallback_defaults(tmp_path: Path, monkeypatch) -> None:
+    home = tmp_path / "home"
+    background = home / ".config" / "omarchy" / "current" / "background"
+    real = home / "wallpapers" / "fallback.png"
+    real.parent.mkdir(parents=True)
+    real.write_text("fake-image")
+    background.parent.mkdir(parents=True)
+    background.symlink_to(real)
+
+    monkeypatch.setenv("THEMECTL_HOME", str(home))
+    monkeypatch.setattr("themectl.hooks.platform.system", lambda: "Darwin")
+    monkeypatch.setattr("themectl.hooks._run_osascript", lambda *args, **kwargs: False)
+
+    def fake_which(name: str) -> str | None:
+        if name == "defaults":
+            return "/usr/bin/defaults"
+        return None
+
+    monkeypatch.setattr("themectl.hooks.shutil.which", fake_which)
+
+    calls: list[list[str]] = []
+
+    class Result:
+        returncode = 0
+        stderr = ""
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        return Result()
+
+    monkeypatch.setattr("themectl.hooks.subprocess.run", fake_run)
+
+    console = _console()
+    update_wallpaper(console)
+
+    assert calls[0][0].endswith("defaults")
+    assert any(str(real) in arg for arg in calls[0])
+    assert calls[1][0] == "killall"
+    output = console.export_text()
+    assert "wallpaper record" in output
+    assert "Dock" in output

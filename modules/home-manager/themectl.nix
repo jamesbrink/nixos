@@ -82,7 +82,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = lib.optional (themectlPkg != null) themectlPkg;
+    home.packages =
+      (lib.optional (themectlPkg != null) themectlPkg)
+      ++ (lib.optional pkgs.stdenv.isDarwin pkgs.desktoppr);
 
     xdg.configFile."themectl/themes.json" = lib.mkIf (themeData != null) {
       source = themeData;
@@ -90,6 +92,7 @@ in
     xdg.configFile."themectl/hotkeys.json" = lib.mkIf (cfg.hotkeysFile == defaultHotkeys) {
       source = hotkeysBundle.jsonPath;
     };
+    xdg.configFile."themectl/automation.yaml".source = ../../config/themectl-automation.yaml;
 
     xdg.configFile."themectl/config.toml".text =
       let

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Literal, Mapping
 
 import tomllib
+import yaml
 
 
 def get_home() -> Path:
@@ -29,9 +30,12 @@ def default_hotkeys_path() -> Path:
     return get_home() / ".config" / "themectl" / "hotkeys.yaml"
 
 
+def default_automation_path() -> Path:
+    return get_home() / ".config" / "themectl" / "automation.yaml"
+
+
 DEFAULT_CONFIG_PATH = default_config_path()
 DEFAULT_STATE_PATH = default_state_path()
-DEFAULT_HOTKEYS_PATH = default_hotkeys_path()
 
 
 @dataclass(slots=True)
@@ -54,6 +58,7 @@ class ThemectlConfig:
     hotkeys_file: Path | None = None
     editor_automation: EditorAutomation = field(default_factory=EditorAutomation)
     order: ThemeOrder = field(default_factory=ThemeOrder)
+    automation_file: Path | None = None
 
     @property
     def metadata_path(self) -> Path:
@@ -73,6 +78,12 @@ class ThemectlConfig:
             return self.hotkeys_file
         return default_hotkeys_path()
 
+    @property
+    def automation_path(self) -> Path:
+        if self.automation_file:
+            return self.automation_file
+        return default_automation_path()
+
 
 def _load_toml(path: Path) -> Mapping[str, Any]:
     with path.open("rb") as handle:
@@ -90,7 +101,7 @@ def load_config(path: Path | None = None) -> ThemectlConfig:
     editor_raw = raw.get("editor", {})
     order_raw = raw.get("order", {})
 
-    return ThemectlConfig(
+    cfg = ThemectlConfig(
         platform=raw.get("platform", "darwin"),
         theme_metadata=Path(raw["theme_metadata"]).expanduser()
         if "theme_metadata" in raw
@@ -105,4 +116,38 @@ def load_config(path: Path | None = None) -> ThemectlConfig:
         order=ThemeOrder(
             cycle=list(order_raw.get("cycle", [])),
         ),
+        automation_file=Path(raw["automation_config"]).expanduser()
+        if "automation_config" in raw
+        else None,
     )
+    _apply_automation_overrides(cfg)
+    return cfg
+
+
+def _apply_automation_overrides(cfg: ThemectlConfig) -> None:
+    overrides = _load_automation_overrides(cfg.automation_path)
+    if not overrides:
+        return
+    for name, value in overrides.items():
+        if hasattr(cfg.editor_automation, name):
+            setattr(cfg.editor_automation, name, value)
+
+
+def _load_automation_overrides(path: Path) -> Mapping[str, bool]:
+    if not path.exists():
+        return {}
+    try:
+        data = yaml.safe_load(path.read_text()) or {}
+    except yaml.YAMLError:
+        return {}
+    if not isinstance(data, Mapping):
+        return {}
+    editor = data.get("editor")
+    if not isinstance(editor, Mapping):
+        return {}
+    result: dict[str, bool] = {}
+    for key in ("vscode", "cursor", "neovim"):
+        value = editor.get(key)
+        if isinstance(value, bool):
+            result[key] = value
+    return result

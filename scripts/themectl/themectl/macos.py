@@ -146,6 +146,49 @@ class MacOSModeController:
         config.write_text("\n".join(lines) + "\n")
         reload_ghostty(self.console)
 
+    def _update_alacritty_mode(self, mode: str) -> None:
+        config = self.home / ".config" / "alacritty" / "alacritty.toml"
+        if not config.exists():
+            return
+        if config.is_symlink():
+            try:
+                source = config.resolve(strict=True)
+                contents = source.read_text()
+            except OSError:
+                contents = ""
+            try:
+                config.unlink()
+            except OSError:
+                return
+            config.parent.mkdir(parents=True, exist_ok=True)
+            config.write_text(contents)
+        decorations = "buttonless" if mode == "bsp" else "full"
+        lines = config.read_text().splitlines()
+        in_window = False
+        window_header_index: int | None = None
+        updated = False
+        for idx, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                in_window = stripped.lower() == "[window]"
+                if in_window:
+                    window_header_index = idx
+                continue
+            if in_window and stripped.startswith("decorations"):
+                indent = line[: len(line) - len(line.lstrip())]
+                lines[idx] = f'{indent}decorations = "{decorations}"'
+                updated = True
+                break
+            if in_window and stripped.startswith("[") and stripped.endswith("]"):
+                break
+        if not updated:
+            insert_line = f'decorations = "{decorations}"'
+            if window_header_index is not None:
+                lines.insert(window_header_index + 1, insert_line)
+            else:
+                lines.extend(["", "[window]", insert_line])
+        config.write_text("\n".join(lines) + "\n")
+
     def _enter_macos(self) -> None:
         self.console.print("[cyan]→[/cyan] Switching to native macOS mode")
         self._launchctl("unload", LAUNCH_AGENTS)
@@ -154,6 +197,7 @@ class MacOSModeController:
         self._set_defaults("com.apple.finder", "CreateDesktop", True)
         self._restart_dock_and_finder()
         self._update_ghostty_mode("macos")
+        self._update_alacritty_mode("macos")
         self._write_state("macos")
         self.console.print("[green]✓[/green] Native mode ready (Dock/Finder restored)")
 
@@ -167,6 +211,7 @@ class MacOSModeController:
         time.sleep(1)
         ensure_yabai_sa(self.console)
         self._update_ghostty_mode("bsp")
+        self._update_alacritty_mode("bsp")
         self._write_state("bsp")
         self.console.print("[green]✓[/green] BSP mode ready (yabai/skhd/sketchybar loaded)")
 

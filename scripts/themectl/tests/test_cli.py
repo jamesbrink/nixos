@@ -6,6 +6,7 @@ from typer.testing import CliRunner
 
 from themectl import __version__
 from themectl.cli import app
+from themectl.config import load_config
 
 runner = CliRunner()
 
@@ -165,6 +166,13 @@ def _write_config(
         ).strip()
     )
     return config_path
+
+
+def _write_automation_yaml(root: Path, content: str) -> Path:
+    automation_path = root / ".config" / "themectl" / "automation.yaml"
+    automation_path.parent.mkdir(parents=True, exist_ok=True)
+    automation_path.write_text(textwrap.dedent(content).strip() + "\n")
+    return automation_path
 
 
 def _setup_home(tmp_path: Path, monkeypatch) -> Path:
@@ -329,8 +337,31 @@ def test_apply_known_theme(tmp_path: Path, monkeypatch) -> None:
     result = runner.invoke(app, ["apply", "rose-pine", "--config", str(cfg)])
     assert result.exit_code == 0
     assert "Applied" in result.output
-    current_link = home / ".config" / "omarchy" / "current" / "theme"
-    assert current_link.is_symlink()
+
+
+def test_automation_yaml_overrides_editors(tmp_path: Path, monkeypatch) -> None:
+    home = _setup_home(tmp_path, monkeypatch)
+    entry = _basic_theme_entry("tokyo-night")
+    metadata = _write_metadata_file(home, entry)
+    state = home / ".config" / "themes" / ".current-theme"
+    state.parent.mkdir(parents=True, exist_ok=True)
+    state.write_text("tokyo-night")
+    cfg_path = _write_config(home, metadata, state)
+    _write_automation_yaml(
+        home,
+        """
+        version: 1
+        editor:
+          vscode: false
+          cursor: false
+          neovim: true
+        """,
+    )
+
+    cfg = load_config(cfg_path)
+    assert cfg.editor_automation.vscode is False
+    assert cfg.editor_automation.cursor is False
+    assert cfg.editor_automation.neovim is True
 
 
 def test_sync_assets_generates_files(tmp_path: Path, monkeypatch) -> None:

@@ -56,6 +56,18 @@ tell application "System Events"
 end tell
 """
 
+MAC_WALLPAPER_SCRIPT = """
+on run argv
+  set targetPath to item 1 of argv
+  set targetFile to POSIX file targetPath as alias
+  tell application "System Events"
+    repeat with desktopRef in desktops
+      set picture of desktopRef to targetFile
+    end repeat
+  end tell
+end run
+"""
+
 
 def _automation_disabled() -> bool:
     return os.environ.get("THEME_DISABLE_EDITOR_AUTOMATION", "0") == "1"
@@ -361,11 +373,18 @@ def reload_hyprland(console: Console) -> None:
 
 
 def update_wallpaper(console: Console) -> None:
-    if platform.system() != "Linux":
-        return
     background = get_home() / ".config" / "omarchy" / "current" / "background"
     if not background.exists():
         return
+    target = _wallpaper_target(background)
+    system = platform.system()
+    if system == "Linux":
+        _update_wallpaper_linux(target, console)
+    elif system == "Darwin":
+        _update_wallpaper_macos(target, console)
+
+
+def _update_wallpaper_linux(background: Path, console: Console) -> None:
     binary = shutil.which("swww")
     if not binary:
         console.print("[cyan]-[/cyan] swww not found; skipping wallpaper refresh")
@@ -390,6 +409,95 @@ def update_wallpaper(console: Console) -> None:
             Panel(
                 result.stderr.strip() or "swww img failed",
                 title="Wallpaper reload",
+                border_style="yellow",
+            )
+        )
+
+
+def _wallpaper_target(background: Path) -> Path:
+    if background.is_symlink():
+        try:
+            return background.resolve(strict=True)
+        except FileNotFoundError:
+            return background
+    return background
+
+
+def _update_wallpaper_macos(background: Path, console: Console) -> None:
+    desktoppr = shutil.which("desktoppr")
+    if desktoppr:
+        result = subprocess.run(
+            [desktoppr, str(background)],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            console.print("[green]✓[/green] Updated macOS wallpaper via desktoppr")
+            return
+        console.print(
+            Panel(
+                result.stderr.strip() or "desktoppr failed",
+                title="Wallpaper reload",
+                border_style="yellow",
+            )
+        )
+
+    if _run_osascript(MAC_WALLPAPER_SCRIPT, [str(background)]):
+        console.print("[green]✓[/green] Updated macOS wallpaper across desktops")
+        return
+
+    console.print(
+        Panel(
+            "Unable to set wallpaper via System Events (check Accessibility permissions).",
+            title="Wallpaper reload",
+            border_style="yellow",
+        )
+    )
+    if _write_defaults_wallpaper(background, console):
+        _restart_dock(console)
+
+
+def _write_defaults_wallpaper(background: Path, console: Console) -> bool:
+    defaults = shutil.which("defaults") or "/usr/bin/defaults"
+    payload = f'{{default = {{ImageFilePath = "{background}"; }};}}'
+    result = subprocess.run(
+        [
+            defaults,
+            "-currentHost",
+            "write",
+            "com.apple.desktop",
+            "Background",
+            payload,
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        console.print("[green]✓[/green] Updated macOS defaults wallpaper record")
+        return True
+    console.print(
+        Panel(
+            result.stderr.strip() or "defaults write failed",
+            title="Wallpaper defaults",
+            border_style="yellow",
+        )
+    )
+    return False
+
+
+def _restart_dock(console: Console) -> None:
+    result = subprocess.run(
+        ["killall", "Dock"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        console.print("[green]✓[/green] Restarted Dock to apply wallpapers")
+    else:
+        console.print(
+            Panel(
+                result.stderr.strip() or "killall Dock failed",
+                title="Dock restart",
                 border_style="yellow",
             )
         )

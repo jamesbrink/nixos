@@ -1,0 +1,7 @@
+version: 1
+
+# Toggle runtime automation for editors. Future fields can piggyback here.
+editor:
+  vscode: false
+  cursor: false
+  neovim: true

@@ -35,6 +35,9 @@ This document tracks the current macOS/Hyprland parity effort. Check off items a
 - [ ] **VSCode/Cursor live reload** – AppleScript automation still feels flaky; capture a more reliable trigger (or upstream issue) so theme switching is 100% hands-off.
 - [ ] **Ghostty automation polish** – AppleScript reload + opacity tweaks work but still feel brittle; revisit after a cooldown (maybe watch for `ghostty +list-actions` updates or expose a direct CLI).
 - [ ] **Yabai focus behavior toggle** – surface the “focus-follows-update”/auto-jump option (whatever yabai flag controls the terminal stealing focus) in `config/hotkeys.yaml` + Nix so BSP mode can keep focus pinned when background windows update.
+- [ ] **Hide dock in BSP mode** – when tiling on macOS the Dock should be fully disabled/hidden so yabai layout stays clean; add a toggle in the forthcoming themectl YAML and Darwin modules.
+- [ ] **macOS wallpaper multi-space sync** – desktoppr/System Events still only touch the focused Space; investigate LaunchServices APIs or Dock defaults to keep every Space/monitor aligned.
+- [ ] **VSCode/Cursor automation redesign** – current AppleScript typing is disruptive; keep automation disabled via the YAML overrides until a non-invasive trigger (CLI or extension API) exists.
 
 ## Recently Completed
 
