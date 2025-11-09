@@ -147,6 +147,48 @@ let
                               sketchybar --set memory label="''${ACTIVE_GB}GB"
                             ''}"
 
+    # Battery status
+    sketchybar --add item battery right \
+               --set battery update_freq=10 \
+                             script="${pkgs.writeShellScript "battery.sh" ''
+                               #!/bin/bash
+                               # Get battery status from pmset
+                               BATT_INFO=$(pmset -g batt)
+                               PERCENTAGE=$(echo "$BATT_INFO" | grep -Eo "\d+%" | cut -d% -f1)
+                               CHARGING=$(echo "$BATT_INFO" | grep -q "AC Power" && echo "charging" || echo "battery")
+
+                               # Set icon based on charging state and level
+                               if [ "$CHARGING" = "charging" ]; then
+                                 ICON="󰂄"  # Charging icon
+                                 COLOR="0xff9ece6a"  # Green
+                               else
+                                 # Battery level icons
+                                 if [ "$PERCENTAGE" -ge 90 ]; then
+                                   ICON="󰁹"
+                                   COLOR="0xff9ece6a"  # Green
+                                 elif [ "$PERCENTAGE" -ge 70 ]; then
+                                   ICON="󰂀"
+                                   COLOR="0xff9ece6a"  # Green
+                                 elif [ "$PERCENTAGE" -ge 50 ]; then
+                                   ICON="󰁾"
+                                   COLOR="0xffe0af68"  # Yellow
+                                 elif [ "$PERCENTAGE" -ge 30 ]; then
+                                   ICON="󰁼"
+                                   COLOR="0xffe0af68"  # Yellow
+                                 elif [ "$PERCENTAGE" -ge 10 ]; then
+                                   ICON="󰁺"
+                                   COLOR="0xfff7768e"  # Red
+                                 else
+                                   ICON="󰂎"
+                                   COLOR="0xfff7768e"  # Red
+                                 fi
+                               fi
+
+                               sketchybar --set battery icon="$ICON" \
+                                                       label="''${PERCENTAGE}%" \
+                                                       icon.color="$COLOR"
+                             ''}"
+
     # Network (just indicator, no stats)
     sketchybar --add item network right \
                --set network icon=󰖩 \
