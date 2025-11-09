@@ -2,7 +2,7 @@
 {
   config,
   lib,
-  pkgs,
+  pkgs ? null,
   ...
 }:
 
@@ -21,20 +21,8 @@ let
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIKSf4Qft9nUD2gRDeJVkogYKY7PQvhlnD+kjFKgro3r"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBKlaSFMo6Wcm5oZu3ABjPY4Q+INQBlVwxVktjfz66oI root@n100-04"
   ];
-  acceptedEnvVars = [
-    "LANG"
-    "LC_*"
-    "TERM"
-    "COLORTERM"
-    "LC_TERMINAL"
-    "LC_TERMINAL_VERSION"
-    "COLORFGBG"
-  ];
 in
 {
   # Configure SSH keys for root user on all systems
   users.users.root.openssh.authorizedKeys.keys = authorizedKeys;
-
-  # Let SSH propagate terminal/locale env vars when clients opt-in
-  services.openssh.settings.AcceptEnv = lib.mkDefault (lib.concatStringsSep " " acceptedEnvVars);
 }

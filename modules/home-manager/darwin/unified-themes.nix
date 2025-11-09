@@ -9,7 +9,9 @@
 }:
 
 let
-  hyprThemes = import ../hyprland/themes/lib.nix { };
+  hyprThemes = import ../hyprland/themes/lib.nix {
+    omarchySrc = inputs.omarchy or null;
+  };
 
   # Import all Hyprland theme definitions
   themeFiles = hyprThemes.themeFiles;

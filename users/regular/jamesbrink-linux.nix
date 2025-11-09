@@ -65,6 +65,18 @@ in
     ];
   };
 
+  services.openssh.settings.AcceptEnv = lib.mkDefault (
+    lib.concatStringsSep " " [
+      "LANG"
+      "LC_*"
+      "TERM"
+      "COLORTERM"
+      "LC_TERMINAL"
+      "LC_TERMINAL_VERSION"
+      "COLORFGBG"
+    ]
+  );
+
   # User packages
   home-manager.users.jamesbrink =
     { pkgs, ... }:

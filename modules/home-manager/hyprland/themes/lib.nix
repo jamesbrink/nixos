@@ -1,4 +1,6 @@
-{ }:
+{
+  omarchySrc ? null,
+}:
 
 let
   # Repository root (used to locate shared assets such as the Omarchy submodule)
@@ -6,7 +8,9 @@ let
   repoRootStr = builtins.toString repoRoot;
 
   # Upstream Omarchy themes (git submodule)
-  omarchyThemesDir = repoRootStr + "/external/omarchy/themes";
+  omarchyBase =
+    if omarchySrc != null then builtins.toString omarchySrc else repoRootStr + "/external/omarchy";
+  omarchyThemesDir = omarchyBase + "/themes";
 
   # Optional local overrides. Leave the directory empty (or absent) if unused.
   localWallpapersDir = repoRootStr + "/modules/home-manager/hyprland/wallpapers";

@@ -375,6 +375,18 @@
         "type": "github"
       }
     },
+    "omarchy": {
+      "flake": false,
+      "locked": {
+        "path": "./external/omarchy",
+        "type": "path"
+      },
+      "original": {
+        "path": "./external/omarchy",
+        "type": "path"
+      },
+      "parent": []
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -390,6 +402,7 @@
         "nix-homebrew": "nix-homebrew",
         "nixos-unstable": "nixos-unstable",
         "nixpkgs": "nixpkgs_2",
+        "omarchy": "omarchy",
         "secrets": "secrets",
         "vscode-server": "vscode-server",
         "zen-browser": "zen-browser"

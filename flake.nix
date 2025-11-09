@@ -28,6 +28,10 @@
       url = "path:./secrets";
       flake = false;
     };
+    omarchy = {
+      url = "path:./external/omarchy";
+      flake = false;
+    };
     vscode-server = {
       url = "github:nix-community/nixos-vscode-server";
       inputs.nixpkgs.follows = "nixos-unstable";
@@ -583,7 +587,9 @@
             config.allowUnfree = true;
           };
           python = pkgs.python311Packages;
-          themeLib = import ./modules/home-manager/hyprland/themes/lib.nix { };
+          themeLib = import ./modules/home-manager/hyprland/themes/lib.nix {
+            omarchySrc = inputs.omarchy;
+          };
           themeData = pkgs.writeText "themectl-themes.json" themeLib.themeMetadataJSON;
           themectlPkg = python.buildPythonApplication {
             pname = "themectl";
