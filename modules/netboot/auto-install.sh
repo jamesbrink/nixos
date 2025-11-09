@@ -55,7 +55,8 @@ detect_hostname() {
         return
     fi
     
-    local dhcp_hostname=$(hostname)
+    local dhcp_hostname
+    dhcp_hostname=$(hostname)
     if [[ "$dhcp_hostname" =~ ^n100-0[1-4]$ ]]; then
         HOSTNAME="$dhcp_hostname"
         log_info "Detected hostname from DHCP: $HOSTNAME"
@@ -69,7 +70,7 @@ detect_hostname() {
         echo "2) n100-02"
         echo "3) n100-03"
         echo "4) n100-04"
-        read -p "Enter selection (1-4): " selection
+        read -r -p "Enter selection (1-4): " selection
         case $selection in
             1) HOSTNAME="n100-01" ;;
             2) HOSTNAME="n100-02" ;;
@@ -85,7 +86,7 @@ detect_disk() {
     log_info "Detecting installation disk..."
     
     # Look for NVMe drives first
-    DISKS=($(lsblk -dno NAME,TYPE | grep disk | grep -E '(nvme|sd)' | awk '{print "/dev/"$1}'))
+    mapfile -t DISKS < <(lsblk -dno NAME,TYPE | grep disk | grep -E '(nvme|sd)' | awk '{print "/dev/"$1}')
     
     if [ ${#DISKS[@]} -eq 0 ]; then
         log_error "No suitable disks found!"
@@ -104,7 +105,7 @@ detect_disk() {
                 size=$(lsblk -dno SIZE "${DISKS[$i]}")
                 echo "$((i+1))) ${DISKS[$i]} ($size)"
             done
-            read -p "Select disk (1-${#DISKS[@]}): " selection
+            read -r -p "Select disk (1-${#DISKS[@]}): " selection
             INSTALL_DISK="${DISKS[$((selection-1))]}"
         fi
     fi
@@ -118,7 +119,7 @@ detect_disk() {
         log_warn "Installing to $INSTALL_DISK in 5 seconds..."
         sleep 5
     else
-        read -p "This will DESTROY all data on $INSTALL_DISK. Continue? (yes/no): " confirm
+        read -r -p "This will DESTROY all data on $INSTALL_DISK. Continue? (yes/no): " confirm
         if [ "$confirm" != "yes" ]; then
             log_error "Installation cancelled"
             exit 1

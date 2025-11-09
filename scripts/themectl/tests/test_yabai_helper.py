@@ -14,9 +14,8 @@ pytestmark = pytest.mark.skipif(
     sys.platform != "darwin", reason="yabai helper only runs on macOS"
 )
 
-HELPER_RESOURCE = (
-    importlib.resources.files("themectl.contrib")
-    .joinpath("yabai-space-helper.sh")
+HELPER_RESOURCE = importlib.resources.files("themectl.contrib").joinpath(
+    "yabai-space-helper.sh"
 )
 
 

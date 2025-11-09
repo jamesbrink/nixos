@@ -106,8 +106,12 @@ def load_config(path: Path | None = None) -> ThemectlConfig:
         theme_metadata=Path(raw["theme_metadata"]).expanduser()
         if "theme_metadata" in raw
         else None,
-        state_file=Path(raw["state_file"]).expanduser() if "state_file" in raw else None,
-        hotkeys_file=Path(raw["hotkeys_file"]).expanduser() if "hotkeys_file" in raw else None,
+        state_file=Path(raw["state_file"]).expanduser()
+        if "state_file" in raw
+        else None,
+        hotkeys_file=Path(raw["hotkeys_file"]).expanduser()
+        if "hotkeys_file" in raw
+        else None,
         editor_automation=EditorAutomation(
             vscode=bool(editor_raw.get("vscode", True)),
             cursor=bool(editor_raw.get("cursor", True)),

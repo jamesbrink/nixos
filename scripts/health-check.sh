@@ -34,28 +34,28 @@ if [ "$HOSTNAME" = "$HOST" ]; then
 else
   # Remote health check
   # Check if host is darwin or linux by checking flake configuration
-  if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+  if nix eval --json .#darwinConfigurations."$HOST"._type 2>/dev/null >/dev/null; then
     # Darwin host - use regular user with sudo where needed
     echo -e "\nDisk usage on $HOST:"
-    ssh jamesbrink@$HOST "df -h | grep -v tmpfs"
+    ssh jamesbrink@"$HOST" "df -h | grep -v tmpfs"
     echo -e "\nMemory usage on $HOST:"
-    ssh jamesbrink@$HOST "vm_stat | perl -ne '/page size of (\d+)/ and \$size=\$1; /Pages\s+([^:]+)[^\d]+(\d+)/ and printf(\"%-20s %8.2f GB\\n\", \"\$1:\", \$2 * \$size / 1073741824);'"
+    ssh jamesbrink@"$HOST" "vm_stat | perl -ne '/page size of (\d+)/ and \$size=\$1; /Pages\s+([^:]+)[^\d]+(\d+)/ and printf(\"%-20s %8.2f GB\\n\", \"\$1:\", \$2 * \$size / 1073741824);'"
     echo -e "\nSystem load on $HOST:"
-    ssh jamesbrink@$HOST "uptime"
+    ssh jamesbrink@"$HOST" "uptime"
     echo -e "\nSystem services on $HOST:"
-    ssh jamesbrink@$HOST "sudo launchctl list | grep -E '(com.apple|org.nixos)' | head -20"
+    ssh jamesbrink@"$HOST" "sudo launchctl list | grep -E '(com.apple|org.nixos)' | head -20"
   else
     # NixOS host - use root
     echo -e "\nDisk usage on $HOST:"
-    ssh root@$HOST "df -h | grep -v tmpfs"
+    ssh root@"$HOST" "df -h | grep -v tmpfs"
     echo -e "\nMemory usage on $HOST:"
-    ssh root@$HOST "free -h"
+    ssh root@"$HOST" "free -h"
     echo -e "\nSystem load on $HOST:"
-    ssh root@$HOST "uptime"
+    ssh root@"$HOST" "uptime"
     echo -e "\nFailed services on $HOST:"
-    ssh root@$HOST "systemctl --failed"
+    ssh root@"$HOST" "systemctl --failed"
     echo -e "\nJournal errors on $HOST (last 10):"
-    ssh root@$HOST "journalctl -p 3 -xn 10"
+    ssh root@"$HOST" "journalctl -p 3 -xn 10"
   fi
 fi
 

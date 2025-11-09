@@ -25,28 +25,23 @@ if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
 fi
 
 # Check if host is Darwin or NixOS
-if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+if nix eval --json .#darwinConfigurations."$HOST"._type 2>/dev/null >/dev/null; then
   # Darwin deployment
   echo "Building darwin configuration for $HOST locally..."
-  NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#darwinConfigurations.$HOST.system
-  if [ $? -ne 0 ]; then
+  if ! NIXPKGS_ALLOW_UNFREE=1 nix build --impure ".#darwinConfigurations.${HOST}.system"; then
     echo "Build failed! Aborting deployment."
     exit 1
   fi
   
   echo "Build complete! Copying closure to $HOST..."
-  nix-copy-closure --to jamesbrink@$HOST ./result
-  
-  if [ $? -ne 0 ]; then
+  if ! nix-copy-closure --to jamesbrink@"$HOST" ./result; then
     echo "Failed to copy closure to $HOST! Aborting deployment."
     exit 1
   fi
   
   echo "Switching to new configuration on $HOST..."
   STORE_PATH=$(readlink -f ./result)
-  ssh jamesbrink@$HOST "sudo $STORE_PATH/sw/bin/darwin-rebuild switch --flake .#$HOST"
-  
-  if [ $? -eq 0 ]; then
+  if ssh jamesbrink@"$HOST" "sudo $STORE_PATH/sw/bin/darwin-rebuild switch --flake .#$HOST"; then
     echo "Deployment to $HOST complete!"
   else
     echo "Failed to switch configuration on $HOST!"
@@ -62,34 +57,28 @@ else
       echo "Found existing build result for $HOST, using it..."
     else
       echo "Existing build result is for '$RESULT_HOST', not '$HOST'. Building fresh..."
-      NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
-      if [ $? -ne 0 ]; then
+      if ! NIXPKGS_ALLOW_UNFREE=1 nix build --impure ".#nixosConfigurations.${HOST}.config.system.build.toplevel"; then
         echo "Build failed! Aborting deployment."
         exit 1
       fi
     fi
   else
     echo "No existing build result found. Building configuration for $HOST locally..."
-    NIXPKGS_ALLOW_UNFREE=1 nix build --impure .#nixosConfigurations.$HOST.config.system.build.toplevel
-    if [ $? -ne 0 ]; then
+    if ! NIXPKGS_ALLOW_UNFREE=1 nix build --impure ".#nixosConfigurations.${HOST}.config.system.build.toplevel"; then
       echo "Build failed! Aborting deployment."
       exit 1
     fi
   fi
 
   echo "Build complete! Copying closure to $HOST..."
-  nix-copy-closure --to root@$HOST ./result
-
-  if [ $? -ne 0 ]; then
+  if ! nix-copy-closure --to root@"$HOST" ./result; then
     echo "Failed to copy closure to $HOST! Aborting deployment."
     exit 1
   fi
 
   echo "Switching to new configuration on $HOST..."
   STORE_PATH=$(readlink -f ./result)
-  ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --set $STORE_PATH && /nix/var/nix/profiles/system/bin/switch-to-configuration switch"
-
-  if [ $? -eq 0 ]; then
+  if ssh root@"$HOST" "nix-env -p /nix/var/nix/profiles/system --set $STORE_PATH && /nix/var/nix/profiles/system/bin/switch-to-configuration switch"; then
     echo "Deployment to $HOST complete!"
   else
     echo "Failed to switch configuration on $HOST!"

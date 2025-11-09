@@ -108,7 +108,7 @@ regexes = [
     '''/nix/store/[a-z0-9]{32}-'''
 ]
 EOF
-    trap "rm -f $CONFIG_FILE" EXIT
+    trap 'rm -f "$CONFIG_FILE"' EXIT
 fi
 
 print_color "$YELLOW" "Starting GitLeaks scan..."

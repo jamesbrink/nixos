@@ -11,7 +11,9 @@ from themectl.config import load_config
 runner = CliRunner()
 
 
-def _basic_theme_entry(slug: str = "test-theme", name: str | None = None, wallpaper: Path | None = None):
+def _basic_theme_entry(
+    slug: str = "test-theme", name: str | None = None, wallpaper: Path | None = None
+):
     display = name or slug.replace("-", " ").title()
     entry = {
         "name": display,
@@ -112,6 +114,7 @@ def _write_hotkeys_file(home: Path, content: str) -> Path:
     hotkeys.parent.mkdir(parents=True, exist_ok=True)
     hotkeys.write_text(content.strip() + "\n")
     return hotkeys
+
 
 HOTKEYS_JSON = json.dumps(
     {
@@ -243,7 +246,10 @@ def test_apply_known_theme(tmp_path: Path, monkeypatch) -> None:
                         "slug": "rose-pine",
                         "nvim": {"colorscheme": "rose-pine"},
                         "alacritty": {
-                            "primary": {"background": "#000000", "foreground": "#ffffff"},
+                            "primary": {
+                                "background": "#000000",
+                                "foreground": "#ffffff",
+                            },
                             "normal": {
                                 "black": "#000000",
                                 "red": "#ff0000",
@@ -378,7 +384,10 @@ def test_sync_assets_generates_files(tmp_path: Path, monkeypatch) -> None:
                         "slug": "test-theme",
                         "nvim": {"colorscheme": "tokyonight"},
                         "alacritty": {
-                            "primary": {"background": "#101010", "foreground": "#f0f0f0"},
+                            "primary": {
+                                "background": "#101010",
+                                "foreground": "#f0f0f0",
+                            },
                             "normal": {
                                 "black": "#101010",
                                 "red": "#ff0000",
@@ -474,7 +483,9 @@ def test_sync_assets_generates_files(tmp_path: Path, monkeypatch) -> None:
     assert (theme_dir / "backgrounds" / wallpaper.name).exists()
 
 
-def test_doctor_linux_detects_missing_walker_assets(tmp_path: Path, monkeypatch) -> None:
+def test_doctor_linux_detects_missing_walker_assets(
+    tmp_path: Path, monkeypatch
+) -> None:
     home = _setup_home(tmp_path, monkeypatch)
     entry = _basic_theme_entry(slug="walker-test")
     metadata = _write_metadata_file(home, entry)
@@ -540,6 +551,7 @@ def test_hotkeys_command_platform_override(tmp_path: Path, monkeypatch) -> None:
     )
     assert result.exit_code == 0
     assert "cmd+shift+t" in result.output
+
 
 def test_apply_replaces_existing_directory(tmp_path: Path, monkeypatch) -> None:
     home = _setup_home(tmp_path, monkeypatch)

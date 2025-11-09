@@ -21,6 +21,10 @@ repos:
         entry: shellcheck
         language: system
         types: [shell]
+        args:
+          - "-x"
+          - "-e"
+          - "SC1091,SC2029"
         exclude: "^(install-bootloader|result|result-).*"
 
   # JSON/YAML/Markdown formatting

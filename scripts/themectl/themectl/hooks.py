@@ -88,7 +88,9 @@ def _read_settings(path: Path) -> dict[str, Any] | None:
         raw = path.read_text()
     except FileNotFoundError:
         return None
-    cleaned = "\n".join(line for line in raw.splitlines() if not line.strip().startswith("//"))
+    cleaned = "\n".join(
+        line for line in raw.splitlines() if not line.strip().startswith("//")
+    )
     if not cleaned.strip():
         return {}
     data = json.loads(cleaned)
@@ -124,7 +126,9 @@ def _update_editor_settings(
 
 def _run_osascript(script: str, args: list[str]) -> bool:
     binary = shutil.which("osascript") or "/usr/bin/osascript"
-    with tempfile.NamedTemporaryFile("w", suffix=".applescript", delete=False) as handle:
+    with tempfile.NamedTemporaryFile(
+        "w", suffix=".applescript", delete=False
+    ) as handle:
         handle.write(script.strip())
         tmp_path = Path(handle.name)
     try:
@@ -192,7 +196,7 @@ def _update_neovim_theme_file(colorscheme: str, console: Console) -> None:
     if pattern.search(original):
         updated, count = pattern.subn(replacement, original, count=1)
     else:
-        updated = original.rstrip() + f'\n{replacement}\n'
+        updated = original.rstrip() + f"\n{replacement}\n"
         count = 1
     if count > 0 and updated != original:
         theme_file.write_text(updated)
@@ -530,7 +534,9 @@ def _refresh_vscode(theme: Theme, cfg: ThemectlConfig, console: Console) -> None
     theme_name = theme.vscode_theme
     if not theme_name:
         return
-    changed = _update_editor_settings(_vscode_settings_paths(cfg.platform), theme_name, console, "VSCode")
+    changed = _update_editor_settings(
+        _vscode_settings_paths(cfg.platform), theme_name, console, "VSCode"
+    )
     if changed:
         _trigger_editor_reload("Visual Studio Code", "Code", theme_name, console)
 
@@ -541,7 +547,9 @@ def _refresh_cursor(theme: Theme, cfg: ThemectlConfig, console: Console) -> None
     theme_name = theme.cursor_theme or theme.vscode_theme
     if not theme_name:
         return
-    changed = _update_editor_settings(_cursor_settings_paths(cfg.platform), theme_name, console, "Cursor")
+    changed = _update_editor_settings(
+        _cursor_settings_paths(cfg.platform), theme_name, console, "Cursor"
+    )
     if changed:
         _trigger_editor_reload("Cursor", "Cursor", theme_name, console)
 
@@ -571,8 +579,8 @@ def run_reload_hooks(theme: Theme, cfg: ThemectlConfig, console: Console) -> Non
         except Exception as exc:  # pragma: no cover - defensive logging
             console.print(
                 Panel(
-                  f"{exc}",
-                  title=f"{label} automation failed",
-                  border_style="red",
+                    f"{exc}",
+                    title=f"{label} automation failed",
+                    border_style="red",
                 )
             )

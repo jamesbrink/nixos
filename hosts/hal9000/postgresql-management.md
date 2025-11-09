@@ -34,6 +34,7 @@ sudo podman exec postgres13 psql -U postgres -c "SELECT pg_is_in_recovery() as i
 ### Automatic Base Snapshots
 
 Base snapshots are automatically created every 3 days at 4 AM if:
+
 - PostgreSQL is in recovery mode
 - Replication lag is less than 1 hour
 - No snapshot already exists for that day
@@ -50,6 +51,7 @@ postgres13-create-base
 ```
 
 The script will:
+
 - Verify PostgreSQL is in standby mode (recommended)
 - Check replication lag
 - Create snapshot named `base@base-YYYYMMDD` on the base dataset
@@ -74,6 +76,7 @@ curl -H "X-Webhook-Token: WEBHOOK_TOKEN_RESET" http://localhost:9000/hooks/postg
 ```
 
 This will:
+
 1. Kill the postgres13 container
 2. Destroy the current postgres13 dataset
 3. Clone from the **most recent** `base@base-*` snapshot
@@ -91,6 +94,7 @@ curl -H "X-Webhook-Token: WEBHOOK_TOKEN_ACTIVE" http://localhost:9000/hooks/post
 ```
 
 This will:
+
 1. Check if PostgreSQL is running
 2. Remove standby.signal
 3. Restart the container in read-write mode
@@ -101,16 +105,19 @@ This will:
 For importing a new base snapshot:
 
 1. **Import the ZFS snapshot:**
+
    ```bash
    sudo zfs receive -F storage-fast/quantierra/base < ~/Downloads/pg_base_20250727.zfs
    ```
 
 2. **Create initial clone:**
+
    ```bash
    sudo zfs clone storage-fast/quantierra/base@backup_20250727 storage-fast/quantierra/postgres13
    ```
 
 3. **Add standby signal:**
+
    ```bash
    sudo touch /storage-fast/quantierra/postgres13/standby.signal
    ```
@@ -166,17 +173,20 @@ postgres13-wal-retention
 ### Typical Development Cycle
 
 1. **Ensure replica is up-to-date:**
+
    ```bash
    # Check replication lag
    sudo podman exec postgres13 psql -U postgres -c "SELECT EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))::int as lag_seconds;"
    ```
 
 2. **Create a fresh base snapshot (optional):**
+
    ```bash
    postgres13-create-base
    ```
 
 3. **Switch to development mode:**
+
    ```bash
    postgres13-activate
    ```
@@ -258,17 +268,19 @@ postgres13-wal-sync
 
 ### Web UI
 
-- **ZFS Monitor**: https://zfs.home.urandom.io (includes reset button)
+- **ZFS Monitor**: <https://zfs.home.urandom.io> (includes reset button)
 
 ## Recent Updates (August 2025)
 
 ### Key Changes
+
 - **Removed postgres13-recovery-mode**: Use `postgres13-reset` to return to standby mode
 - **Disabled archiving**: Set `archive_mode = off` to prevent read-only filesystem errors
 - **Query logging enabled**: All SQL statements are logged (`log_statement = 'all'`)
 - **Verified all functionality**: All commands tested and working correctly
 
 ### Available Commands
+
 1. **postgres13-reset**: Reset to latest base snapshot (standby mode)
 2. **postgres13-activate**: Switch to development mode (read-write)
 3. **postgres13-dev-mode**: Alternative command for development mode
@@ -278,6 +290,7 @@ postgres13-wal-sync
 7. **postgres13-wal-sync-full**: Full sync with retention cleanup
 
 ### Features
+
 - **Automatic base snapshots**: Every 3 days at 4 AM (days 1,4,7,10,13,16,19,22,25,28,31)
 - **Automatic WAL sync**: Daily at 3 AM
 - **Webhook control**: Reset via WEBHOOK_TOKEN_RESET, activate via WEBHOOK_TOKEN_ACTIVE
@@ -286,6 +299,7 @@ postgres13-wal-sync
 - **Query logging**: All SQL statements logged for debugging
 
 ### Architecture Notes
+
 - PostgreSQL runs in Podman container (postgis/postgis:13-3.5)
 - Data stored on ZFS dataset: `/storage-fast/quantierra/postgres13`
 - WAL files synced from production to `/storage-fast/quantierra/archive`

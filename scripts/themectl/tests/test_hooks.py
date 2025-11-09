@@ -30,7 +30,9 @@ def test_update_editor_settings_handles_comments(tmp_path: Path) -> None:
     assert data["workbench.colorTheme"] == "Tokyo Night"
 
 
-def test_update_neovim_theme_file_rewrites_colorscheme(tmp_path: Path, monkeypatch) -> None:
+def test_update_neovim_theme_file_rewrites_colorscheme(
+    tmp_path: Path, monkeypatch
+) -> None:
     home = tmp_path / "home"
     theme_file = home / ".config" / "nvim" / "lua" / "plugins" / "theme.lua"
     theme_file.parent.mkdir(parents=True)

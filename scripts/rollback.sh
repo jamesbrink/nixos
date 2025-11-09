@@ -32,12 +32,12 @@ if [ "$HOSTNAME" = "$HOST" ]; then
 else
   # Remote rollback
   # Check if host is darwin or linux by checking flake configuration
-  if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+  if nix eval --json .#darwinConfigurations."$HOST"._type 2>/dev/null >/dev/null; then
     # Darwin host - use regular user with sudo
-    ssh jamesbrink@$HOST "sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- --rollback switch --impure"
+    ssh jamesbrink@"$HOST" "sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- --rollback switch --impure"
   else
     # NixOS host - use root
-    ssh root@$HOST "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild --rollback switch --impure"
+    ssh root@"$HOST" "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild --rollback switch --impure"
   fi
 fi
 

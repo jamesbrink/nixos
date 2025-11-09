@@ -12,18 +12,18 @@ fi
 HOST="$1"
 
 # Check if host is Darwin or Linux
-if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+if nix eval --json .#darwinConfigurations."$HOST"._type 2>/dev/null >/dev/null; then
   # Darwin host
   echo "Running backup on Darwin host $HOST..."
-  ssh jamesbrink@$HOST "restic-backup backup" || {
+  ssh jamesbrink@"$HOST" "restic-backup backup" || {
     echo "Backup failed. If this is the first run, the repository should have been auto-initialized."
     echo "Check the error message above for details."
     exit 1
   }
-elif nix eval --json .#nixosConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+elif nix eval --json .#nixosConfigurations."$HOST"._type 2>/dev/null >/dev/null; then
   # Linux host
   echo "Running backup on Linux host $HOST..."
-  ssh root@$HOST "systemctl start restic-backups-s3-backup.service"
+  ssh root@"$HOST" "systemctl start restic-backups-s3-backup.service"
   echo ""
   echo "Backup started. Check status with:"
   echo "  ssh root@$HOST 'journalctl -u restic-backups-s3-backup.service -f'"

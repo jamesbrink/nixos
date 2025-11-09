@@ -32,7 +32,9 @@ def ensure_yabai_sa(console: Console | None = None) -> bool:
     yabai = shutil.which("yabai")
     if not yabai:
         if console:
-            console.print("[yellow]![/yellow] yabai not found; skipping scripting addition reload")
+            console.print(
+                "[yellow]![/yellow] yabai not found; skipping scripting addition reload"
+            )
         return True
     sudo = shutil.which("sudo") or "/usr/bin/sudo"
     result = subprocess.run(
@@ -131,6 +133,7 @@ class MacOSModeController:
         titlebar = "hidden" if mode == "bsp" else "transparent"
         opacity = "0.97" if mode == "bsp" else "1.0"
         lines = config.read_text().splitlines()
+
         def upsert(key: str, value: str) -> None:
             nonlocal lines
             replaced = False
@@ -141,6 +144,7 @@ class MacOSModeController:
                     break
             if not replaced:
                 lines.append(f"{key} = {value}")
+
         upsert("macos-titlebar-style", titlebar)
         upsert("background-opacity", opacity)
         config.write_text("\n".join(lines) + "\n")
@@ -213,7 +217,9 @@ class MacOSModeController:
         self._update_ghostty_mode("bsp")
         self._update_alacritty_mode("bsp")
         self._write_state("bsp")
-        self.console.print("[green]✓[/green] BSP mode ready (yabai/skhd/sketchybar loaded)")
+        self.console.print(
+            "[green]✓[/green] BSP mode ready (yabai/skhd/sketchybar loaded)"
+        )
 
     def switch(self, requested: str) -> None:
         requested = requested.lower()

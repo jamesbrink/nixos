@@ -49,7 +49,6 @@ HOST_LOWER=$(echo "$HOST" | tr '[:upper:]' '[:lower:]')
 
 # If build host is specified, use remote build strategy
 if [ -n "$BUILD_HOST" ]; then
-  BUILD_HOST_LOWER=$(echo "$BUILD_HOST" | tr '[:upper:]' '[:lower:]')
   echo "Building on $BUILD_HOST and deploying to $HOST..."
 
   # Copy flake to build host

@@ -1,10 +1,5 @@
 # Global excludes to prevent warnings for files that don't need formatting
 excludes = [
-  # Documentation files
-  "**/*.md",
-  "README.md",
-  "LICENSE",
-  
   # AI rule files
   ".windsurfrules",
   ".cursorrules",
@@ -40,9 +35,26 @@ command = "prettier"
 options = ["--write"]
 includes = ["*.html", "*.css", "*.js", "*.json", "*.yaml", "*.yml"]
 
-# Shellcheck is available but not used as a formatter
-# Run shellcheck manually with: shellcheck scripts/*.sh
-# [formatter.shellcheck]
-# command = "shellcheck"
-# options = ["-x", "-e", "SC1091,SC2029"]
-# includes = ["*.sh"]
+[formatter.markdownlint]
+command = "markdownlint"
+options = ["--fix"]
+includes = ["*.md"]
+
+[formatter.ruff-format]
+command = "ruff"
+options = ["format"]
+includes = ["*.py"]
+
+[formatter.ruff-check]
+command = "ruff"
+options = ["check", "--fix"]
+includes = ["*.py"]
+
+[formatter.shellcheck]
+command = "shellcheck"
+options = ["-x", "-e", "SC1091,SC2029"]
+includes = ["*.sh"]
+
+[formatter.basedpyright]
+command = "./scripts/treefmt-basedpyright.sh"
+includes = ["scripts/themectl/**/*.py"]

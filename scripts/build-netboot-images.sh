@@ -52,20 +52,19 @@ log_info "Building N100 netboot images..."
 
 # Create a temporary directory for build results
 BUILD_DIR=$(mktemp -d /tmp/netboot-build.XXXXXX)
-trap "rm -rf $BUILD_DIR" EXIT
+trap 'rm -rf "$BUILD_DIR"' EXIT
 
 # Build installer image
 log_info "Building installer image..."
 # Change to temp directory to avoid store path issues
 cd "$BUILD_DIR"
-INSTALLER_PATH=$(nix build "path:$REPO_ROOT?dir=modules/netboot#n100-installer" --impure --print-out-paths)
-if [ $? -eq 0 ] && [ -n "$INSTALLER_PATH" ]; then
+if INSTALLER_PATH=$(nix build "path:$REPO_ROOT?dir=modules/netboot#n100-installer" --impure --print-out-paths); then
+    INSTALLER_PATH=$(echo "$INSTALLER_PATH" | tail -n 1)
     log_info "Installer image built successfully"
     # Create symlink for consistency
     ln -sf "$INSTALLER_PATH" "$BUILD_DIR/installer-result"
 else
     log_error "Failed to build installer image"
-    log_error "Error: $INSTALLER_PATH"
     exit 1
 fi
 
@@ -94,14 +93,13 @@ fi
 # Build rescue image
 log_info "Building rescue image..."
 # Build using print-out-paths to get the actual store path (already in BUILD_DIR)
-RESCUE_PATH=$(nix build "path:$REPO_ROOT?dir=modules/netboot#n100-rescue" --impure --print-out-paths)
-if [ $? -eq 0 ] && [ -n "$RESCUE_PATH" ]; then
+if RESCUE_PATH=$(nix build "path:$REPO_ROOT?dir=modules/netboot#n100-rescue" --impure --print-out-paths); then
+    RESCUE_PATH=$(echo "$RESCUE_PATH" | tail -n 1)
     log_info "Rescue image built successfully"
     # Create symlink for consistency
     ln -sf "$RESCUE_PATH" "$BUILD_DIR/rescue-result"
 else
     log_error "Failed to build rescue image"
-    log_error "Error: $RESCUE_PATH"
     exit 1
 fi
 
@@ -251,7 +249,7 @@ ssh "$SSH_HOST" "sudo sed -i 's|INSTALLER_INIT_PATH|$INSTALLER_INIT_PATH|g' $NET
 log_info "Creating cmdline.ipxe files for dynamic init paths..."
 
 # Installer cmdline.ipxe
-ssh "$SSH_HOST" "sudo tee $NETBOOT_ROOT/images/n100-installer/cmdline.ipxe > /dev/null" << EOF
+cat <<EOF | ssh "$SSH_HOST" "sudo tee $NETBOOT_ROOT/images/n100-installer/cmdline.ipxe > /dev/null"
 #!ipxe
 # Dynamic kernel command line for N100 installer
 kernel \${base-url}/images/n100-installer/kernel init=$INSTALLER_INIT_PATH initrd=initrd loglevel=4 console=ttyS0,115200 console=tty0 hostname=\${hostname}
@@ -260,7 +258,7 @@ boot
 EOF
 
 # Rescue cmdline.ipxe
-ssh "$SSH_HOST" "sudo tee $NETBOOT_ROOT/images/n100-rescue/cmdline.ipxe > /dev/null" << EOF
+cat <<EOF | ssh "$SSH_HOST" "sudo tee $NETBOOT_ROOT/images/n100-rescue/cmdline.ipxe > /dev/null"
 #!ipxe
 # Dynamic kernel command line for N100 rescue
 kernel \${base-url}/images/n100-rescue/kernel init=$RESCUE_INIT_PATH initrd=initrd loglevel=4 console=ttyS0,115200 console=tty0

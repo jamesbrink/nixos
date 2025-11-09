@@ -70,7 +70,7 @@ echo ""
 if [ "${NIXOS_ANYWHERE_NOCONFIRM:-}" = "1" ] || [ "${CI:-}" = "true" ]; then
   echo "Auto-confirming deployment (NIXOS_ANYWHERE_NOCONFIRM=1 or CI=true)"
 else
-  read -p "Continue? (y/N) " -n 1 -r
+  read -r -p "Continue? (y/N) " -n 1 -r
   echo
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Deployment cancelled."
@@ -84,14 +84,12 @@ echo "Target: root@$TARGET_HOST"
 echo "Configuration: $HOST"
 echo ""
 
-NIXPKGS_ALLOW_UNFREE=1 nixos-anywhere \
+if NIXPKGS_ALLOW_UNFREE=1 nixos-anywhere \
   --impure \
   --flake ".#$HOST" \
   --target-host "root@$TARGET_HOST" \
   --option experimental-features "nix-command flakes" \
-  --print-build-logs
-
-if [ $? -eq 0 ]; then
+  --print-build-logs; then
   echo ""
   echo "Initial deployment to $HOST complete!"
   echo "The system should reboot into the installed NixOS."

@@ -8,7 +8,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 
 **Modifier:** `Cmd` (Command key)
 
-### Applications
+### Hyprland Applications
 
 - `Cmd+D` - Application launcher (fzf-based, Rofi/Walker equivalent)
 - `Cmd+Return` - Terminal (Alacritty)
@@ -22,7 +22,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 - `Cmd+Alt+T` - btop (system monitor)
 - `Cmd+Space` - Alternative launchers (Spotlight/Alfred/Raycast)
 
-### Window Management
+### Hyprland Window Management
 
 - `Cmd+W` - Close window
 - `Cmd+T` - Toggle float
@@ -39,7 +39,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 - `Cmd+Shift+1-9,0` - Move window to workspace 1-10
 - `Cmd+Tab` - Next workspace, `Cmd+Shift+Tab` - Previous workspace
 
-### Window Cycling
+### Hyprland Window Cycling
 
 - `Alt+Tab` - Cycle next window, `Alt+Shift+Tab` - Cycle previous
 
@@ -63,7 +63,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 
 - `Cmd+Ctrl+Alt+R` - Reload Hammerspoon configuration
 
-### Mouse Actions
+### Hyprland Mouse Actions
 
 - `Cmd+Left Drag` - Move window
 - `Cmd+Right Drag` - Resize window
@@ -95,7 +95,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 - `Super+K` - Keybindings help menu
 - `Super+Shift+Space` - Toggle status bar (Waybar)
 
-### Window Management
+### Tmux Window Management
 
 - `Super+W` - Kill active window
 - `Super+T` - Toggle floating, `Super+J` - Toggle split direction
@@ -206,7 +206,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 - `K` - Resize pane up
 - `L` - Resize pane right
 
-#### Layout Management
+#### Tmux Layout Management
 
 - `Space` - Cycle through layouts
 - `Alt+1` - Even horizontal layout
@@ -325,7 +325,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 - `[b` - Previous buffer
 - `]b` - Next buffer
 
-#### Window Management
+#### LazyVim Window Management
 
 - `<Leader>w` - Window commands
 - `<Leader>ww` - Switch windows
@@ -357,7 +357,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 - `]h` - Next git hunk
 - `[h` - Previous git hunk
 
-#### Misc
+#### LazyVim Misc
 
 - `<Leader>qq` - Quit all
 - `<Leader>ur` - Toggle relative line numbers

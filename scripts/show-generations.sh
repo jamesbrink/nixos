@@ -24,13 +24,13 @@ if [ "$HOSTNAME" = "$HOST" ]; then
 else
   # Remote generations
   # Check if host is darwin or linux by checking flake configuration
-  if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+  if nix eval --json .#darwinConfigurations."$HOST"._type 2>/dev/null >/dev/null; then
     # Darwin host - use regular user with sudo
     echo "Darwin generations on $HOST:"
-    ssh jamesbrink@$HOST "sudo nix-env -p /nix/var/nix/profiles/system --list-generations"
+    ssh jamesbrink@"$HOST" "sudo nix-env -p /nix/var/nix/profiles/system --list-generations"
   else
     # NixOS host - use root
     echo "NixOS generations on $HOST:"
-    ssh root@$HOST "nix-env -p /nix/var/nix/profiles/system --list-generations"
+    ssh root@"$HOST" "nix-env -p /nix/var/nix/profiles/system --list-generations"
   fi
 fi

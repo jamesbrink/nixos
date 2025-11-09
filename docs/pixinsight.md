@@ -16,7 +16,7 @@ PixInsight is a commercial scientific image processing software designed for ast
 
 ### 1. Download PixInsight
 
-1. Visit https://pixinsight.com/ and log in to your account
+1. Visit <https://pixinsight.com/> and log in to your account
 2. Navigate to the software distribution section
 3. Download the Linux 64-bit version (filename: `PI-linux-x64-1.9.3-20250402-c.tar.xz`)
 

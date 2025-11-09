@@ -189,6 +189,7 @@
               pythonEnv
               ruff
               basedpyright
+              python313Packages.pylint
               age # For secrets encryption
               (pkgs.callPackage "${inputs.agenix}/pkgs/agenix.nix" { }) # agenix from flake input
               nixos-anywhere # For initial deployments with disko

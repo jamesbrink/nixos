@@ -88,7 +88,7 @@ print_color "$GREEN" "Scanning git history..."
 
 # Create temporary exclude file
 EXCLUDE_FILE=$(mktemp)
-trap "rm -f $EXCLUDE_FILE" EXIT
+trap 'rm -f "$EXCLUDE_FILE"' EXIT
 cat > "$EXCLUDE_FILE" << 'EOF'
 secrets/
 nix-secrets/
@@ -99,7 +99,7 @@ result-*
 EOF
 
 # Run TruffleHog with full history scan
-if trufflehog git $GIT_CMD \
+if trufflehog git "$GIT_CMD" \
     --branch="$BRANCH" \
     --only-verified \
     --exclude-paths="$EXCLUDE_FILE"; then

@@ -75,7 +75,7 @@ echo
 
 # Create temporary exclude file
 EXCLUDE_FILE=$(mktemp)
-trap "rm -f $EXCLUDE_FILE" EXIT
+trap 'rm -f "$EXCLUDE_FILE"' EXIT
 
 # Write exclude patterns to file
 IFS=',' read -ra EXCLUDES <<< "$EXCLUDE_PATHS"
@@ -89,17 +89,31 @@ if [ -s "$EXCLUDE_FILE" ]; then
     EXCLUDE_ARGS="--exclude-paths=$EXCLUDE_FILE"
 fi
 
+TRUFFLEHOG_ARGS=()
+if [ -n "$ONLY_VERIFIED" ]; then
+    TRUFFLEHOG_ARGS+=("$ONLY_VERIFIED")
+fi
+if [ -n "$EXCLUDE_ARGS" ]; then
+    TRUFFLEHOG_ARGS+=("$EXCLUDE_ARGS")
+fi
+
+SCAN_STATUS=0
+
 # Run TruffleHog based on mode
 if [ "$MODE" == "git" ]; then
     print_color "$GREEN" "Scanning git history..."
-    trufflehog git file://"$TARGET" $ONLY_VERIFIED $EXCLUDE_ARGS
+    if ! trufflehog git "file://$TARGET" "${TRUFFLEHOG_ARGS[@]}"; then
+        SCAN_STATUS=1
+    fi
 else
     print_color "$GREEN" "Scanning filesystem..."
-    trufflehog filesystem "$TARGET" $ONLY_VERIFIED $EXCLUDE_ARGS
+    if ! trufflehog filesystem "$TARGET" "${TRUFFLEHOG_ARGS[@]}"; then
+        SCAN_STATUS=1
+    fi
 fi
 
 # Check exit code
-if [ $? -eq 0 ]; then
+if [ $SCAN_STATUS -eq 0 ]; then
     print_color "$GREEN" "✓ Scan completed successfully"
 else
     print_color "$RED" "✗ Scan found potential issues or failed"

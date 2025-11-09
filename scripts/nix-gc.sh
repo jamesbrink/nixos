@@ -25,12 +25,12 @@ if [ "$HOSTNAME" = "$HOST" ]; then
 else
   # Remote garbage collection
   # Check if host is darwin or linux by checking flake configuration
-  if nix eval --json .#darwinConfigurations.$HOST._type 2>/dev/null >/dev/null; then
+  if nix eval --json .#darwinConfigurations."$HOST"._type 2>/dev/null >/dev/null; then
     # Darwin host - use regular user with sudo
-    ssh jamesbrink@$HOST "sudo nix-collect-garbage -d"
+    ssh jamesbrink@"$HOST" "sudo nix-collect-garbage -d"
   else
     # NixOS host - use root
-    ssh root@$HOST "nix-collect-garbage -d"
+    ssh root@"$HOST" "nix-collect-garbage -d"
   fi
 fi
 

@@ -69,7 +69,7 @@ All keybindings use `cmd` (⌘) as the modifier (equivalent to Hyprland's `SUPER
 
 ## Features
 
-### Working WITHOUT SIP Disabled:
+### Working WITHOUT SIP Disabled
 
 - ✅ Window tiling (BSP layout)
 - ✅ Window focus management
@@ -81,7 +81,7 @@ All keybindings use `cmd` (⌘) as the modifier (equivalent to Hyprland's `SUPER
 - ✅ Gaps and padding
 - ✅ Application rules
 
-### Requires SIP Disabled (or Boot Args):
+### Requires SIP Disabled (or Boot Args)
 
 - ❌ Window borders (colored)
 - ❌ Window opacity changes (active)
@@ -126,7 +126,7 @@ launchctl kickstart -k "gui/${UID}/org.nixos.skhd"
 
 **Warning**: Disabling SIP reduces system security. Only do this if you understand the risks.
 
-### Steps to Disable SIP:
+### Steps to Disable SIP
 
 1. Restart your Mac in Recovery Mode:
 
@@ -160,7 +160,7 @@ launchctl kickstart -k "gui/${UID}/org.nixos.skhd"
    csrutil status  # Should show "disabled"
    ```
 
-### Boot Arguments (Apple Silicon Alternative to SIP Disable):
+### Boot Arguments (Apple Silicon Alternative to SIP Disable)
 
 On Apple Silicon Macs, you may need boot arguments instead of fully disabling SIP:
 
@@ -219,7 +219,7 @@ sudo -l | grep yabai
 - ✅ No manual configuration needed across different machines
 - ✅ Works identically on all Darwin hosts in this configuration
 
-### After Disabling SIP:
+### After Disabling SIP
 
 Window borders and active opacity will work. The configuration already includes:
 

@@ -61,7 +61,9 @@ def _walker_assets_ok(cfg: ThemectlConfig, console: Console) -> bool:
     current_theme = home / ".config" / "omarchy" / "current" / "theme"
 
     if not themes_root.exists():
-        console.print("[red]Walker assets missing under ~/.config/omarchy/themes. Run `themectl sync-assets`.[/red]")
+        console.print(
+            "[red]Walker assets missing under ~/.config/omarchy/themes. Run `themectl sync-assets`.[/red]"
+        )
         return False
 
     ok = True
@@ -130,7 +132,9 @@ def _apply_theme(theme: Theme, cfg: ThemectlConfig) -> None:
     _write_state(cfg, theme.slug)
 
 
-def _cycle_theme(cfg: ThemectlConfig, repo: ThemeRepository, direction: str) -> Theme | None:
+def _cycle_theme(
+    cfg: ThemectlConfig, repo: ThemeRepository, direction: str
+) -> Theme | None:
     order = [slug.lower() for slug in cfg.order.cycle if repo.get(slug)]
     if not order:
         order = [theme.slug for theme in repo]
@@ -342,14 +346,18 @@ def doctor(
         console.print(f"[red]Metadata file missing: {cfg.metadata_path}[/red]")
         ok = False
     if not repo.themes:
-        console.print("[red]No themes available; run sync-assets after fixing metadata[/red]")
+        console.print(
+            "[red]No themes available; run sync-assets after fixing metadata[/red]"
+        )
         ok = False
     if cfg.platform == "darwin":
         ok = ensure_yabai_sa(console) and ok
     if cfg.platform == "linux":
         ok = _walker_assets_ok(cfg, console) and ok
     if ok:
-        console.print(Panel("All checks passed", title="themectl", border_style="green"))
+        console.print(
+            Panel("All checks passed", title="themectl", border_style="green")
+        )
     else:
         raise Exit(1)
 

@@ -26,7 +26,7 @@ fi
 
 # Create a temporary directory for scanning
 TEMP_DIR=$(mktemp -d)
-trap "rm -rf $TEMP_DIR" EXIT
+trap 'rm -rf "$TEMP_DIR"' EXIT
 
 # Copy staged files to temp directory
 for file in $STAGED_FILES; do
@@ -38,16 +38,13 @@ done
 
 # Run TruffleHog on the temporary directory
 print_color "$GREEN" "Scanning staged files for secrets..."
-trufflehog filesystem "$TEMP_DIR" --only-verified --no-update \
+if trufflehog filesystem "$TEMP_DIR" --only-verified --no-update \
     --exclude-paths=secrets/ \
     --exclude-paths=nix-secrets/ \
     --exclude-paths=nixos-old/ \
     --exclude-paths=.git/ \
     --exclude-paths=result \
-    --exclude-paths=result-*
-
-# Check exit code
-if [ $? -eq 0 ]; then
+    --exclude-paths=result-*; then
     print_color "$GREEN" "✓ No secrets detected in staged files"
     exit 0
 else
