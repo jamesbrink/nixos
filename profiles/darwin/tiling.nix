@@ -25,15 +25,39 @@
 
   # Keep macOS menu bar visible (set to Never auto-hide)
   # Note: Even though SketchyBar is available in BSP mode, keep native menu bar visible
-  # Setting all three keys for cross-version compatibility:
-  # - Legacy (pre-Ventura): NSGlobalDomain._HIHideMenuBar (bool)
-  # - Ventura/Sonoma: com.apple.Dock.autohide-menu-bar (bool)
-  # - Tahoe (26.x): com.apple.controlcenter.AutoHideMenuBarOption (int)
-  #   Values: 0 = Always, 1 = On Desktop Only, 2 = In Full Screen Only, 3 = Never, 4+ = In Full Screen Only
-  system.defaults.NSGlobalDomain._HIHideMenuBar = false;
+  #
+  # IMPORTANT: After extensive testing, discovered menu bar auto-hide is controlled by FOUR settings:
+  #
+  # 1. NSGlobalDomain._HIHideMenuBar (LEGACY - INVERTED LOGIC!)
+  #    - true (1)  = Menu bar VISIBLE (don't auto-hide) ← Counter-intuitive!
+  #    - false (0) = Menu bar AUTO-HIDES
+  #    This is a double-negative - the name says "Hide" but true means "don't hide"
+  #
+  # 2. NSGlobalDomain.AppleMenuBarAutoHide (PRIMARY CONTROL)
+  #    - false (0) = Menu bar visible
+  #    - true (1)  = Menu bar auto-hides
+  #
+  # 3. com.apple.Dock.autohide-menu-bar (VENTURA/SONOMA)
+  #    - false (0) = Menu bar visible
+  #    - true (1)  = Menu bar auto-hides
+  #
+  # 4. com.apple.controlcenter.AutoHideMenuBarOption (TAHOE 26.x UI VALUE)
+  #    - 0 = Always auto-hide
+  #    - 1 = On Desktop Only
+  #    - 2 = In Full Screen Only
+  #    - 3 = Never auto-hide ← What we want
+  #    - 4+ = In Full Screen Only (wraps back)
+  #
+  # CRITICAL: Per-host settings (defaults -currentHost) override global settings!
+  # macOS checks: -currentHost first, then global domain
+  #
+  system.defaults.NSGlobalDomain._HIHideMenuBar = true; # INVERTED: true = visible!
   system.defaults.CustomUserPreferences = {
+    "NSGlobalDomain" = {
+      AppleMenuBarAutoHide = false; # false = visible
+    };
     "com.apple.Dock" = {
-      "autohide-menu-bar" = false;
+      "autohide-menu-bar" = false; # false = visible
     };
     "com.apple.controlcenter" = {
       AutoHideMenuBarOption = 3; # 3 = Never auto-hide
