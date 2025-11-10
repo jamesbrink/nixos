@@ -105,16 +105,14 @@ let
                                   label.max_chars=50 \
                                   updates=on
 
-    # ====================
-    # CENTER - DATE/TIME
-    # ====================
-
-    sketchybar --add item clock center \
+    # Clock - moved to left side (away from camera notch)
+    sketchybar --add item clock left \
                --set clock update_freq=10 \
                            icon=󰃰 \
                            script="${pkgs.writeShellScript "clock.sh" ''
                              #!/bin/bash
-                             sketchybar --set $NAME label="$(date '+%a %d %b %H:%M')"
+                             # Format: Monday November 11  14:30
+                             sketchybar --set $NAME label="$(date '+%A %B %d  %H:%M')"
                            ''}"
 
     # ====================
