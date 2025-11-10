@@ -86,6 +86,16 @@ let
                                     background.padding_left=10 \
                                     background.padding_right=10
 
+    # Clock - moved to left side (away from camera notch)
+    sketchybar --add item clock left \
+               --set clock update_freq=10 \
+                           icon=󰃰 \
+                           script="${pkgs.writeShellScript "clock.sh" ''
+                             #!/bin/bash
+                             # Format: Monday November 11  14:30
+                             sketchybar --set $NAME label="$(date '+%A %B %d  %H:%M')"
+                           ''}"
+
     # Window title (current focused window)
     sketchybar --add item window_title left \
                --set window_title script="${pkgs.writeShellScript "window_title.sh" ''
@@ -104,16 +114,6 @@ let
                                   icon.drawing=off \
                                   label.max_chars=50 \
                                   updates=on
-
-    # Clock - moved to left side (away from camera notch)
-    sketchybar --add item clock left \
-               --set clock update_freq=10 \
-                           icon=󰃰 \
-                           script="${pkgs.writeShellScript "clock.sh" ''
-                             #!/bin/bash
-                             # Format: Monday November 11  14:30
-                             sketchybar --set $NAME label="$(date '+%A %B %d  %H:%M')"
-                           ''}"
 
     # ====================
     # RIGHT SIDE - SYSTEM STATS
