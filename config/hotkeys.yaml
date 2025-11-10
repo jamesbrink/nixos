@@ -59,28 +59,33 @@ actions:
       description: Move the focused window to a workspace/Space.
       template:
         chord: "{mod}+shift+{digit}"
-        digits: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+        digits: ["1", "2", "5", "6", "7", "8", "9", "0"] # 3 and 4 reserved for screenshots
   screenshot:
     full_save:
       description: Capture the entire display to disk.
       commands:
-        darwin: "macos-screenshot full"
+        darwin: "macos-screenshot full --file"
         linux: "screenshot-direct output"
     region_save:
       description: Capture a selection to disk.
       commands:
-        darwin: "macos-screenshot selection"
+        darwin: "macos-screenshot selection --file"
         linux: "screenshot-annotate region"
     full_clipboard:
-      description: Capture the entire display to the clipboard.
+      description: Capture the entire display to clipboard AND disk.
       commands:
-        darwin: "macos-screenshot full --clipboard"
+        darwin: "macos-screenshot full --both"
         linux: "screenshot-direct output --clipboard"
     region_clipboard:
-      description: Capture a selection to the clipboard.
+      description: Capture a selection to clipboard AND disk.
       commands:
-        darwin: "macos-screenshot selection --clipboard"
+        darwin: "macos-screenshot selection --both"
         linux: "screenshot-annotate region --clipboard"
+    ui:
+      description: Open the Screenshot.app UI for interactive capture.
+      commands:
+        darwin: "macos-screenshot ui"
+        linux: null # Linux doesn't have equivalent
   window:
     close:
       description: Close the focused window.
@@ -199,23 +204,24 @@ platforms:
           screenshot.region_save: "cmd+shift+4"
           screenshot.full_clipboard: "cmd+shift+ctrl+3"
           screenshot.region_clipboard: "cmd+shift+ctrl+4"
+          screenshot.ui: "cmd+shift+5"
           window.close: "cmd+w"
           window.float.toggle: null
           window.fullscreen.toggle: "cmd+f"
           window.native_fullscreen.toggle: "cmd+ctrl+f"
           window.split.toggle: "cmd+j"
-          window.focus.west: "cmd+left"
-          window.focus.east: "cmd+right"
-          window.focus.north: "cmd+up"
-          window.focus.south: "cmd+down"
-          window.swap.west: "cmd+shift+left"
-          window.swap.east: "cmd+shift+right"
-          window.swap.north: "cmd+shift+up"
-          window.swap.south: "cmd+shift+down"
-          window.resize.horizontal.decrease: "cmd+0x1B"
-          window.resize.horizontal.increase: "cmd+0x18"
-          window.resize.vertical.decrease: "cmd+shift+0x1B"
-          window.resize.vertical.increase: "cmd+shift+0x18"
+          window.focus.west: "cmd+alt+left"
+          window.focus.east: "cmd+alt+right"
+          window.focus.north: "cmd+alt+up"
+          window.focus.south: "cmd+alt+down"
+          window.swap.west: "cmd+alt+shift+left"
+          window.swap.east: "cmd+alt+shift+right"
+          window.swap.north: "cmd+alt+shift+up"
+          window.swap.south: "cmd+alt+shift+down"
+          window.resize.horizontal.decrease: "cmd+alt+0x1B"
+          window.resize.horizontal.increase: "cmd+alt+0x18"
+          window.resize.vertical.decrease: "cmd+alt+shift+0x1B"
+          window.resize.vertical.increase: "cmd+alt+shift+0x18"
           space.cycle.next: "cmd+tab"
           space.cycle.prev: "cmd+shift+tab"
           window_cycle.next: "alt+tab"

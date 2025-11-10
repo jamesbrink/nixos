@@ -191,7 +191,7 @@ in
     -- Show notification on startup
     hs.notify.new({
       title = "Hammerspoon",
-      informativeText = "Config loaded\nCmd+Shift+T: Cycle themes\nCmd+Shift+Space: Toggle WM\nCmd+Ctrl+Option+R: Reload"
+      informativeText = "Config loaded\nCmd+Shift+T: Cycle themes\nCmd+Shift+Space: Toggle WM\nCmd+Shift+[3-5]: Screenshots\nCmd+Ctrl+Option+R: Reload"
     }):send()
   '';
 

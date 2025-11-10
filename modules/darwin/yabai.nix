@@ -153,7 +153,7 @@ let
       PATH="/run/current-system/sw/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
       mode="full"
-      clipboard=0
+      save_mode="both"  # Default to both file AND clipboard
 
       while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -161,10 +161,16 @@ let
             mode="$1"
             ;;
           --clipboard)
-            clipboard=1
+            save_mode="clipboard"  # Only clipboard
+            ;;
+          --file)
+            save_mode="file"  # Only file
+            ;;
+          --both)
+            save_mode="both"  # Both file and clipboard
             ;;
           *)
-            echo "Usage: macos-screenshot [full|selection|window|ui] [--clipboard]" >&2
+            echo "Usage: macos-screenshot [full|selection|window|ui] [--clipboard|--file|--both]" >&2
             exit 1
             ;;
         esac
@@ -196,23 +202,65 @@ let
           ;;
       esac
 
-      if [[ "$clipboard" -eq 1 ]]; then
+      # Handle both file and clipboard
+      if [[ "$save_mode" == "both" ]]; then
+        # First save to file
+        if "$screencapture_bin" "''${args[@]}" "$output"; then
+          # Then copy file to clipboard
+          /usr/bin/osascript -e "set the clipboard to (read (POSIX file \"$output\") as «class PNGf»)"
+          /usr/bin/osascript -e 'display notification "Saved to file and clipboard" with title "Screenshot"'
+        else
+          exit 1
+        fi
+      elif [[ "$save_mode" == "clipboard" ]]; then
         args+=(-c)
-      else
-        args+=("$output")
-      fi
-
-      if "$screencapture_bin" "''${args[@]}"; then
-        if [[ "$clipboard" -eq 1 ]]; then
+        if "$screencapture_bin" "''${args[@]}"; then
           /usr/bin/osascript -e 'display notification "Copied screenshot to clipboard" with title "Screenshot"'
         else
-          /usr/bin/osascript -e 'display notification "Saved to Pictures/Screenshots" with title "Screenshot"'
+          exit 1
         fi
-      else
-        exit 1
+      else  # file only
+        args+=("$output")
+        if "$screencapture_bin" "''${args[@]}"; then
+          /usr/bin/osascript -e 'display notification "Saved to Pictures/Screenshots" with title "Screenshot"'
+        else
+          exit 1
+        fi
       fi
     '';
   };
+
+  # Smart window close helper - passes through Cmd+W to browsers/editors for tab closing
+  windowCloseHelper = pkgs.writeShellApplication {
+    name = "window-close-smart";
+    runtimeInputs = [ pkgs.jq ];
+    text = ''
+      set -euo pipefail
+
+      PATH="/run/current-system/sw/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+
+      # Get the currently focused application
+      focused_app=$(yabai -m query --windows --window | jq -r '.app')
+
+      # Apps that should handle Cmd+W themselves (tab closing)
+      case "$focused_app" in
+        "Google Chrome"|"Brave Browser"|"Firefox"|"Safari"|"Microsoft Edge")
+          # Let browser handle it (close tab, not window)
+          # Use skhd to pass through the key
+          skhd -k "cmd - w"
+          ;;
+        "Visual Studio Code"|"Cursor"|"Code")
+          # Let editor handle it (close file/tab)
+          skhd -k "cmd - w"
+          ;;
+        *)
+          # For other apps, use yabai to close the window
+          yabai -m window --close
+          ;;
+      esac
+    '';
+  };
+
   yabaiSpaceHelper = pkgs.runCommandLocal "yabai-space-helper" { } ''
     mkdir -p $out/bin
     ${pkgs.coreutils}/bin/install -m755 ${../../scripts/themectl/themectl/contrib/yabai-space-helper.sh} $out/bin/yabai-space-helper
@@ -452,27 +500,30 @@ in
       # cmd + space - Raycast (if configured to override Spotlight)
 
       # ====================
-      # SCREENSHOTS (macOS defaults)
+      # SCREENSHOTS (macOS defaults with enhanced behavior)
       # ====================
 
-      # Save to file (Pictures/Screenshots)
-      ${skhdChord darwinBindings.screenshot.full_save} : ${macScreenshotHelper}/bin/macos-screenshot full
-      ${skhdChord darwinBindings.screenshot.region_save} : ${macScreenshotHelper}/bin/macos-screenshot selection
+      # Full screen to file (Cmd+Shift+3)
+      ${skhdChord darwinBindings.screenshot.full_save} : ${macScreenshotHelper}/bin/macos-screenshot full --file
 
-      # Copy to clipboard
-      ${skhdChord darwinBindings.screenshot.full_clipboard} : ${macScreenshotHelper}/bin/macos-screenshot full --clipboard
-      ${skhdChord darwinBindings.screenshot.region_clipboard} : ${macScreenshotHelper}/bin/macos-screenshot selection --clipboard
+      # Region selection to file (Cmd+Shift+4)
+      ${skhdChord darwinBindings.screenshot.region_save} : ${macScreenshotHelper}/bin/macos-screenshot selection --file
 
-      # Screenshot UI (Screenshot.app toolbar)
-      cmd + shift - 5 : ${macScreenshotHelper}/bin/macos-screenshot ui
-      cmd + shift + ctrl - 5 : ${macScreenshotHelper}/bin/macos-screenshot ui
+      # Full screen to clipboard AND file (Cmd+Shift+Ctrl+3)
+      ${skhdChord darwinBindings.screenshot.full_clipboard} : ${macScreenshotHelper}/bin/macos-screenshot full --both
+
+      # Region selection to clipboard AND file (Cmd+Shift+Ctrl+4)
+      ${skhdChord darwinBindings.screenshot.region_clipboard} : ${macScreenshotHelper}/bin/macos-screenshot selection --both
+
+      # Screenshot UI (Cmd+Shift+5) - native macOS UI
+      ${skhdChord darwinBindings.screenshot.ui} : ${macScreenshotHelper}/bin/macos-screenshot ui
 
       # ====================
       # WINDOW MANAGEMENT
       # ====================
 
-      # Close window
-      ${skhdBindingFromPath [ "window" "close" ] "cmd+w" "yabai -m window --close"}
+      # Close window (smart: passes through for browsers/editors)
+      ${skhdBindingFromPath [ "window" "close" ] "cmd+w" "${windowCloseHelper}/bin/window-close-smart"}
 
       # Toggle float
       ${skhdBindingFromPath [ "window" "float" "toggle" ] "cmd+t" "yabai -m window --toggle float"}
