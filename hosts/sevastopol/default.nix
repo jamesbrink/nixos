@@ -19,6 +19,8 @@
     ../../modules/darwin/restic-backups.nix
     ../../modules/ssh-keys.nix
     ../../users/regular/jamesbrink-darwin.nix
+    ../../users/regular/girls-darwin.nix # Kids account with parental controls
+    ../../users/regular/girls-games-collection.nix # Safe, educational games
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops-darwin.nix
   ];
@@ -121,6 +123,12 @@
       "microsoft-remote-desktop"
       "openzfs"
       "winbox"
+
+      # Kids' Games (for girls user account)
+      "minecraft" # Minecraft Java Edition
+      "minecraft-education" # Minecraft Education Edition with lessons
+      "roblox" # Roblox game platform
+      "robloxstudio" # Create Roblox games (ages 8+)
 
       # Note: obsidian and raycast are already in profiles/darwin/desktop.nix
     ];
