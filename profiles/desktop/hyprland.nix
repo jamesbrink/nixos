@@ -272,6 +272,7 @@ in
     # Terminal
     alacritty # Terminal emulator
     kitty # Alternative terminal
+    terminaltexteffects # Terminal text effects (tte command for screensaver)
 
     # File manager
     xfce.thunar # Lightweight file manager

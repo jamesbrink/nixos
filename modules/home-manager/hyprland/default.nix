@@ -253,6 +253,11 @@ in
         "$mod, K, exec, show-keybindings" # Key bindings menu (Omarchy-style)
         "$mod SHIFT, SPACE, exec, toggle-waybar" # Toggle status bar (Omarchy-style)
 
+        # Screensaver and idle management
+        "$mod, L, exec, omarchy-lock-screen" # Lock screen
+        "$mod SHIFT, S, exec, omarchy-toggle-screensaver" # Toggle screensaver
+        "$mod SHIFT, I, exec, omarchy-toggle-idle" # Toggle idle management
+
         # Window Management
         "$mod, W, killactive,"
         "$mod, J, togglesplit,"
@@ -1948,6 +1953,115 @@ in
   # Mako config symlink to runtime theme (Omarchy-style)
   xdg.configFile."mako/config".source =
     config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/omarchy/current/theme/mako.ini";
+
+  # Hypridle idle management daemon
+  services.hypridle = {
+    enable = true;
+    settings = {
+      general = {
+        lock_cmd = "omarchy-lock-screen";
+        before_sleep_cmd = "loginctl lock-session";
+        after_sleep_cmd = "hyprctl dispatch dpms on";
+      };
+      listener = [
+        {
+          timeout = 150;
+          on-timeout = "pidof hyprlock || omarchy-launch-screensaver";
+        }
+        {
+          timeout = 300;
+          on-timeout = "loginctl lock-session";
+        }
+        {
+          timeout = 330;
+          on-timeout = "hyprctl dispatch dpms off";
+          on-resume = "hyprctl dispatch dpms on && brightnessctl -r";
+        }
+      ];
+    };
+  };
+
+  # Omarchy screensaver helper scripts
+  home.packages = [
+    (pkgs.writeShellScriptBin "omarchy-launch-screensaver" ''
+      if ! command -v tte &>/dev/null; then
+        exit 1
+      fi
+      pgrep -f "alacritty --class Screensaver" && exit 0
+      if [[ -f ~/.local/state/omarchy/toggles/screensaver-off ]] && [[ $1 != "force" ]]; then
+        exit 1
+      fi
+      focused=$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused == true).name')
+      for m in $(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | .name'); do
+        ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor $m
+        ${pkgs.hyprland}/bin/hyprctl dispatch exec -- \
+          ${pkgs.alacritty}/bin/alacritty --class Screensaver \
+          --config-file ~/.local/share/omarchy/default/alacritty/screensaver.toml \
+          -e omarchy-cmd-screensaver
+      done
+      ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor $focused
+    '')
+
+    (pkgs.writeShellScriptBin "omarchy-cmd-screensaver" ''
+      screensaver_in_focus() {
+        ${pkgs.hyprland}/bin/hyprctl activewindow -j | ${pkgs.jq}/bin/jq -e '.class == "Screensaver"' >/dev/null 2>&1
+      }
+      exit_screensaver() {
+        ${pkgs.hyprland}/bin/hyprctl keyword cursor:invisible false
+        ${pkgs.killall}/bin/pkill -x tte 2>/dev/null
+        ${pkgs.killall}/bin/pkill -f "alacritty --class Screensaver" 2>/dev/null
+        exit 0
+      }
+      trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
+      ${pkgs.hyprland}/bin/hyprctl keyword cursor:invisible true &>/dev/null
+      while true; do
+        effect=$(${pkgs.terminaltexteffects}/bin/tte 2>&1 | grep -oP '{\K[^}]+' | tr ',' ' ' | tr ' ' '\n' | sed -n '/^beams$/,$p' | sort -u | shuf -n1)
+        ${pkgs.terminaltexteffects}/bin/tte -i ~/.config/omarchy/branding/screensaver.txt \
+          --frame-rate 240 --canvas-width 0 --canvas-height $(($(tput lines) - 2)) --anchor-canvas c --anchor-text c \
+          "$effect" &
+        while pgrep -x tte >/dev/null; do
+          if read -n 1 -t 3 || ! screensaver_in_focus; then
+            exit_screensaver
+          fi
+        done
+      done
+    '')
+
+    (pkgs.writeShellScriptBin "omarchy-lock-screen" ''
+      pidof hyprlock || ${pkgs.hyprlock}/bin/hyprlock &
+      if pgrep -x "1password" >/dev/null; then
+        1password --lock &
+      fi
+      ${pkgs.killall}/bin/pkill -f "alacritty --class Screensaver"
+    '')
+
+    (pkgs.writeShellScriptBin "omarchy-toggle-screensaver" ''
+      STATE_FILE=~/.local/state/omarchy/toggles/screensaver-off
+      if [[ -f $STATE_FILE ]]; then
+        rm -f $STATE_FILE
+        ${pkgs.libnotify}/bin/notify-send "󱄄   Screensaver enabled"
+      else
+        mkdir -p "$(dirname $STATE_FILE)"
+        touch $STATE_FILE
+        ${pkgs.libnotify}/bin/notify-send "󱄄   Screensaver disabled"
+      fi
+    '')
+
+    (pkgs.writeShellScriptBin "omarchy-toggle-idle" ''
+      if pgrep -x hypridle >/dev/null; then
+        ${pkgs.killall}/bin/pkill -x hypridle
+        ${pkgs.libnotify}/bin/notify-send "Stop locking computer when idle"
+      else
+        ${pkgs.hypridle}/bin/hypridle >/dev/null 2>&1 &
+        ${pkgs.libnotify}/bin/notify-send "Now locking computer when idle"
+      fi
+    '')
+  ];
+
+  # Initialize state directory for toggles
+  home.activation.createOmarchyStateDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    mkdir -p $HOME/.local/state/omarchy/toggles
+  '';
 
   # tmux theme integration (override shell module's hardcoded colors)
   programs.tmux.extraConfig = lib.mkForce ''

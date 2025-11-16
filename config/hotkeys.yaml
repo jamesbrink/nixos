@@ -122,16 +122,24 @@ actions:
     swap:
       west:
         description: Swap with window to the west.
-        command: "yabai -m window --swap west"
+        commands:
+          darwin: "yabai -m window --swap west"
+          linux: "hyprctl dispatch movewindow l"
       east:
         description: Swap with window to the east.
-        command: "yabai -m window --swap east"
+        commands:
+          darwin: "yabai -m window --swap east"
+          linux: "hyprctl dispatch movewindow r"
       north:
         description: Swap with window to the north.
-        command: "yabai -m window --swap north"
+        commands:
+          darwin: "yabai -m window --swap north"
+          linux: "hyprctl dispatch movewindow u"
       south:
         description: Swap with window to the south.
-        command: "yabai -m window --swap south"
+        commands:
+          darwin: "yabai -m window --swap south"
+          linux: "hyprctl dispatch movewindow d"
     resize:
       horizontal:
         decrease:
@@ -214,10 +222,10 @@ platforms:
           window.focus.east: "cmd+alt+right"
           window.focus.north: "cmd+alt+up"
           window.focus.south: "cmd+alt+down"
-          window.swap.west: "cmd+alt+shift+left"
-          window.swap.east: "cmd+alt+shift+right"
-          window.swap.north: "cmd+alt+shift+up"
-          window.swap.south: "cmd+alt+shift+down"
+          window.swap.west: "cmd+shift+left"
+          window.swap.east: "cmd+shift+right"
+          window.swap.north: "cmd+shift+up"
+          window.swap.south: "cmd+shift+down"
           window.resize.horizontal.decrease: "cmd+0x1B"
           window.resize.horizontal.increase: "cmd+0x18"
           window.resize.vertical.decrease: "cmd+shift+0x1B"
@@ -255,6 +263,10 @@ platforms:
       launcher.browser.incognito: "super+shift+alt+b"
       screenshot.region_save: "super+s"
       screenshot.region_clipboard: "super+ctrl+s"
+      window.swap.west: "super+shift+left"
+      window.swap.east: "super+shift+right"
+      window.swap.north: "super+shift+up"
+      window.swap.south: "super+shift+down"
       workspace.focus:
         chord: "super+{digit}"
       workspace.move:
