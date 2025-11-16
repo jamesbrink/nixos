@@ -133,6 +133,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."hal9000-kubeconfig" = {
+    file = "${secretsPath}/jamesbrink/k8s/hal9000-kubeconfig.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
   age.secrets."infracost-api-key" = {
     file = "${secretsPath}/global/infracost/api-key.age";
     owner = "jamesbrink";
@@ -219,6 +226,19 @@ in
           chmod 600 /Users/jamesbrink/.config/environment.d/pypi-token.sh
         "
         echo "PyPI token environment deployed to /Users/jamesbrink/.config/environment.d/"
+
+        echo "Installing hal9000 kubeconfig for jamesbrink..."
+        sudo -u jamesbrink ${pkgs.bash}/bin/bash -c '
+          set -euo pipefail
+          HAL_URL="https://hal9000.home.urandom.io:6443"
+          mkdir -p /Users/jamesbrink/.kube
+          '"${pkgs.gnused}/bin/sed"' \
+            -e "s|https://127.0.0.1:6443|$HAL_URL|g" \
+            -e "s|https://localhost:6443|$HAL_URL|g" \
+            '"${config.age.secrets."hal9000-kubeconfig".path}"' > /Users/jamesbrink/.kube/config
+          chmod 600 /Users/jamesbrink/.kube/config
+        '
+        echo "hal9000 kubeconfig deployed to /Users/jamesbrink/.kube/config"
 
         echo "Setting up Dead Man's Snitch API key environment for jamesbrink..."
         # Run as the user with sudo

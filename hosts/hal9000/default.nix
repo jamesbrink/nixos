@@ -1347,9 +1347,10 @@
     autostart = false; # Don't autostart, let user control it
   };
 
-  # K3s Kubernetes cluster with GPU support
+  # K3s Kubernetes cluster with GPU support (master node)
   services.k3s-cluster = {
     enable = true;
+    role = "server";
     users = [ "jamesbrink" ];
     admins = [ "jamesbrink" ];
     hostname = "hal9000";

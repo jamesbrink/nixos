@@ -304,6 +304,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."hal9000-kubeconfig" = {
+    file = "${effectiveSecretsPath}/jamesbrink/k8s/hal9000-kubeconfig.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
   age.secrets."infracost-api-key" = {
     file = "${effectiveSecretsPath}/global/infracost/api-key.age";
     owner = "jamesbrink";
@@ -336,6 +343,18 @@ in
       chown jamesbrink:users /home/jamesbrink/.aws/config /home/jamesbrink/.aws/credentials
     '';
   };
+
+  system.activationScripts.hal9000Kubeconfig = lib.mkAfter ''
+    HAL_URL="https://hal9000.home.urandom.io:6443"
+    ${pkgs.coreutils}/bin/install -d -m 700 -o jamesbrink -g users /home/jamesbrink/.kube
+    TMP=$(${pkgs.coreutils}/bin/mktemp)
+    ${pkgs.gnused}/bin/sed \
+      -e "s|https://127.0.0.1:6443|$HAL_URL|g" \
+      -e "s|https://localhost:6443|$HAL_URL|g" \
+      ${config.age.secrets."hal9000-kubeconfig".path} > "$TMP"
+    ${pkgs.coreutils}/bin/install -m 600 -o jamesbrink -g users "$TMP" /home/jamesbrink/.kube/config
+    rm "$TMP"
+  '';
 
   systemd.services.github-token-setup = {
     description = "Setup GitHub token environment";

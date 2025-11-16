@@ -26,6 +26,7 @@
     PAGER = "less -FR";
 
     CLICOLOR = "1";
+    KUBECONFIG = "$HOME/.kube/config";
 
     # Add ~/.local/bin to PATH
     PATH = "$HOME/.local/bin:$PATH";

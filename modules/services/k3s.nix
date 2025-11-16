@@ -106,7 +106,22 @@ let
 in
 {
   options.services.k3s-cluster = {
-    enable = mkEnableOption "k3s single-node cluster with GPU support";
+    enable = mkEnableOption "k3s cluster with optional GPU support";
+
+    role = mkOption {
+      type = types.enum [
+        "server"
+        "agent"
+      ];
+      default = "server";
+      description = "K3s role: 'server' for master node or 'agent' for worker node";
+    };
+
+    serverUrl = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = "K3s server URL for agent nodes (e.g., https://server:6443)";
+    };
 
     users = mkOption {
       type = types.listOf types.str;
@@ -158,8 +173,8 @@ in
 
     enableGpuSupport = mkOption {
       type = types.bool;
-      default = true;
-      description = "Enable NVIDIA GPU support";
+      default = false;
+      description = "Enable NVIDIA GPU support (requires NVIDIA drivers)";
     };
   };
 
@@ -167,10 +182,13 @@ in
     # K3s service configuration
     services.k3s = {
       enable = true;
-      role = "server";
+      role = cfg.role;
 
       # Use secure token from agenix
       tokenFile = config.age.secrets.k3s-token.path;
+
+      # Server URL for agent nodes
+      serverAddr = mkIf (cfg.role == "agent") cfg.serverUrl;
 
       # Containerd config for NVIDIA GPU support
       containerdConfigTemplate = mkIf cfg.enableGpuSupport ''
@@ -221,24 +239,31 @@ in
           config_path = "/var/lib/rancher/k3s/agent/etc/containerd/certs.d"
       '';
 
-      # K3s server flags
-      extraFlags = [
-        "--write-kubeconfig-mode=644"
-        "--disable=traefik"
-        "--tls-san=${cfg.hostname}"
-        "--tls-san=${cfg.hostname}.${cfg.domain}"
-        "--kubelet-arg=max-pods=${toString cfg.maxPods}"
-        "--kubelet-arg=kube-api-burst=250"
-        "--kubelet-arg=kube-api-qps=150"
-        "--kube-apiserver-arg=max-requests-inflight=800"
-        "--kube-apiserver-arg=max-mutating-requests-inflight=400"
-      ]
-      ++ optional (
-        config.networking.primaryIPAddress or null != null
-      ) "--tls-san=${config.networking.primaryIPAddress}";
+      # K3s flags
+      extraFlags =
+        if cfg.role == "server" then
+          [
+            "--write-kubeconfig-mode=644"
+            "--disable=traefik"
+            "--tls-san=${cfg.hostname}"
+            "--tls-san=${cfg.hostname}.${cfg.domain}"
+            "--kubelet-arg=max-pods=${toString cfg.maxPods}"
+            "--kubelet-arg=kube-api-burst=250"
+            "--kubelet-arg=kube-api-qps=150"
+            "--kube-apiserver-arg=max-requests-inflight=800"
+            "--kube-apiserver-arg=max-mutating-requests-inflight=400"
+          ]
+          ++ optional (
+            config.networking.primaryIPAddress or null != null
+          ) "--tls-san=${config.networking.primaryIPAddress}"
+        else
+          [
+            # Agent-specific flags
+            "--kubelet-arg=max-pods=${toString cfg.maxPods}"
+          ];
 
-      # User management manifests
-      manifests = mkMerge [
+      # User management manifests (only on server)
+      manifests = mkIf (cfg.role == "server") (mkMerge [
         (mkIf (cfg.users != [ ]) {
           user-namespaces = {
             target = "user-namespaces.yaml";
@@ -324,7 +349,7 @@ in
             };
           };
         })
-      ];
+      ]);
     };
 
     # Firewall configuration
@@ -347,30 +372,8 @@ in
       kubernetes-helm
     ];
 
-    # Storage validation service
-    systemd.services.k3s-storage-check = {
-      description = "Validate k3s ZFS storage is mounted";
-      before = [ "k3s.service" ];
-      wantedBy = [ "k3s.service" ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
-      script = ''
-        if [ ! -d ${cfg.storageMountpoint} ]; then
-          echo "ERROR: ${cfg.storageMountpoint} does not exist!"
-          echo "Please create ZFS dataset manually:"
-          echo "  zfs create ${cfg.storagePoolDataset}"
-          echo "  zfs set mountpoint=${cfg.storageMountpoint} ${cfg.storagePoolDataset}"
-          echo "  zfs set compression=lz4 ${cfg.storagePoolDataset}"
-          exit 1
-        fi
-        echo "✓ k3s storage is ready at ${cfg.storageMountpoint}"
-      '';
-    };
-
-    # User kubeconfig generation service
-    systemd.services.k3s-generate-user-kubeconfigs = mkIf (cfg.users != [ ]) {
+    # User kubeconfig generation service (server only)
+    systemd.services.k3s-generate-user-kubeconfigs = mkIf (cfg.role == "server" && cfg.users != [ ]) {
       description = "Generate per-user kubeconfig files";
       after = [ "k3s.service" ];
       wantedBy = [ "multi-user.target" ];
@@ -388,9 +391,9 @@ in
       '';
     };
 
-    # Traefik ingress controller via k3s Helm controller
+    # Traefik ingress controller via k3s Helm controller (server only)
     # Fetch Traefik chart at build time and place in static charts directory
-    services.k3s.charts = mkIf cfg.enableTraefik {
+    services.k3s.charts = mkIf (cfg.role == "server" && cfg.enableTraefik) {
       traefik = pkgs.fetchurl {
         url = "https://traefik.github.io/charts/traefik/traefik-37.3.0.tgz";
         sha256 = "sha256-Xgn3PJ7yCYK1h2nandqsDuSYQapIIISxprCKyZb0n/s=";

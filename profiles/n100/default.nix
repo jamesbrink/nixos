@@ -12,6 +12,7 @@
     ../../modules/n100-disko.nix
     ../../modules/restic-backups.nix
     ../../modules/services/samba-server.nix
+    ../../modules/services/k3s.nix
     ../../profiles/server/default.nix
     # Desktop profile - uncomment for RustDesk server mode (X11/XFCE)
     # ../../profiles/desktop/xfce.nix
@@ -172,6 +173,22 @@
     };
   };
 
+  # K3s Kubernetes cluster configuration (worker nodes)
+  services.k3s-cluster = {
+    enable = true;
+    role = "agent";
+    serverUrl = "https://hal9000.home.urandom.io:6443";
+    users = [ "jamesbrink" ];
+    admins = [ "jamesbrink" ];
+    # hostname will be set per-host
+    domain = "home.urandom.io";
+    maxPods = 110; # Default for smaller nodes
+    storagePoolDataset = "zpool/k3s"; # Using zpool on n100 nodes (not rpool)
+    storageMountpoint = "/var/lib/rancher";
+    enableTraefik = false; # Only on master node
+    enableGpuSupport = false; # N100 nodes don't have NVIDIA GPUs
+  };
+
   # Avahi for macOS discovery (Bonjour)
   services.avahi = {
     enable = true;
@@ -209,11 +226,20 @@
     "d /export 0777 root root -"
   ];
 
+  # K3s storage - ZFS dataset must be created manually:
+  # zfs create -o mountpoint=legacy -o compression=lz4 zpool/k3s
+  fileSystems."/var/lib/rancher" = {
+    device = "zpool/k3s";
+    fsType = "zfs";
+    options = [ "nofail" ];
+  };
+
   # Age secrets
   age = {
     identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
       "global-ssh-authorized-keys".file = "${secretsPath}/global/ssh/authorized_keys.age";
+      # k3s-token is set per host
     };
   };
 
