@@ -178,6 +178,14 @@ in
         allow-transfer { none; };
         dnssec-validation no;
       '';
+      extraConfig = ''
+        # Forward ACME challenge queries to public DNS
+        zone "_acme-challenge.${cfg.domain}" {
+          type forward;
+          forward only;
+          forwarders { 1.1.1.1; 8.8.8.8; };
+        };
+      '';
       zones = {
         "${cfg.domain}" = {
           master = true;

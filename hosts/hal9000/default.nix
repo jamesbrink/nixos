@@ -334,7 +334,8 @@
 
   networking = {
     hostName = "hal9000";
-    domain = "home.urandom.io";
+    # Commented out to prevent *.home.urandom.io wildcard DNS from intercepting external domains
+    # domain = "home.urandom.io";
     useNetworkd = true;
     useDHCP = false;
     hostId = "e71a3d67";
@@ -342,7 +343,8 @@
       enable = true;
     };
     search = [
-      "home.urandom.io"
+      # Removed "home.urandom.io" to prevent wildcard DNS (*.home.urandom.io) from intercepting external domains
+      # "home.urandom.io"
       "urandom.io"
     ];
 
@@ -493,7 +495,7 @@
           MACAddress = "a0:36:bc:e7:65:b8";
         };
         domains = [
-          "home.urandom.io"
+          # Removed "home.urandom.io" to prevent wildcard DNS conflicts with *.home.urandom.io
           "urandom.io"
         ];
       };
@@ -880,8 +882,9 @@
     };
   };
 
+  # Disabled - using Route53 for all home.urandom.io DNS
   services.internal-dns = {
-    enable = true;
+    enable = false;
     domain = "home.urandom.io";
     primaryNameserver = "hal9000.home.urandom.io";
     adminEmail = "admin@home.urandom.io";
@@ -1243,6 +1246,9 @@
   services.resolved = {
     enable = true;
     fallbackDns = [ ]; # This disables all fallback DNS servers
+    # Override global domains to prevent wildcard DNS conflicts
+    # Removed "home.urandom.io" from global search to prevent *.home.urandom.io from intercepting external domains
+    domains = [ "urandom.io" ];
   };
 
   services.tailscale = {
@@ -1456,7 +1462,10 @@
     certManager = {
       enable = true;
       email = "admin@home.urandom.io";
-      server = "https://acme-staging-v02.api.letsencrypt.org/directory";
+      # Switched to production after successful DNS01 validation on staging
+      server = "https://acme-v02.api.letsencrypt.org/directory";
+      issuerName = "letsencrypt-production";
+      privateKeySecretName = "letsencrypt-production";
       route53 = {
         credentialsFile = config.age.secrets."global-aws-cert-credentials".path;
         region = "us-west-2";
@@ -1478,28 +1487,8 @@
       enable = true;
       host = "traefik.home.urandom.io";
     };
-    coreDns.customServers = [
-      {
-        name = "acme-bypass";
-        content = ''
-          _acme-challenge.home.urandom.io:53 {
-            errors
-            cache 120
-            forward . 1.1.1.1 8.8.8.8
-          }
-        '';
-      }
-      {
-        name = "home-forward";
-        content = ''
-          home.urandom.io:53 {
-            errors
-            cache 120
-            forward . 10.70.100.206
-          }
-        '';
-      }
-    ];
+    # No longer needed - Route53 handles all home.urandom.io DNS including ACME challenges
+    coreDns.customServers = [ ];
   };
 
   # Samba server configuration - sharing same paths as NFS

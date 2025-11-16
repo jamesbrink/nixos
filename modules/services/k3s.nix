@@ -660,6 +660,27 @@ in
       kubernetes-helm
     ];
 
+    # Kubelet DNS configuration to exclude host search domains
+    systemd.tmpfiles.rules = [
+      "d /var/lib/rancher/k3s/agent/etc/kubelet.conf.d 0755 root root -"
+      "f /var/lib/rancher/k3s/agent/etc/kubelet.conf.d/dns-config.yaml 0644 root root - ${
+        pkgs.writeText "kubelet-dns-config.yaml" (
+          lib.generators.toYAML { } {
+            apiVersion = "kubelet.config.k8s.io/v1beta1";
+            kind = "KubeletConfiguration";
+            clusterDNS = [ "10.43.0.10" ];
+            clusterDomain = "cluster.local";
+            # Override resolv.conf to exclude host search domains
+            resolvConf = pkgs.writeText "kubelet-resolv.conf" ''
+              nameserver 10.43.0.10
+              search svc.cluster.local cluster.local
+              options ndots:5
+            '';
+          }
+        )
+      }"
+    ];
+
     # User kubeconfig generation service (server only)
     systemd.services.k3s-generate-user-kubeconfigs = mkIf (cfg.role == "server" && cfg.users != [ ]) {
       description = "Generate per-user kubeconfig files";
@@ -738,7 +759,8 @@ in
         message = "Provide at least one DNS name when enabling the Traefik default certificate.";
       }
       {
-        assertion = !(cfg.certManager.traefik.enableDefaultCertificate && !cfg.enableTraefik);
+        assertion =
+          !(cfg.certManager.enable && cfg.certManager.traefik.enableDefaultCertificate && !cfg.enableTraefik);
         message = "Traefik must be enabled to attach the default certificate.";
       }
       {
