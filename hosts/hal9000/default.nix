@@ -13,8 +13,8 @@
   ];
   imports = [
     ./hardware-configuration.nix
-    ./nginx.nix
-    ./nginx-netboot.nix
+    # ./nginx.nix # Disabled - keeping only postgres13 and ollama
+    # ./nginx-netboot.nix # Disabled - keeping only postgres13 and ollama
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix
@@ -23,7 +23,7 @@
     # ../../users/regular/strivedi.nix # Temporarily disabled for UID migration
     ../../profiles/desktop/hyprland.nix
     ../../profiles/keychron/default.nix
-    ../../modules/services/ai-starter-kit/default.nix
+    # ../../modules/services/ai-starter-kit/default.nix # Disabled - n8n, qdrant, pipelines
     ../../modules/services/tftp-server.nix
     ../../modules/services/netboot-configs.nix
     ../../modules/services/netboot-autochain.nix
@@ -629,12 +629,13 @@
         group = "users";
         mode = "0400";
       };
-      "global-aws-cert-credentials" = {
-        file = "${secretsPath}/global/aws/cert-credentials-secret.age";
-        owner = "nginx";
-        group = "nginx";
-        mode = "0400";
-      };
+      # Disabled with nginx
+      # "global-aws-cert-credentials" = {
+      #   file = "${secretsPath}/global/aws/cert-credentials-secret.age";
+      #   owner = "nginx";
+      #   group = "nginx";
+      #   mode = "0400";
+      # };
     };
   };
 
@@ -787,38 +788,40 @@
           autoStart = false;
         };
 
-        open-webui = {
-          image = "ghcr.io/open-webui/open-webui:main";
-          volumes = [
-            "open-webui:/app/backend/data"
-          ];
-          ports = [
-            "3000:8080"
-          ];
-          environment = {
-            OLLAMA_BASE_URL = "http://hal9000:11434";
-          };
-          extraOptions = [
-            "--add-host=host.docker.internal:host-gateway"
-            "--name=open-webui"
-          ];
-          autoStart = true;
-        };
+        # Disabled - keeping only postgres13 and ollama
+        # open-webui = {
+        #   image = "ghcr.io/open-webui/open-webui:main";
+        #   volumes = [
+        #     "open-webui:/app/backend/data"
+        #   ];
+        #   ports = [
+        #     "3000:8080"
+        #   ];
+        #   environment = {
+        #     OLLAMA_BASE_URL = "http://hal9000:11434";
+        #   };
+        #   extraOptions = [
+        #     "--add-host=host.docker.internal:host-gateway"
+        #     "--name=open-webui"
+        #   ];
+        #   autoStart = true;
+        # };
 
-        pipelines = {
-          image = "ghcr.io/open-webui/pipelines:main";
-          volumes = [
-            "pipelines:/app/pipelines"
-          ];
-          ports = [
-            "9099:9099"
-          ];
-          extraOptions = [
-            "--add-host=host.docker.internal:host-gateway"
-            "--name=pipelines"
-          ];
-          autoStart = true;
-        };
+        # Disabled - keeping only postgres13 and ollama
+        # pipelines = {
+        #   image = "ghcr.io/open-webui/pipelines:main";
+        #   volumes = [
+        #     "pipelines:/app/pipelines"
+        #   ];
+        #   ports = [
+        #     "9099:9099"
+        #   ];
+        #   extraOptions = [
+        #     "--add-host=host.docker.internal:host-gateway"
+        #     "--name=pipelines"
+        #   ];
+        #   autoStart = true;
+        # };
       };
     };
     incus = {
@@ -870,25 +873,27 @@
     };
   };
 
-  # Keep OpenWebUI, Pipelines, Fooocus, ComfyUI and Ollama up to date
+  # Keep Postgres13 and Ollama up to date
   systemd.services.update-ai-containers = {
     description = "Update AI container images";
     serviceConfig = {
       Type = "oneshot";
       ExecStart = pkgs.writeScript "update-ai-containers" ''
         #!${pkgs.bash}/bin/bash
-        ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/open-webui:main
-        ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/pipelines:main
+        # ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/open-webui:main # Disabled
+        # ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/pipelines:main # Disabled
         # ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
         # ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:latest
         ${pkgs.podman}/bin/podman pull ollama/ollama:latest
+        ${pkgs.podman}/bin/podman pull postgis/postgis:13-3.5
 
         # Restart containers to use new images
         ${pkgs.systemd}/bin/systemctl restart podman-ollama
+        ${pkgs.systemd}/bin/systemctl restart podman-postgres13
         # ${pkgs.systemd}/bin/systemctl restart podman-comfyui
         # ${pkgs.systemd}/bin/systemctl restart podman-fooocus
-        ${pkgs.systemd}/bin/systemctl restart podman-open-webui
-        ${pkgs.systemd}/bin/systemctl restart podman-pipelines
+        # ${pkgs.systemd}/bin/systemctl restart podman-open-webui # Disabled
+        # ${pkgs.systemd}/bin/systemctl restart podman-pipelines # Disabled
       '';
     };
   };
@@ -1262,21 +1267,22 @@
     };
   };
 
-  services.ai-starter-kit = {
-    enable = true;
-    storagePath = "/storage-fast/n8n";
-    n8n = {
-      enable = true;
-      editorBaseUrl = "https://n8n.home.urandom.io";
-      webhookUrl = "https://n8n.home.urandom.io";
-    };
-    qdrant.enable = true;
-    postgres = {
-      user = "n8n";
-      password = "n8n"; # You might want to change this
-      database = "n8n";
-    };
-  };
+  # Disabled - keeping only postgres13 and ollama
+  # services.ai-starter-kit = {
+  #   enable = true;
+  #   storagePath = "/storage-fast/n8n";
+  #   n8n = {
+  #     enable = true;
+  #     editorBaseUrl = "https://n8n.home.urandom.io";
+  #     webhookUrl = "https://n8n.home.urandom.io";
+  #   };
+  #   qdrant.enable = true;
+  #   postgres = {
+  #     user = "n8n";
+  #     password = "n8n"; # You might want to change this
+  #     database = "n8n";
+  #   };
+  # };
 
   # Enable TFTP server for N100 cluster netboot
   services.tftp-server = {
