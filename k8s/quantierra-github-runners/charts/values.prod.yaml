@@ -1,0 +1,12 @@
+replicaCount: 2
+
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations:
+  - key: "k3s"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+podAnnotations:
+  reloader.stakater.com/auto: "true"

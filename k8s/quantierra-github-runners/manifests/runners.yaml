@@ -1,0 +1,64 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: quantierra-gha
+  namespace: github-runners
+  labels:
+    org: quantierra
+    stack: github-runners
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        org: quantierra
+        queue: actions
+    spec:
+      organization: quantierra
+      githubAPICredentialsFrom:
+        secretRef:
+          name: gha-controller-manager
+      group: quantierra-gha
+      image: ghcr.io/actions/actions-runner:v2.329.0
+      dockerdWithinRunnerContainer: false
+      labels:
+        - quantierra-gha
+        - linux
+      resources:
+        requests:
+          cpu: "1"
+          memory: 2Gi
+        limits:
+          cpu: "4"
+          memory: 8Gi
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      env:
+        - name: ACTIONS_RUNNER_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      volumeMounts:
+        - name: work
+          mountPath: /runner/_work
+      volumes:
+        - name: work
+          emptyDir: {}
+---
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: HorizontalRunnerAutoscaler
+metadata:
+  name: quantierra-gha
+  namespace: github-runners
+spec:
+  scaleTargetRef:
+    name: quantierra-gha
+  minReplicas: 1
+  maxReplicas: 15
+  metrics:
+    - type: PercentageRunnersBusy
+      scaleUpThreshold: "0.7"
+      scaleDownThreshold: "0.25"
+      scaleUpFactor: "2"
+      scaleDownFactor: "0.5"

@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: github-runners
+  labels:
+    workload: github-runners
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gha-runner-quota
+  namespace: github-runners
+spec:
+  hard:
+    pods: "100"
+    requests.cpu: "10"
+    requests.memory: 20Gi
+    limits.cpu: "40"
+    limits.memory: 80Gi
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gha-runner-limits
+  namespace: github-runners
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "4"
+        memory: 8Gi
+      defaultRequest:
+        cpu: "500m"
+        memory: 1Gi

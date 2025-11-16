@@ -176,6 +176,116 @@ in
       default = false;
       description = "Enable NVIDIA GPU support (requires NVIDIA drivers)";
     };
+
+    certManager = mkOption {
+      description = "cert-manager deployment settings for DNS01 issuance via Route53";
+      default = { };
+      type = types.submodule {
+        options = {
+          enable = mkEnableOption "cert-manager on the k3s server node";
+
+          namespace = mkOption {
+            type = types.str;
+            default = "cert-manager";
+            description = "Namespace where cert-manager will be installed";
+          };
+
+          email = mkOption {
+            type = types.str;
+            default = config.security.acme.defaults.email or "admin@${config.networking.domain or "local"}";
+            description = "Contact email for ACME registration";
+          };
+
+          server = mkOption {
+            type = types.str;
+            default = "https://acme-v02.api.letsencrypt.org/directory";
+            description = "ACME directory URL";
+          };
+
+          issuerName = mkOption {
+            type = types.str;
+            default = "letsencrypt-prod";
+            description = "Name of the ClusterIssuer resource";
+          };
+
+          privateKeySecretName = mkOption {
+            type = types.str;
+            default = "letsencrypt-prod";
+            description = "Kubernetes secret to store the ACME account private key";
+          };
+
+          route53 = mkOption {
+            default = { };
+            type = types.submodule {
+              options = {
+                credentialsFile = mkOption {
+                  type = types.nullOr types.str;
+                  default = null;
+                  description = "Path to env file containing AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY";
+                };
+
+                secretName = mkOption {
+                  type = types.str;
+                  default = "route53-credentials";
+                  description = "Name of the Kubernetes secret that stores Route53 credentials";
+                };
+
+                region = mkOption {
+                  type = types.str;
+                  default = "us-west-2";
+                  description = "AWS region that hosts the Route53 zone";
+                };
+
+                hostedZoneId = mkOption {
+                  type = types.nullOr types.str;
+                  default = null;
+                  description = "Optional Route53 hosted zone ID to pin challenges to a specific zone";
+                };
+              };
+            };
+            description = "Route53 DNS solver configuration";
+          };
+
+          traefik = mkOption {
+            default = { };
+            type = types.submodule {
+              options = {
+                enableDefaultCertificate = mkOption {
+                  type = types.bool;
+                  default = true;
+                  description = "Issue a wildcard certificate for Traefik and set it as the default TLS store cert";
+                };
+
+                certificateName = mkOption {
+                  type = types.str;
+                  default = "traefik-wildcard";
+                  description = "Name of the Certificate resource created for Traefik";
+                };
+
+                secretName = mkOption {
+                  type = types.str;
+                  default = "traefik-wildcard-cert";
+                  description = "Secret that stores the Traefik wildcard certificate";
+                };
+
+                namespace = mkOption {
+                  type = types.str;
+                  default = "traefik";
+                  description = "Namespace that will hold the Traefik wildcard certificate";
+                };
+
+                dnsNames = mkOption {
+                  type = types.listOf types.str;
+                  default = [ ];
+                  description = "DNS names that should be included on the Traefik wildcard certificate";
+                };
+              };
+            };
+            description = "Traefik + cert-manager integration settings";
+          };
+        };
+      };
+    };
   };
 
   config = mkIf cfg.enable {
@@ -294,6 +404,88 @@ in
           };
         })
 
+        (mkIf cfg.certManager.enable {
+          cert-manager-helmchart = {
+            enable = true;
+            content = {
+              apiVersion = "helm.cattle.io/v1";
+              kind = "HelmChart";
+              metadata = {
+                name = "cert-manager";
+                namespace = "kube-system";
+              };
+              spec = {
+                chart = "https://%{KUBERNETES_API}%/static/charts/cert-manager.tgz";
+                targetNamespace = cfg.certManager.namespace;
+                createNamespace = true;
+                valuesContent = ''
+                  installCRDs: true
+                  replicaCount: 2
+                  prometheus:
+                    enabled: false
+                  extraArgs:
+                    - --cluster-resource-namespace=${cfg.certManager.namespace}
+                '';
+              };
+            };
+          };
+
+          cert-manager-clusterissuer = {
+            target = "cert-manager-clusterissuer.yaml";
+            source = pkgs.writeText "cert-manager-clusterissuer.yaml" ''
+                            apiVersion: cert-manager.io/v1
+                            kind: ClusterIssuer
+                            metadata:
+                              name: ${cfg.certManager.issuerName}
+                            spec:
+                              acme:
+                                email: ${cfg.certManager.email}
+                                server: ${cfg.certManager.server}
+                                privateKeySecretRef:
+                                  name: ${cfg.certManager.privateKeySecretName}
+                                solvers:
+                                  - dns01:
+                                      route53:
+                                        region: ${cfg.certManager.route53.region}
+              ${optionalString (
+                cfg.certManager.route53.hostedZoneId != null
+              ) "                          hostedZoneID: ${cfg.certManager.route53.hostedZoneId}\n"}
+                                        accessKeyIDSecretRef:
+                                          name: ${cfg.certManager.route53.secretName}
+                                          key: AWS_ACCESS_KEY_ID
+                                        secretAccessKeySecretRef:
+                                          name: ${cfg.certManager.route53.secretName}
+                                          key: AWS_SECRET_ACCESS_KEY
+            '';
+          };
+
+          traefik-wildcard-certificate = mkIf cfg.certManager.traefik.enableDefaultCertificate {
+            target = "traefik-wildcard-certificate.yaml";
+            source = pkgs.writeText "traefik-wildcard-certificate.yaml" (
+              lib.generators.toYAML { } {
+                apiVersion = "cert-manager.io/v1";
+                kind = "Certificate";
+                metadata = {
+                  name = cfg.certManager.traefik.certificateName;
+                  namespace = cfg.certManager.traefik.namespace;
+                };
+                spec = {
+                  secretName = cfg.certManager.traefik.secretName;
+                  issuerRef = {
+                    name = cfg.certManager.issuerName;
+                    kind = "ClusterIssuer";
+                  };
+                  dnsNames = cfg.certManager.traefik.dnsNames;
+                  usages = [
+                    "digital signature"
+                    "key encipherment"
+                  ];
+                };
+              }
+            );
+          };
+        })
+
         # Traefik ingress controller via HelmChart manifest
         (mkIf cfg.enableTraefik {
           traefik-helmchart = {
@@ -344,6 +536,13 @@ in
                     limits:
                       cpu: 500m
                       memory: 512Mi
+                ''
+                + optionalString (cfg.certManager.enable && cfg.certManager.traefik.enableDefaultCertificate) ''
+
+                  tlsStore:
+                    default:
+                      defaultCertificate:
+                        secretName: ${cfg.certManager.traefik.secretName}
                 '';
               };
             };
@@ -391,13 +590,85 @@ in
       '';
     };
 
+    systemd.services.k3s-cert-manager-route53-secret =
+      mkIf (cfg.role == "server" && cfg.certManager.enable)
+        {
+          description = "Sync Route53 credentials secret for cert-manager";
+          after = [ "k3s.service" ];
+          wantedBy = [ "multi-user.target" ];
+          environment = {
+            KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+          };
+          serviceConfig = {
+            Type = "oneshot";
+            Restart = "on-failure";
+            RestartSec = "10s";
+          };
+          script = ''
+            set -euo pipefail
+
+            SECRET_FILE="${cfg.certManager.route53.credentialsFile}"
+            if [ ! -f "$SECRET_FILE" ]; then
+              echo "Route53 credentials file not found: $SECRET_FILE" >&2
+              exit 1
+            fi
+
+            echo "Waiting for Kubernetes API..."
+            until ${pkgs.kubectl}/bin/kubectl get --raw='/readyz?verbose' >/dev/null 2>&1; do
+              sleep 2
+            done
+
+            echo "Waiting for namespace ${cfg.certManager.namespace}..."
+            until ${pkgs.kubectl}/bin/kubectl get ns ${cfg.certManager.namespace} >/dev/null 2>&1; do
+              sleep 5
+            done
+
+            echo "Syncing Route53 credentials secret ${cfg.certManager.route53.secretName}..."
+            ${pkgs.kubectl}/bin/kubectl -n ${cfg.certManager.namespace} create secret generic ${cfg.certManager.route53.secretName} \
+              --from-env-file="$SECRET_FILE" \
+              --dry-run=client -o yaml | ${pkgs.kubectl}/bin/kubectl apply -f -
+          '';
+        };
+
+    assertions = [
+      {
+        assertion = !(cfg.certManager.enable && cfg.role != "server");
+        message = "cert-manager can only be enabled on k3s server nodes.";
+      }
+      {
+        assertion = !(cfg.certManager.enable && cfg.certManager.route53.credentialsFile == null);
+        message = "services.k3s-cluster.certManager.route53.credentialsFile must be set when cert-manager is enabled.";
+      }
+      {
+        assertion =
+          !(
+            cfg.certManager.traefik.enableDefaultCertificate
+            && cfg.certManager.enable
+            && cfg.certManager.traefik.dnsNames == [ ]
+          );
+        message = "Provide at least one DNS name when enabling the Traefik default certificate.";
+      }
+      {
+        assertion = !(cfg.certManager.traefik.enableDefaultCertificate && !cfg.enableTraefik);
+        message = "Traefik must be enabled to attach the default certificate.";
+      }
+    ];
+
     # Traefik ingress controller via k3s Helm controller (server only)
     # Fetch Traefik chart at build time and place in static charts directory
-    services.k3s.charts = mkIf (cfg.role == "server" && cfg.enableTraefik) {
-      traefik = pkgs.fetchurl {
-        url = "https://traefik.github.io/charts/traefik/traefik-37.3.0.tgz";
-        sha256 = "sha256-Xgn3PJ7yCYK1h2nandqsDuSYQapIIISxprCKyZb0n/s=";
-      };
-    };
+    services.k3s.charts = mkMerge [
+      (mkIf (cfg.role == "server" && cfg.enableTraefik) {
+        traefik = pkgs.fetchurl {
+          url = "https://traefik.github.io/charts/traefik/traefik-37.3.0.tgz";
+          sha256 = "sha256-Xgn3PJ7yCYK1h2nandqsDuSYQapIIISxprCKyZb0n/s=";
+        };
+      })
+      (mkIf (cfg.role == "server" && cfg.certManager.enable) {
+        cert-manager = pkgs.fetchurl {
+          url = "https://charts.jetstack.io/charts/cert-manager-v1.19.1.tgz";
+          sha256 = "sha256-9ypyexdJ3zUh56Za9fGFBfk7Vy11iEGJAnCxUDRLK0E=";
+        };
+      })
+    ];
   };
 }

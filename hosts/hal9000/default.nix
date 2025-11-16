@@ -636,13 +636,12 @@
         group = "root";
         mode = "0400";
       };
-      # Disabled with nginx
-      # "global-aws-cert-credentials" = {
-      #   file = "${secretsPath}/global/aws/cert-credentials-secret.age";
-      #   owner = "nginx";
-      #   group = "nginx";
-      #   mode = "0400";
-      # };
+      "global-aws-cert-credentials" = {
+        file = "${secretsPath}/global/aws/cert-credentials-secret.age";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
     };
   };
 
@@ -1360,6 +1359,27 @@
     storageMountpoint = "/var/lib/rancher";
     enableTraefik = true;
     enableGpuSupport = true;
+    certManager = {
+      enable = true;
+      email = "admin@home.urandom.io";
+      server = "https://acme-staging-v02.api.letsencrypt.org/directory";
+      route53 = {
+        credentialsFile = config.age.secrets."global-aws-cert-credentials".path;
+        region = "us-west-2";
+        secretName = "route53-credentials";
+      };
+      traefik = {
+        enableDefaultCertificate = true;
+        certificateName = "traefik-wildcard-home";
+        secretName = "wildcard-home-urandom-io";
+        dnsNames = [
+          "*.home.urandom.io"
+          "home.urandom.io"
+          "*.dev.urandom.io"
+          "dev.urandom.io"
+        ];
+      };
+    };
   };
 
   # Samba server configuration - sharing same paths as NFS
