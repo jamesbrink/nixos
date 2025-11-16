@@ -257,14 +257,6 @@ in
           };
         })
 
-        # Traefik ingress
-        (mkIf cfg.enableTraefik {
-          traefik-helmchart = {
-            target = "traefik-helmchart.yaml";
-            source = ./k3s-manifests/traefik-helmchart.yaml;
-          };
-        })
-
         # NVIDIA GPU support
         (mkIf cfg.enableGpuSupport {
           nvidia-runtime-class = {
@@ -274,6 +266,62 @@ in
           nvidia-device-plugin = {
             target = "nvidia-device-plugin.yaml";
             source = ./k3s-manifests/nvidia-device-plugin.yaml;
+          };
+        })
+
+        # Traefik ingress controller via HelmChart manifest
+        (mkIf cfg.enableTraefik {
+          traefik-helmchart = {
+            enable = true;
+            content = {
+              apiVersion = "helm.cattle.io/v1";
+              kind = "HelmChart";
+              metadata = {
+                name = "traefik";
+                namespace = "kube-system";
+              };
+              spec = {
+                # Reference the chart via Kubernetes API server (uses local file)
+                chart = "https://%{KUBERNETES_API}%/static/charts/traefik.tgz";
+                targetNamespace = "traefik";
+                createNamespace = true;
+                valuesContent = ''
+                  deployment:
+                    replicas: 1
+
+                  service:
+                    type: LoadBalancer
+
+                  ports:
+                    web:
+                      port: 80
+                      exposedPort: 80
+                    websecure:
+                      port: 443
+                      exposedPort: 443
+
+                  providers:
+                    kubernetesCRD:
+                      enabled: true
+                    kubernetesIngress:
+                      enabled: true
+
+                  logs:
+                    general:
+                      level: INFO
+                    access:
+                      enabled: false
+
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 128Mi
+                    limits:
+                      cpu: 500m
+                      memory: 512Mi
+                '';
+              };
+            };
           };
         })
       ];
@@ -338,6 +386,15 @@ in
       script = ''
         ${generateUserKubeconfigs}
       '';
+    };
+
+    # Traefik ingress controller via k3s Helm controller
+    # Fetch Traefik chart at build time and place in static charts directory
+    services.k3s.charts = mkIf cfg.enableTraefik {
+      traefik = pkgs.fetchurl {
+        url = "https://traefik.github.io/charts/traefik/traefik-37.3.0.tgz";
+        sha256 = "sha256-Xgn3PJ7yCYK1h2nandqsDuSYQapIIISxprCKyZb0n/s=";
+      };
     };
   };
 }

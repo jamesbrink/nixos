@@ -24,7 +24,11 @@ in
       # Import the unified shell configuration
       imports = [
         ../../modules/home-manager/shell
+        ../../modules/home-manager/k8s-client.nix
       ];
+
+      # Enable k8s client configuration
+      programs.k8s-client.enable = true;
 
       # Alacritty terminal configuration
       # NOTE: On Linux, Alacritty is configured in modules/home-manager/hyprland/default.nix
