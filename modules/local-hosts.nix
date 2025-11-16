@@ -10,67 +10,31 @@ with lib;
 
 let
   # Define all local network hosts based on your Terraform DHCP configuration
+  # Removed .home.urandom.io FQDNs to prevent wildcard DNS (*.home.urandom.io) from intercepting external domains
   localHosts = {
     # Network infrastructure
-    "10.70.100.1" = [
-      "router"
-      "router.home.urandom.io"
-    ];
+    "10.70.100.1" = [ "router" ];
     "10.70.100.200" = [
       "TL-SG108E"
       "switch"
-      "switch.home.urandom.io"
     ];
 
     # Main servers
-    "10.70.100.2" = [
-      "corbelan"
-      "corbelan.home.urandom.io"
-    ];
-    "10.70.100.206" = [
-      "hal9000"
-      "hal9000.home.urandom.io"
-    ];
-    "10.70.100.205" = [
-      "alienware"
-      "alienware.home.urandom.io"
-    ];
-    "10.70.100.208" = [
-      "sevastopol"
-      "sevastopol.home.urandom.io"
-    ];
+    "10.70.100.2" = [ "corbelan" ];
+    "10.70.100.206" = [ "hal9000" ];
+    "10.70.100.205" = [ "alienware" ];
+    "10.70.100.208" = [ "sevastopol" ];
 
     # N100 cluster nodes
-    "10.70.100.201" = [
-      "n100-01"
-      "n100-01.home.urandom.io"
-    ];
-    "10.70.100.202" = [
-      "n100-02"
-      "n100-02.home.urandom.io"
-    ];
-    "10.70.100.203" = [
-      "n100-03"
-      "n100-03.home.urandom.io"
-    ];
-    "10.70.100.204" = [
-      "n100-04"
-      "n100-04.home.urandom.io"
-    ];
+    "10.70.100.201" = [ "n100-01" ];
+    "10.70.100.202" = [ "n100-02" ];
+    "10.70.100.203" = [ "n100-03" ];
+    "10.70.100.204" = [ "n100-04" ];
 
     # Other hosts
-    "10.70.100.196" = [
-      "vmware"
-      "vmware.home.urandom.io"
-    ];
-    "100.105.134.43" = [
-      "plato"
-      "plato.home.urandom.io"
-    ];
-    "10.70.100.192" = [
-      "server02"
-      "server02.home.urandom.io"
-    ];
+    "10.70.100.196" = [ "vmware" ];
+    "100.105.134.43" = [ "plato" ];
+    "10.70.100.192" = [ "server02" ];
   };
 
   # Convert the localHosts attribute set to hosts file entries

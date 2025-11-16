@@ -120,9 +120,17 @@
 
   # Networking
   networking = {
-    domain = "home.urandom.io";
+    # Commented out to prevent *.home.urandom.io wildcard DNS from intercepting external domains
+    # domain = "home.urandom.io";
     networkmanager.enable = true;
     firewall.enable = false;
+  };
+
+  # Override systemd-resolved global search domains to prevent wildcard DNS conflicts
+  # Removed "home.urandom.io" from global search to prevent *.home.urandom.io from intercepting external domains
+  services.resolved = {
+    enable = true;
+    domains = [ "urandom.io" ];
   };
 
   # Services
