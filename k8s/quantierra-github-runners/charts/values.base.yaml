@@ -18,7 +18,7 @@ metrics:
 
 image:
   repository: summerwind/actions-runner-controller
-  actionsRunnerRepositoryAndTag: ghcr.io/actions/actions-runner:v2.329.0
+  actionsRunnerRepositoryAndTag: ghcr.io/actions/actions-runner:2.329.0
   pullPolicy: IfNotPresent
 
 serviceAccount:

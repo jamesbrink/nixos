@@ -177,6 +177,16 @@ in
       description = "Enable NVIDIA GPU support (requires NVIDIA drivers)";
     };
 
+    nodeLabels = mkOption {
+      type = types.attrsOf types.str;
+      default = { };
+      example = {
+        "nvidia.com/gpu" = "true";
+        "gpu-type" = "rtx4090";
+      };
+      description = "Node labels to apply to this k3s node";
+    };
+
     certManager = mkOption {
       description = "cert-manager deployment settings for DNS01 issuance via Route53";
       default = { };
@@ -395,26 +405,32 @@ in
 
       # K3s flags
       extraFlags =
-        if cfg.role == "server" then
-          [
-            "--write-kubeconfig-mode=644"
-            "--disable=traefik"
-            "--tls-san=${cfg.hostname}"
-            "--tls-san=${cfg.hostname}.${cfg.domain}"
-            "--kubelet-arg=max-pods=${toString cfg.maxPods}"
-            "--kubelet-arg=kube-api-burst=250"
-            "--kubelet-arg=kube-api-qps=150"
-            "--kube-apiserver-arg=max-requests-inflight=800"
-            "--kube-apiserver-arg=max-mutating-requests-inflight=400"
-          ]
-          ++ optional (
-            config.networking.primaryIPAddress or null != null
-          ) "--tls-san=${config.networking.primaryIPAddress}"
-        else
-          [
-            # Agent-specific flags
-            "--kubelet-arg=max-pods=${toString cfg.maxPods}"
-          ];
+        (
+          if cfg.role == "server" then
+            [
+              "--write-kubeconfig-mode=644"
+              "--disable=traefik"
+              "--tls-san=${cfg.hostname}"
+              "--tls-san=${cfg.hostname}.${cfg.domain}"
+              "--kubelet-arg=max-pods=${toString cfg.maxPods}"
+              "--kubelet-arg=kube-api-burst=250"
+              "--kubelet-arg=kube-api-qps=150"
+              "--kube-apiserver-arg=max-requests-inflight=800"
+              "--kube-apiserver-arg=max-mutating-requests-inflight=400"
+            ]
+            ++ optional (
+              config.networking.primaryIPAddress or null != null
+            ) "--tls-san=${config.networking.primaryIPAddress}"
+          else
+            [
+              # Agent-specific flags
+              "--kubelet-arg=max-pods=${toString cfg.maxPods}"
+            ]
+        )
+        ++ (
+          # Add node labels for both server and agent
+          mapAttrsToList (name: value: "--node-label=${name}=${value}") cfg.nodeLabels
+        );
 
       # User management manifests (only on server)
       manifests = mkIf (cfg.role == "server") (mkMerge [
@@ -658,27 +674,6 @@ in
     environment.systemPackages = with pkgs; [
       kubectl
       kubernetes-helm
-    ];
-
-    # Kubelet DNS configuration to exclude host search domains
-    systemd.tmpfiles.rules = [
-      "d /var/lib/rancher/k3s/agent/etc/kubelet.conf.d 0755 root root -"
-      "f /var/lib/rancher/k3s/agent/etc/kubelet.conf.d/dns-config.yaml 0644 root root - ${
-        pkgs.writeText "kubelet-dns-config.yaml" (
-          lib.generators.toYAML { } {
-            apiVersion = "kubelet.config.k8s.io/v1beta1";
-            kind = "KubeletConfiguration";
-            clusterDNS = [ "10.43.0.10" ];
-            clusterDomain = "cluster.local";
-            # Override resolv.conf to exclude host search domains
-            resolvConf = pkgs.writeText "kubelet-resolv.conf" ''
-              nameserver 10.43.0.10
-              search svc.cluster.local cluster.local
-              options ndots:5
-            '';
-          }
-        )
-      }"
     ];
 
     # User kubeconfig generation service (server only)

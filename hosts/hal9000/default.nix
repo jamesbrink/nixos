@@ -334,7 +334,7 @@
 
   networking = {
     hostName = "hal9000";
-    # Commented out to prevent *.home.urandom.io wildcard DNS from intercepting external domains
+    # Don't set a global domain to avoid search suffixes
     # domain = "home.urandom.io";
     useNetworkd = true;
     useDHCP = false;
@@ -343,8 +343,6 @@
       enable = true;
     };
     search = [
-      # Removed "home.urandom.io" to prevent wildcard DNS (*.home.urandom.io) from intercepting external domains
-      # "home.urandom.io"
       "urandom.io"
     ];
 
@@ -1398,7 +1396,7 @@
 
   # Enable N100 netboot configuration file generation
   services.netbootConfigs = {
-    enable = true;
+    enable = false; # temporarily disabled
     nodes = {
       "n100-01" = {
         macAddress = "e0:51:d8:12:ba:97";
@@ -1459,6 +1457,11 @@
     storageMountpoint = "/var/lib/rancher";
     enableTraefik = true;
     enableGpuSupport = true;
+    nodeLabels = {
+      "nvidia.com/gpu" = "true";
+      "gpu-model" = "rtx4090";
+      "node-role" = "master";
+    };
     certManager = {
       enable = true;
       email = "admin@home.urandom.io";

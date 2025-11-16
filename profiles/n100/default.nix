@@ -126,11 +126,10 @@
     firewall.enable = false;
   };
 
-  # Override systemd-resolved global search domains to prevent wildcard DNS conflicts
-  # Removed "home.urandom.io" from global search to prevent *.home.urandom.io from intercepting external domains
+  # Avoid configuring any search domains so pods inherit the defaults
   services.resolved = {
     enable = true;
-    domains = [ "urandom.io" ];
+    domains = [ ];
   };
 
   # Services

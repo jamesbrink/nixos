@@ -20,6 +20,7 @@
     ../../modules/shared-packages/devops.nix
     ../../modules/restic-backups.nix
     ../../modules/services/samba-server.nix
+    ../../modules/services/k3s.nix
     ../../users/regular/jamesbrink.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
@@ -141,9 +142,41 @@
   # Networking configuration
   networking = {
     hostName = "alienware";
-    domain = "home.urandom.io";
+    # Commented out to prevent *.home.urandom.io wildcard DNS from intercepting external domains
+    # domain = "home.urandom.io";
     networkmanager.enable = true;
   };
+
+  # Override systemd-resolved global search domains to prevent wildcard DNS conflicts
+  # Removed "home.urandom.io" from global search to prevent *.home.urandom.io from intercepting external domains
+  services.resolved = {
+    enable = true;
+    domains = [ "urandom.io" ];
+  };
+
+  # K3s Kubernetes cluster worker node with GPU support
+  services.k3s-cluster = {
+    enable = true;
+    role = "agent";
+    serverUrl = "https://hal9000.home.urandom.io:6443";
+    users = [ "jamesbrink" ];
+    admins = [ "jamesbrink" ];
+    hostname = "alienware";
+    domain = "home.urandom.io";
+    maxPods = 500;
+    storagePoolDataset = ""; # Not used - using directory mount
+    storageMountpoint = "/var/lib/rancher";
+    enableTraefik = false; # Only on master node
+    enableGpuSupport = true;
+    nodeLabels = {
+      "nvidia.com/gpu" = "true";
+      "gpu-model" = "alienware-gpu";
+      "node-role" = "worker";
+    };
+  };
+
+  # Create k3s storage directory
+  systemd.tmpfiles.rules = [ "d /var/lib/rancher 0755 root root -" ];
 
   # Time and locale configuration
   time.timeZone = "America/Phoenix";
@@ -320,6 +353,7 @@
     secrets = {
       "global-ssh-authorized-keys".file = "${secretsPath}/global/ssh/authorized_keys.age";
       "alienware-syncthing-password".file = "${secretsPath}/alienware/syncthing-password.age";
+      "k3s-token".file = "${secretsPath}/global/k3s-token.age";
     };
   };
 

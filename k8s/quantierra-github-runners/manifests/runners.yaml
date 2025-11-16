@@ -19,7 +19,7 @@ spec:
         secretRef:
           name: gha-controller-manager
       group: quantierra-gha
-      image: ghcr.io/actions/actions-runner:v2.329.0
+      image: ghcr.io/actions/actions-runner:2.329.0
       dockerdWithinRunnerContainer: false
       labels:
         - quantierra-gha
