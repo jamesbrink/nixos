@@ -30,6 +30,7 @@
     ../../modules/services/netboot-autochain.nix
     ../../modules/services/windows11-vm.nix
     ../../modules/services/samba-server.nix
+    ../../modules/services/internal-dns
     # ../../modules/services/netboot-server.nix  # Replaced by tftp-server.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
@@ -879,6 +880,99 @@
     };
   };
 
+  services.internal-dns = {
+    enable = true;
+    domain = "home.urandom.io";
+    primaryNameserver = "hal9000.home.urandom.io";
+    adminEmail = "admin@home.urandom.io";
+    listenAddresses = [
+      "10.70.100.206"
+      "127.0.0.1"
+    ];
+    allowedClients = [
+      "10.42.0.0/15"
+      "10.70.100.0/24"
+      "127.0.0.1/32"
+    ];
+    records = [
+      {
+        name = "@";
+        type = "A";
+        value = "68.228.200.31";
+      }
+      {
+        name = "hal9000";
+        type = "A";
+        value = "10.70.100.206";
+      }
+      {
+        name = "alienware";
+        type = "A";
+        value = "10.70.100.205";
+      }
+      {
+        name = "n100-01";
+        type = "A";
+        value = "10.70.100.201";
+      }
+      {
+        name = "n100-02";
+        type = "A";
+        value = "10.70.100.202";
+      }
+      {
+        name = "n100-03";
+        type = "A";
+        value = "10.70.100.203";
+      }
+      {
+        name = "n100-04";
+        type = "A";
+        value = "10.70.100.204";
+      }
+      {
+        name = "starlancer";
+        type = "A";
+        value = "192.168.0.97";
+      }
+      {
+        name = "darkstarmk6mod1";
+        type = "A";
+        value = "192.168.0.151";
+      }
+      {
+        name = "darkstar";
+        type = "A";
+        value = "100.127.113.116";
+      }
+      {
+        name = "rancher";
+        type = "A";
+        value = "10.70.100.50";
+      }
+      {
+        name = "k8s";
+        type = "A";
+        value = "10.70.100.50";
+      }
+      {
+        name = "postgres";
+        type = "CNAME";
+        value = "k8s";
+      }
+      {
+        name = "server02";
+        type = "A";
+        value = "10.70.100.192";
+      }
+      {
+        name = "*.server02";
+        type = "A";
+        value = "10.70.100.192";
+      }
+    ];
+  };
+
   # Keep Postgres13 and Ollama up to date
   systemd.services.update-ai-containers = {
     description = "Update AI container images";
@@ -1380,6 +1474,32 @@
         ];
       };
     };
+    dashboard = {
+      enable = true;
+      host = "traefik.home.urandom.io";
+    };
+    coreDns.customServers = [
+      {
+        name = "acme-bypass";
+        content = ''
+          _acme-challenge.home.urandom.io:53 {
+            errors
+            cache 120
+            forward . 1.1.1.1 8.8.8.8
+          }
+        '';
+      }
+      {
+        name = "home-forward";
+        content = ''
+          home.urandom.io:53 {
+            errors
+            cache 120
+            forward . 10.70.100.206
+          }
+        '';
+      }
+    ];
   };
 
   # Samba server configuration - sharing same paths as NFS

@@ -286,6 +286,50 @@ in
         };
       };
     };
+
+    dashboard = mkOption {
+      description = "Traefik dashboard exposure settings";
+      default = {
+        enable = false;
+        host = null;
+      };
+      type = types.submodule {
+        options = {
+          enable = mkEnableOption "Expose the Traefik dashboard via IngressRoute";
+          host = mkOption {
+            type = types.nullOr types.str;
+            default = null;
+            description = "Hostname to serve the dashboard from (required when enabled).";
+          };
+        };
+      };
+    };
+
+    coreDns = {
+      customServers = mkOption {
+        type = types.listOf (
+          types.submodule (
+            { name, ... }:
+            {
+              options = {
+                name = mkOption {
+                  type = types.str;
+                  default = name;
+                  description = "Identifier used for the generated CoreDNS custom server file.";
+                };
+
+                content = mkOption {
+                  type = types.lines;
+                  description = "CoreDNS server block content.";
+                };
+              };
+            }
+          )
+        );
+        default = [ ];
+        description = "Additional CoreDNS server blocks rendered into the coredns-custom ConfigMap.";
+      };
+    };
   };
 
   config = mkIf cfg.enable {
@@ -548,6 +592,51 @@ in
             };
           };
         })
+
+        (mkIf (cfg.coreDns.customServers != [ ]) {
+          coredns-custom = {
+            target = "coredns-custom.yaml";
+            source = pkgs.writeText "coredns-custom.yaml" (
+              lib.generators.toYAML { } {
+                apiVersion = "v1";
+                kind = "ConfigMap";
+                metadata = {
+                  name = "coredns-custom";
+                  namespace = "kube-system";
+                };
+                data = builtins.listToAttrs (
+                  map (entry: {
+                    name = "${entry.name}.server";
+                    value = entry.content;
+                  }) cfg.coreDns.customServers
+                );
+              }
+            );
+          };
+        })
+
+        (mkIf (cfg.dashboard.enable && cfg.dashboard.host != null) {
+          traefik-dashboard-ingressroute = {
+            target = "traefik-dashboard-ingressroute.yaml";
+            source = pkgs.writeText "traefik-dashboard-ingressroute.yaml" ''
+              apiVersion: traefik.io/v1alpha1
+              kind: IngressRoute
+              metadata:
+                name: traefik-dashboard
+                namespace: traefik
+              spec:
+                entryPoints:
+                  - websecure
+                routes:
+                  - match: Host(`${cfg.dashboard.host}`)
+                    kind: Rule
+                    services:
+                      - name: api@internal
+                        kind: TraefikService
+                tls: {}
+            '';
+          };
+        })
       ]);
     };
 
@@ -651,6 +740,10 @@ in
       {
         assertion = !(cfg.certManager.traefik.enableDefaultCertificate && !cfg.enableTraefik);
         message = "Traefik must be enabled to attach the default certificate.";
+      }
+      {
+        assertion = !(cfg.dashboard.enable && cfg.dashboard.host == null);
+        message = "services.k3s-cluster.dashboard.host must be set when enabling the dashboard.";
       }
     ];
 
