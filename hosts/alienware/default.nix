@@ -353,7 +353,7 @@
     secrets = {
       "global-ssh-authorized-keys".file = "${secretsPath}/global/ssh/authorized_keys.age";
       "alienware-syncthing-password".file = "${secretsPath}/alienware/syncthing-password.age";
-      "k3s-token".file = "${secretsPath}/global/k3s-token.age";
+      "k3s-token".file = "${secretsPath}/alienware/k3s-token.age";
     };
   };
 

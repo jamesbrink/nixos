@@ -31,10 +31,9 @@ spec:
         limits:
           cpu: "4"
           memory: 8Gi
-      securityContext:
-        runAsUser: 1000
-        fsGroup: 1000
       env:
+        - name: ACTIONS_RUNNER_DEBUG
+          value: "true"
         - name: ACTIONS_RUNNER_POD_NAME
           valueFrom:
             fieldRef:
