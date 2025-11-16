@@ -24,6 +24,7 @@
     ../../profiles/desktop/hyprland.nix
     ../../profiles/keychron/default.nix
     # ../../modules/services/ai-starter-kit/default.nix # Disabled - n8n, qdrant, pipelines
+    ../../modules/services/k3s.nix
     ../../modules/services/tftp-server.nix
     ../../modules/services/netboot-configs.nix
     ../../modules/services/netboot-autochain.nix
@@ -627,6 +628,12 @@
         file = "${secretsPath}/hal9000/rustdesk.age";
         owner = "jamesbrink";
         group = "users";
+        mode = "0400";
+      };
+      "k3s-token" = {
+        file = "${secretsPath}/hal9000/k3s-token.age";
+        owner = "root";
+        group = "root";
         mode = "0400";
       };
       # Disabled with nginx
@@ -1338,6 +1345,20 @@
     diskPath = "/storage-fast/vms/win11-dev.qcow2";
     owner = "jamesbrink";
     autostart = false; # Don't autostart, let user control it
+  };
+
+  # K3s Kubernetes cluster with GPU support
+  services.k3s-cluster = {
+    enable = true;
+    users = [ "jamesbrink" ];
+    admins = [ "jamesbrink" ];
+    hostname = "hal9000";
+    domain = "home.urandom.io";
+    maxPods = 500;
+    storagePoolDataset = "storage-fast/k3s";
+    storageMountpoint = "/var/lib/rancher";
+    enableTraefik = true;
+    enableGpuSupport = true;
   };
 
   # Samba server configuration - sharing same paths as NFS

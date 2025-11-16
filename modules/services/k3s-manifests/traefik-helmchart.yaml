@@ -1,0 +1,48 @@
+# Traefik Ingress Controller via Helm
+# Deployed automatically by k3s manifest system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  repo: https://traefik.github.io/charts
+  chart: traefik
+  version: 34.5.0
+  targetNamespace: traefik
+  createNamespace: true
+  valuesContent: |-
+    deployment:
+      replicas: 1
+
+    service:
+      type: LoadBalancer
+
+    ports:
+      web:
+        port: 80
+        exposedPort: 80
+      websecure:
+        port: 443
+        exposedPort: 443
+
+    providers:
+      kubernetesCRD:
+        enabled: true
+      kubernetesIngress:
+        enabled: true
+
+    logs:
+      general:
+        level: INFO
+      access:
+        enabled: false
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
