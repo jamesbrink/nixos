@@ -44,6 +44,13 @@
       { path = "/Applications/Discord.app"; }
       { path = "/System/Applications/System Settings.app"; }
       {
+        path = "${config.users.users.jamesbrink.home}/.Trash";
+        section = "others";
+        view = "automatic";
+        display = "stack";
+        sort = "dateadded";
+      }
+      {
         path = "${config.users.users.jamesbrink.home}/Downloads";
         section = "others";
         view = "fan"; # Fan style

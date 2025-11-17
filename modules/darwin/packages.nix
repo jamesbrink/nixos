@@ -26,10 +26,8 @@
       htop
       btop
       duf
-    ]
-    ++ lib.optionals (!pkgs.stdenv.isx86_64) [
-      # ncdu requires zig-hook which is broken on x86_64-darwin
-      ncdu
+
+      # Note: ncdu and other disk usage analyzers are in modules/home-manager/cli-tools.nix
     ]
     ++ [
       # Network tools
@@ -59,6 +57,7 @@
       # macOS specific
       mas # Mac App Store CLI
       dockutil
+      grandperspective # Visual disk usage analyzer for macOS
 
       # From unstable
       pkgs.unstablePkgs.atuin

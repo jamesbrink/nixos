@@ -55,6 +55,11 @@
       choose # Human-friendly cut
       neovim-remote # `nvr` helper for live Neovim automation
 
+      # Disk usage analyzers
+      gdu # Fast disk usage analyzer (Go-based)
+      dua # Disk usage analyzer (Rust-based, interactive)
+      erdtree # File-tree visualizer and disk usage analyzer
+
     ]
     ++ lib.optionals (!pkgs.stdenv.isx86_64) [
       ncdu # Disk usage analyzer (requires zig-hook which is broken on x86_64-darwin)
