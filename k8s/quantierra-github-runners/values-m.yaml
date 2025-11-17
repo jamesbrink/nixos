@@ -11,8 +11,16 @@ runnerScaleSetName: "selfhost-m"
 
 template:
   spec:
-    nodeSelector:
-      gha-tier: selfhost-m
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: gha-tier
+                  operator: In
+                  values:
+                    - selfhost-m
+                    - selfhost-l
     containers:
       - name: runner
         image: ghcr.io/jamesbrink/github-runner-full:latest

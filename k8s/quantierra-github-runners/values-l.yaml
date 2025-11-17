@@ -4,15 +4,23 @@ githubConfigSecret:
 
 runnerGroup: "quantierra-gha"
 
-minRunners: 4
+minRunners: 0
 maxRunners: 10
 
 runnerScaleSetName: "selfhost-l"
 
 template:
   spec:
-    nodeSelector:
-      gha-tier: selfhost-l
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: gha-tier
+                  operator: In
+                  values:
+                    - selfhost-l
+                    - selfhost-m
     containers:
       - name: runner
         image: ghcr.io/jamesbrink/github-runner-full:latest

@@ -11,8 +11,17 @@ runnerScaleSetName: "selfhost-s"
 
 template:
   spec:
-    nodeSelector:
-      gha-tier: selfhost-s
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: gha-tier
+                  operator: In
+                  values:
+                    - selfhost-s
+                    - selfhost-m
+                    - selfhost-l
     topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname

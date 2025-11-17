@@ -4,7 +4,7 @@ githubConfigSecret:
 
 runnerGroup: "quantierra-gha"
 
-minRunners: 1
+minRunners: 2
 maxRunners: 2
 
 runnerScaleSetName: "selfhost-xl"
@@ -22,8 +22,8 @@ template:
             cpu: "8"
             memory: "16Gi"
           limits:
-            cpu: "16"
-            memory: "32Gi"
+            cpu: "32"
+            memory: "64Gi"
 
 containerMode:
   type: "dind"
