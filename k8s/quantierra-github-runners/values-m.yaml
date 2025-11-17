@@ -15,7 +15,7 @@ template:
       gha-tier: selfhost-m
     containers:
       - name: runner
-        image: ghcr.io/actions/actions-runner:latest
+        image: ghcr.io/jamesbrink/github-runner-full:latest
         command: ["/home/runner/run.sh"]
         resources:
           requests:

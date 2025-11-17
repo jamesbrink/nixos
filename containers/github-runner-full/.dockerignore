@@ -1,0 +1,7 @@
+README.md
+CI-CD.md
+build.sh
+set-package-public.sh
+.git
+.gitignore
+*.md

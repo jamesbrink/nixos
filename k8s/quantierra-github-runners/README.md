@@ -121,6 +121,17 @@ Values files are located in this directory:
 - `values-m.yaml` - M tier configuration
 - `values-s.yaml` - S tier configuration
 
+**Runner Image**: All tiers use the custom runner image `ghcr.io/jamesbrink/github-runner-full:latest` which includes:
+
+- Python 3.11, 3.12, 3.13 (with uv, poetry, pytest, black, ruff)
+- libpostal (C library + Python bindings + pre-downloaded data)
+- Node.js, Go, Rust, Ruby, Java, .NET, Nix
+- Docker CLI, kubectl, Helm, Terraform
+- AWS CLI, Azure CLI, Google Cloud SDK
+- PostgreSQL client, poppler-utils, and more
+
+See `containers/github-runner-full/README.md` for complete tool list.
+
 **Important**: The `github_token` field in these files is set to `REDACTED`. Replace with actual GitHub PAT when deploying:
 
 ```bash
@@ -133,6 +144,46 @@ helm install arc-runner-set-xl --set githubConfigSecret.github_token="YOUR_PAT" 
 
 The PAT is also available in the existing K8s secret `gha-controller-manager` in the `github-runners` namespace.
 
+## Upgrading to Custom Image
+
+Once the custom image is built and published (via GitHub Actions), upgrade all runner scale sets:
+
+```bash
+# Get the GitHub PAT from the secret
+export GITHUB_PAT=$(kubectl get secret gha-controller-manager -n github-runners -o jsonpath='{.data.github_token}' | base64 -d)
+
+# Upgrade all tiers (this will restart runners with new image)
+helm upgrade arc-runner-set-xl \
+  --namespace github-runners \
+  --set githubConfigSecret.github_token="$GITHUB_PAT" \
+  -f values-xl.yaml \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+
+helm upgrade arc-runner-set-l \
+  --namespace github-runners \
+  --set githubConfigSecret.github_token="$GITHUB_PAT" \
+  -f values-l.yaml \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+
+helm upgrade arc-runner-set-m \
+  --namespace github-runners \
+  --set githubConfigSecret.github_token="$GITHUB_PAT" \
+  -f values-m.yaml \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+
+helm upgrade arc-runner-set-s \
+  --namespace github-runners \
+  --set githubConfigSecret.github_token="$GITHUB_PAT" \
+  -f values-s.yaml \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+```
+
+**Note**: The upgrade will:
+
+1. Pull the new image to each node (may take a few minutes for ~7-10GB image)
+2. Restart runner pods with the new image
+3. Re-register runners with GitHub
+
 ## Monitoring
 
 Check runner status:
@@ -140,6 +191,9 @@ Check runner status:
 ```bash
 # K8s pods
 kubectl get pods -n github-runners -o wide
+
+# Check image in use
+kubectl get pods -n github-runners -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.containers[0].image}{"\n"}{end}'
 
 # GitHub runners
 gh api orgs/quantierra/actions/runners --jq '.runners[] | {name, status, busy}'
