@@ -127,7 +127,7 @@ case "$MODE" in
         ;;
     protect)
         print_color "$GREEN" "Scanning uncommitted changes..."
-        GITLEAKS_CMD="$GITLEAKS_CMD protect"
+        GITLEAKS_CMD="$GITLEAKS_CMD protect --staged"
         ;;
     baseline)
         print_color "$GREEN" "Generating baseline file..."

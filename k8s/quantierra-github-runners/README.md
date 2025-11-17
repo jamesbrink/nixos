@@ -1,57 +1,181 @@
 # Quantierra GitHub Actions Runners
 
-Goal: deploy auto-scaled org-level self-hosted GitHub Actions runners for the `quantierra` organization on Kubernetes (non-NixOS) so any host with kubeconfig + Helm can launch/operate workers.
+GitHub Actions self-hosted runner scale sets for the `quantierra` organization using the official GitHub Actions Runner Controller (ARC).
 
-## Deployment Approach
+## Architecture
 
-1. **Controller**: upstream `actions-runner-controller` (ARC) Helm chart drives all lifecycle operations (runner pods, autoscaling, GitHub sync).
-2. **Runner Scale Set**: one `RunnerDeployment` + `HorizontalRunnerAutoscaler` pair keeps at least one warm runner and bursts to 15 for heavy CI.
-3. **Secrets**: a high-scope GitHub PAT (including `admin:org`) lives in `secrets/jamesbrink/github/quantierra-runner-token.age` and syncs into the cluster as the `gha-controller-manager` secret.
-4. **Namespace**: everything (CRDs, runners, Helm release) runs inside the dedicated `github-runners` namespace managed via `manifests/namespace.yaml`.
-5. **Images**: both ARC and the runners pin `ghcr.io/actions/actions-runner:v2.329.0`, matching the latest official runner release (update this when GitHub publishes a new version).
+**Controller**: GitHub's official Actions Runner Controller v0.13.0
 
-## Directory Layout
+- Deployed in `arc-systems` namespace
+- Manages all runner scale sets
 
+**Runner Scale Sets**: Four tiers based on resource requirements
+
+- Deployed in `github-runners` namespace
+- Auto-scale based on workflow demand
+
+## Deployment Status
+
+✅ **All runners online and healthy**
+
+- **11 total runners** registered with GitHub
+- **4 tiers** (XL, L, M, S) distributed across nodes
+- **Official GitHub ARC** v0.13.0 (replaced deprecated summerwind/ARC)
+
+## Runner Tiers
+
+### selfhost-xl (XL Tier)
+
+- **Node**: hal9000 (gha-tier: selfhost-l)
+- **Resources**: 8-16 CPU, 16-32Gi memory
+- **Scale**: min 1, max 2
+- **Current**: 1 runner online
+
+### selfhost-l (L Tier)
+
+- **Node**: hal9000 (gha-tier: selfhost-l)
+- **Resources**: 1-4 CPU, 2-8Gi memory
+- **Scale**: min 4, max 10
+- **Current**: 4 runners online
+
+### selfhost-m (M Tier)
+
+- **Node**: alienware (gha-tier: selfhost-m)
+- **Resources**: 1-4 CPU, 2-8Gi memory
+- **Scale**: min 2, max 6
+- **Current**: 2 runners online
+
+### selfhost-s (S Tier)
+
+- **Nodes**: n100-01/02/03/04 (gha-tier: selfhost-s)
+- **Resources**: 1-2 CPU, 2-4Gi memory
+- **Scale**: min 4, max 8
+- **Current**: 4 runners online (1 per n100 node)
+
+## Usage in Workflows
+
+Reference runner tiers in your workflows:
+
+```yaml
+jobs:
+  build:
+    runs-on: selfhost-xl # Use XL runner
+
+  test:
+    runs-on: selfhost-l # Use L runner
+
+  deploy:
+    runs-on: selfhost-m # Use M runner
+
+  lint:
+    runs-on: selfhost-s # Use S runner
 ```
-quantierra-github-runners/
-├── charts/
-│   ├── values.base.yaml     # shared ARC settings (secret name, image pin, SA)
-│   ├── values.prod.yaml     # prod-only toggles (tolerations, metrics, replicas)
-│   └── secrets.example.yaml # documents which agenix secret feeds Kubernetes
-└── manifests/
-    ├── namespace.yaml       # namespace + quotas/limits
-    ├── actions.summerwind.dev_*.yaml # ARC CRDs (synced from Helm)
-    └── runners.yaml         # RunnerDeployment + HorizontalRunnerAutoscaler
+
+## Installation
+
+The deployment consists of:
+
+1. **Controller** (one-time):
+
+```bash
+helm install arc \
+  --namespace arc-systems \
+  --create-namespace \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
 ```
 
-## Implementation Plan
+2. **Runner Scale Sets** (per tier):
 
-1. **Secret prep**
+```bash
+# XL Tier
+helm install arc-runner-set-xl \
+  --namespace github-runners \
+  -f values-xl.yaml \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
 
-   - Populate `secrets/jamesbrink/github/quantierra-runner-token.age` with a PAT that has `admin:org`, `repo`, and `workflow`.
-   - Run `scripts/deploy-quantierra-github-runners.sh --sync-secret` (or the full deploy script) to push it to Kubernetes as `gha-controller-manager`.
+# L Tier
+helm install arc-runner-set-l \
+  --namespace github-runners \
+  -f values-l.yaml \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
 
-2. **Bootstrap namespace + CRDs**
+# M Tier
+helm install arc-runner-set-m \
+  --namespace github-runners \
+  -f values-m.yaml \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
 
-   - `kubectl apply -f k8s/quantierra-github-runners/manifests/namespace.yaml`
-   - `kubectl apply -f k8s/quantierra-github-runners/manifests/actions.summerwind.dev_*.yaml`
+# S Tier
+helm install arc-runner-set-s \
+  --namespace github-runners \
+  -f values-s.yaml \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+```
 
-3. **Install ARC**
+## Configuration
 
-   - `scripts/deploy-quantierra-github-runners.sh --helm-only` (or run Helm manually with the two values files and chart version `0.23.7`).
+Values files are located in this directory:
 
-4. **RunnerDeployment**
+- `values-xl.yaml` - XL tier configuration
+- `values-l.yaml` - L tier configuration
+- `values-m.yaml` - M tier configuration
+- `values-s.yaml` - S tier configuration
 
-   - `kubectl apply -f k8s/quantierra-github-runners/manifests/runners.yaml` to create the org-level runner set + autoscaler.
+**Important**: The `github_token` field in these files is set to `REDACTED`. Replace with actual GitHub PAT when deploying:
 
-5. **Monitoring & upgrades**
-   - `kubectl get runners -n github-runners` confirms registration.
-   - Update `charts/values.*` + `manifests/runners.yaml` when GitHub publishes a new runner image or new scale policy; rerun the deploy script.
+```bash
+# Option 1: Use sed to replace inline
+sed 's/REDACTED/YOUR_GITHUB_PAT/' values-xl.yaml | helm install arc-runner-set-xl ...
 
-## Operational Checklist
+# Option 2: Set via --set flag
+helm install arc-runner-set-xl --set githubConfigSecret.github_token="YOUR_PAT" ...
+```
 
-- [ ] kubecontext for `hal9000` cluster available (see `SECRETS.md`).
-- [ ] `secrets/jamesbrink/github/quantierra-runner-token.age` rotated when PAT scopes change; re-run deploy script afterward.
-- [ ] `helm list -n github-runners` shows `quantierra-gha-controller` at chart `0.23.7`.
-- [ ] `kubectl get runners -n github-runners` reports Ready pods labeled `org=quantierra`.
-- [ ] `kubectl logs deployment/quantierra-gha-controller actions-runner-controller -n github-runners` clean (no auth errors).
+The PAT is also available in the existing K8s secret `gha-controller-manager` in the `github-runners` namespace.
+
+## Monitoring
+
+Check runner status:
+
+```bash
+# K8s pods
+kubectl get pods -n github-runners -o wide
+
+# GitHub runners
+gh api orgs/quantierra/actions/runners --jq '.runners[] | {name, status, busy}'
+
+# Helm releases
+helm list -n arc-systems
+helm list -n github-runners
+```
+
+## Node Labels
+
+Node labels are managed via NixOS k3s module:
+
+- **hal9000**: `gha-tier=selfhost-l` (runs XL and L tiers)
+- **alienware**: `gha-tier=selfhost-m` (runs M tier)
+- **n100-01/02/03/04**: `gha-tier=selfhost-s` (runs S tier)
+
+## Secrets
+
+GitHub PAT stored in:
+
+- K8s secret: `gha-controller-manager` in `github-runners` namespace
+- Source: `secrets/jamesbrink/github/quantierra-runner-token.age`
+
+## Migration Notes
+
+This deployment replaces the deprecated summerwind/actions-runner-controller with GitHub's official ARC:
+
+- ✅ Old controller uninstalled
+- ✅ Old CRDs removed
+- ✅ Old manifests archived in `.old-summerwind/`
+- ✅ New architecture using runner scale sets
+- ✅ All runners registered and healthy
+
+## References
+
+- [Official GitHub ARC Documentation](https://docs.github.com/en/actions/tutorials/use-actions-runner-controller)
+- [GitHub ARC Repository](https://github.com/actions/actions-runner-controller)
+- Runner tier details: `RUNNER_TIERS.md`

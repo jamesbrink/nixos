@@ -1,0 +1,36 @@
+githubConfigUrl: "https://github.com/quantierra"
+githubConfigSecret:
+  github_token: "REDACTED"
+
+runnerGroup: "quantierra-gha"
+
+minRunners: 4
+maxRunners: 8
+
+runnerScaleSetName: "selfhost-s"
+
+template:
+  spec:
+    nodeSelector:
+      gha-tier: selfhost-s
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: runner
+    containers:
+      - name: runner
+        image: ghcr.io/actions/actions-runner:latest
+        command: ["/home/runner/run.sh"]
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+
+containerMode:
+  type: "dind"

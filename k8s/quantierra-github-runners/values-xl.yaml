@@ -1,0 +1,29 @@
+githubConfigUrl: "https://github.com/quantierra"
+githubConfigSecret:
+  github_token: "REDACTED"
+
+runnerGroup: "quantierra-gha"
+
+minRunners: 1
+maxRunners: 2
+
+runnerScaleSetName: "selfhost-xl"
+
+template:
+  spec:
+    nodeSelector:
+      gha-tier: selfhost-l
+    containers:
+      - name: runner
+        image: ghcr.io/actions/actions-runner:latest
+        command: ["/home/runner/run.sh"]
+        resources:
+          requests:
+            cpu: "8"
+            memory: "16Gi"
+          limits:
+            cpu: "16"
+            memory: "32Gi"
+
+containerMode:
+  type: "dind"

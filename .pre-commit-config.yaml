@@ -42,7 +42,7 @@ repos:
     hooks:
       - id: trufflehog
         name: TruffleHog secret scan
-        entry: bash -c 'EXCLUDE_FILE=$(mktemp); echo -e "secrets/\nnix-secrets/\nnixos-old/\n.git/\nresult\nresult-*" > "$EXCLUDE_FILE"; trufflehog filesystem --only-verified --exclude-paths="$EXCLUDE_FILE" . ; rm -f "$EXCLUDE_FILE"' --
+        entry: bash -c 'EXCLUDE_FILE=$(mktemp); echo -e "secrets/\nnix-secrets/\nnixos-old/\n.git/\nresult\nresult-*" > "$EXCLUDE_FILE"; trufflehog filesystem --fail --only-verified --exclude-paths="$EXCLUDE_FILE" . ; EXIT_CODE=$?; rm -f "$EXCLUDE_FILE"; exit $EXIT_CODE'
         language: system
         pass_filenames: false
         always_run: true
