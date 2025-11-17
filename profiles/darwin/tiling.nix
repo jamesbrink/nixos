@@ -63,6 +63,34 @@
     };
   };
 
+  # Disable macOS built-in screenshot shortcuts so skhd can handle them
+  # This prevents conflicts with workspace switching (cmd+shift+3/4) and
+  # allows skhd to manage all screenshot bindings via cmd+shift+ctrl+1-5
+  system.defaults.CustomUserPreferences."com.apple.symbolichotkeys" = {
+    AppleSymbolicHotKeys = {
+      # Disable cmd+shift+3 (Save picture of screen as a file)
+      "28" = {
+        enabled = false;
+      };
+      # Disable cmd+shift+ctrl+3 (Copy picture of screen to clipboard)
+      "29" = {
+        enabled = false;
+      };
+      # Disable cmd+shift+4 (Save picture of selected area as a file)
+      "30" = {
+        enabled = false;
+      };
+      # Disable cmd+shift+ctrl+4 (Copy picture of selected area to clipboard)
+      "31" = {
+        enabled = false;
+      };
+      # Disable cmd+shift+5 (Screenshot and recording options)
+      "184" = {
+        enabled = false;
+      };
+    };
+  };
+
   # Hide desktop icons by default (yabai starts in BSP/tiling mode)
   system.defaults.finder.CreateDesktop = false;
 }

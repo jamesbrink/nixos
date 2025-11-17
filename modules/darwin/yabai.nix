@@ -500,14 +500,14 @@ in
       # cmd + space - Raycast (if configured to override Spotlight)
 
       # ====================
-      # SCREENSHOTS (macOS defaults with enhanced behavior)
+      # SCREENSHOTS (All save to ~/Pictures/Screenshots AND copy to clipboard)
       # ====================
 
-      # Full screen to file (Cmd+Shift+3)
-      ${skhdChord darwinBindings.screenshot.full_save} : ${macScreenshotHelper}/bin/macos-screenshot full --file
+      # Full screen to clipboard AND file (Cmd+Shift+Ctrl+1)
+      ${skhdChord darwinBindings.screenshot.full_save} : ${macScreenshotHelper}/bin/macos-screenshot full --both
 
-      # Region selection to file (Cmd+Shift+4)
-      ${skhdChord darwinBindings.screenshot.region_save} : ${macScreenshotHelper}/bin/macos-screenshot selection --file
+      # Region selection to clipboard AND file (Cmd+Shift+Ctrl+2)
+      ${skhdChord darwinBindings.screenshot.region_save} : ${macScreenshotHelper}/bin/macos-screenshot selection --both
 
       # Full screen to clipboard AND file (Cmd+Shift+Ctrl+3)
       ${skhdChord darwinBindings.screenshot.full_clipboard} : ${macScreenshotHelper}/bin/macos-screenshot full --both
@@ -515,7 +515,7 @@ in
       # Region selection to clipboard AND file (Cmd+Shift+Ctrl+4)
       ${skhdChord darwinBindings.screenshot.region_clipboard} : ${macScreenshotHelper}/bin/macos-screenshot selection --both
 
-      # Screenshot UI (Cmd+Shift+5) - native macOS UI
+      # Screenshot UI (Cmd+Shift+Ctrl+5)
       ${skhdChord darwinBindings.screenshot.ui} : ${macScreenshotHelper}/bin/macos-screenshot ui
 
       # ====================

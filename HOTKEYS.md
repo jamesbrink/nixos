@@ -125,9 +125,13 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 
 ### Screenshots
 
-- `PrintScreen` - Annotate region, `Shift+PrintScreen` - Annotate window
-- `Super+S` - Annotate region, `Super+Shift+S` - Annotate window, `Super+Ctrl+S` - Annotate full
-- `Super+Ctrl+Shift+3` - Full screen (direct), `4` - Region (direct), `5` - Window (direct)
+All screenshots save to `~/Pictures/Screenshots/` AND copy to clipboard.
+
+- `Cmd+Shift+Ctrl+1` - Full screen screenshot
+- `Cmd+Shift+Ctrl+2` - Region screenshot
+- `Cmd+Shift+Ctrl+3` - Full screen screenshot (alternate)
+- `Cmd+Shift+Ctrl+4` - Region screenshot (alternate)
+- `Cmd+Shift+Ctrl+5` - Screenshot UI
 
 ### Screen Recording
 

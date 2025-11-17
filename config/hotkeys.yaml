@@ -59,17 +59,17 @@ actions:
       description: Move the focused window to a workspace/Space.
       template:
         chord: "{mod}+shift+{digit}"
-        digits: ["1", "2", "5", "6", "7", "8", "9", "0"] # 3 and 4 reserved for screenshots
+        digits: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
   screenshot:
     full_save:
-      description: Capture the entire display to disk.
+      description: Capture the entire display to clipboard AND disk.
       commands:
-        darwin: "macos-screenshot full --file"
+        darwin: "macos-screenshot full --both"
         linux: "screenshot-direct output"
     region_save:
-      description: Capture a selection to disk.
+      description: Capture a selection to clipboard AND disk.
       commands:
-        darwin: "macos-screenshot selection --file"
+        darwin: "macos-screenshot selection --both"
         linux: "screenshot-annotate region"
     full_clipboard:
       description: Capture the entire display to clipboard AND disk.
@@ -208,11 +208,11 @@ platforms:
           launcher.walker: "cmd+d"
           launcher.browser.default: "cmd+shift+b"
           launcher.browser.incognito: "cmd+shift+alt+b"
-          screenshot.full_save: "cmd+shift+3"
-          screenshot.region_save: "cmd+shift+4"
+          screenshot.full_save: "cmd+shift+ctrl+1"
+          screenshot.region_save: "cmd+shift+ctrl+2"
           screenshot.full_clipboard: "cmd+shift+ctrl+3"
           screenshot.region_clipboard: "cmd+shift+ctrl+4"
-          screenshot.ui: "cmd+shift+5"
+          screenshot.ui: "cmd+shift+ctrl+5"
           window.close: "cmd+w"
           window.float.toggle: null
           window.fullscreen.toggle: "cmd+f"
