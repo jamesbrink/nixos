@@ -342,9 +342,7 @@
     nftables = {
       enable = true;
     };
-    search = [
-      "urandom.io"
-    ];
+    search = [ ];
 
     # Configure the bridge
     bridges = {
@@ -1243,10 +1241,8 @@
 
   services.resolved = {
     enable = true;
-    fallbackDns = [ ]; # This disables all fallback DNS servers
-    # Override global domains to prevent wildcard DNS conflicts
-    # Removed "home.urandom.io" from global search to prevent *.home.urandom.io from intercepting external domains
-    domains = [ "urandom.io" ];
+    fallbackDns = [ ];
+    domains = [ ];
   };
 
   services.tailscale = {
@@ -1458,10 +1454,12 @@
     enableTraefik = true;
     enableGpuSupport = true;
     nodeLabels = {
+      "nvidia.com/gpu.present" = "true";
       "nvidia.com/gpu" = "true";
       "gpu-model" = "rtx4090";
       "node-role" = "master";
     };
+    runnerTierLabel = "selfhost-l";
     certManager = {
       enable = true;
       email = "admin@home.urandom.io";

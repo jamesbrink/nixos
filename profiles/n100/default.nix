@@ -194,6 +194,7 @@
     storageMountpoint = "/var/lib/rancher";
     enableTraefik = false; # Only on master node
     enableGpuSupport = false; # N100 nodes don't have NVIDIA GPUs
+    runnerTierLabel = "selfhost-s";
   };
 
   # Avahi for macOS discovery (Bonjour)

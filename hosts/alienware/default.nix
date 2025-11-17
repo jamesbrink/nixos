@@ -148,10 +148,9 @@
   };
 
   # Override systemd-resolved global search domains to prevent wildcard DNS conflicts
-  # Removed "home.urandom.io" from global search to prevent *.home.urandom.io from intercepting external domains
   services.resolved = {
     enable = true;
-    domains = [ "urandom.io" ];
+    domains = [ ];
   };
 
   # K3s Kubernetes cluster worker node with GPU support
@@ -169,10 +168,12 @@
     enableTraefik = false; # Only on master node
     enableGpuSupport = true;
     nodeLabels = {
+      "nvidia.com/gpu.present" = "true";
       "nvidia.com/gpu" = "true";
       "gpu-model" = "alienware-gpu";
       "node-role" = "worker";
     };
+    runnerTierLabel = "selfhost-m";
   };
 
   # Create k3s storage directory
@@ -253,6 +254,13 @@
     };
   };
   hardware.nvidia-container-toolkit.enable = true;
+
+  # NVIDIA environment variables for container runtime
+  environment.variables = {
+    GBM_BACKEND = "nvidia-drm";
+    LIBVA_DRIVER_NAME = "nvidia";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+  };
 
   # Sunshine game streaming
   systemd.user.services.sunshine = {

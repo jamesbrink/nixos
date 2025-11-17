@@ -12,6 +12,12 @@ with lib;
 let
   cfg = config.services.k3s-cluster;
 
+  nodeLabelsWithTier =
+    cfg.nodeLabels
+    // optionalAttrs (cfg.runnerTierLabel != null) {
+      "gha-tier" = cfg.runnerTierLabel;
+    };
+
   # Generate user namespace manifests
   userNamespacesYaml = pkgs.writeText "user-namespaces.yaml" (
     concatMapStringsSep "\n---\n" (user: ''
@@ -185,6 +191,22 @@ in
         "gpu-type" = "rtx4090";
       };
       description = "Node labels to apply to this k3s node";
+    };
+
+    runnerTierLabel = mkOption {
+      type = types.nullOr (
+        types.enum [
+          "selfhost-s"
+          "selfhost-m"
+          "selfhost-l"
+        ]
+      );
+      default = null;
+      description = ''
+        Optional convenience label for GitHub Actions runners. When set, applies
+        `gha-tier=<value>` to this node so RunnerDeployments can schedule `selfhost-s`
+        (n100), `selfhost-m` (alienware), or `selfhost-l` (hal9000) jobs explicitly.
+      '';
     };
 
     certManager = mkOption {
@@ -429,7 +451,7 @@ in
         )
         ++ (
           # Add node labels for both server and agent
-          mapAttrsToList (name: value: "--node-label=${name}=${value}") cfg.nodeLabels
+          mapAttrsToList (name: value: "--node-label=${name}=${value}") nodeLabelsWithTier
         );
 
       # User management manifests (only on server)
