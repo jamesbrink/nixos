@@ -255,7 +255,6 @@ in
 
         # Screensaver and idle management
         "$mod, L, exec, omarchy-lock-screen" # Lock screen
-        "$mod SHIFT, S, exec, omarchy-toggle-screensaver" # Toggle screensaver
         "$mod SHIFT, I, exec, omarchy-toggle-idle" # Toggle idle management
 
         # Window Management
@@ -1954,28 +1953,38 @@ in
   xdg.configFile."mako/config".source =
     config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/omarchy/current/theme/mako.ini";
 
+  # Screensaver branding text
+  xdg.configFile."omarchy/branding/screensaver.txt".text = ''
+    HAL 9000
+    Heuristically programmed ALgorithmic computer
+  '';
+
+  # Screensaver Alacritty configuration
+  home.file.".local/share/omarchy/default/alacritty/screensaver.toml".text = ''
+    [window]
+    opacity = 1.0
+    decorations = "none"
+    dynamic_title = false
+
+    [font]
+    size = 12
+
+    [colors.primary]
+    background = "#000000"
+    foreground = "#ffffff"
+  '';
+
   # Hypridle idle management daemon
   services.hypridle = {
     enable = true;
     settings = {
       general = {
-        lock_cmd = "omarchy-lock-screen";
-        before_sleep_cmd = "loginctl lock-session";
-        after_sleep_cmd = "hyprctl dispatch dpms on";
+        lock_cmd = "pidof hyprlock || hyprlock";
       };
       listener = [
         {
-          timeout = 150;
-          on-timeout = "pidof hyprlock || omarchy-launch-screensaver";
-        }
-        {
           timeout = 300;
-          on-timeout = "loginctl lock-session";
-        }
-        {
-          timeout = 330;
-          on-timeout = "hyprctl dispatch dpms off";
-          on-resume = "hyprctl dispatch dpms on && brightnessctl -r";
+          on-timeout = "pidof hyprlock || omarchy-launch-screensaver";
         }
       ];
     };
