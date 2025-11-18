@@ -7,6 +7,7 @@ Current layout:
 | Path                             | Purpose                                                                                                     |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `k8s/quantierra-github-runners/` | Home for the Quantierra GitHub Actions runner deployment (Helm values, rendered manifests, helper scripts). |
+| `k8s/rancher/`                   | Rancher + monitoring Helm values, nginx proxy config, and docs for `scripts/deploy-rancher.sh`.             |
 
 Common pattern:
 

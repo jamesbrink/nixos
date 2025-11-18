@@ -187,6 +187,7 @@ If you configured an ingress:
 - URL: <https://grafana.home.urandom.io>
 - Username: `admin`
 - Password: Check the secret:
+
   ```bash
   kubectl get secret -n cattle-monitoring-system rancher-monitoring-grafana \
     -o jsonpath='{.data.admin-password}' | base64 -d
@@ -200,10 +201,13 @@ If dashboards don't appear:
 
 1. Check that `cattle-dashboards` namespace exists
 2. Verify ConfigMaps in cattle-dashboards:
+
    ```bash
    kubectl get configmap -n cattle-dashboards
    ```
+
 3. Restart Grafana pod to reload dashboards:
+
    ```bash
    kubectl rollout restart deployment -n cattle-monitoring-system rancher-monitoring-grafana
    ```
@@ -213,13 +217,17 @@ If dashboards don't appear:
 If monitoring pods end up on other nodes:
 
 1. Check node labels:
+
    ```bash
    kubectl get nodes --show-labels | grep hostname
    ```
+
 2. Verify node selector in deployment:
+
    ```bash
    kubectl get deployment -n cattle-monitoring-system rancher-monitoring-grafana -o yaml | grep -A 5 nodeSelector
    ```
+
 3. Edit via Rancher UI or kubectl to add node affinity
 
 ### Rancher Integration Not Working

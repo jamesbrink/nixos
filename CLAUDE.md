@@ -2,31 +2,35 @@
 
 ## Project Structure & Module Organization
 
-`flake.nix` pins nixpkgs (stable+unstable), agenix, and Darwin, producing dev shells plus `nixosConfigurations`/`darwinConfigurations`. Hosts live in `hosts/<hostname>/` (lowercase-hyphen) and compose modules from `modules/darwin`, `modules/services`, and `modules/home-manager`. Role bundles stay in `profiles/`, user overlays in `users/`, and derivations/overlays in `pkgs/` + `overlays/`. Utility scripts live in `scripts/`; secrets stay in `secrets/` with recipients tracked in `SECRETS.md`.
+`flake.nix` pins nixpkgs, agenix, and Darwin revisions, exports dev shells, and composes hosts under `hosts/<hostname>/`. Shared logic lives in `modules/darwin`, `modules/services`, `modules/home-manager`, and `profiles/`. Place package overrides in `pkgs/` and `overlays/`, user tweaks in `users/`, helper scripts in `scripts/`, and encrypted credentials in `secrets/` with recipients tracked in `SECRETS.md`. Review `VISION.md`, `DESIGN.md`, `TECH_STACK.md`, and `STANDARDS.md` before editing fleet-wide modules.
 
 ## Build, Test, and Development Commands
 
-Run `nix develop` (or `direnv allow`) to unlock helper commands such as `format` and `deploy*`. Run `format` before commits; treefmt runs `nixfmt` on `*.nix` and `prettier` on structured data. Guard edits with `nix flake check --impure`; build via `nix build .#nixosConfigurations.<host>.config.system.build.toplevel` (or `.darwinConfigurations.<host>.system`). Use `deploy <host>` for production, `deploy-test <host>` for rehearsals, `deploy-local <host>` for low-RAM boxes, `deploy-all` for the fleet, and pair risky rollouts with `scripts/health-check.sh`, `scripts/show-generations.sh`, and `scripts/rollback.sh`.
+- `nix develop` (or `direnv allow`) enters the dev shell with shared helpers and `NIXPKGS_ALLOW_UNFREE=1`.
+- `format` runs treefmt (`nixfmt` + `prettier`) to enforce repository formatting.
+- `nix flake check --impure` provides the baseline validation for all changes.
+- `nix build .#nixosConfigurations.<host>.config.system.build.toplevel` (or `.darwinConfigurations.<host>.system`) builds a specific host profile.
+- `deploy <host>`, `deploy-test <host>`, and `deploy-local <host>` perform production, rehearsal, or constrained rollouts; follow deployments with `scripts/health-check.sh <host>` and `scripts/show-generations.sh <host>`.
 
 ## Coding Style & Naming Conventions
 
-treefmt enforces two-space indentation and attribute ordering. Keep file, module, and host names lowercase with hyphens (`ghostty-terminfo.nix`, `hosts/halcyon`). Bash utilities must start with `#!/usr/bin/env bash`, set `-euo pipefail`, and satisfy `shellcheck scripts/*.sh`. Favor declarative Nix modules over ad-hoc shell whenever possible; if imperative steps are unavoidable, place them in `scripts/` and document the helper in `flake.nix`.
+treefmt enforces two-space indentation and sorted attribute sets in `*.nix`, while structured data runs through `prettier`. All files, modules, hosts, and profiles use lowercase hyphenated names (e.g., `hosts/halcyon`, `ghostty-terminfo.nix`). Bash helpers start with `#!/usr/bin/env bash`, set `-euo pipefail`, avoid ad-hoc shells when a declarative module suffices, and must pass `shellcheck scripts/*.sh`.
 
 ## Testing Guidelines
 
-Minimum bar for any change is `nix flake check --impure` plus `deploy-test <host>` for each affected machine. After activation, run `scripts/health-check.sh <host>` to confirm services and `scripts/show-generations.sh <host>` to ensure safe rollback points. Secrets-heavy work should also run `scripts/secrets-verify.sh` and `scripts/scan-gitleaks.sh` (or `scripts/scan-secrets.sh --all`) before publishing.
+Minimum verification is `nix flake check --impure` plus `deploy-test <host>` for each impacted machine. After activation, run `scripts/health-check.sh <host>` to confirm services and `scripts/show-generations.sh <host>` to confirm rollback points. Secrets-heavy changes require `scripts/secrets-verify.sh` and `scripts/scan-gitleaks.sh` or `scripts/scan-secrets.sh --all`. Name tests after the host or module they verify (e.g., `deploy-test halcyon`).
 
 ## Commit & Pull Request Guidelines
 
-Use Conventional Commit prefixes (`feat:`, `fix:`, `docs:`) and add scopes when relevant (e.g., `feat(hosts/halcyon): enable yabai toggle`). Pull requests must list affected hosts/profiles, note whether `format`, `nix flake check`, and `deploy-test` ran, and reference any TODO entry or tracking issue. Include screenshots or command snippets for UI-facing changes and describe new secrets or extra manual steps in `SECRETS.md` or `docs/`.
+Use Conventional Commits that scope paths (e.g., `feat(hosts/halcyon): enable yabai toggle`). Before opening a PR, run `format`, `nix flake check --impure`, and `deploy-test` for each affected host, then report results in the PR body alongside impacted hosts/profiles, linked issues, and screenshots or command snippets for UI changes. Document any new secrets or manual steps in `SECRETS.md` or `docs/`.
 
-## Security & Secrets
+## Security & Configuration Tips
 
-Manage age secrets with `scripts/secrets-edit.sh <path>` and rotate recipients via `scripts/secrets-rekey.sh`. Keep `NIXPKGS_ALLOW_UNFREE=1` (set in the dev shell) so unfree packages resolve. Scan for leaks using `scripts/scan-gitleaks.sh` or `scripts/scan-secrets.sh --all` before pushing, and never commit unencrypted credentials.
+Encrypt sensitive data with `scripts/secrets-edit.sh <path>` and rotate recipients via `scripts/secrets-rekey.sh`. Keep secrets confined to `secrets/`, never commit plaintext, and scan before pushing using `scripts/scan-gitleaks.sh` or `scripts/scan-secrets.sh --all`. Pair risky rollouts with `scripts/health-check.sh`, `scripts/show-generations.sh`, and `scripts/rollback.sh` to validate and recover quickly.
 
 ## GitHub Actions Troubleshooting
 
-Force cancel stuck runs with the documented REST endpoint when `gh run cancel <id>` leaves them queued. Run:
+If a workflow run stays `queued` after fixing runner labels, force-cancel it with:
 
 ```bash
 gh api --method POST -H "Accept: application/vnd.github+json" \
@@ -34,14 +38,23 @@ gh api --method POST -H "Accept: application/vnd.github+json" \
   /repos/<owner>/<repo>/actions/runs/<run_id>/force-cancel
 ```
 
-Then verify with `gh run view <run_id> -R <owner>/<repo> --json status,conclusion`. If the run still refuses to exit, delete it via `gh api --method DELETE /repos/<owner>/<repo>/actions/runs/<run_id>`. See `docs/github-actions.md` for context (used to clear queued runs 19433417619 and 19432457397 after fixing runner labels).
-
-## Core References
-
-`VISION.md` captures fleet goals and guardrails. `TECH_STACK.md` lists the supported platforms, languages, and tooling. `DESIGN.md` explains repository layout and ownership boundaries. `STANDARDS.md` codifies testing, documentation, and language-specific requirements (including the Python `themectl` rules). Consult these before landing changes.
+Confirm with `gh run view <run_id> -R <owner>/<repo> --json status,conclusion`; delete with `gh api --method DELETE /repos/<owner>/<repo>/actions/runs/<run_id>` only if the force step fails. See `docs/github-actions.md` for full notes (applied to runs 19433417619 and 19432457397).
 
 ## Rancher Monitoring Deployment
 
-- Preferred workflow: `./scripts/deploy-rancher.sh`. It deploys Rancher + monitoring and immediately reapplies `k8s/rancher/grafana-nginx.conf` to the `grafana-nginx-proxy-config` ConfigMap before restarting Grafana so the Rancher UI proxy stops 404ing.
-- Alternative: `./scripts/deploy-k8s.py helm rancher-monitoring rancher-charts/rancher-monitoring -n cattle-monitoring-system -f k8s/rancher/monitoring-values.yaml`. The helper now mirrors the same config sync after Helm completes, so both entry points stay consistent.
-- After either path, sanity-check both the Rancher Monitoring tab (proxied) and <https://grafana.home.urandom.io> (direct ingress).
+- Run `./scripts/deploy-rancher.sh` to bootstrap or refresh Rancher + monitoring. The script copies `k8s/rancher/grafana-nginx.conf` into the `grafana-nginx-proxy-config` ConfigMap and restarts Grafana so the Rancher UI proxy keeps working.
+- If you prefer the generic helper (`./scripts/deploy-k8s.py helm rancher-monitoring rancher-charts/rancher-monitoring -n cattle-monitoring-system -f k8s/rancher/monitoring-values.yaml`), the script now performs the same config sync automatically after Helm finishes.
+- Always verify via Rancher → Cluster → Monitoring plus direct <https://grafana.home.urandom.io> to ensure both access paths load without 404s.
+
+## Core Docs
+
+Always refer to `README.md` for an overview, then consult:
+
+- `VISION.md` captures fleet goals and guardrails.
+- `TECH_STACK.md` lists the supported platforms, languages, and tooling.
+- `DESIGN.md` explains repository layout and ownership boundaries.
+- `STANDARDS.md` codifies testing, documentation, and language-specific requirements (including the Python `themectl` rules).
+- `AGENTS.md` covers collaboration with AI agents (Claude, GitHub Copilot, etc.).
+- `CLAUDE.md` documents Claude usage, experiment notes, and emerging patterns.
+- `HOTKEYS.md` catalogs custom keybindings and their rationale.
+- `TODO.md` tracks active tasks and backlog items.

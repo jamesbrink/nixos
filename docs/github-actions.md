@@ -6,6 +6,7 @@ Use these steps when a workflow run hangs in `queued` and refuses to cancel afte
 
 1. Identify the `run_id` from the Actions run URL.
 2. Run the new REST endpoint (requires `gh` CLI):
+
    ```bash
    gh api \
      --method POST \
@@ -13,7 +14,9 @@ Use these steps when a workflow run hangs in `queued` and refuses to cancel afte
      -H "X-GitHub-Api-Version: 2022-11-28" \
      /repos/<owner>/<repo>/actions/runs/<run_id>/force-cancel
    ```
+
 3. Confirm the run flips to `status: completed` and `conclusion: cancelled`:
+
    ```bash
    gh run view <run_id> -R <owner>/<repo> --json status,conclusion
    ```

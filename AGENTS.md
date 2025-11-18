@@ -45,3 +45,16 @@ Confirm with `gh run view <run_id> -R <owner>/<repo> --json status,conclusion`; 
 - Run `./scripts/deploy-rancher.sh` to bootstrap or refresh Rancher + monitoring. The script copies `k8s/rancher/grafana-nginx.conf` into the `grafana-nginx-proxy-config` ConfigMap and restarts Grafana so the Rancher UI proxy keeps working.
 - If you prefer the generic helper (`./scripts/deploy-k8s.py helm rancher-monitoring rancher-charts/rancher-monitoring -n cattle-monitoring-system -f k8s/rancher/monitoring-values.yaml`), the script now performs the same config sync automatically after Helm finishes.
 - Always verify via Rancher → Cluster → Monitoring plus direct <https://grafana.home.urandom.io> to ensure both access paths load without 404s.
+
+## Core Docs
+
+Always refer to `README.md` for an overview, then consult:
+
+- `VISION.md` captures fleet goals and guardrails.
+- `TECH_STACK.md` lists the supported platforms, languages, and tooling.
+- `DESIGN.md` explains repository layout and ownership boundaries.
+- `STANDARDS.md` codifies testing, documentation, and language-specific requirements (including the Python `themectl` rules).
+- `AGENTS.md` covers collaboration with AI agents (Claude, GitHub Copilot, etc.).
+- `CLAUDE.md` documents Claude usage, experiment notes, and emerging patterns.
+- `HOTKEYS.md` catalogs custom keybindings and their rationale.
+- `TODO.md` tracks active tasks and backlog items.

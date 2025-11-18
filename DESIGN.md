@@ -8,16 +8,17 @@
 - `modules/`: leaf functionality. Notable subtrees:
   - `modules/home-manager/`: user programs, shells, theming.
   - `modules/darwin/`: Yabai, SKHD, fuzz-launchers, system services.
-  - `modules/services/` & `modules/hardware/`: daemons and device quirks.
+  - `modules/services/`: daemons (AI stack, Postgres/PostGIS, restic, netboot server, Windows VM helpers).
+  - `modules/netboot/`, `modules/n100-disko.nix`, `modules/n100-network.nix`: host disk/network automation and PXE installers.
 - `users/`: user-specific Home Manager overlays.
 - `pkgs/` + `overlays/`: custom derivations and modifications to upstream packages.
-- `scripts/`: operational helpers (deploy, secrets, diagnostics). Upcoming `scripts/themectl/` hosts the cross-platform theme CLI.
+- `scripts/`: operational helpers (deploy, secrets, diagnostics). `scripts/themectl/` hosts the cross-platform theme CLI.
 - `external/omarchy/`: upstream theme assets managed as a submodule.
 
 ## State & Secrets
 
 - Secrets live under `secrets/` as `.age` files; `SECRETS.md` tracks recipients.
-- Mutable runtime state (e.g., `~/.config/alacritty/alacritty.toml`) is either generated via activation hooks or managed through helper scripts like the planned `themectl`.
+- Mutable runtime state (e.g., `~/.config/alacritty/alacritty.toml`) is either generated via activation hooks or managed through helper scripts like `themectl`.
 
 ## Workflow
 

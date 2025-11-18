@@ -14,6 +14,7 @@ This guide shows how to easily switch between desktop environments in your NixOS
 In your host configuration file (e.g., `hosts/alienware/default.nix`), change the import:
 
 **For GNOME:**
+
 ```nix
 imports = [
   ../../profiles/desktop/default.nix  # or default-stable.nix
@@ -22,6 +23,7 @@ imports = [
 ```
 
 **For Hyprland:**
+
 ```nix
 imports = [
   ../../profiles/desktop/hyprland.nix
