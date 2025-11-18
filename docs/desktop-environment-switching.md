@@ -66,15 +66,15 @@ ssh alienware sudo reboot
 
 ## Desktop Profile Comparison
 
-| Feature | GNOME | Hyprland |
-|---------|-------|----------|
-| Display Protocol | X11/Wayland | Wayland only |
-| Display Manager | GDM | SDDM |
-| Resource Usage | Higher | Lower |
-| Customization | Moderate | High |
-| Tiling | No (manual) | Yes (automatic) |
-| Stability | Very stable | Stable |
-| Remote Desktop | xRDP | Screen sharing |
+| Feature          | GNOME       | Hyprland        |
+| ---------------- | ----------- | --------------- |
+| Display Protocol | X11/Wayland | Wayland only    |
+| Display Manager  | GDM         | SDDM            |
+| Resource Usage   | Higher      | Lower           |
+| Customization    | Moderate    | High            |
+| Tiling           | No (manual) | Yes (automatic) |
+| Stability        | Very stable | Stable          |
+| Remote Desktop   | xRDP        | Screen sharing  |
 
 ## Hyprland Configuration
 
