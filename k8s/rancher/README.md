@@ -6,8 +6,8 @@ Rancher management platform for Kubernetes with integrated monitoring stack.
 
 - **Rancher Version**: 2.12.3
 - **Monitoring Version**: 107.2.1+up69.8.2-rancher.23 (kube-prometheus-stack)
-- **URL**: https://rancher.home.urandom.io
-- **Grafana URL**: https://grafana.home.urandom.io
+- **URL**: <https://rancher.home.urandom.io>
+- **Grafana URL**: <https://grafana.home.urandom.io>
 
 ## Architecture
 
@@ -31,14 +31,14 @@ Metrics collection across all cluster nodes:
 
 ## Components
 
-### Rancher
+### Rancher Credentials
 
 - Management UI for Kubernetes
 - Multi-cluster management
 - RBAC and user management
 - App catalog integration
 
-### Monitoring Stack
+### Monitoring Components
 
 - **Prometheus**: Metrics collection and storage (30d retention, 50Gi)
 - **Grafana**: Dashboards and visualization
@@ -96,7 +96,7 @@ helm upgrade --install rancher rancher-stable/rancher \
   --version 2.12.3
 ```
 
-#### Monitoring Stack
+#### Monitoring Stack Deployment
 
 ```bash
 # Create monitoring namespace
@@ -119,15 +119,15 @@ helm upgrade --install rancher-monitoring rancher-charts/rancher-monitoring \
 
 ## Default Credentials
 
-### Rancher
+### Rancher Capacity
 
-- **URL**: https://rancher.home.urandom.io
+- **URL**: <https://rancher.home.urandom.io>
 - **Username**: admin
 - **Password**: admin (change on first login)
 
-### Grafana
+### Grafana Credentials
 
-- **URL**: https://grafana.home.urandom.io
+- **URL**: <https://grafana.home.urandom.io>
 - **Username**: admin
 - **Password**: admin (change on first login)
 
@@ -138,7 +138,7 @@ helm upgrade --install rancher-monitoring rancher-charts/rancher-monitoring \
 - CPU: 1-2 cores
 - Memory: 2-4 Gi
 
-### Monitoring Stack (Total)
+### Monitoring Requirements
 
 - CPU: ~2.7 cores limit, ~1.25 cores request
 - Memory: ~4Gi limit, ~2.2Gi request

@@ -24,6 +24,18 @@ Use Conventional Commit prefixes (`feat:`, `fix:`, `docs:`) and add scopes when 
 
 Manage age secrets with `scripts/secrets-edit.sh <path>` and rotate recipients via `scripts/secrets-rekey.sh`. Keep `NIXPKGS_ALLOW_UNFREE=1` (set in the dev shell) so unfree packages resolve. Scan for leaks using `scripts/scan-gitleaks.sh` or `scripts/scan-secrets.sh --all` before pushing, and never commit unencrypted credentials.
 
+## GitHub Actions Troubleshooting
+
+Force cancel stuck runs with the documented REST endpoint when `gh run cancel <id>` leaves them queued. Run:
+
+```bash
+gh api --method POST -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  /repos/<owner>/<repo>/actions/runs/<run_id>/force-cancel
+```
+
+Then verify with `gh run view <run_id> -R <owner>/<repo> --json status,conclusion`. If the run still refuses to exit, delete it via `gh api --method DELETE /repos/<owner>/<repo>/actions/runs/<run_id>`. See `docs/github-actions.md` for context (used to clear queued runs 19433417619 and 19432457397 after fixing runner labels).
+
 ## Core References
 
 `VISION.md` captures fleet goals and guardrails. `TECH_STACK.md` lists the supported platforms, languages, and tooling. `DESIGN.md` explains repository layout and ownership boundaries. `STANDARDS.md` codifies testing, documentation, and language-specific requirements (including the Python `themectl` rules). Consult these before landing changes.

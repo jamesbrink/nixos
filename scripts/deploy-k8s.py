@@ -7,18 +7,19 @@ secrets from agenix, so secrets never need to be committed to git.
 """
 
 import argparse
-import json
 import os
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 try:
     import yaml
 except ImportError:
-    print("Error: PyYAML is required. Install with: pip install pyyaml", file=sys.stderr)
+    print(
+        "Error: PyYAML is required. Install with: pip install pyyaml", file=sys.stderr
+    )
     sys.exit(1)
 
 
@@ -44,14 +45,14 @@ class SecretManager:
                 capture_output=True,
                 text=True,
                 check=True,
-                cwd=self.project_root
+                cwd=self.project_root,
             )
 
             # Parse output - format is "GITHUB_TOKEN=value"
-            for line in result.stdout.strip().split('\n'):
-                if '=' in line and not line.startswith('#'):
-                    key, value = line.split('=', 1)
-                    if key.strip() == 'GITHUB_TOKEN':
+            for line in result.stdout.strip().split("\n"):
+                if "=" in line and not line.startswith("#"):
+                    key, value = line.split("=", 1)
+                    if key.strip() == "GITHUB_TOKEN":
                         return value.strip()
 
             raise ValueError(f"Could not parse GITHUB_TOKEN from secret: {secret_path}")
@@ -60,14 +61,19 @@ class SecretManager:
             print(f"Error retrieving secret {secret_path}: {e.stderr}", file=sys.stderr)
             raise
         except FileNotFoundError:
-            print("Error: secrets-print command not found. Make sure you're in the nix dev shell.", file=sys.stderr)
+            print(
+                "Error: secrets-print command not found. Make sure you're in the nix dev shell.",
+                file=sys.stderr,
+            )
             sys.exit(1)
 
 
 class HelmDeployer:
     """Handles Helm chart deployments."""
 
-    def __init__(self, project_root: Path, secret_manager: SecretManager, dry_run: bool = False):
+    def __init__(
+        self, project_root: Path, secret_manager: SecretManager, dry_run: bool = False
+    ):
         self.project_root = project_root
         self.secret_manager = secret_manager
         self.dry_run = dry_run
@@ -90,7 +96,7 @@ class HelmDeployer:
             secret = self.secret_manager.get_secret(secret_path)
 
             # Navigate nested dictionary path and set value
-            keys = value_path.split('.')
+            keys = value_path.split(".")
             current = result
             for key in keys[:-1]:
                 if key not in current:
@@ -110,7 +116,7 @@ class HelmDeployer:
         version: Optional[str] = None,
         wait: bool = True,
         timeout: str = "10m",
-        create_namespace: bool = True
+        create_namespace: bool = True,
     ) -> bool:
         """
         Deploy a Helm chart.
@@ -130,10 +136,13 @@ class HelmDeployer:
             True if successful
         """
         cmd = [
-            "helm", "upgrade", "--install",
+            "helm",
+            "upgrade",
+            "--install",
             release_name,
             chart,
-            "--namespace", namespace
+            "--namespace",
+            namespace,
         ]
 
         if create_namespace:
@@ -151,9 +160,7 @@ class HelmDeployer:
             if values_dict:
                 # Write values to temp file
                 temp_file = tempfile.NamedTemporaryFile(
-                    mode='w',
-                    suffix='.yaml',
-                    delete=False
+                    mode="w", suffix=".yaml", delete=False
                 )
                 yaml.dump(values_dict, temp_file, default_flow_style=False)
                 temp_file.close()
@@ -164,11 +171,13 @@ class HelmDeployer:
             if self.dry_run:
                 print(f"[DRY RUN] Would execute: {' '.join(cmd)}")
                 if values_dict:
-                    print(f"[DRY RUN] Values:\n{yaml.dump(values_dict, default_flow_style=False)}")
+                    print(
+                        f"[DRY RUN] Values:\n{yaml.dump(values_dict, default_flow_style=False)}"
+                    )
                 return True
 
             print(f"Deploying {release_name} to namespace {namespace}...")
-            result = subprocess.run(cmd, check=True, text=True)
+            subprocess.run(cmd, check=True, text=True)
             print(f"✓ Successfully deployed {release_name}")
             return True
 
@@ -184,28 +193,18 @@ class HelmDeployer:
 class GitHubRunnersDeployer:
     """Specialized deployer for GitHub Actions runners."""
 
-    CHART = "oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set"
+    CHART = (
+        "oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set"
+    )
     VERSION = "0.13.0"
     NAMESPACE = "github-runners"
     SECRET_PATH = "jamesbrink/github/quantierra-runner-token"
 
     TIERS = {
-        "xl": {
-            "release": "arc-runner-set-xl",
-            "values_file": "values-xl.yaml"
-        },
-        "l": {
-            "release": "arc-runner-set-l",
-            "values_file": "values-l.yaml"
-        },
-        "m": {
-            "release": "arc-runner-set-m",
-            "values_file": "values-m.yaml"
-        },
-        "s": {
-            "release": "arc-runner-set-s",
-            "values_file": "values-s.yaml"
-        }
+        "xl": {"release": "arc-runner-set-xl", "values_file": "values-xl.yaml"},
+        "l": {"release": "arc-runner-set-l", "values_file": "values-l.yaml"},
+        "m": {"release": "arc-runner-set-m", "values_file": "values-m.yaml"},
+        "s": {"release": "arc-runner-set-s", "values_file": "values-s.yaml"},
     }
 
     def __init__(self, project_root: Path, helm_deployer: HelmDeployer):
@@ -216,7 +215,10 @@ class GitHubRunnersDeployer:
     def deploy_tier(self, tier: str) -> bool:
         """Deploy a specific runner tier."""
         if tier not in self.TIERS:
-            print(f"Error: Unknown tier '{tier}'. Valid tiers: {', '.join(self.TIERS.keys())}", file=sys.stderr)
+            print(
+                f"Error: Unknown tier '{tier}'. Valid tiers: {', '.join(self.TIERS.keys())}",
+                file=sys.stderr,
+            )
             return False
 
         tier_config = self.TIERS[tier]
@@ -232,8 +234,7 @@ class GitHubRunnersDeployer:
 
         # Inject GitHub token
         values_with_secrets = self.helm_deployer.inject_secrets(
-            values,
-            {self.SECRET_PATH: "githubConfigSecret.github_token"}
+            values, {self.SECRET_PATH: "githubConfigSecret.github_token"}
         )
 
         # Deploy
@@ -244,7 +245,7 @@ class GitHubRunnersDeployer:
             values_dict=values_with_secrets,
             version=self.VERSION,
             wait=True,
-            timeout="5m"
+            timeout="5m",
         )
 
     def deploy_all(self) -> bool:
@@ -265,21 +266,17 @@ def main():
 
     # GitHub runners command
     runners_parser = subparsers.add_parser(
-        "github-runners",
-        help="Deploy GitHub Actions runners"
+        "github-runners", help="Deploy GitHub Actions runners"
     )
     runners_parser.add_argument(
         "--tier",
         choices=["xl", "l", "m", "s", "all"],
         default="all",
-        help="Runner tier to deploy (default: all)"
+        help="Runner tier to deploy (default: all)",
     )
 
     # Helm command
-    helm_parser = subparsers.add_parser(
-        "helm",
-        help="Deploy a generic Helm chart"
-    )
+    helm_parser = subparsers.add_parser("helm", help="Deploy a generic Helm chart")
     helm_parser.add_argument("release", help="Release name")
     helm_parser.add_argument("chart", help="Chart reference")
     helm_parser.add_argument("--namespace", "-n", required=True, help="Namespace")
@@ -289,19 +286,19 @@ def main():
         "--inject-secret",
         action="append",
         metavar="SECRET_PATH:VALUE_PATH",
-        help="Inject secret (e.g., 'jamesbrink/github/token:github.token')"
+        help="Inject secret (e.g., 'jamesbrink/github/token:github.token')",
     )
 
     # Global options
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Show what would be deployed without deploying"
+        help="Show what would be deployed without deploying",
     )
     parser.add_argument(
         "--project-root",
         type=Path,
-        help="Project root directory (default: auto-detect)"
+        help="Project root directory (default: auto-detect)",
     )
 
     args = parser.parse_args()
@@ -368,7 +365,7 @@ def main():
             chart=args.chart,
             namespace=args.namespace,
             values_dict=values_dict,
-            version=args.version
+            version=args.version,
         )
 
         return 0 if success else 1

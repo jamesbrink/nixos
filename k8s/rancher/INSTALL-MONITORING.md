@@ -6,7 +6,7 @@ This guide shows how to install the monitoring stack through Rancher UI. While b
 
 ## Prerequisites
 
-- Rancher Server installed and accessible at https://rancher.home.urandom.io
+- Rancher Server installed and accessible at <https://rancher.home.urandom.io>
 - Logged in as admin user
 - Local k3s cluster imported/registered in Rancher
 
@@ -14,7 +14,7 @@ This guide shows how to install the monitoring stack through Rancher UI. While b
 
 ### 1. Access Rancher UI
 
-1. Navigate to https://rancher.home.urandom.io
+1. Navigate to <https://rancher.home.urandom.io>
 2. Login with credentials:
    - Username: `admin`
    - Password: `admin` (or changed password)
@@ -136,7 +136,7 @@ kubectl get ingress -n cattle-monitoring-system
 **Access Grafana:**
 
 - Via Rancher: Navigate to **Monitoring** in the cluster menu
-- Direct access: https://grafana.home.urandom.io (if ingress was created)
+- Direct access: <https://grafana.home.urandom.io> (if ingress was created)
 
 ## Expected Components
 
@@ -184,7 +184,7 @@ Rancher should create 30+ default dashboards including:
 
 If you configured an ingress:
 
-- URL: https://grafana.home.urandom.io
+- URL: <https://grafana.home.urandom.io>
 - Username: `admin`
 - Password: Check the secret:
   ```bash
@@ -261,6 +261,6 @@ kubectl delete namespace cattle-dashboards
 
 ## Reference
 
-- Rancher Monitoring Documentation: https://ranchermanager.docs.rancher.com/integrations-in-rancher/monitoring-and-alerting
-- Prometheus Operator: https://github.com/prometheus-operator/prometheus-operator
-- Grafana: https://grafana.com/docs/
+- Rancher Monitoring Documentation: <https://ranchermanager.docs.rancher.com/integrations-in-rancher/monitoring-and-alerting>
+- Prometheus Operator: <https://github.com/prometheus-operator/prometheus-operator>
+- Grafana: <https://grafana.com/docs/>

@@ -123,6 +123,12 @@
         system = "x86_64-darwin";
         config.allowUnfree = true;
       };
+      pythonRuntimeDeps = ps: [
+        ps.typer
+        ps.rich
+        ps."tomli-w"
+        ps.pyyaml
+      ];
       hotkeysBundles = {
         x86_64-linux = import ./lib/hotkeys.nix { inherit pkgs; };
         aarch64-darwin = import ./lib/hotkeys.nix { pkgs = pkgsAarch64Darwin; };
@@ -142,14 +148,14 @@
             overlays = [ devshell.overlays.default ];
             config.allowUnfree = true;
           };
-          pythonEnv = pkgs.python313.withPackages (ps: [
-            ps.typer
-            ps.rich
-            ps."tomli-w"
-            ps.pyyaml
-            ps.pytest
-            ps."pytest-mock"
-          ]);
+          pythonEnv = pkgs.python313.withPackages (
+            ps:
+            (pythonRuntimeDeps ps)
+            ++ [
+              ps.pytest
+              ps."pytest-mock"
+            ]
+          );
 
         in
         # Note: We can't detect hostname at evaluation time in pure Nix
@@ -599,12 +605,7 @@
             format = "pyproject";
             src = ./scripts/themectl;
             nativeBuildInputs = [ python."flit-core" ];
-            propagatedBuildInputs = [
-              python.typer
-              python.rich
-              python."tomli-w"
-              python.pyyaml
-            ];
+            propagatedBuildInputs = pythonRuntimeDeps python;
             nativeCheckInputs = [
               python.pytest
               python."pytest-mock"

@@ -318,6 +318,7 @@ If workflows show "Waiting for a runner to pick up this job...":
    ```
 
 3. **Check for failed pods**:
+
    ```bash
    kubectl get pods -n github-runners -l app.kubernetes.io/component=runner
    kubectl get ephemeralrunners -n github-runners

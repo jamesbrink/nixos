@@ -25,6 +25,9 @@ template:
       - name: runner
         image: ghcr.io/jamesbrink/github-runner-full:latest
         command: ["/home/runner/run.sh"]
+        env:
+          - name: RUNNER_LABELS
+            value: "selfhosted-l,selfhost-l"
         resources:
           requests:
             cpu: "1"

@@ -185,20 +185,20 @@ git commit -m "feat(k8s): update XL runner resources"
 
 ## Troubleshooting
 
-**Error: secrets-print command not found**
+### Error: secrets-print command not found
 
 - Make sure you're in the nix dev shell: `nix develop` or `direnv allow`
 
-**Error: Could not parse GITHUB_TOKEN from secret**
+### Error: Could not parse GITHUB_TOKEN from secret
 
 - Check the secret file format in agenix
 - Secret should contain `GITHUB_TOKEN=value` line
 
-**Error: PyYAML required**
+### Error: PyYAML required
 
 - Install PyYAML: `pip install pyyaml`
 
-**Dry run showing wrong values**
+### Dry run showing wrong values
 
 - Check secret path is correct
 - Check YAML path uses dot notation (e.g., `a.b.c` not `a.b[c]`)
