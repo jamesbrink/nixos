@@ -1,0 +1,48 @@
+# Rancher Helm Chart Values
+# Version: 2.12.3
+# Deployment: rancher.home.urandom.io
+
+# Hostname for Rancher
+hostname: rancher.home.urandom.io
+
+# Use existing wildcard certificate
+ingress:
+  tls:
+    source: secret
+    secretName: wildcard-home-urandom-io
+  ingressClassName: traefik
+
+# Replicas
+replicas: 1
+
+# Node affinity - run on hal9000
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - hal9000
+
+# Resource limits
+resources:
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+# Bootstrap password (change after first login)
+bootstrapPassword: "admin"
+
+# Additional trusted CAs
+# privateCA: false
+
+# Global settings
+global:
+  cattle:
+    psp:
+      enabled: false

@@ -146,7 +146,27 @@ Values files are located in this directory:
 
 See `containers/github-runner-full/README.md` for complete tool list.
 
-**Important**: The `github_token` field in these files is set to `REDACTED`. Replace with actual GitHub PAT when deploying:
+**Important**: The `github_token` field in these files is set to `REDACTED` to avoid committing secrets to git.
+
+**Recommended**: Use the automated deployment script that injects secrets from agenix:
+
+```bash
+# Deploy all runner tiers with automatic secret injection
+../../scripts/deploy-k8s.py github-runners
+
+# Deploy a specific tier
+../../scripts/deploy-k8s.py github-runners --tier xl
+../../scripts/deploy-k8s.py github-runners --tier l
+../../scripts/deploy-k8s.py github-runners --tier m
+../../scripts/deploy-k8s.py github-runners --tier s
+
+# Dry run (preview without deploying)
+../../scripts/deploy-k8s.py --dry-run github-runners --tier xl
+```
+
+The script automatically reads the GitHub PAT from `secrets/jamesbrink/github/quantierra-runner-token.age` and injects it at deployment time. Values files always stay with `REDACTED` in git.
+
+**Manual deployment** (if needed):
 
 ```bash
 # Option 1: Use sed to replace inline
@@ -156,7 +176,7 @@ sed 's/REDACTED/YOUR_GITHUB_PAT/' values-xl.yaml | helm install arc-runner-set-x
 helm install arc-runner-set-xl --set githubConfigSecret.github_token="YOUR_PAT" ...
 ```
 
-The PAT is also available in the existing K8s secret `gha-controller-manager` in the `github-runners` namespace.
+See `../../scripts/README-deploy-k8s.md` for full documentation on the deployment script.
 
 ## Upgrading Runner Image
 

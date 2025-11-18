@@ -1,0 +1,228 @@
+# Rancher Monitoring Helm Chart Values
+# Version: 107.2.1+up69.8.2-rancher.23
+# Based on kube-prometheus-stack
+
+# Global settings
+global:
+  cattle:
+    psp:
+      enabled: false
+
+# Prometheus configuration
+prometheus:
+  prometheusSpec:
+    # Resource limits
+    resources:
+      requests:
+        cpu: 750m
+        memory: 1750Mi
+      limits:
+        cpu: 1000m
+        memory: 2500Mi
+
+    # Retention
+    retention: 30d
+    retentionSize: 45GB
+
+    # Storage
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+
+    # Node affinity - run Prometheus on hal9000
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - hal9000
+
+    # Service monitors - scrape all nodes
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+    # Additional scrape configs for all nodes
+    additionalScrapeConfigs: []
+
+# Grafana configuration
+grafana:
+  enabled: true
+
+  # Admin credentials
+  adminPassword: admin
+
+  # Resources
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 200Mi
+
+  # Persistence for dashboards
+  persistence:
+    enabled: true
+    size: 10Gi
+
+  # Node affinity - run on hal9000
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - hal9000
+
+  # Ingress for Grafana - uses existing wildcard cert
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.tls: "true"
+    hosts:
+      - grafana.home.urandom.io
+    tls:
+      - secretName: wildcard-home-urandom-io
+        hosts:
+          - grafana.home.urandom.io
+
+  # Dashboard discovery across all namespaces
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: ALL
+      provider:
+        allowUiUpdates: true
+    datasources:
+      enabled: true
+
+# Alertmanager configuration
+alertmanager:
+  enabled: true
+
+  alertmanagerSpec:
+    # Resources
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 1000m
+        memory: 500Mi
+
+    # Storage
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+    # Node affinity - run on hal9000
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - hal9000
+
+# Prometheus Operator
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 500Mi
+
+  # Node affinity - run on hal9000
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - hal9000
+
+# Node Exporter - runs as DaemonSet on ALL nodes
+nodeExporter:
+  enabled: true
+  # DaemonSet will automatically deploy to all nodes
+
+# Kube State Metrics
+kubeStateMetrics:
+  enabled: true
+
+# Kube State Metrics subchart configuration
+kube-state-metrics:
+  # Node affinity - run on hal9000
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - hal9000
+
+# CoreDNS monitoring
+coreDns:
+  enabled: true
+
+# Kubelet monitoring
+kubelet:
+  enabled: true
+
+# API Server monitoring
+kubeApiServer:
+  enabled: true
+
+# Controller Manager monitoring
+kubeControllerManager:
+  enabled: true
+
+# Scheduler monitoring
+kubeScheduler:
+  enabled: true
+
+# Etcd monitoring
+kubeEtcd:
+  enabled: true
+
+# Proxy monitoring
+kubeProxy:
+  enabled: true
+
+# Prometheus Adapter - metrics API
+prometheus-adapter:
+  enabled: true
+
+  # Node affinity - run on hal9000
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - hal9000
