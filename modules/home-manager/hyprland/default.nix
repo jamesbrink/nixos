@@ -223,6 +223,7 @@ in
 
       # Startup services
       "exec-once" = [
+        "${pkgs.systemd}/bin/systemctl --user import-environment DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP XDG_SESSION_TYPE && ${pkgs.systemd}/bin/systemctl --user restart hypridle.service"
         # Waybar is now managed by systemd service (see programs.waybar.systemd.enable below)
         # Mako is now managed by services.mako (see below)
         "swayosd-server" # OSD server for volume/brightness overlays
@@ -1978,13 +1979,11 @@ in
   services.hypridle = {
     enable = true;
     settings = {
-      general = {
-        lock_cmd = "pidof hyprlock || hyprlock";
-      };
+      general = { };
       listener = [
         {
-          timeout = 300;
-          on-timeout = "pidof hyprlock || omarchy-launch-screensaver";
+          timeout = 120;
+          on-timeout = "omarchy-launch-screensaver";
         }
       ];
     };
