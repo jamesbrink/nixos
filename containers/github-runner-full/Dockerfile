@@ -172,14 +172,6 @@ RUN wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-p
     rm -rf /var/lib/apt/lists/*
 
 # ============================================================================
-# Nix (multi-user installation)
-# ============================================================================
-RUN curl -L https://nixos.org/nix/install -o /tmp/nix-install.sh && \
-    bash /tmp/nix-install.sh --daemon && \
-    rm /tmp/nix-install.sh && \
-    echo '. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' >> /etc/profile
-
-# ============================================================================
 # Docker CLI
 # ============================================================================
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
@@ -284,9 +276,8 @@ RUN apt-get update && apt-get install -y \
 # ============================================================================
 RUN echo "runner ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Add Go and Nix to runner user profile
-RUN echo 'export PATH="/usr/local/go/bin:${PATH}"' >> /home/runner/.bashrc && \
-    echo '. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' >> /home/runner/.bashrc
+# Add Go to runner user profile
+RUN echo 'export PATH="/usr/local/go/bin:${PATH}"' >> /home/runner/.bashrc
 
 # Switch back to runner user
 USER runner

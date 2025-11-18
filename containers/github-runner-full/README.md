@@ -14,7 +14,6 @@ Custom GitHub Actions runner image extending the official `ghcr.io/actions/actio
 - **Ruby**: Latest stable (with bundler)
 - **Java**: OpenJDK 17 LTS (with Maven, Gradle)
 - **.NET**: 8.0 LTS SDK
-- **Nix**: Multi-user installation
 
 ### Infrastructure & Cloud CLIs
 
