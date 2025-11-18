@@ -4,8 +4,8 @@ githubConfigSecret:
 
 runnerGroup: "quantierra-gha"
 
-minRunners: 2
-maxRunners: 6
+minRunners: 3
+maxRunners: 8
 
 runnerScaleSetName: "selfhost-m"
 
@@ -21,6 +21,13 @@ template:
                   values:
                     - selfhost-m
                     - selfhost-l
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: runner
     containers:
       - name: runner
         image: ghcr.io/jamesbrink/github-runner-full:latest
