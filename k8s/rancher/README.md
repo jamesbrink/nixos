@@ -113,6 +113,15 @@ helm upgrade --install rancher-monitoring rancher-charts/rancher-monitoring \
   --values k8s/rancher/monitoring-values.yaml \
   --wait \
   --timeout 10m
+
+# Sync Grafana proxy config for Rancher UI embedding
+kubectl create configmap grafana-nginx-proxy-config \
+  -n cattle-monitoring-system \
+  --from-file=nginx.conf=k8s/rancher/grafana-nginx.conf \
+  --dry-run=client -o yaml | kubectl apply -f -
+kubectl rollout restart deployment/rancher-monitoring-grafana -n cattle-monitoring-system
+
+> **Note**: `k8s/rancher/monitoring-values.yaml` pins `global.cattle.clusterId` / `clusterName` to `local` and leaves `grafana.ini.server.domain` blank so Grafana respects whichever host (Rancher proxy or grafana.home.urandom.io) served the UI. Without these values Rancher opens Grafana to a 404 and login never sticks.
 ```
 
 **Note**: See [INSTALL-MONITORING.md](INSTALL-MONITORING.md) for alternative Rancher UI-based installation method.

@@ -39,3 +39,9 @@ Then verify with `gh run view <run_id> -R <owner>/<repo> --json status,conclusio
 ## Core References
 
 `VISION.md` captures fleet goals and guardrails. `TECH_STACK.md` lists the supported platforms, languages, and tooling. `DESIGN.md` explains repository layout and ownership boundaries. `STANDARDS.md` codifies testing, documentation, and language-specific requirements (including the Python `themectl` rules). Consult these before landing changes.
+
+## Rancher Monitoring Deployment
+
+- Preferred workflow: `./scripts/deploy-rancher.sh`. It deploys Rancher + monitoring and immediately reapplies `k8s/rancher/grafana-nginx.conf` to the `grafana-nginx-proxy-config` ConfigMap before restarting Grafana so the Rancher UI proxy stops 404ing.
+- Alternative: `./scripts/deploy-k8s.py helm rancher-monitoring rancher-charts/rancher-monitoring -n cattle-monitoring-system -f k8s/rancher/monitoring-values.yaml`. The helper now mirrors the same config sync after Helm completes, so both entry points stay consistent.
+- After either path, sanity-check both the Rancher Monitoring tab (proxied) and <https://grafana.home.urandom.io> (direct ingress).

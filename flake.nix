@@ -327,6 +327,28 @@
               }
 
               {
+                name = "deploy-k8s";
+                category = "deployment";
+                help = "Invoke the Kubernetes helper (see ./scripts/deploy-k8s.py --help)";
+                command = ''$PRJ_ROOT/scripts/deploy-k8s.py "$@"'';
+              }
+
+              {
+                name = "deploy-rancher-monitoring";
+                category = "deployment";
+                help = "Deploy / refresh Rancher monitoring via deploy-k8s.py";
+                command = ''
+                  $PRJ_ROOT/scripts/deploy-k8s.py \
+                    helm \
+                    rancher-monitoring \
+                    rancher-charts/rancher-monitoring \
+                    --namespace cattle-monitoring-system \
+                    --values k8s/rancher/monitoring-values.yaml \
+                    "$@"
+                '';
+              }
+
+              {
                 name = "check";
                 category = "development";
                 help = "Check the Nix expressions for errors";

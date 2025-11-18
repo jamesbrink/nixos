@@ -5,6 +5,8 @@
 # Global settings
 global:
   cattle:
+    clusterId: local
+    clusterName: local
     psp:
       enabled: false
 
@@ -58,6 +60,9 @@ grafana:
 
   # Admin credentials
   adminPassword: admin
+  grafana.ini:
+    server:
+      domain: ""
 
   # Resources
   resources:

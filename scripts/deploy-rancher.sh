@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 RANCHER_VALUES="$PROJECT_ROOT/k8s/rancher/values.yaml"
 MONITORING_VALUES="$PROJECT_ROOT/k8s/rancher/monitoring-values.yaml"
+GRAFANA_NGINX_CONF="$PROJECT_ROOT/k8s/rancher/grafana-nginx.conf"
 
 RANCHER_VERSION="2.12.3"
 
@@ -97,6 +98,17 @@ helm upgrade --install rancher-monitoring rancher-charts/rancher-monitoring \
     --values "$MONITORING_VALUES" \
     --wait \
     --timeout 10m
+
+if [[ -f "$GRAFANA_NGINX_CONF" ]]; then
+    printf "\nSyncing Grafana proxy config...\n"
+    kubectl create configmap grafana-nginx-proxy-config \
+        -n $MONITORING_NAMESPACE \
+        --from-file=nginx.conf="$GRAFANA_NGINX_CONF" \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+    echo "Restarting Grafana to pick up nginx changes..."
+    kubectl rollout restart deployment/rancher-monitoring-grafana -n $MONITORING_NAMESPACE --timeout=5m
+fi
 
 echo ""
 echo "========================================="

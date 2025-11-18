@@ -77,6 +77,9 @@ class HelmDeployer:
         self.project_root = project_root
         self.secret_manager = secret_manager
         self.dry_run = dry_run
+        self.rancher_grafana_conf = (
+            self.project_root / "k8s" / "rancher" / "grafana-nginx.conf"
+        )
 
     def inject_secrets(self, values: Dict, secret_mappings: Dict[str, str]) -> Dict:
         """
@@ -156,6 +159,7 @@ class HelmDeployer:
 
         # Handle values
         temp_file = None
+        success = False
         try:
             if values_dict:
                 # Write values to temp file
@@ -179,15 +183,104 @@ class HelmDeployer:
             print(f"Deploying {release_name} to namespace {namespace}...")
             subprocess.run(cmd, check=True, text=True)
             print(f"✓ Successfully deployed {release_name}")
-            return True
+            success = True
 
         except subprocess.CalledProcessError as e:
             print(f"✗ Failed to deploy {release_name}: {e}", file=sys.stderr)
-            return False
+            success = False
 
         finally:
             if temp_file and os.path.exists(temp_file.name):
                 os.unlink(temp_file.name)
+
+        if success:
+            post_hook_ok = self._post_deploy_hook(release_name, namespace)
+            if not post_hook_ok:
+                return False
+
+        return success
+
+    def _post_deploy_hook(self, release_name: str, namespace: str) -> bool:
+        if (
+            release_name == "rancher-monitoring"
+            and namespace == "cattle-monitoring-system"
+        ):
+            return self._sync_rancher_grafana_proxy(namespace)
+        return True
+
+    def _sync_rancher_grafana_proxy(self, namespace: str) -> bool:
+        if not self.rancher_grafana_conf.exists():
+            print(
+                f"✗ Grafana nginx config missing: {self.rancher_grafana_conf}",
+                file=sys.stderr,
+            )
+            return False
+
+        if self.dry_run:
+            print(
+                "[DRY RUN] Would sync grafana-nginx-proxy-config from "
+                f"{self.rancher_grafana_conf}"
+            )
+            return True
+
+        try:
+            print("Syncing Grafana proxy config for Rancher monitoring...")
+            cm_render = subprocess.run(
+                [
+                    "kubectl",
+                    "create",
+                    "configmap",
+                    "grafana-nginx-proxy-config",
+                    "-n",
+                    namespace,
+                    f"--from-file=nginx.conf={self.rancher_grafana_conf}",
+                    "--dry-run=client",
+                    "-o",
+                    "yaml",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+
+            subprocess.run(
+                ["kubectl", "apply", "-f", "-"],
+                input=cm_render.stdout,
+                text=True,
+                check=True,
+            )
+
+            print("Restarting Grafana deployment to pick up proxy changes...")
+            subprocess.run(
+                [
+                    "kubectl",
+                    "rollout",
+                    "restart",
+                    "deployment/rancher-monitoring-grafana",
+                    "-n",
+                    namespace,
+                ],
+                check=True,
+                text=True,
+            )
+            subprocess.run(
+                [
+                    "kubectl",
+                    "rollout",
+                    "status",
+                    "deployment/rancher-monitoring-grafana",
+                    "-n",
+                    namespace,
+                    "--timeout",
+                    "5m",
+                ],
+                check=True,
+                text=True,
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"✗ Failed to sync Grafana proxy config: {e}", file=sys.stderr)
+            return False
 
 
 class GitHubRunnersDeployer:
