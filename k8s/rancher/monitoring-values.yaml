@@ -171,6 +171,16 @@ prometheusOperator:
 nodeExporter:
   enabled: true
   # DaemonSet will automatically deploy to all nodes
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: nodename
 
 # Kube State Metrics
 kubeStateMetrics:
@@ -196,6 +206,25 @@ coreDns:
 # Kubelet monitoring
 kubelet:
   enabled: true
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: nodename
+    cAdvisorRelabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: instance
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: nodename
 
 # API Server monitoring
 kubeApiServer:
