@@ -171,16 +171,23 @@ prometheusOperator:
 nodeExporter:
   enabled: true
   # DaemonSet will automatically deploy to all nodes
-  serviceMonitor:
-    relabelings:
-      - action: replace
-        sourceLabels:
-          - __meta_kubernetes_pod_node_name
-        targetLabel: instance
-      - action: replace
-        sourceLabels:
-          - __meta_kubernetes_pod_node_name
-        targetLabel: nodename
+
+prometheus-node-exporter:
+  prometheus:
+    monitor:
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          regex: (.+)
+          replacement: $1
+          targetLabel: instance
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          regex: (.+)
+          replacement: $1
+          targetLabel: nodename
 
 # Kube State Metrics
 kubeStateMetrics:
@@ -210,20 +217,45 @@ kubelet:
     relabelings:
       - action: replace
         sourceLabels:
-          - __meta_kubernetes_pod_node_name
+          - __metrics_path__
+        targetLabel: metrics_path
+      - action: replace
+        sourceLabels:
+          - node
+        regex: (.+)
+        replacement: $1
         targetLabel: instance
       - action: replace
         sourceLabels:
-          - __meta_kubernetes_pod_node_name
+          - node
+        regex: (.+)
+        replacement: $1
         targetLabel: nodename
-    cAdvisorRelabelings:
+    metricRelabelings:
       - action: replace
         sourceLabels:
-          - __meta_kubernetes_pod_node_name
+          - node
+        regex: (.+)
+        replacement: $1
         targetLabel: instance
       - action: replace
         sourceLabels:
-          - __meta_kubernetes_pod_node_name
+          - node
+        regex: (.+)
+        replacement: $1
+        targetLabel: nodename
+    cAdvisorMetricRelabelings:
+      - action: replace
+        sourceLabels:
+          - node
+        regex: (.+)
+        replacement: $1
+        targetLabel: instance
+      - action: replace
+        sourceLabels:
+          - node
+        regex: (.+)
+        replacement: $1
         targetLabel: nodename
 
 # API Server monitoring
