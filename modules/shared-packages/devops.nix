@@ -10,7 +10,7 @@ let
         # sha256 will be computed on first build
       })
       {
-        system = pkgs.system;
+        system = pkgs.stdenv.hostPlatform.system;
         config.allowUnfree = true;
       };
 in

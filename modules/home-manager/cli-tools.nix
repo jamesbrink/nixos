@@ -5,6 +5,47 @@
   ...
 }:
 
+let
+  deltaBaseConfig = {
+    enable = true;
+    options = {
+      navigate = true;
+      light = false;
+      line-numbers = true;
+      syntax-theme = "gruvbox-dark";
+      features = "decorations";
+      decorations = {
+        commit-decoration-style = "bold yellow box ul";
+        file-style = "bold yellow ul";
+        file-decoration-style = "none";
+      };
+    };
+  };
+
+  gitAliasConfig = {
+    co = "checkout";
+    ci = "commit";
+    st = "status";
+    br = "branch";
+    hist = "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short";
+    type = "cat-file -t";
+    dump = "cat-file -p";
+  };
+
+  gitExtraConfig = {
+    init.defaultBranch = "main";
+    pull.rebase = true;
+    push.autoSetupRemote = true;
+    merge.conflictstyle = "diff3";
+    diff.colorMoved = "default";
+    rerere.enabled = true;
+  };
+
+  gitSettingsConfig = {
+    alias = gitAliasConfig;
+  }
+  // gitExtraConfig;
+in
 {
   home.packages =
     with pkgs;
@@ -68,7 +109,7 @@
       xclip # Clipboard support on Linux
     ];
 
-  programs = {
+  programs = ({
     eza = {
       enable = true;
       enableZshIntegration = false; # Using custom aliases in zsh.nix instead
@@ -121,40 +162,21 @@
       };
     };
 
-    git = {
+    git = ({
       enable = true;
-      delta = {
-        enable = true;
-        options = {
-          navigate = true;
-          light = false;
-          line-numbers = true;
-          syntax-theme = "gruvbox-dark";
-          features = "decorations";
-          decorations = {
-            commit-decoration-style = "bold yellow box ul";
-            file-style = "bold yellow ul";
-            file-decoration-style = "none";
-          };
-        };
-      };
-      aliases = {
-        co = "checkout";
-        ci = "commit";
-        st = "status";
-        br = "branch";
-        hist = "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short";
-        type = "cat-file -t";
-        dump = "cat-file -p";
-      };
-      extraConfig = {
-        init.defaultBranch = "main";
-        pull.rebase = true;
-        push.autoSetupRemote = true;
-        merge.conflictstyle = "diff3";
-        diff.colorMoved = "default";
-        rerere.enabled = true;
-      };
+    })
+    // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      settings = gitSettingsConfig;
+    }
+    // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
+      aliases = gitAliasConfig;
+      extraConfig = gitExtraConfig;
+      delta = deltaBaseConfig;
+    };
+  })
+  // lib.optionalAttrs pkgs.stdenv.isDarwin {
+    delta = deltaBaseConfig // {
+      enableGitIntegration = true;
     };
   };
 

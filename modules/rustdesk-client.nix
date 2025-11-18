@@ -23,7 +23,7 @@
 
   # Install RustDesk from unstable (latest version) and dummy X driver
   environment.systemPackages = [
-    inputs.nixos-unstable.legacyPackages.${pkgs.system}.rustdesk
+    inputs.nixos-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.rustdesk
     pkgs.xorg.xf86videodummy
   ];
 
@@ -76,7 +76,9 @@
     script = ''
       # Read password from agenix secret
       RUSTDESK_PASSWORD=$(${pkgs.coreutils}/bin/cat ${config.age.secrets.rustdesk-password.path})
-      RUSTDESK_BIN="${inputs.nixos-unstable.legacyPackages.${pkgs.system}.rustdesk}/bin/rustdesk"
+      RUSTDESK_BIN="${
+        inputs.nixos-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.rustdesk
+      }/bin/rustdesk"
 
       # Wait for display to be ready
       for i in {1..30}; do
@@ -130,7 +132,9 @@
         "XAUTHORITY=/run/lightdm/root/:0"
       ];
       # Run RustDesk in service mode without GUI window
-      ExecStart = "${inputs.nixos-unstable.legacyPackages.${pkgs.system}.rustdesk}/bin/rustdesk --server";
+      ExecStart = "${
+        inputs.nixos-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.rustdesk
+      }/bin/rustdesk --server";
       Restart = "always";
       RestartSec = 10;
       # Give it time to start properly

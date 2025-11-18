@@ -8,27 +8,32 @@ The following warnings appear during `darwin-rebuild switch` and need to be addr
 
 ### SSH Configuration
 
-- [ ] `programs.ssh.serverAliveCountMax` → `programs.ssh.matchBlocks.*.serverAliveCountMax` (in `modules/home-manager/shell`)
-- [ ] `programs.ssh.serverAliveInterval` → `programs.ssh.matchBlocks.*.serverAliveInterval` (in `modules/home-manager/shell`)
-- [ ] `programs.ssh` default values will be removed - set `programs.ssh.enableDefaultConfig = false` and manually set defaults at `programs.ssh.matchBlocks."*"`
+- [x] `programs.ssh.serverAliveCountMax` → `programs.ssh.matchBlocks.*.serverAliveCountMax` (in `modules/home-manager/shell`)
+- [x] `programs.ssh.serverAliveInterval` → `programs.ssh.matchBlocks.*.serverAliveInterval` (in `modules/home-manager/shell`)
+- [x] `programs.ssh` default values will be removed - set `programs.ssh.enableDefaultConfig = false` and manually set defaults at `programs.ssh.matchBlocks."*"`
 
 ### Git Configuration
 
-- [ ] `programs.git.aliases` → `programs.git.settings.alias` (in `modules/home-manager/cli-tools.nix`)
-- [ ] `programs.git.userEmail` → `programs.git.settings.user.email` (in `users/regular/jamesbrink-shared.nix`)
-- [ ] `programs.git.userName` → `programs.git.settings.user.name` (in `users/regular/jamesbrink-shared.nix`)
-- [ ] `programs.git.extraConfig` → `programs.git.settings` (in `modules/home-manager/cli-tools.nix`)
+- [x] `programs.git.aliases` → `programs.git.settings.alias` (in `modules/home-manager/cli-tools.nix`)
+- [x] `programs.git.userEmail` → `programs.git.settings.user.email` (in `users/regular/jamesbrink-shared.nix`)
+- [x] `programs.git.userName` → `programs.git.settings.user.name` (in `users/regular/jamesbrink-shared.nix`)
+- [x] `programs.git.extraConfig` → `programs.git.settings` (in `modules/home-manager/cli-tools.nix`)
 
 ### Git Delta Configuration
 
-- [ ] `programs.git.delta.options` → `programs.delta.options` (in `modules/home-manager/cli-tools.nix`)
-- [ ] `programs.git.delta.enable` → `programs.delta.enable` (in `modules/home-manager/cli-tools.nix`)
-- [ ] `programs.delta.enableGitIntegration` needs explicit enablement (currently deprecated auto-enable)
+- [x] `programs.git.delta.options` → `programs.delta.options` (in `modules/home-manager/cli-tools.nix`)
+- [x] `programs.git.delta.enable` → `programs.delta.enable` (in `modules/home-manager/cli-tools.nix`)
+- [x] `programs.delta.enableGitIntegration` needs explicit enablement (currently deprecated auto-enable); explicitly set `programs.delta.enableGitIntegration = true`
 
 ### System References
 
-- [ ] Replace `system` with `stdenv.hostPlatform.system` (2 occurrences)
-- [ ] Fix `builtins.toFile` usage for `options.json` - need proper store context instead of referencing `/nix/store/1wnxdqr2n1pj80lirh9pzsymslx8zd9l-source`
+- [x] Replace `system` with `stdenv.hostPlatform.system` (2 occurrences)
+- [x] Fix `builtins.toFile` usage for `options.json` - need proper store context instead of directly referencing Nix store paths (currently `/nix/store/f640ps0hcp7w5jzg18djf8gdhl6r2rnl-source`)
+- [x] Fix `builtins.derivation` usage for `themectl-themes.json` - add correct store references so the derivation no longer depends on `/nix/store/pcqrn6dlqxb5mhm9f876z2g32zvxkpqp-source` without context
+
+### Nix Search Path
+
+- [ ] Resolve missing `/nix/var/nix/profiles/per-user/root/channels` entry so Nix doesn’t warn about ignored search paths during builds
 
 ## Theme Automation Rewrite (In Progress)
 

@@ -46,15 +46,11 @@
   # Once identified, we can selectively re-enable the non-problematic options
   programs.ssh = {
     enable = true;
-    # COMMENTED OUT: ControlMaster can cause connection issues
-    # controlMaster = "auto";
-    # controlPath = "~/.ssh/sockets/%r@%h-%p";
-    # controlPersist = "600";
-    serverAliveInterval = 60;
-    serverAliveCountMax = 2;
-
-    # Compression moved to matchBlocks as per deprecation warning
-    matchBlocks."*".compression = true;
+    matchBlocks."*" = {
+      serverAliveInterval = 60;
+      serverAliveCountMax = 2;
+      compression = true;
+    };
 
     extraConfig = ''
       # COMMENTED OUT: SendEnv can cause issues if remote server doesn't accept these
@@ -132,6 +128,9 @@
         CheckHostIP no
         UserKnownHostsFile=/dev/null
     '';
+  }
+  // lib.optionalAttrs pkgs.stdenv.isDarwin {
+    enableDefaultConfig = false;
   };
 
   # Create SSH sockets directory

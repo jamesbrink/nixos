@@ -14,7 +14,7 @@ in
     with pkgs;
     [
       age
-      inputs.agenix.packages.${pkgs.system}.default
+      inputs.agenix.packages.${pkgs.stdenv.hostPlatform.system}.default
       bandwhich
       bfg-repo-cleaner
       bzip2
@@ -128,6 +128,6 @@ in
       meld
       wireshark
       # Zen Browser (twilight version for reproducibility)
-      inputs.zen-browser.packages.${pkgs.system}.twilight
+      inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.twilight
     ];
 }

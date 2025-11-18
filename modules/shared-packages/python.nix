@@ -82,7 +82,6 @@ let
 
       # Existing packages from default.nix
       pynvim # Neovim support (keeping from original)
-      markitdown # Markdown processing (keeping from original)
     ]
   );
 in
@@ -105,7 +104,6 @@ in
 
       # Individual packages that were in original (for direct access)
       python313Packages.boto3 # AWS SDK (keeping from original)
-      python313Packages.markitdown # Markdown processing (keeping from original)
       python313Packages.pip # Package installer (keeping from original)
       python313Packages.pynvim # Neovim support (keeping from original)
 

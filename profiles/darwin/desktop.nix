@@ -12,10 +12,16 @@
     ../../modules/darwin/file-sharing.nix
   ];
 
+  documentation = {
+    enable = false;
+    man.enable = false;
+    info.enable = false;
+    doc.enable = false;
+  };
+
   # Desktop-specific packages
   environment.systemPackages = with pkgs; [
     # Terminal and CLI tools
-    # alacritty # Moved to Homebrew cask for better performance on Darwin
     ncurses # Provides terminfo database
     iterm2
 
@@ -25,12 +31,9 @@
     # System utilities
     rectangle # Window management
     stats # System monitor
-    istat-menus
 
     # Productivity
     raycast
-    # obsidian # GUI app - use homebrew cask instead
-    # notion # Not available on darwin - use homebrew cask instead
   ];
 
   # Homebrew configuration
@@ -97,7 +100,6 @@
     # Mac App Store apps
     masApps = {
       "Amphetamine" = 937984704;
-      # "Spark Desktop" = 6445813049; # Disabled - fails to install via mas
       "Xcode" = 497799835;
     };
   };

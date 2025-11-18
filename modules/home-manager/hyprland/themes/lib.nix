@@ -5,15 +5,13 @@
 let
   # Repository root (used to locate shared assets such as the Omarchy submodule)
   repoRoot = ../../../../.;
-  repoRootStr = builtins.toString repoRoot;
 
   # Upstream Omarchy themes (git submodule)
-  omarchyBase =
-    if omarchySrc != null then builtins.toString omarchySrc else repoRootStr + "/external/omarchy";
+  omarchyBase = if omarchySrc != null then omarchySrc else repoRoot + "/external/omarchy";
   omarchyThemesDir = omarchyBase + "/themes";
 
   # Optional local overrides. Leave the directory empty (or absent) if unused.
-  localWallpapersDir = repoRootStr + "/modules/home-manager/hyprland/wallpapers";
+  localWallpapersDir = repoRoot + "/modules/home-manager/hyprland/wallpapers";
 
   # Helper to locate a wallpaper image for a given theme/filename pair.
   # Preference order: local overrides → Omarchy submodule.
@@ -171,14 +169,18 @@ let
 
   themeDefs = map (themeFile: import themeFile) themeFiles;
 
+  resolveWallpaperPaths =
+    theme: map (wallpaper: getWallpaperSource theme.name wallpaper) (theme.wallpapers or [ ]);
+
   buildMetadata =
     theme:
     let
       slug = lowercase (if theme ? slug && theme.slug != "" then theme.slug else slugify theme.name);
-      wallpapers = map (wallpaper: getWallpaperSource theme.name wallpaper) (theme.wallpapers or [ ]);
+      wallpaperPaths = resolveWallpaperPaths theme;
     in
     {
-      inherit slug wallpapers;
+      inherit slug;
+      wallpapers = wallpaperPaths;
       name = theme.name;
       displayName = theme.displayName or theme.name;
       kind = theme.kind or null;
@@ -197,6 +199,8 @@ let
 
   themeMetadata = map buildMetadata themeDefs;
 
+  wallpaperStoreRefs = builtins.concatLists (map resolveWallpaperPaths themeDefs);
+
   themeMetadataJSON = builtins.toJSON {
     version = 1;
     themes = themeMetadata;
@@ -210,6 +214,7 @@ in
     themeDefs
     themeMetadata
     themeMetadataJSON
+    wallpaperStoreRefs
     ghosttyConfigText
     ghosttyThemeName
     ghosttyThemeMap

@@ -454,7 +454,9 @@ class RancherDeployer:
 
     def _ensure_files(self) -> bool:
         missing = [
-            path for path in [self.rancher_values, self.monitoring_values] if not path.exists()
+            path
+            for path in [self.rancher_values, self.monitoring_values]
+            if not path.exists()
         ]
         if missing:
             for path in missing:
@@ -507,7 +509,9 @@ class RancherDeployer:
             print(f"Error ensuring namespace {namespace}: {e}", file=sys.stderr)
             return False
 
-    def _copy_wildcard_secret(self, target_namespace: str, warn_only: bool = False) -> bool:
+    def _copy_wildcard_secret(
+        self, target_namespace: str, warn_only: bool = False
+    ) -> bool:
         try:
             secret_yaml = subprocess.run(
                 [
@@ -601,9 +605,7 @@ def main():
     )
 
     # Rancher command
-    subparsers.add_parser(
-        "rancher", help="Deploy Rancher server plus monitoring stack"
-    )
+    subparsers.add_parser("rancher", help="Deploy Rancher server plus monitoring stack")
 
     # Global options
     parser.add_argument(

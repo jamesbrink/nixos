@@ -52,11 +52,26 @@ in
         "${homeDir}/.ssh/config_external"
       ];
 
-      # Git user configuration
-      programs.git = {
-        userName = "James Brink";
-        userEmail = "brink.james@gmail.com";
+      manual = {
+        html.enable = false;
+        manpages.enable = false;
       };
+
+      # Git user configuration
+      programs.git =
+        { }
+        // lib.optionalAttrs pkgs.stdenv.isDarwin {
+          settings = {
+            user = {
+              name = "James Brink";
+              email = "brink.james@gmail.com";
+            };
+          };
+        }
+        // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
+          userName = "James Brink";
+          userEmail = "brink.james@gmail.com";
+        };
 
       # Platform-specific update aliases
       programs.zsh.shellAliases.update =

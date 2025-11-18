@@ -10,7 +10,7 @@ let
         sha256 = "11p1dpmm7nk15mb60m1ii4jywydy3g7x5qpyr9yarlzfl2c91x1z";
       })
       {
-        system = pkgs.system;
+        system = pkgs.stdenv.hostPlatform.system;
         config.allowUnfree = true;
       };
 in
@@ -25,15 +25,12 @@ in
     git-crypt
     git-secrets
     gnumake
-    # helm # Not available on darwin - use homebrew instead
-    # helm-ls # Depends on helm
     infracost
     jdk
     kind
     kubectl
     kubectx
     kubescape
-    # nodejs # Using Homebrew's version instead (provides npm and npx)
     opentofu
     packer
     postgresql
@@ -45,14 +42,12 @@ in
     shellcheck
     sshpass
     starship
-    # tailscale # Use homebrew cask instead (tailscale-app)
     talosctl
     pinnedNixpkgs.terraform-docs # Pinned to working revision due to Go compilation issues
     terraform-lsp
     tflint
     tig
     treefmt
-    # uv # Moved to Homebrew for darwin to match old setup
     webhook
     websocat
     websocketd

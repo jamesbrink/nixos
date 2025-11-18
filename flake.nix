@@ -612,7 +612,17 @@
           themeLib = import ./modules/home-manager/hyprland/themes/lib.nix {
             omarchySrc = inputs.omarchy;
           };
-          themeData = pkgs.writeText "themectl-themes.json" themeLib.themeMetadataJSON;
+          themeData =
+            pkgs.runCommand "themectl-themes.json"
+              {
+                inherit (themeLib) wallpaperStoreRefs;
+                omarchySource = inputs.omarchy;
+              }
+              ''
+                cat > "$out" <<'EOF'
+                ${themeLib.themeMetadataJSON}
+                EOF
+              '';
           themectlPkg = python.buildPythonApplication {
             pname = "themectl";
             version = "0.1.0";

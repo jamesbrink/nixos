@@ -52,7 +52,6 @@
 
       # Security tools
       age
-      # agenix CLI temporarily disabled due to nix 2.28.3 build failure with Determinate Nix
 
       # macOS specific
       mas # Mac App Store CLI

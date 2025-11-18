@@ -74,7 +74,7 @@ in
                   sha256 = "1n7pii2bcx3k4yfjma47fdf4pm8k005a9ls0kscykx5j0rdllja3";
                 })
                 {
-                  system = pkgs.system;
+                  system = pkgs.stdenv.hostPlatform.system;
                   config.allowUnfree = true;
                 };
           in
