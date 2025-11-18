@@ -28,7 +28,7 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
   - `netboot/`, `restic-*.nix`, `ghostty-terminfo.nix`, etc., for focused features.
 - `pkgs/` and `overlays/` – custom package definitions (PixInsight, Ollama, netboot assets, helper tooling) pulled into the flake outputs.
 - `users/` – user-specific Home Manager overrides and preferences.
-- `scripts/` – deployment helpers (`deploy*`, `health-check.sh`, `rollback.sh`), Rancher/Kubernetes bootstrap (`deploy-rancher.sh`, `deploy-k8s.py`), restic tooling, GC, menubar toggles, hotkey automation, and full secrets lifecycle scripts (`secrets-edit.sh`, `secrets-rekey.sh`, scanners).
+- `scripts/` – deployment helpers (`deploy*`, `health-check.sh`, `rollback.sh`), Kubernetes automation (`deploy-k8s.py` for Rancher + ARC runners), restic tooling, GC, menubar toggles, hotkey automation, and full secrets lifecycle scripts (`secrets-edit.sh`, `secrets-rekey.sh`, scanners).
 - `k8s/` and `containers/` – Rancher/monitoring Helm values, GitHub runner containers, and supporting manifests.
 - `docs/` – scenario guides (`pixinsight-*.md`, `desktop-environment-switching.md`, `samba-setup.md`, `github-actions.md`, etc.).
 - `config/` – YAML configs consumed by scripts (e.g., hotkeys, themectl automation); `lib/hotkeys.nix` exposes the same data inside Nix.
@@ -105,7 +105,7 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 - Dev shell packages include `nixfmt`, `treefmt`, `prettier`, `age`, `openssh`, Python 3.13 with pytest/typer/rich, Ruff, BasedPyright, markdownlint, and other helpers so agents can lint/test without global installs.
 - Secrets hygiene: run `scripts/scan-gitleaks.sh`, `scripts/scan-secrets.sh --all`, or the pre-commit hooks before pushing; never store plaintext outside `secrets/`.
 - System hygiene: `scripts/restic-*.sh` handle backups, `scripts/nix-gc.sh` cleans stores, and `scripts/show-generations.sh` plus `scripts/rollback.sh` make rollbacks explicit.
-- Rancher monitoring rollouts use `scripts/deploy-rancher.sh` (or `scripts/deploy-k8s.py helm ...`), which copies `k8s/rancher/grafana-nginx.conf` into the Grafana proxy ConfigMap and restarts Grafana automatically—verify via Rancher UI and <https://grafana.home.urandom.io>.
+- Rancher monitoring rollouts use `scripts/deploy-k8s.py rancher`, which syncs `k8s/rancher/grafana-nginx.conf` into the Grafana proxy ConfigMap and restarts Grafana automatically—verify via Rancher UI and <https://grafana.home.urandom.io>.
 - GitHub Actions troubleshooting steps live in `docs/github-actions.md`; force-cancel stuck runs before deleting them.
 
 ## Conventions

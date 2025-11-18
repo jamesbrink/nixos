@@ -350,6 +350,224 @@ class GitHubRunnersDeployer:
         return success
 
 
+class RancherDeployer:
+    """Deploy Rancher server plus monitoring stack."""
+
+    RANCHER_RELEASE = "rancher"
+    RANCHER_CHART = "rancher-stable/rancher"
+    RANCHER_NAMESPACE = "cattle-system"
+    RANCHER_VERSION = "2.12.3"
+
+    MONITORING_RELEASE = "rancher-monitoring"
+    MONITORING_CHART = "rancher-charts/rancher-monitoring"
+    MONITORING_NAMESPACE = "cattle-monitoring-system"
+    MONITORING_TIMEOUT = "10m"
+
+    WILDCARD_SECRET = "wildcard-home-urandom-io"
+    WILDCARD_SOURCE_NAMESPACE = "traefik"
+
+    def __init__(self, project_root: Path, helm_deployer: HelmDeployer):
+        self.project_root = project_root
+        self.helm_deployer = helm_deployer
+        self.dry_run = helm_deployer.dry_run
+        self.rancher_values = project_root / "k8s" / "rancher" / "values.yaml"
+        self.monitoring_values = (
+            project_root / "k8s" / "rancher" / "monitoring-values.yaml"
+        )
+
+    def deploy(self) -> bool:
+        print("=========================================")
+        print("Rancher Deployment")
+        print("=========================================")
+        print(f"Rancher Version: {self.RANCHER_VERSION}")
+        print("=========================================")
+
+        if not self._check_cluster_connection():
+            return False
+
+        if not self._ensure_files():
+            return False
+
+        if not self._ensure_helm_repos():
+            return False
+
+        if not self._ensure_namespace(self.RANCHER_NAMESPACE):
+            return False
+
+        if not self._copy_wildcard_secret(self.RANCHER_NAMESPACE):
+            return False
+
+        rancher_ok = self.helm_deployer.deploy_chart(
+            release_name=self.RANCHER_RELEASE,
+            chart=self.RANCHER_CHART,
+            namespace=self.RANCHER_NAMESPACE,
+            values_file=self.rancher_values,
+            version=self.RANCHER_VERSION,
+            wait=True,
+            timeout="10m",
+        )
+        if not rancher_ok:
+            return False
+
+        if not self._ensure_namespace(self.MONITORING_NAMESPACE):
+            return False
+
+        if not self._copy_wildcard_secret(self.MONITORING_NAMESPACE, warn_only=True):
+            print(
+                "Monitoring namespace missing wildcard cert; continuing without TLS copy."
+            )
+
+        monitoring_ok = self.helm_deployer.deploy_chart(
+            release_name=self.MONITORING_RELEASE,
+            chart=self.MONITORING_CHART,
+            namespace=self.MONITORING_NAMESPACE,
+            values_file=self.monitoring_values,
+            wait=True,
+            timeout=self.MONITORING_TIMEOUT,
+        )
+
+        if monitoring_ok:
+            print("=========================================")
+            print("Deployment Complete!")
+            print("=========================================")
+            print("Rancher UI:    https://rancher.home.urandom.io")
+            print("Grafana UI:    https://grafana.home.urandom.io")
+
+        return monitoring_ok
+
+    def _check_cluster_connection(self) -> bool:
+        try:
+            subprocess.run(
+                ["kubectl", "cluster-info"],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            return True
+        except subprocess.CalledProcessError:
+            print(
+                "Error: Unable to reach Kubernetes cluster. "
+                "Configure kubectl or run this on hal9000.",
+                file=sys.stderr,
+            )
+            return False
+
+    def _ensure_files(self) -> bool:
+        missing = [
+            path for path in [self.rancher_values, self.monitoring_values] if not path.exists()
+        ]
+        if missing:
+            for path in missing:
+                print(f"Error: Required values file missing: {path}", file=sys.stderr)
+            return False
+        return True
+
+    def _ensure_helm_repos(self) -> bool:
+        repos = {
+            "rancher-stable": "https://releases.rancher.com/server-charts/stable",
+            "rancher-charts": "https://charts.rancher.io",
+        }
+        ok = True
+        for name, url in repos.items():
+            try:
+                subprocess.run(
+                    ["helm", "repo", "add", name, url],
+                    check=False,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            except FileNotFoundError:
+                print("Error: helm command not found.", file=sys.stderr)
+                return False
+        try:
+            subprocess.run(["helm", "repo", "update"], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error updating helm repos: {e}", file=sys.stderr)
+            ok = False
+        return ok
+
+    def _ensure_namespace(self, namespace: str) -> bool:
+        manifest = {
+            "apiVersion": "v1",
+            "kind": "Namespace",
+            "metadata": {"name": namespace},
+        }
+        if self.dry_run:
+            print(f"[DRY RUN] Would ensure namespace {namespace}")
+            return True
+        try:
+            subprocess.run(
+                ["kubectl", "apply", "-f", "-"],
+                input=yaml.safe_dump(manifest),
+                text=True,
+                check=True,
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"Error ensuring namespace {namespace}: {e}", file=sys.stderr)
+            return False
+
+    def _copy_wildcard_secret(self, target_namespace: str, warn_only: bool = False) -> bool:
+        try:
+            secret_yaml = subprocess.run(
+                [
+                    "kubectl",
+                    "get",
+                    "secret",
+                    self.WILDCARD_SECRET,
+                    "-n",
+                    self.WILDCARD_SOURCE_NAMESPACE,
+                    "-o",
+                    "yaml",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+        except subprocess.CalledProcessError:
+            msg = (
+                f"Warning: wildcard certificate {self.WILDCARD_SECRET} "
+                f"not found in namespace {self.WILDCARD_SOURCE_NAMESPACE}"
+            )
+            if warn_only:
+                print(msg)
+                return False
+            print(msg, file=sys.stderr)
+            return False
+
+        secret = yaml.safe_load(secret_yaml)
+        metadata = secret.get("metadata", {})
+        metadata["namespace"] = target_namespace
+        for field in [
+            "resourceVersion",
+            "uid",
+            "creationTimestamp",
+            "selfLink",
+            "managedFields",
+        ]:
+            metadata.pop(field, None)
+        secret["metadata"] = metadata
+
+        if self.dry_run:
+            print(
+                f"[DRY RUN] Would apply wildcard certificate to namespace {target_namespace}"
+            )
+            return True
+
+        try:
+            subprocess.run(
+                ["kubectl", "apply", "-f", "-"],
+                input=yaml.safe_dump(secret),
+                text=True,
+                check=True,
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            level = "Warning" if warn_only else "Error"
+            print(f"{level}: Failed to copy certificate to {target_namespace}: {e}")
+            return False
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Deploy Kubernetes manifests and Helm charts with secret injection"
@@ -380,6 +598,11 @@ def main():
         action="append",
         metavar="SECRET_PATH:VALUE_PATH",
         help="Inject secret (e.g., 'jamesbrink/github/token:github.token')",
+    )
+
+    # Rancher command
+    subparsers.add_parser(
+        "rancher", help="Deploy Rancher server plus monitoring stack"
     )
 
     # Global options
@@ -424,6 +647,11 @@ def main():
         else:
             success = runners_deployer.deploy_tier(args.tier)
 
+        return 0 if success else 1
+
+    elif args.command == "rancher":
+        rancher_deployer = RancherDeployer(project_root, helm_deployer)
+        success = rancher_deployer.deploy()
         return 0 if success else 1
 
     elif args.command == "helm":

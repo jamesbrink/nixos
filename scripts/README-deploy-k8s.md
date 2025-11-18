@@ -43,6 +43,28 @@ Dry run (preview without deploying):
 ./scripts/deploy-k8s.py github-runners --dry-run
 ```
 
+### Deploy Rancher + Monitoring
+
+Bootstrap or refresh the Rancher control plane plus the monitoring stack (Prometheus/Grafana/Alertmanager):
+
+```bash
+./scripts/deploy-k8s.py rancher
+```
+
+Use `--dry-run` before rolling out to preview the steps without touching the cluster:
+
+```bash
+./scripts/deploy-k8s.py --dry-run rancher
+```
+
+This command:
+
+- Ensures the `cattle-system` and `cattle-monitoring-system` namespaces exist
+- Copies the wildcard `wildcard-home-urandom-io` certificate from the `traefik` namespace
+- Deploys/updates Rancher via `k8s/rancher/values.yaml`
+- Deploys/updates the monitoring stack via `k8s/rancher/monitoring-values.yaml`
+- Re-syncs the Grafana nginx proxy config and restarts Grafana (handled automatically post-deploy)
+
 ### Deploy Generic Helm Chart
 
 Deploy without secret injection:

@@ -1,8 +1,8 @@
 # Install Rancher Monitoring via Rancher UI (Alternative Method)
 
-**Note**: The recommended deployment method is via Helm using `./scripts/deploy-rancher.sh`. This guide provides an alternative UI-based installation method.
+**Note**: The recommended deployment method is via Helm using `./scripts/deploy-k8s.py rancher`. This guide provides an alternative UI-based installation method.
 
-This guide shows how to install the monitoring stack through Rancher UI. While both Helm and UI methods work, the automated Helm deployment in `deploy-rancher.sh` is faster and more reproducible.
+This guide shows how to install the monitoring stack through Rancher UI. While both Helm and UI methods work, the automated Helm deployment in `deploy-k8s.py` is faster and more reproducible.
 
 ## Prerequisites
 

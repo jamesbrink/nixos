@@ -336,16 +336,8 @@
               {
                 name = "deploy-rancher-monitoring";
                 category = "deployment";
-                help = "Deploy / refresh Rancher monitoring via deploy-k8s.py";
-                command = ''
-                  $PRJ_ROOT/scripts/deploy-k8s.py \
-                    helm \
-                    rancher-monitoring \
-                    rancher-charts/rancher-monitoring \
-                    --namespace cattle-monitoring-system \
-                    --values k8s/rancher/monitoring-values.yaml \
-                    "$@"
-                '';
+                help = "Deploy / refresh Rancher + monitoring via deploy-k8s.py";
+                command = ''$PRJ_ROOT/scripts/deploy-k8s.py rancher "$@"'';
               }
 
               {

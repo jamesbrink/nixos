@@ -58,10 +58,10 @@ Uses existing wildcard certificate:
 
 ### Automated Deployment (Recommended)
 
-Deploy both Rancher and monitoring using the automated script:
+Deploy both Rancher and monitoring using the automated helper:
 
 ```bash
-./scripts/deploy-rancher.sh
+./scripts/deploy-k8s.py rancher
 ```
 
 This script will:
