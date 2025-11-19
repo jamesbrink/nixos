@@ -7,7 +7,7 @@ import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Sequence
 
 from rich.console import Console
 from rich.panel import Panel
@@ -55,6 +55,224 @@ def ensure_yabai_sa(console: Console | None = None) -> bool:
             )
         )
     return False
+
+
+@dataclass(frozen=True)
+class _TCCBinaryTarget:
+    name: str
+    services: tuple[str, ...]
+
+
+_TCC_TARGETS: tuple[_TCCBinaryTarget, ...] = (
+    _TCCBinaryTarget(
+        name="yabai",
+        services=(
+            "kTCCServiceAccessibility",
+            "kTCCServiceListenEvent",
+            "kTCCServicePostEvent",
+            "kTCCServiceScreenCapture",
+        ),
+    ),
+    _TCCBinaryTarget(
+        name="skhd",
+        services=(
+            "kTCCServiceAccessibility",
+            "kTCCServiceListenEvent",
+            "kTCCServicePostEvent",
+        ),
+    ),
+)
+
+_TCC_SERVICES = sorted(
+    {service for target in _TCC_TARGETS for service in target.services}
+)
+_DENY_PATTERNS = ("yabai", "skhd")
+
+
+def _candidate_binaries(name: str) -> list[Path]:
+    """Collect likely binary paths (Nix + Homebrew) for TCC entries."""
+
+    seen: list[Path] = []
+
+    def add(path: str | Path | None) -> None:
+        if not path:
+            return
+        candidate = Path(path)
+        if not candidate.exists():
+            return
+        normalized = candidate.resolve()
+        for entry in (candidate, normalized):
+            if entry not in seen:
+                seen.append(entry)
+
+    add(shutil.which(name))
+    add(Path("/run/current-system/sw/bin") / name)
+    add(Path("/opt/homebrew/bin") / name)
+    add(Path("/usr/local/bin") / name)
+    cellar = Path("/opt/homebrew/Cellar") / name
+    if cellar.exists():
+        for version in sorted(cellar.iterdir(), reverse=True):
+            add(version / "bin" / name)
+    return seen
+
+
+def _tcc_databases(home: Path) -> list[tuple[Path, bool]]:
+    """Return (db, needs_sudo) tuples."""
+
+    system_db = Path("/Library/Application Support/com.apple.TCC/TCC.db")
+    user_db = home / "Library" / "Application Support" / "com.apple.TCC" / "TCC.db"
+    dbs: list[tuple[Path, bool]] = []
+    if system_db.exists():
+        dbs.append((system_db, True))
+    if user_db.exists():
+        dbs.append((user_db, False))
+    return dbs
+
+
+def _escape_sql(value: str) -> str:
+    return value.replace("'", "''")
+
+
+def _tcc_statements(client: Path, services: Sequence[str], client_type: int) -> str:
+    escaped = _escape_sql(str(client))
+    body = []
+    for service in services:
+        body.append(
+            f"""
+DELETE FROM access
+  WHERE service='{service}'
+    AND client='{escaped}'
+    AND client_type={client_type};
+INSERT OR REPLACE INTO access (
+  service, client, client_type,
+  auth_value, auth_reason, auth_version,
+  csreq, policy_id,
+  indirect_object_identifier_type,
+  indirect_object_identifier,
+  indirect_object_code_identity,
+  flags
+) VALUES (
+  '{service}', '{escaped}', {client_type},
+  2, 4, 1,
+  NULL, NULL,
+  0,
+  'UNUSED',
+  NULL,
+  0
+);
+""".strip()
+        )
+    return "\n".join(body)
+
+
+def _deny_cleanup_sql() -> str:
+    if not _TCC_SERVICES:
+        return ""
+    service_list = ", ".join(f"'{svc}'" for svc in _TCC_SERVICES)
+    clauses = []
+    for pattern in _DENY_PATTERNS:
+        escaped = _escape_sql(pattern)
+        clauses.append(
+            f"DELETE FROM access WHERE auth_value = 0 AND service IN ({service_list}) AND client LIKE '%{escaped}%';"
+        )
+    return "\n".join(clauses)
+
+
+def _apply_tcc_statements(
+    db: Path, sql: str, needs_sudo: bool, console: Console | None
+) -> bool:
+    if not sql.strip():
+        return True
+    sqlite3 = shutil.which("sqlite3") or "/usr/bin/sqlite3"
+    cmd = [sqlite3, str(db)]
+    if needs_sudo:
+        sudo = shutil.which("sudo") or "/usr/bin/sudo"
+        cmd.insert(0, sudo)
+    result = subprocess.run(
+        cmd,
+        input=sql,
+        text=True,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        if console:
+            console.print(
+                Panel(
+                    result.stderr.strip() or f"sqlite3 exited {result.returncode}",
+                    title=f"TCC update failed ({db})",
+                    border_style="red",
+                )
+            )
+        return False
+    return True
+
+
+def _restart_tccd(console: Console | None = None) -> None:
+    sudo = shutil.which("sudo") or "/usr/bin/sudo"
+    commands = [
+        [sudo, "killall", "-9", "tccd"],
+        ["killall", "-9", "tccd"],
+    ]
+    for cmd in commands:
+        subprocess.run(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    time.sleep(2)
+    if console:
+        console.print("[green]✓[/green] Reloaded TCC daemon")
+
+
+def ensure_tcc_permissions(console: Console | None = None) -> bool:
+    """Grant Accessibility/Listen/PostEvent permissions for yabai/skhd."""
+
+    home = get_home()
+    dbs = _tcc_databases(home)
+    if not dbs:
+        if console:
+            console.print("[yellow]![/yellow] No TCC database found; skipping grants")
+        return True
+
+    touched_db = False
+    success = True
+    statements: list[str] = []
+    cleanup_sql = _deny_cleanup_sql()
+    for target in _TCC_TARGETS:
+        clients = _candidate_binaries(target.name)
+        if not clients:
+            continue
+        for client in clients:
+            for client_type in (0, 1):
+                statements.append(_tcc_statements(client, target.services, client_type))
+
+    if not statements:
+        if console:
+            console.print(
+                Panel(
+                    "No yabai/skhd binaries discovered; run Homebrew or nix-darwin install first.",
+                    title="Accessibility grants skipped",
+                    border_style="yellow",
+                )
+            )
+        return False
+
+    for db, needs_sudo in dbs:
+        segments = []
+        if cleanup_sql:
+            segments.append(cleanup_sql)
+        stmt_block = "\n".join(stmt for stmt in statements if stmt and stmt.strip())
+        if stmt_block:
+            segments.append(stmt_block)
+        sql = "\n".join(segments)
+        if not sql:
+            continue
+        touched_db = True
+        success = _apply_tcc_statements(db, sql, needs_sudo, console) and success
+
+    if success and touched_db:
+        _restart_tccd(console)
+    return success
 
 
 @dataclass
@@ -265,6 +483,7 @@ class MacOSModeController:
         self._set_defaults("com.apple.finder", "CreateDesktop", False)
         self._set_menubar_autohide(hide=True)  # Hide menu bar in BSP mode
         self._restart_dock_and_finder()
+        ensure_tcc_permissions(self.console)
         time.sleep(3)
         self._launchctl("load", LAUNCH_AGENTS)
         time.sleep(1)

@@ -18,7 +18,11 @@ from .assets import sync_assets
 from .config import ThemectlConfig, get_home, load_config
 from .hotkeys import flatten_bindings, load_manifest
 from .hooks import run_reload_hooks
-from .macos import MacOSModeController, ensure_yabai_sa
+from .macos import (
+    MacOSModeController,
+    ensure_tcc_permissions,
+    ensure_yabai_sa,
+)
 from .state import read_current_theme
 from .themes import Theme, ThemeRepository, load_theme_metadata
 
@@ -352,6 +356,7 @@ def doctor(
         ok = False
     if cfg.platform == "darwin":
         ok = ensure_yabai_sa(console) and ok
+        ok = ensure_tcc_permissions(console) and ok
     if cfg.platform == "linux":
         ok = _walker_assets_ok(cfg, console) and ok
     if ok:
