@@ -6,6 +6,7 @@
 
 {
   imports = [
+    # ../../modules/claude-desktop.nix  # TODO: Fix hash mismatch upstream
     ../../modules/ssh-keys.nix
     ../../modules/nfs-mounts.nix
     ../../modules/local-hosts.nix

@@ -16,6 +16,11 @@
       la = "ls -la";
       lt = "ls -ltr";
 
+      # Modern replacements
+      # cat = "bat";
+      # find = "fd";
+      # ps = "procs";
+
       # Git aliases
       g = "git";
       gs = "git status";

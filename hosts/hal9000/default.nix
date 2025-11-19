@@ -45,6 +45,11 @@
   # Home-manager configuration
   home-manager.backupFileExtension = "backup";
 
+  # services.keychron-keyboard = {
+  #   enable = true;
+  #   user = "jamesbrink";
+  # };
+
   security.audit.enable = false;
   security.auditd.enable = false;
   security.audit.failureMode = "printk";
@@ -701,6 +706,34 @@
           ];
         };
 
+        # postgres17 = {
+        #   image = "postgis/postgis:17-3.5";
+        #   user = "postgres:postgres";
+        #   entrypoint = "/usr/lib/postgresql/17/bin/postgres";
+        #   environment = {
+        #     POSTGRES_USER = "postgres";
+        #     POSTGRES_PASSWORD = "postgres";
+        #     POSTGRES_HOST_AUTH_METHOD = "trust";
+        #     POSTGRES_INITDB_ARGS = "";
+        #   };
+        #   volumes = [
+        #     "/storage-fast/quantierra-dev-17:/var/lib/postgresql/data"
+        #     "${../../modules/services/postgresql/postgresql.conf}:/etc/postgresql/postgresql.conf:ro"
+        #     "${../../modules/services/postgresql/pg_hba.conf}:/etc/postgresql/pg_hba.conf:ro"
+        #   ];
+        #   cmd = [
+        #     "-D"
+        #     "/var/lib/postgresql/data/new"
+        #     "-c"
+        #     "config_file=/etc/postgresql/postgresql.conf"
+        #     "-c"
+        #     "hba_file=/etc/postgresql/pg_hba.conf"
+        #   ];
+        #   ports = [
+        #     "5439:5432"
+        #   ];
+        # };
+
         ollama = {
           image = "ollama/ollama:latest";
           volumes = [
@@ -716,6 +749,35 @@
           ];
         };
 
+        # comfyui = {
+        #   image = "jamesbrink/comfyui:latest";
+        #   volumes = [
+        #     "/home/jamesbrink/AI/ComfyUI-User-Data:/data/user:z"
+        #     "/home/jamesbrink/AI/Models/StableDiffusion:/data/models:z"
+        #     "/home/jamesbrink/AI/Output:/data/output:z"
+        #     "/home/jamesbrink/AI/Input:/data/input:z"
+        #     "/home/jamesbrink/AI/ComfyUI/custom_nodes:/data/custom_nodes:z"
+        #   ];
+        #   cmd = [
+        #     "--listen"
+        #     "--port"
+        #     "8188"
+        #     "--preview-method"
+        #     "auto"
+        #   ];
+        #   extraOptions = [
+        #     "--gpus=all"
+        #     "--network=host"
+        #     "--name=comfyui"
+        #   ];
+        #   environment = {
+        #     PUID = "${toString config.users.users.jamesbrink.uid}";
+        #     PGID = "${toString config.users.groups.users.gid}";
+        #   };
+        #   ports = [ "8188:8188" ];
+        #   autoStart = true;
+        # };
+
         fooocus = {
           image = "jamesbrink/fooocus:latest";
           volumes = [
@@ -730,6 +792,41 @@
           ];
           autoStart = false;
         };
+
+        # Disabled - keeping only postgres13 and ollama
+        # open-webui = {
+        #   image = "ghcr.io/open-webui/open-webui:main";
+        #   volumes = [
+        #     "open-webui:/app/backend/data"
+        #   ];
+        #   ports = [
+        #     "3000:8080"
+        #   ];
+        #   environment = {
+        #     OLLAMA_BASE_URL = "http://hal9000:11434";
+        #   };
+        #   extraOptions = [
+        #     "--add-host=host.docker.internal:host-gateway"
+        #     "--name=open-webui"
+        #   ];
+        #   autoStart = true;
+        # };
+
+        # Disabled - keeping only postgres13 and ollama
+        # pipelines = {
+        #   image = "ghcr.io/open-webui/pipelines:main";
+        #   volumes = [
+        #     "pipelines:/app/pipelines"
+        #   ];
+        #   ports = [
+        #     "9099:9099"
+        #   ];
+        #   extraOptions = [
+        #     "--add-host=host.docker.internal:host-gateway"
+        #     "--name=pipelines"
+        #   ];
+        #   autoStart = true;
+        # };
       };
     };
     incus = {

@@ -43,6 +43,11 @@ in
       l = "eza -l";
       tree = "eza --tree";
 
+      # Modern replacements
+      # cat = "bat";
+      # find = "fd";
+      # ps = "procs";
+
       # Git aliases
       g = "git";
       gs = "git status";

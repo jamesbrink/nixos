@@ -31,10 +31,6 @@ The following warnings appear during `darwin-rebuild switch` and need to be addr
 - [x] Fix `builtins.toFile` usage for `options.json` - need proper store context instead of directly referencing Nix store paths (currently `/nix/store/f640ps0hcp7w5jzg18djf8gdhl6r2rnl-source`)
 - [x] Fix `builtins.derivation` usage for `themectl-themes.json` - add correct store references so the derivation no longer depends on `/nix/store/pcqrn6dlqxb5mhm9f876z2g32zvxkpqp-source` without context
 
-### Nix Search Path
-
-- [ ] Resolve missing `/nix/var/nix/profiles/per-user/root/channels` entry so Nix doesn’t warn about ignored search paths during builds
-
 ## Theme Automation Rewrite (In Progress)
 
 - [x] **Design Python CLI architecture** – sketch `scripts/themectl/` layout with subcommands (`apply`, `sync-assets`, `status`, `macos-space-mode`) and define how it imports Omarchy themes + Nix-provided metadata.
