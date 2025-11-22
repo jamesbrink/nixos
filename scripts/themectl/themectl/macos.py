@@ -225,7 +225,90 @@ def _restart_tccd(console: Console | None = None) -> None:
 
 
 def ensure_tcc_permissions(console: Console | None = None) -> bool:
-    """Grant Accessibility/Listen/PostEvent permissions for yabai/skhd."""
+    """Grant Accessibility/Listen/PostEvent permissions for yabai/skhd.
+
+    Tries tccutil first (works on macOS 26.1+), falls back to direct DB manipulation.
+    """
+
+    # Try tccutil first (the reliable method for macOS 26.1+)
+    tccutil = shutil.which("tccutil")
+    if tccutil and Path(tccutil).exists():
+        if console:
+            console.print("[cyan]→[/cyan] Using tccutil for TCC permissions (macOS 26.1+ compatible)")
+        return _ensure_tcc_with_tccutil(tccutil, console)
+
+    # Fall back to direct database manipulation
+    if console:
+        console.print("[yellow]![/yellow] tccutil not found; falling back to direct TCC database manipulation")
+    return _ensure_tcc_with_database(console)
+
+
+def _ensure_tcc_with_tccutil(tccutil: str, console: Console | None = None) -> bool:
+    """Use jacobsalmela/tccutil to grant accessibility permissions."""
+
+    sudo = shutil.which("sudo") or "/usr/bin/sudo"
+    success = True
+    granted_any = False
+
+    for target in _TCC_TARGETS:
+        clients = _candidate_binaries(target.name)
+        if not clients:
+            if console:
+                console.print(f"[yellow]![/yellow] No {target.name} binary found")
+            continue
+
+        # Grant to the primary binary (first in list, usually from `which`)
+        primary = clients[0]
+        try:
+            result = subprocess.run(
+                [sudo, tccutil, "-e", str(primary.resolve())],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if result.returncode == 0:
+                granted_any = True
+                if console:
+                    console.print(f"[green]✓[/green] Granted accessibility to {target.name} ({primary})")
+            else:
+                success = False
+                if console:
+                    error_msg = result.stderr.strip() or result.stdout.strip() or f"Exit code {result.returncode}"
+                    console.print(
+                        Panel(
+                            f"Failed to grant permissions to {primary}\n{error_msg}",
+                            title=f"tccutil failed for {target.name}",
+                            border_style="red",
+                        )
+                    )
+        except subprocess.TimeoutExpired:
+            success = False
+            if console:
+                console.print(f"[red]✗[/red] tccutil timed out for {target.name}")
+        except Exception as e:
+            success = False
+            if console:
+                console.print(f"[red]✗[/red] Error granting to {target.name}: {e}")
+
+    if not granted_any:
+        if console:
+            console.print(
+                Panel(
+                    "No yabai/skhd binaries discovered; run Homebrew or nix-darwin install first.",
+                    title="Accessibility grants skipped",
+                    border_style="yellow",
+                )
+            )
+        return False
+
+    if success and granted_any:
+        _restart_tccd(console)
+
+    return success
+
+
+def _ensure_tcc_with_database(console: Console | None = None) -> bool:
+    """Grant TCC permissions via direct database manipulation (legacy method)."""
 
     home = get_home()
     dbs = _tcc_databases(home)

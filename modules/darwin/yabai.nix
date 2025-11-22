@@ -660,6 +660,7 @@ in
   homebrew.brews = [
     "koekeishiya/formulae/yabai"
     "koekeishiya/formulae/skhd"
+    "tccutil" # TCC database manipulation tool for macOS 26.1+ accessibility permissions
   ];
 
   # Allow yabai to load scripting addition without password
