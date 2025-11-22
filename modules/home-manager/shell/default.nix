@@ -140,6 +140,9 @@
   programs.alacritty = {
     enable = true;
     settings = {
+      # Import runtime theme colors (themectl manages the symlink)
+      general.import = [ "${config.home.homeDirectory}/.config/omarchy/current/theme/alacritty.toml" ];
+
       env = {
         TERM = "xterm-256color";
       };
@@ -164,37 +167,38 @@
         size = if pkgs.stdenv.isDarwin then 14 else 10;
       };
 
-      colors = {
-        # Rosé Pine theme
-        primary = {
-          background = "0x191724";
-          foreground = "0xe0def4";
-        };
-        cursor = {
-          text = "0x191724";
-          cursor = "0xe0def4";
-        };
-        normal = {
-          black = "0x26233a";
-          red = "0xeb6f92";
-          green = "0x31748f";
-          yellow = "0xf6c177";
-          blue = "0x9ccfd8";
-          magenta = "0xc4a7e7";
-          cyan = "0xebbcba";
-          white = "0xe0def4";
-        };
-        bright = {
-          black = "0x6e6a86";
-          red = "0xeb6f92";
-          green = "0x31748f";
-          yellow = "0xf6c177";
-          blue = "0x9ccfd8";
-          magenta = "0xc4a7e7";
-          cyan = "0xebbcba";
-          white = "0xe0def4";
-        };
-      };
+      # Commented out: now using runtime theme import (themectl)
+      # colors = {
+      #   # Rosé Pine theme
+      #   primary = {
+      #     background = "0x191724";
+      #     foreground = "0xe0def4";
+      #   };
+      #   cursor = {
+      #     text = "0x191724";
+      #     cursor = "0xe0def4";
+      #   };
+      #   normal = {
+      #     black = "0x26233a";
+      #     red = "0xeb6f92";
+      #     green = "0x31748f";
+      #     yellow = "0xf6c177";
+      #     blue = "0x9ccfd8";
+      #     magenta = "0xc4a7e7";
+      #     cyan = "0xebbcba";
+      #     white = "0xe0def4";
+      #   };
+      #   bright = {
+      #     black = "0x6e6a86";
+      #     red = "0xeb6f92";
+      #     green = "0x31748f";
+      #     yellow = "0xf6c177";
+      #     blue = "0x9ccfd8";
+      #     magenta = "0xc4a7e7";
+      #     cyan = "0xebbcba";
+      #     white = "0xe0def4";
+      #   };
+      # };
 
       cursor = {
         style = "Block";
