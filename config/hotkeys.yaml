@@ -177,7 +177,9 @@ actions:
     mirror:
       x:
         description: Mirror layout over X axis.
-        command: "yabai -m space --mirror x-axis"
+        commands:
+          darwin: null # Disabled on macOS (conflicts with cmd+x cut)
+          linux: "hyprctl dispatch togglesplit"
       y:
         description: Mirror layout over Y axis.
         command: "yabai -m space --mirror y-axis"
@@ -218,10 +220,10 @@ platforms:
           window.fullscreen.toggle: "cmd+f"
           window.native_fullscreen.toggle: "cmd+ctrl+f"
           window.split.toggle: "cmd+j"
-          window.focus.west: "cmd+alt+left"
-          window.focus.east: "cmd+alt+right"
-          window.focus.north: "cmd+alt+up"
-          window.focus.south: "cmd+alt+down"
+          window.focus.west: "cmd+left"
+          window.focus.east: "cmd+right"
+          window.focus.north: "cmd+up"
+          window.focus.south: "cmd+down"
           window.swap.west: "cmd+shift+left"
           window.swap.east: "cmd+shift+right"
           window.swap.north: "cmd+shift+up"

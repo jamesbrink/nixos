@@ -243,8 +243,33 @@ def ensure_tcc_permissions(console: Console | None = None) -> bool:
     return _ensure_tcc_with_database(console)
 
 
+def _cleanup_tcc_denials(console: Console | None = None) -> bool:
+    """Remove all denied TCC entries for yabai/skhd from both user and system databases."""
+    home = get_home()
+    dbs = _tcc_databases(home)
+    if not dbs:
+        return True
+
+    cleanup_sql = _deny_cleanup_sql()
+    if not cleanup_sql:
+        return True
+
+    success = True
+    for db, needs_sudo in dbs:
+        if not _apply_tcc_statements(db, cleanup_sql, needs_sudo, None):
+            success = False
+
+    if console and success:
+        console.print("[cyan]→[/cyan] Cleaned up any denied TCC entries")
+
+    return success
+
+
 def _ensure_tcc_with_tccutil(tccutil: str, console: Console | None = None) -> bool:
     """Use jacobsalmela/tccutil to grant accessibility permissions."""
+
+    # First, clean up any denied entries
+    _cleanup_tcc_denials(console)
 
     sudo = shutil.which("sudo") or "/usr/bin/sudo"
     success = True

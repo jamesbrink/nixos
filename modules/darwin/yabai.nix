@@ -33,6 +33,34 @@
 # Manual SA Loading:
 #   If automatic loading fails, run: sudo yabai --load-sa
 #
+# IMPORTANT: macOS 26.1+ Accessibility Permissions (TCC)
+# -----------------------------------------------------
+# macOS 26.1 introduced a bug where binary executables don't appear in
+# System Settings > Privacy & Security > Accessibility UI, even when TCC
+# database entries exist. This affects yabai and skhd.
+#
+# Solution: tccutil (jacobsalmela/tccutil)
+#   This module automatically installs tccutil via Homebrew, which can
+#   properly grant accessibility permissions on macOS 26.1+.
+#
+# Automatic TCC Grant (via themectl):
+#   Run: themectl doctor
+#   This uses tccutil to grant accessibility permissions to yabai/skhd.
+#
+# Requirements:
+#   - tccutil installed (added to homebrew.brews below)
+#   - SIP filesystem protection disabled (tccutil requirement)
+#   - Administrator privileges
+#
+# Symptoms of TCC Issues:
+#   - "yabai: could not access accessibility features! abort.."
+#   - "skhd: must be run with accessibility access! abort.."
+#   - Binaries missing from System Settings accessibility list
+#
+# References:
+#   - https://github.com/koekeishiya/yabai/issues/2688 (macOS 26.1 TCC bug)
+#   - https://github.com/jacobsalmela/tccutil (TCC manipulation tool)
+#
 {
   config,
   pkgs,
@@ -656,16 +684,15 @@ in
     '';
   };
 
-  # Install yabai and skhd via Homebrew (nix-darwin manages config only)
+  # Install tccutil via Homebrew (not available in nixpkgs)
+  # yabai and skhd are provided by nix via services.yabai.enable and services.skhd.enable
   homebrew.brews = [
-    "koekeishiya/formulae/yabai"
-    "koekeishiya/formulae/skhd"
     "tccutil" # TCC database manipulation tool for macOS 26.1+ accessibility permissions
   ];
 
   # Allow yabai to load scripting addition without password
   # This enables automatic SA loading on startup and toggle
   environment.etc."sudoers.d/010-yabai-sa".text = ''
-    %admin ALL=(root) NOPASSWD: /opt/homebrew/bin/yabai --load-sa
+    %admin ALL=(root) NOPASSWD: ${pkgs.yabai}/bin/yabai --load-sa
   '';
 }

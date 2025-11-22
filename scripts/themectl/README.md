@@ -44,6 +44,59 @@ The tests rely on temporary homes via `THEMECTL_HOME` and cover:
 
 Future work will add mocks for AppleScript/`nvr` so automation hooks can be validated without touching real apps.
 
+## macOS Accessibility Permissions (TCC)
+
+### The macOS 26.1 Bug
+
+macOS 26.1 introduced a [critical bug](https://github.com/koekeishiya/yabai/issues/2688) where binary executables (non-app-bundles) don't appear in **System Settings > Privacy & Security > Accessibility**, even when TCC database entries exist. This affects yabai, skhd, and other command-line tools that require accessibility permissions.
+
+**Symptoms:**
+
+- `yabai: could not access accessibility features! abort..`
+- `skhd: must be run with accessibility access! abort..`
+- Binaries have TCC database entries but macOS refuses to honor them
+- System Settings UI doesn't show binaries in the accessibility list
+
+### The Solution
+
+`themectl doctor` now uses [jacobsalmela/tccutil](https://github.com/jacobsalmela/tccutil) as the primary method for granting TCC permissions on macOS 26.1+:
+
+1. **Automatic Detection**: Checks if `tccutil` is available on the system
+2. **Smart Grant**: Uses `sudo tccutil -e <binary-path>` to grant accessibility permissions
+3. **Fallback**: If `tccutil` is unavailable, falls back to direct TCC database manipulation
+4. **Multi-Path Support**: Grants permissions to all candidate binary locations (Homebrew, Nix store, etc.)
+
+**Requirements:**
+
+- `tccutil` installed via Homebrew (automatically added by `modules/darwin/yabai.nix`)
+- SIP (System Integrity Protection) disabled for filesystem protection (tccutil requirement)
+- Administrator privileges (tccutil requires `sudo`)
+
+**Usage:**
+
+```bash
+# Check TCC permissions and automatically fix them
+themectl doctor
+
+# Manually toggle BSP mode (triggers TCC permission grant)
+themectl macos-mode toggle
+```
+
+**Expected Output:**
+
+```
+→ Using tccutil for TCC permissions (macOS 26.1+ compatible)
+✓ Granted accessibility to yabai (/opt/homebrew/bin/yabai)
+✓ Granted accessibility to skhd (/opt/homebrew/bin/skhd)
+✓ Reloaded TCC daemon
+```
+
+**Related Issues:**
+
+- [yabai #2688](https://github.com/koekeishiya/yabai/issues/2688) - macOS 26.1 TCC UI bug
+- [skhd #371](https://github.com/koekeishiya/skhd/issues/371) - Unable to run skhd after Sequoia upgrade
+- [home-manager #8179](https://github.com/nix-community/home-manager/issues/8179) - espanso module can't set accessibility permissions
+
 ## Roadmap
 
 - Backfill integration tests for the Linux reload pipeline (`hyprctl`, `swww`) so regressions are caught without touching a live session.
