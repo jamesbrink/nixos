@@ -78,10 +78,17 @@ def test_update_tmux_config_generates_file(tmp_path: Path, monkeypatch) -> None:
     assert "#ff00ff" in contents
 
 
-def test_reload_alacritty_uses_msg(monkeypatch) -> None:
+def test_reload_alacritty_touches_config(tmp_path: Path, monkeypatch) -> None:
+    config_dir = tmp_path / ".config" / "alacritty"
+    config_dir.mkdir(parents=True)
+    config = config_dir / "alacritty.toml"
+    config.write_text("# test config")
+
+    monkeypatch.setattr("themectl.hooks.get_home", lambda: tmp_path)
+
     def fake_which(name: str) -> str | None:
-        if name == "alacritty":
-            return "/usr/bin/alacritty"
+        if name in ("sudo", "touch"):
+            return f"/usr/bin/{name}"
         return None
 
     monkeypatch.setattr("themectl.hooks.shutil.which", fake_which)
@@ -101,45 +108,17 @@ def test_reload_alacritty_uses_msg(monkeypatch) -> None:
     console = _console()
     reload_alacritty(console)
 
-    assert calls == [["/usr/bin/alacritty", "msg", "config", "reload"]]
+    assert calls == [["/usr/bin/sudo", "/usr/bin/touch", str(config)]]
     assert "Reloaded Alacritty config" in console.export_text()
 
 
-def test_reload_alacritty_falls_back_to_signal(monkeypatch) -> None:
-    def fake_which(name: str) -> str | None:
-        if name == "alacritty":
-            return "/usr/bin/alacritty"
-        if name in {"pkill", "killall"}:
-            return "/usr/bin/pkill"
-        return None
-
-    monkeypatch.setattr("themectl.hooks.shutil.which", fake_which)
-
-    calls: list[list[str]] = []
-
-    class MsgFail:
-        returncode = 1
-        stderr = "boom"
-
-    class Ok:
-        returncode = 0
-        stderr = ""
-
-    def fake_run(cmd, **kwargs):
-        calls.append(cmd)
-        if cmd[0] == "/usr/bin/alacritty":
-            return MsgFail()
-        return Ok()
-
-    monkeypatch.setattr("themectl.hooks.subprocess.run", fake_run)
+def test_reload_alacritty_skips_when_no_config(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr("themectl.hooks.get_home", lambda: tmp_path)
 
     console = _console()
     reload_alacritty(console)
 
-    assert calls[0] == ["/usr/bin/alacritty", "msg", "config", "reload"]
-    assert calls[1][0] == "/usr/bin/pkill"
-    assert calls[2][0] == "/usr/bin/pkill"
-    assert "SIGUSR1" in console.export_text()
+    assert "skipping" in console.export_text()
 
 
 def test_reload_hyprland_discovers_signature(tmp_path: Path, monkeypatch) -> None:

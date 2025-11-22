@@ -283,43 +283,34 @@ def _find_binary(name: str, extra_paths: Iterable[Path]) -> str | None:
 
 
 def reload_alacritty(console: Console) -> None:
-    binary = _find_binary(
-        "alacritty",
-        [
-            Path("/run/current-system/sw/bin/alacritty"),
-            Path("/nix/var/nix/profiles/default/bin/alacritty"),
-            Path("/Applications/Alacritty.app/Contents/MacOS/alacritty"),
-        ],
-    )
-    if not binary:
-        console.print("[cyan]-[/cyan] Alacritty not found; skipping reload")
+    # Alacritty.app watches the config file for changes and auto-reloads
+    # Use sudo touch since config is a symlink to immutable nix store
+    home = get_home()
+    config = home / ".config" / "alacritty" / "alacritty.toml"
+
+    if not config.exists():
+        console.print("[cyan]-[/cyan] Alacritty config not found; skipping reload")
         return
+
+    sudo = shutil.which("sudo") or "/usr/bin/sudo"
+    touch = shutil.which("touch") or "/usr/bin/touch"
+
     result = subprocess.run(
-        [binary, "msg", "config", "reload"],
+        [sudo, touch, str(config)],
         capture_output=True,
         text=True,
     )
+
     if result.returncode == 0:
-        console.print("[green]✓[/green] Reloaded Alacritty config")
-        return
-    signaler = shutil.which("pkill") or shutil.which("killall")
-    if not signaler:
+        console.print("[green]✓[/green] Reloaded Alacritty config (all windows)")
+    else:
         console.print(
             Panel(
-                "Unable to reload Alacritty config: message API failed and pkill/killall not available.",
+                f"Unable to touch Alacritty config: {result.stderr.strip()}",
                 title="Alacritty reload",
                 border_style="yellow",
             )
         )
-        return
-    names = ["alacritty", "Alacritty"]
-    for name in names:
-        subprocess.run(
-            [signaler, "-USR1", name],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    console.print("[yellow]![/yellow] Sent SIGUSR1 to Alacritty (msg reload failed)")
 
 
 def _discover_hypr_signature() -> str | None:
