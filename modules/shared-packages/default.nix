@@ -54,6 +54,7 @@ in
       wget
       wireguard-tools
       yarn
+      zed-editor
       zellij
       # Additional development and utility tools
       act
