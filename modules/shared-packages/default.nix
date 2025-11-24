@@ -114,6 +114,7 @@ in
       # Code editors - Cursor on Linux (macOS uses Homebrew cask)
       unstable.code-cursor
       # Linux-only packages
+      below
       bitwarden-cli
       fio
       hdparm

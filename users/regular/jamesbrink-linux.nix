@@ -104,6 +104,7 @@ in
           # Common packages
           atuin
           ffmpeg-full
+          gurk-rs
           imagemagick
           nushell
           xonsh

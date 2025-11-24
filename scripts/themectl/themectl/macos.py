@@ -234,12 +234,16 @@ def ensure_tcc_permissions(console: Console | None = None) -> bool:
     tccutil = shutil.which("tccutil")
     if tccutil and Path(tccutil).exists():
         if console:
-            console.print("[cyan]→[/cyan] Using tccutil for TCC permissions (macOS 26.1+ compatible)")
+            console.print(
+                "[cyan]→[/cyan] Using tccutil for TCC permissions (macOS 26.1+ compatible)"
+            )
         return _ensure_tcc_with_tccutil(tccutil, console)
 
     # Fall back to direct database manipulation
     if console:
-        console.print("[yellow]![/yellow] tccutil not found; falling back to direct TCC database manipulation")
+        console.print(
+            "[yellow]![/yellow] tccutil not found; falling back to direct TCC database manipulation"
+        )
     return _ensure_tcc_with_database(console)
 
 
@@ -294,11 +298,17 @@ def _ensure_tcc_with_tccutil(tccutil: str, console: Console | None = None) -> bo
             if result.returncode == 0:
                 granted_any = True
                 if console:
-                    console.print(f"[green]✓[/green] Granted accessibility to {target.name} ({primary})")
+                    console.print(
+                        f"[green]✓[/green] Granted accessibility to {target.name} ({primary})"
+                    )
             else:
                 success = False
                 if console:
-                    error_msg = result.stderr.strip() or result.stdout.strip() or f"Exit code {result.returncode}"
+                    error_msg = (
+                        result.stderr.strip()
+                        or result.stdout.strip()
+                        or f"Exit code {result.returncode}"
+                    )
                     console.print(
                         Panel(
                             f"Failed to grant permissions to {primary}\n{error_msg}",

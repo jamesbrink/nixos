@@ -55,6 +55,7 @@ in
         # Common packages for darwin
         atuin
         ffmpeg-full
+        gurk-rs
         imagemagick
         nushell
         pay-respects
