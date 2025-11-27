@@ -148,28 +148,36 @@ in
         local sort_by_time=false
         local reverse=false
 
-        # Parse arguments
+        # Parse arguments, translating GNU ls flags into eza equivalents
         for arg in "$@"; do
-          if [[ "$arg" =~ ^-[a-zA-Z]*t[a-zA-Z]*$ ]]; then
-            # Contains -t flag, extract other flags
-            sort_by_time=true
-            local flags="''${arg#-}"
-            flags="''${flags//t/}"  # Remove 't'
-            [[ "$flags" =~ r ]] && reverse=true
-            [[ -n "$flags" ]] && args+=("-$flags")
-          elif [[ "$arg" == "-"* ]]; then
-            [[ "$arg" =~ r ]] && reverse=true
+          if [[ "$arg" == --* ]]; then
             args+=("$arg")
+            continue
+          fi
+
+          if [[ "$arg" == "-"* ]]; then
+            local stripped="''${arg#-}"
+            local keep_flags=""
+            for ((i = 0; i < ''${#stripped}; i++)); do
+              case "''${stripped:i:1}" in
+                t) sort_by_time=true ;; # handled separately to map to eza sort
+                r) reverse=true ;;
+                *) keep_flags+="''${stripped:i:1}" ;;
+              esac
+            done
+            [[ -n "$keep_flags" ]] && args+=("-$keep_flags")
           else
             args+=("$arg")
           fi
         done
 
-        # Add eza-specific flags
         if $sort_by_time; then
           args+=(--sort=modified)
-        fi
-        if $reverse; then
+          # eza sorts oldest->newest by default; align -t with ls (newest first)
+          if ! $reverse; then
+            args+=(--reverse)
+          fi
+        elif $reverse; then
           args+=(--reverse)
         fi
 
