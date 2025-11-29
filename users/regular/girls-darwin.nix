@@ -37,6 +37,9 @@
       sudo dscl . -create /Users/girls PrimaryGroupID 20
       sudo dscl . -create /Users/girls NFSHomeDirectory /Users/girls
 
+      # Make user visible in login screen and Users & Groups
+      sudo dscl . -create /Users/girls IsHidden 0
+
       # Create home directory
       sudo mkdir -p /Users/girls
       sudo chown -R 502:20 /Users/girls
@@ -45,6 +48,9 @@
       echo "Girls user created successfully"
     else
       echo "Girls user already exists"
+
+      # Ensure user is visible (fix if it was previously hidden)
+      sudo dscl . -create /Users/girls IsHidden 0
 
       # Ensure home directory exists
       if [ ! -d /Users/girls ]; then
@@ -80,8 +86,10 @@
       # Basic git configuration (if needed)
       programs.git = {
         enable = true;
-        userName = "Girls";
-        userEmail = "girls@local";
+        settings.user = {
+          name = "Girls";
+          email = "girls@local";
+        };
       };
 
       home.stateVersion = "25.05";
