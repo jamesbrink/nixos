@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import time
@@ -63,6 +64,13 @@ class _TCCBinaryTarget:
     services: tuple[str, ...]
 
 
+_TERMINAL_SERVICES: tuple[str, ...] = (
+    "kTCCServiceAccessibility",
+    "kTCCServiceScreenCapture",
+    "kTCCServiceListenEvent",
+    "kTCCServicePostEvent",
+)
+
 _TCC_TARGETS: tuple[_TCCBinaryTarget, ...] = (
     _TCCBinaryTarget(
         name="yabai",
@@ -79,18 +87,50 @@ _TCC_TARGETS: tuple[_TCCBinaryTarget, ...] = (
             "kTCCServiceAccessibility",
             "kTCCServiceListenEvent",
             "kTCCServicePostEvent",
+            "kTCCServiceScreenCapture",
         ),
+    ),
+    _TCCBinaryTarget(
+        name="macos-screenshot",
+        services=(
+            "kTCCServiceScreenCapture",
+        ),
+    ),
+    _TCCBinaryTarget(
+        name="bash",
+        services=_TERMINAL_SERVICES,
+    ),
+    # Terminals
+    _TCCBinaryTarget(
+        name="alacritty",
+        services=_TERMINAL_SERVICES,
+    ),
+    _TCCBinaryTarget(
+        name="ghostty",
+        services=_TERMINAL_SERVICES,
+    ),
+    _TCCBinaryTarget(
+        name="iTerm2",
+        services=_TERMINAL_SERVICES,
+    ),
+    _TCCBinaryTarget(
+        name="zsh",
+        services=_TERMINAL_SERVICES,
+    ),
+    _TCCBinaryTarget(
+        name="claude",
+        services=_TERMINAL_SERVICES,
     ),
 )
 
 _TCC_SERVICES = sorted(
     {service for target in _TCC_TARGETS for service in target.services}
 )
-_DENY_PATTERNS = ("yabai", "skhd")
+_DENY_PATTERNS = ("yabai", "skhd", "macos-screenshot")
 
 
 def _candidate_binaries(name: str) -> list[Path]:
-    """Collect likely binary paths (Nix + Homebrew) for TCC entries."""
+    """Collect likely binary paths (Nix + Homebrew + system + .app) for TCC entries."""
 
     seen: list[Path] = []
 
@@ -109,10 +149,44 @@ def _candidate_binaries(name: str) -> list[Path]:
     add(Path("/run/current-system/sw/bin") / name)
     add(Path("/opt/homebrew/bin") / name)
     add(Path("/usr/local/bin") / name)
+    # System binaries
+    add(Path("/bin") / name)
+    add(Path("/usr/bin") / name)
     cellar = Path("/opt/homebrew/Cellar") / name
     if cellar.exists():
         for version in sorted(cellar.iterdir(), reverse=True):
             add(version / "bin" / name)
+
+    # For nix-built helpers, scan /etc/skhdrc for store paths
+    skhdrc = Path("/etc/skhdrc")
+    if skhdrc.exists():
+        try:
+            content = skhdrc.read_text()
+            # Match /nix/store/...-{name}/bin/{name}
+            pattern = rf"/nix/store/[a-z0-9]+-{re.escape(name)}/bin/{re.escape(name)}"
+            for match in re.finditer(pattern, content):
+                add(match.group(0))
+        except OSError:
+            pass
+
+    # macOS .app bundles - check both /Applications and ~/Applications
+    # App names may have different capitalization
+    app_names = [name, name.capitalize(), name.title()]
+    app_dirs = [Path("/Applications"), Path.home() / "Applications"]
+    for app_dir in app_dirs:
+        for app_name in app_names:
+            app_path = app_dir / f"{app_name}.app"
+            if app_path.exists():
+                add(app_path)
+                # Also add the actual binary inside the bundle
+                binary = app_path / "Contents" / "MacOS" / app_name
+                if binary.exists():
+                    add(binary)
+
+    # Claude Code CLI in ~/.claude/local/
+    claude_local = Path.home() / ".claude" / "local" / name
+    add(claude_local)
+
     return seen
 
 
@@ -270,7 +344,7 @@ def _cleanup_tcc_denials(console: Console | None = None) -> bool:
 
 
 def _ensure_tcc_with_tccutil(tccutil: str, console: Console | None = None) -> bool:
-    """Use jacobsalmela/tccutil to grant accessibility permissions."""
+    """Use jacobsalmela/tccutil to grant TCC permissions for all required services."""
 
     # First, clean up any denied entries
     _cleanup_tcc_denials(console)
@@ -288,49 +362,59 @@ def _ensure_tcc_with_tccutil(tccutil: str, console: Console | None = None) -> bo
 
         # Grant to the primary binary (first in list, usually from `which`)
         primary = clients[0]
-        try:
-            result = subprocess.run(
-                [sudo, tccutil, "-e", str(primary.resolve())],
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-            if result.returncode == 0:
-                granted_any = True
-                if console:
-                    console.print(
-                        f"[green]✓[/green] Granted accessibility to {target.name} ({primary})"
-                    )
-            else:
-                success = False
-                if console:
-                    error_msg = (
-                        result.stderr.strip()
-                        or result.stdout.strip()
-                        or f"Exit code {result.returncode}"
-                    )
-                    console.print(
-                        Panel(
-                            f"Failed to grant permissions to {primary}\n{error_msg}",
-                            title=f"tccutil failed for {target.name}",
-                            border_style="red",
+        resolved_path = str(primary.resolve())
+
+        # Grant each service individually
+        for service in target.services:
+            try:
+                # First insert, then enable for each service
+                insert_result = subprocess.run(
+                    [sudo, tccutil, "-s", service, "-i", resolved_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                enable_result = subprocess.run(
+                    [sudo, tccutil, "-s", service, "-e", resolved_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                if insert_result.returncode == 0 and enable_result.returncode == 0:
+                    granted_any = True
+                else:
+                    # Log but don't fail - some services may not be supported
+                    if console and enable_result.returncode != 0:
+                        error_msg = (
+                            enable_result.stderr.strip()
+                            or enable_result.stdout.strip()
+                            or f"Exit code {enable_result.returncode}"
                         )
+                        console.print(
+                            f"[yellow]![/yellow] {target.name}: {service} - {error_msg}"
+                        )
+            except subprocess.TimeoutExpired:
+                if console:
+                    console.print(
+                        f"[yellow]![/yellow] tccutil timed out for {target.name} {service}"
                     )
-        except subprocess.TimeoutExpired:
-            success = False
-            if console:
-                console.print(f"[red]✗[/red] tccutil timed out for {target.name}")
-        except Exception as e:
-            success = False
-            if console:
-                console.print(f"[red]✗[/red] Error granting to {target.name}: {e}")
+            except Exception as e:
+                if console:
+                    console.print(
+                        f"[yellow]![/yellow] Error granting {service} to {target.name}: {e}"
+                    )
+
+        if console and granted_any:
+            console.print(
+                f"[green]✓[/green] Granted permissions to {target.name} ({primary})"
+            )
 
     if not granted_any:
         if console:
             console.print(
                 Panel(
-                    "No yabai/skhd binaries discovered; run Homebrew or nix-darwin install first.",
-                    title="Accessibility grants skipped",
+                    "No yabai/skhd/macos-screenshot binaries discovered; run nix-darwin build first.",
+                    title="TCC grants skipped",
                     border_style="yellow",
                 )
             )
