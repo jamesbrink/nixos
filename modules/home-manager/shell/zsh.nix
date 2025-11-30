@@ -159,10 +159,10 @@ in
             local stripped="''${arg#-}"
             local keep_flags=""
             for ((i = 0; i < ''${#stripped}; i++)); do
-              case "''${stripped:i:1}" in
+              case "''${stripped:$i:1}" in
                 t) sort_by_time=true ;; # handled separately to map to eza sort
                 r) reverse=true ;;
-                *) keep_flags+="''${stripped:i:1}" ;;
+                *) keep_flags+="''${stripped:$i:1}" ;;
               esac
             done
             [[ -n "$keep_flags" ]] && args+=("-$keep_flags")
