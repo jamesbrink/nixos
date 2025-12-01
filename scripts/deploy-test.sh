@@ -28,8 +28,20 @@ if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
     # macOS dry-run (darwin doesn't have dry-activate)
     echo "Note: darwin doesn't support dry-activate. Building configuration instead..."
     NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations."$HOST".system --impure
+    # Show package changes with nvd
+    echo ""
+    echo "Package changes:"
+    nvd diff /run/current-system ./result 2>/dev/null || echo "  (nvd not available or no current system to compare)"
   else
-    # NixOS dry-run
+    # NixOS dry-run - build first to show nvd diff
+    sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake .#"$HOST" --impure
+    # Show package changes with nvd
+    echo ""
+    echo "Package changes:"
+    nvd diff /run/current-system ./result 2>/dev/null || echo "  (nvd not available or no current system to compare)"
+    # Then run dry-activate to show what would be activated
+    echo ""
+    echo "Dry-activate output:"
     sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#"$HOST" --impure
   fi
 else
@@ -41,10 +53,23 @@ else
     rsync -avz --exclude '.git' --exclude 'result' . jamesbrink@"$HOST":/private/tmp/nixos-config/
     echo "Note: darwin doesn't support dry-activate. Building configuration instead..."
     ssh jamesbrink@"$HOST" "cd /private/tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$HOST.system --impure"
+    # Show package changes with nvd
+    echo ""
+    echo "Package changes:"
+    ssh jamesbrink@"$HOST" "nvd diff /run/current-system /private/tmp/nixos-config/result 2>/dev/null" || echo "  (nvd not available or no current system to compare)"
   else
     # NixOS host - use root
     # Copy the flake to the remote NixOS server and test there
     rsync -avz --exclude '.git' --exclude 'result' . root@"$HOST":/tmp/nixos-config/
+    # Build first to show nvd diff
+    ssh root@"$HOST" "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake .#$HOST --impure"
+    # Show package changes with nvd
+    echo ""
+    echo "Package changes:"
+    ssh root@"$HOST" "nvd diff /run/current-system /tmp/nixos-config/result 2>/dev/null" || echo "  (nvd not available or no current system to compare)"
+    # Then run dry-activate
+    echo ""
+    echo "Dry-activate output:"
     ssh root@"$HOST" "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$HOST --impure"
   fi
 fi

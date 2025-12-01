@@ -41,6 +41,7 @@ in
       terraform-ls
       marksman
       nil
+      nvd
       rsync
       screen
       speedtest-cli

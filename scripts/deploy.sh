@@ -66,6 +66,12 @@ if [ -n "$BUILD_HOST" ]; then
   echo "Copying built system to $HOST..."
   ssh root@"$BUILD_HOST" "nix copy --to ssh://root@$HOST $SYSTEM_PATH"
 
+  # Show package changes with nvd before activating
+  echo ""
+  echo "Package changes:"
+  ssh root@"$HOST" "nvd diff /run/current-system $SYSTEM_PATH 2>/dev/null" || echo "  (nvd not available or no current system to compare)"
+  echo ""
+
   # Activate on target host
   echo "Activating configuration on $HOST..."
   ssh root@"$HOST" "nix-env --profile /nix/var/nix/profiles/system --set $SYSTEM_PATH && $SYSTEM_PATH/bin/switch-to-configuration switch"
@@ -84,7 +90,16 @@ if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
     rm -rf /private/tmp/nixos-config
     mkdir -p /private/tmp/nixos-config
     rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . /private/tmp/nixos-config/
-    # macOS deployment - darwin-rebuild requires sudo
+    # macOS deployment - build first to show changes
+    echo "Building configuration..."
+    NIXPKGS_ALLOW_UNFREE=1 nix build /private/tmp/nixos-config#darwinConfigurations."$HOST".system --impure -o /private/tmp/nixos-config/result
+    # Show package changes with nvd
+    echo ""
+    echo "Package changes:"
+    nvd diff /run/current-system /private/tmp/nixos-config/result 2>/dev/null || echo "  (nvd not available or no current system to compare)"
+    echo ""
+    # Now switch
+    echo "Activating configuration..."
     sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /private/tmp/nixos-config#"$HOST" --impure --no-update-lock-file
   else
     rm -rf /tmp/nixos-config
@@ -110,7 +125,16 @@ if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
       fi
     fi
 
-    # NixOS deployment
+    # NixOS deployment - build first to show changes
+    echo "Building configuration..."
+    sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake /tmp/nixos-config#"$HOST" --impure
+    # Show package changes with nvd
+    echo ""
+    echo "Package changes:"
+    nvd diff /run/current-system ./result 2>/dev/null || echo "  (nvd not available or no current system to compare)"
+    echo ""
+    # Now switch
+    echo "Activating configuration..."
     sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake /tmp/nixos-config#"$HOST" --verbose --impure
   fi
 else
@@ -120,6 +144,16 @@ else
     # Darwin host - use regular user
     # Copy the flake to the remote darwin server and build there
     rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . jamesbrink@"$HOST":/private/tmp/nixos-config/
+    # Build first to show changes
+    echo "Building configuration on $HOST..."
+    ssh jamesbrink@"$HOST" "cd /private/tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$HOST.system --impure"
+    # Show package changes with nvd
+    echo ""
+    echo "Package changes:"
+    ssh jamesbrink@"$HOST" "nvd diff /run/current-system /private/tmp/nixos-config/result 2>/dev/null" || echo "  (nvd not available or no current system to compare)"
+    echo ""
+    # Now switch
+    echo "Activating configuration on $HOST..."
     ssh jamesbrink@"$HOST" "sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake /private/tmp/nixos-config#$HOST --impure --no-update-lock-file"
   else
     # NixOS host - use root
@@ -147,6 +181,16 @@ else
 ENDSSH
     fi
 
+    # Build first to show changes
+    echo "Building configuration on $HOST..."
+    ssh root@"$HOST" "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake .#$HOST --impure"
+    # Show package changes with nvd
+    echo ""
+    echo "Package changes:"
+    ssh root@"$HOST" "nvd diff /run/current-system /tmp/nixos-config/result 2>/dev/null" || echo "  (nvd not available or no current system to compare)"
+    echo ""
+    # Now switch
+    echo "Activating configuration on $HOST..."
     ssh root@"$HOST" "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake /tmp/nixos-config#$HOST --verbose --impure"
   fi
 fi

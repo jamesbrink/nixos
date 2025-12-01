@@ -236,9 +236,9 @@ deploy_host() {
             rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' "$FLAKE_DIR/" "$TEMP_DIR/" >> "$log_file" 2>&1
             
             if [ "$DRY_RUN" = true ]; then
-                deploy_cmd="cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$host.system --impure"
+                deploy_cmd="cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$host.system --impure && echo '' && echo 'Package changes:' && nvd diff /run/current-system $TEMP_DIR/result 2>/dev/null || echo '  (nvd not available or no current system to compare)'"
             else
-                deploy_cmd="sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake $TEMP_DIR#$host --impure --no-update-lock-file"
+                deploy_cmd="cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$host.system --impure && echo '' && echo 'Package changes:' && (nvd diff /run/current-system $TEMP_DIR/result 2>/dev/null || echo '  (nvd not available)') && echo '' && echo 'Activating configuration...' && sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake $TEMP_DIR#$host --impure --no-update-lock-file"
             fi
         else
             # NixOS local deployment
@@ -266,24 +266,24 @@ deploy_host() {
             fi
 
             if [ "$DRY_RUN" = true ]; then
-                deploy_cmd="sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake $TEMP_DIR#$host --impure"
+                deploy_cmd="sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake $TEMP_DIR#$host --impure && echo '' && echo 'Package changes:' && (nvd diff /run/current-system ./result 2>/dev/null || echo '  (nvd not available)') && echo '' && echo 'Dry-activate output:' && sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake $TEMP_DIR#$host --impure"
             else
-                deploy_cmd="sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake $TEMP_DIR#$host --verbose --impure"
+                deploy_cmd="sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake $TEMP_DIR#$host --impure && echo '' && echo 'Package changes:' && (nvd diff /run/current-system ./result 2>/dev/null || echo '  (nvd not available)') && echo '' && echo 'Activating configuration...' && sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake $TEMP_DIR#$host --verbose --impure"
             fi
         fi
     else
         # Remote deployment
         echo "[Remote deployment]" >> "$log_file"
-        
+
         if echo "$DARWIN_HOSTS" | grep -q "^${host}$"; then
             # Darwin remote deployment
             TEMP_DIR="/private/tmp/nixos-config"
             rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' "$FLAKE_DIR/" "jamesbrink@$host:$TEMP_DIR/" >> "$log_file" 2>&1
-            
+
             if [ "$DRY_RUN" = true ]; then
-                deploy_cmd="ssh jamesbrink@$host 'cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$host.system --impure'"
+                deploy_cmd="ssh jamesbrink@$host 'cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$host.system --impure && echo \"\" && echo \"Package changes:\" && (nvd diff /run/current-system $TEMP_DIR/result 2>/dev/null || echo \"  (nvd not available)\")'"
             else
-                deploy_cmd="ssh jamesbrink@$host 'sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake $TEMP_DIR#$host --impure --no-update-lock-file'"
+                deploy_cmd="ssh jamesbrink@$host 'cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$host.system --impure && echo \"\" && echo \"Package changes:\" && (nvd diff /run/current-system $TEMP_DIR/result 2>/dev/null || echo \"  (nvd not available)\") && echo \"\" && echo \"Activating configuration...\" && sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake $TEMP_DIR#$host --impure --no-update-lock-file'"
             fi
         else
             # NixOS remote deployment
@@ -311,9 +311,9 @@ ENDSSH
             fi
 
             if [ "$DRY_RUN" = true ]; then
-                deploy_cmd="ssh root@$host 'cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$host --impure'"
+                deploy_cmd="ssh root@$host 'cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake .#$host --impure && echo \"\" && echo \"Package changes:\" && (nvd diff /run/current-system $TEMP_DIR/result 2>/dev/null || echo \"  (nvd not available)\") && echo \"\" && echo \"Dry-activate output:\" && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild dry-activate --flake .#$host --impure'"
             else
-                deploy_cmd="ssh root@$host 'NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake $TEMP_DIR#$host --verbose --impure'"
+                deploy_cmd="ssh root@$host 'cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake .#$host --impure && echo \"\" && echo \"Package changes:\" && (nvd diff /run/current-system $TEMP_DIR/result 2>/dev/null || echo \"  (nvd not available)\") && echo \"\" && echo \"Activating configuration...\" && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake .#$host --verbose --impure'"
             fi
         fi
     fi
