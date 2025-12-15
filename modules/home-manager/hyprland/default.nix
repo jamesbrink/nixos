@@ -140,6 +140,13 @@ in
   wayland.windowManager.hyprland = {
     enable = true;
     settings = {
+      # Monitor configuration - Samsung Odyssey G95NC at native resolution
+      # HDMI-A-1 at 7680x2160@120Hz, fallback to preferred for other monitors
+      monitor = [
+        "HDMI-A-1,7680x2160@120,0x0,1"
+        ",preferred,auto,1" # Fallback for any other monitors
+      ];
+
       # Omarchy-style keybindings
       "$mod" = "SUPER";
 
@@ -211,7 +218,7 @@ in
         "fullscreen, class:Screensaver"
 
         # Picture-in-picture overlays
-        "tag +pip, title:(Picture.{0,1}in.{0,1}[Pp]icture)"
+        "tag +pip, title:(Picture.?in.?[Pp]icture)"
         "float, tag:pip"
         "pin, tag:pip"
         "size 600 338, tag:pip"
@@ -392,15 +399,19 @@ in
       #   "3, down, fullscreen" # Swipe down to toggle fullscreen
       # ];
 
-      # Touchpad gestures (3-finger swipe)
+      # Touchpad gestures (3-finger swipe) - Hyprland 0.51+ syntax
       gestures = {
-        workspace_swipe = true;
-        workspace_swipe_fingers = 3;
+        workspace_swipe_invert = false;
         workspace_swipe_distance = 300; # Lower = less distance needed to switch
         workspace_swipe_cancel_ratio = 0.15; # Higher = easier to cancel swipe (default 0.5)
         workspace_swipe_min_speed_to_force = 30; # Minimum speed to force workspace change
         workspace_swipe_forever = true; # Continue swiping through multiple workspaces
       };
+
+      # New gesture syntax for Hyprland 0.51+
+      gesture = [
+        "3, horizontal, workspace" # 3-finger horizontal swipe to switch workspaces
+      ];
 
       # Input configuration (touchpad behavior)
       input = {
