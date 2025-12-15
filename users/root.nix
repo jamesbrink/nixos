@@ -63,9 +63,9 @@ in
       ];
 
       # Root-specific overrides
-      programs.git = {
-        userName = "root";
-        userEmail = "root@localhost";
+      programs.git.settings.user = {
+        name = "root";
+        email = "root@localhost";
       };
 
       # Simplified shell aliases for root

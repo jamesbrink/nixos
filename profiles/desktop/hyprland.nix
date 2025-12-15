@@ -322,7 +322,7 @@ in
     inkscape-with-extensions # Vector graphics
     vlc # Media player
     slack # Team communication
-    bitwarden # Password manager
+    bitwarden-desktop # Password manager
 
     # Fonts
     nerd-fonts.fira-code
@@ -423,7 +423,7 @@ in
     packages = with pkgs; [
       noto-fonts
       noto-fonts-cjk-sans
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       liberation_ttf
       fira-code
       fira-code-symbols

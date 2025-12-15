@@ -29,7 +29,7 @@
     # TODO: Re-enable when upstream hash is fixed
     # inputs.claude-desktop.packages.${pkgs.system}.claude-desktop
     alacritty
-    bitwarden
+    bitwarden-desktop
     blender
     chromium
     fusuma

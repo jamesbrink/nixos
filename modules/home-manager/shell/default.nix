@@ -46,6 +46,8 @@
   # Once identified, we can selectively re-enable the non-problematic options
   programs.ssh = {
     enable = true;
+    # Disable default config since we define our own matchBlocks."*"
+    enableDefaultConfig = false;
     matchBlocks."*" = {
       serverAliveInterval = 60;
       serverAliveCountMax = 2;

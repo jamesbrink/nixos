@@ -109,7 +109,7 @@ in
       xclip # Clipboard support on Linux
     ];
 
-  programs = ({
+  programs = {
     eza = {
       enable = true;
       enableZshIntegration = false; # Using custom aliases in zsh.nix instead
@@ -162,19 +162,11 @@ in
       };
     };
 
-    git = ({
+    git = {
       enable = true;
-    })
-    // lib.optionalAttrs pkgs.stdenv.isDarwin {
       settings = gitSettingsConfig;
-    }
-    // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
-      aliases = gitAliasConfig;
-      extraConfig = gitExtraConfig;
-      delta = deltaBaseConfig;
     };
-  })
-  // lib.optionalAttrs pkgs.stdenv.isDarwin {
+
     delta = deltaBaseConfig // {
       enableGitIntegration = true;
     };

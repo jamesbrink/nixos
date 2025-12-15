@@ -29,7 +29,7 @@
     # Core desktop applications
     alacritty
     chromium
-    bitwarden
+    bitwarden-desktop
     vscode
 
     # Media applications

@@ -7,7 +7,7 @@
   openblas,
   cudaSupport ? false,
   cudaPackages ? null,
-  gcc11,
+  gcc13,
   makeWrapper,
   linuxPackages,
 }:
@@ -30,7 +30,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     cmake
     git
-    gcc11
+    gcc13
     makeWrapper
   ]
   ++ lib.optionals cudaSupport [
@@ -44,8 +44,6 @@ stdenv.mkDerivation rec {
     cudaPackages.cuda_cudart
     cudaPackages.cuda_cccl
     cudaPackages.libcublas
-    cudaPackages.cuda_cudart.lib
-    cudaPackages.cuda_cudart.static
     linuxPackages.nvidia_x11
   ];
 
@@ -87,8 +85,8 @@ stdenv.mkDerivation rec {
     export CUDA_PATH="${cudaPackages.cuda_cudart}"
     export CUDA_HOME="${cudaPackages.cuda_cudart}"
     export EXTRA_LDFLAGS="-L${cudaPackages.cuda_cudart}/lib/stubs -L${cudaPackages.cuda_cudart}/lib64 -L${cudaPackages.libcublas}/lib"
-    export CC=${gcc11}/bin/gcc
-    export CXX=${gcc11}/bin/g++
+    export CC=${gcc13}/bin/gcc
+    export CXX=${gcc13}/bin/g++
     export PATH="${cudaPackages.cuda_nvcc}/bin:$PATH"
     export CUDA_VISIBLE_DEVICES=0
   '';

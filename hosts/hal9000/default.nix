@@ -76,6 +76,9 @@
   };
 
   boot = {
+    # Enable aarch64-linux emulation for building ARM Docker images
+    binfmt.emulatedSystems = [ "aarch64-linux" ];
+
     kernelParams = [
       "audit=1"
       "zfs.zfs_arc_max=17179869184"
@@ -606,7 +609,6 @@
     enable = false;
     host = "0.0.0.0";
     port = 11434;
-    acceleration = "cuda";
     package = pkgs.unstablePkgs.ollama-cuda;
   };
 
@@ -864,10 +866,7 @@
         package = pkgs.qemu_kvm;
         runAsRoot = false;
         swtpm.enable = true;
-        ovmf = {
-          enable = true;
-          packages = [ pkgs.OVMFFull.fd ];
-        };
+        # OVMF images are now available by default in 25.11
       };
       onBoot = "ignore";
       onShutdown = "shutdown";
@@ -1105,7 +1104,8 @@
 
   programs = {
     ssh = {
-      startAgent = true;
+      # Disabled - conflicts with GNOME's gcr-ssh-agent in 25.11
+      startAgent = false;
       extraConfig = ''
         AddKeysToAgent yes
       '';
@@ -1183,7 +1183,7 @@
     websocketd
     dotnetPackages.Nuget
     exo
-    glxinfo
+    mesa-demos
     incus
     nvidia-vaapi-driver
     nvtopPackages.nvidia

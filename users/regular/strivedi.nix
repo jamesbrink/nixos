@@ -31,9 +31,9 @@ in
     shell = pkgs.zsh;
     useDefaultShell = true;
     packages = with pkgs; [
-      (pkgs.callPackage ../../pkgs/llama-cpp {
+      (pkgs.llama-cpp.override {
         cudaSupport = true;
-        cudaPackages = pkgs.cudaPackages_12_3;
+        cudaPackages = pkgs.cudaPackages_12_6;
       })
       atuin
       ffmpeg-full

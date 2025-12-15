@@ -110,19 +110,25 @@ in
           xonsh
           yt-dlp
 
-          # Linux-specific packages
-          (pkgs.callPackage ../../pkgs/llama-cpp {
-            cudaSupport =
+          # Linux-specific packages - use nixpkgs llama-cpp with CUDA on GPU hosts
+          (
+            if
               config.networking.hostName != "n100-01"
               && config.networking.hostName != "n100-02"
               && config.networking.hostName != "n100-03"
-              && config.networking.hostName != "n100-04";
-            cudaPackages = pkgs.cudaPackages_12_3;
-          })
+              && config.networking.hostName != "n100-04"
+            then
+              pkgs.llama-cpp.override {
+                cudaSupport = true;
+                cudaPackages = pkgs.cudaPackages_12_6;
+              }
+            else
+              pkgs.llama-cpp
+          )
         ]
         ++ [
           # Desktop applications
-          barrier
+          input-leap
           dbeaver-bin
           discord
           drawio
@@ -138,7 +144,7 @@ in
           mailspring
           meld
           obsidian
-          openai-whisper-cpp
+          # whisper-cpp removed - conflicts with llama-cpp (both provide ggml headers)
           unstable.postman
           unstable.signal-desktop
           termius

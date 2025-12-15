@@ -58,20 +58,10 @@ in
       };
 
       # Git user configuration
-      programs.git =
-        { }
-        // lib.optionalAttrs pkgs.stdenv.isDarwin {
-          settings = {
-            user = {
-              name = "James Brink";
-              email = "brink.james@gmail.com";
-            };
-          };
-        }
-        // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
-          userName = "James Brink";
-          userEmail = "brink.james@gmail.com";
-        };
+      programs.git.settings.user = {
+        name = "James Brink";
+        email = "brink.james@gmail.com";
+      };
 
       # Platform-specific update aliases
       programs.zsh.shellAliases.update =

@@ -21,7 +21,7 @@
     slack
     gnome-remote-desktop
     gnome-session
-    bitwarden
+    bitwarden-desktop
     nerd-fonts.fira-code
     # Networking
     tailscale
