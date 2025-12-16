@@ -67,6 +67,12 @@
         "flakes"
       ];
       auto-optimise-store = true;
+      # Allow remote build requests from trusted users
+      trusted-users = [
+        "root"
+        "jamesbrink"
+        "@wheel"
+      ];
     };
     gc = {
       automatic = true;
