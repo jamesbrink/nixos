@@ -66,8 +66,10 @@ in
     pkgs.neovim-remote
   ];
 
-  # Set initial Alacritty opacity
-  programs.alacritty.settings.window.opacity = lib.mkForce 0.97;
+  # NOTE: Alacritty opacity and decorations are managed by themectl macos-mode
+  # - BSP mode: decorations = "buttonless", opacity = 0.97
+  # - Native mode: decorations = "full", opacity = 1.0
+  # Do NOT set window.opacity or window.decorations here.
 
   # Generate theme files and mappings
   home.file = {

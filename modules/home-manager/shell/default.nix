@@ -154,11 +154,16 @@
           x = 24;
           y = 24;
         };
-        opacity = 1.0;
+        # NOTE: opacity and decorations are managed by themectl on Darwin
+        # - BSP mode: decorations = "buttonless", opacity = 0.97
+        # - Native mode: decorations = "full", opacity = 1.0
+        # Setting them here would override the user's mode preference on deploy.
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         option_as_alt = "Both";
-        decorations = "buttonless"; # Hide title bar on macOS for cleaner look
+      }
+      // lib.optionalAttrs pkgs.stdenv.isLinux {
+        opacity = 1.0;
       };
 
       font = {
