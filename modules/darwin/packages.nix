@@ -57,6 +57,7 @@
       mas # Mac App Store CLI
       dockutil
       grandperspective # Visual disk usage analyzer for macOS
+      macmon # Sudoless performance monitoring for Apple Silicon
 
       # From unstable
       pkgs.unstablePkgs.atuin
