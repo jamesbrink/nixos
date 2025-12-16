@@ -19,49 +19,19 @@
   system.defaults.dock.mru-spaces = false; # Don't auto-rearrange spaces by recent use
   system.defaults.spaces.spans-displays = false; # Displays have separate Spaces (false = separate, true = unified)
 
-  # Dock auto-hide by default (yabai starts in BSP/tiling mode)
-  # NOTE: Commented out - now managed dynamically by themectl macos-mode
-  # system.defaults.dock.autohide = lib.mkForce true;
-
-  # Keep macOS menu bar visible (set to Never auto-hide)
-  # Note: Even though SketchyBar is available in BSP mode, keep native menu bar visible
+  # ==========================================================================
+  # MODE-RELATED SETTINGS - ALL MANAGED BY themectl macos-mode
+  # ==========================================================================
+  # The following settings are NOT set here because they are dynamically
+  # controlled by `themectl macos-mode` (toggle with Cmd+Shift+Space):
   #
-  # IMPORTANT: After extensive testing, discovered menu bar auto-hide is controlled by FOUR settings:
+  # - dock.autohide: BSP=true, Native=false
+  # - finder.CreateDesktop: BSP=false, Native=true
+  # - Menu bar auto-hide settings (_HIHideMenuBar, AppleMenuBarAutoHide, etc.)
   #
-  # 1. NSGlobalDomain._HIHideMenuBar (LEGACY)
-  #    - false (0) = Menu bar VISIBLE (don't auto-hide)
-  #    - true (1)  = Menu bar AUTO-HIDES
-  #
-  # 2. NSGlobalDomain.AppleMenuBarAutoHide (PRIMARY CONTROL)
-  #    - false (0) = Menu bar visible
-  #    - true (1)  = Menu bar auto-hides
-  #
-  # 3. com.apple.Dock.autohide-menu-bar (VENTURA/SONOMA)
-  #    - false (0) = Menu bar visible
-  #    - true (1)  = Menu bar auto-hides
-  #
-  # 4. com.apple.controlcenter.AutoHideMenuBarOption (TAHOE 26.x UI VALUE)
-  #    - 0 = Always auto-hide
-  #    - 1 = On Desktop Only
-  #    - 2 = In Full Screen Only
-  #    - 3 = Never auto-hide ← What we want
-  #    - 4+ = In Full Screen Only (wraps back)
-  #
-  # CRITICAL: Per-host settings (defaults -currentHost) override global settings!
-  # macOS checks: -currentHost first, then global domain
-  #
-  system.defaults.NSGlobalDomain._HIHideMenuBar = false; # false = visible
-  system.defaults.CustomUserPreferences = {
-    "NSGlobalDomain" = {
-      AppleMenuBarAutoHide = false; # false = visible
-    };
-    "com.apple.Dock" = {
-      "autohide-menu-bar" = false; # false = visible
-    };
-    "com.apple.controlcenter" = {
-      AutoHideMenuBarOption = 3; # 3 = Never auto-hide
-    };
-  };
+  # Setting them here would override the user's mode preference on every deploy.
+  # The current mode is persisted in ~/.bsp-mode-state
+  # ==========================================================================
 
   # Disable macOS built-in screenshot shortcuts so skhd can handle them
   # This prevents conflicts with workspace switching (cmd+shift+3/4) and
@@ -90,7 +60,4 @@
       };
     };
   };
-
-  # Hide desktop icons by default (yabai starts in BSP/tiling mode)
-  system.defaults.finder.CreateDesktop = false;
 }

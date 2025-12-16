@@ -46,7 +46,8 @@
       };
 
       dock = {
-        autohide = false;
+        # NOTE: autohide is managed dynamically by themectl macos-mode
+        # Do NOT set it here or it will override the user's mode preference on deploy
         orientation = "bottom";
         show-recents = false;
         tilesize = 48;
