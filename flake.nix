@@ -72,6 +72,10 @@
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixos-unstable";
     };
+    comfyui-nix = {
+      url = "github:utensils/comfyui-nix";
+      inputs.nixpkgs.follows = "nixos-unstable";
+    };
   };
 
   outputs =
@@ -93,6 +97,7 @@
       homebrew-core,
       homebrew-cask,
       zen-browser,
+      comfyui-nix,
       ...
     }@inputs:
     let
@@ -887,6 +892,7 @@
             {
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
+                comfyui-nix.overlays.default
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
