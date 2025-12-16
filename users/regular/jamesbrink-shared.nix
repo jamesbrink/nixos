@@ -91,9 +91,10 @@ in
         prefix=${homeDir}/.npm-global
       '';
 
-      # Add npm global bin to PATH
+      # Add npm global bin and cargo bin to PATH
       home.sessionPath = [
         "${homeDir}/.npm-global/bin"
+        "${homeDir}/.cargo/bin"
       ];
 
       # Create npm global directory
