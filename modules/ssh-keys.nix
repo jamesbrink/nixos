@@ -20,6 +20,8 @@ let
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHRNDnoVLI8Zy9YjOkHQuX6m9f9EzW8W2lYxnoGDjXtM"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIKSf4Qft9nUD2gRDeJVkogYKY7PQvhlnD+kjFKgro3r"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBKlaSFMo6Wcm5oZu3ABjPY4Q+INQBlVwxVktjfz66oI root@n100-04"
+    # Nix remote builder keys
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBvJiS9lYBJ/LHMElCEj5y8fRsq1h1Xg1einEVz6z29U root@halcyon-nix-builder"
   ];
 in
 {
