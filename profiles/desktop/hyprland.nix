@@ -321,6 +321,7 @@ in
     vlc # Media player
     slack # Team communication
     bitwarden-desktop # Password manager
+    jan # Offline AI chat interface
 
     # Fonts
     nerd-fonts.fira-code

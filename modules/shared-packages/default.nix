@@ -61,6 +61,7 @@ in
       act
       code2prompt
       llm
+      opencode
       nushell
       slack-cli
       nodejs
