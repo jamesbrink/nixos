@@ -744,6 +744,9 @@
 
         ollama = {
           image = "ollama/ollama:latest";
+          environment = {
+            OLLAMA_ORIGINS = "*";
+          };
           volumes = [
             "/storage-fast/ollama:/root/.ollama"
           ];
