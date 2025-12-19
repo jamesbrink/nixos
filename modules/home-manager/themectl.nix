@@ -18,7 +18,10 @@ let
     if inputs != null then inputs else attrByPath [ "_module" "args" "inputs" ] null config;
   packageFor =
     name:
-    if resolvedInputs != null then resolvedInputs.self.packages.${pkgs.stdenv.system}.${name} else null;
+    if resolvedInputs != null then
+      resolvedInputs.self.packages.${pkgs.stdenv.hostPlatform.system}.${name}
+    else
+      null;
   themeData = packageFor "themectl-theme-data";
   themectlPkg = packageFor "themectl";
   hotkeysBundleArg = attrByPath [ "_module" "args" "hotkeysBundle" ] null config;

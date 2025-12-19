@@ -100,9 +100,9 @@
   '';
 
   # Enable hardware watchdog for automatic recovery from hangs
-  systemd.watchdog = {
-    runtimeTime = "60s"; # Ping watchdog every 60 seconds
-    rebootTime = "2min"; # Force reboot if no ping for 2 minutes
+  systemd.settings.Manager = {
+    RuntimeWatchdogSec = "60s"; # Ping watchdog every 60 seconds
+    RebootWatchdogSec = "2min"; # Force reboot if no ping for 2 minutes
   };
 
   # Enable systemd-oomd for memory pressure handling

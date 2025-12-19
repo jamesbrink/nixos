@@ -48,9 +48,6 @@ in
         ../../modules/home-manager/darwin/hammerspoon.nix
       ];
 
-      # Allow broken packages for home-manager (zig-hook is broken on x86_64-darwin)
-      nixpkgs.config.allowBroken = lib.mkIf (pkgs.stdenv.hostPlatform.system == "x86_64-darwin") true;
-
       home.packages = with pkgs; [
         # Common packages for darwin
         atuin

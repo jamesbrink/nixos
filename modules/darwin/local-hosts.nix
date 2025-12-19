@@ -35,10 +35,6 @@ let
       "alienware"
       "alienware.home.urandom.io"
     ];
-    "10.70.100.208" = [
-      "sevastopol"
-      "sevastopol.home.urandom.io"
-    ];
 
     # N100 cluster nodes
     "10.70.100.201" = [

@@ -124,10 +124,6 @@
         system = "aarch64-darwin";
         config.allowUnfree = true;
       };
-      pkgsX86Darwin = import nixpkgs {
-        system = "x86_64-darwin";
-        config.allowUnfree = true;
-      };
       pythonRuntimeDeps = ps: [
         ps.typer
         ps.rich
@@ -137,7 +133,6 @@
       hotkeysBundles = {
         x86_64-linux = import ./lib/hotkeys.nix { inherit pkgs; };
         aarch64-darwin = import ./lib/hotkeys.nix { pkgs = pkgsAarch64Darwin; };
-        x86_64-darwin = import ./lib/hotkeys.nix { pkgs = pkgsX86Darwin; };
       };
     in
     {
@@ -956,55 +951,6 @@
               ];
             }
             ./hosts/halcyon/default.nix
-          ];
-        };
-
-        sevastopol = darwin.lib.darwinSystem {
-          system = "x86_64-darwin"; # Intel iMac 27" 2013
-
-          specialArgs = {
-            inherit inputs agenix claude-desktop;
-            secretsPath = "${inputs.secrets}";
-            unstablePkgs = import nixos-unstable {
-              system = "x86_64-darwin";
-              config.allowUnfree = true;
-              overlays = [ ];
-            };
-            hotkeysBundle = hotkeysBundles."x86_64-darwin";
-          };
-
-          modules = [
-            home-manager-unstable.darwinModules.home-manager
-            ./modules/home-manager/hotkeys-extra-args.nix
-            agenix.darwinModules.default
-            nix-homebrew.darwinModules.nix-homebrew
-            {
-              nix-homebrew = {
-                user = "jamesbrink";
-                enable = true;
-                taps = {
-                  "homebrew/homebrew-core" = homebrew-core;
-                  "homebrew/homebrew-cask" = homebrew-cask;
-                  "homebrew/homebrew-bundle" = homebrew-bundle;
-                };
-                mutableTaps = true;
-                autoMigrate = true;
-              };
-            }
-            {
-              nixpkgs.config.allowUnfree = true;
-              nixpkgs.overlays = [
-                (import ./overlays/pixinsight.nix)
-                (final: prev: {
-                  unstablePkgs = import nixos-unstable {
-                    system = "x86_64-darwin";
-                    config.allowUnfree = true;
-                    overlays = [ ];
-                  };
-                })
-              ];
-            }
-            ./hosts/sevastopol/default.nix
           ];
         };
       };

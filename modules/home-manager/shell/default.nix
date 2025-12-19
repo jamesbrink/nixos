@@ -100,11 +100,6 @@
         CheckHostIP no
         UserKnownHostsFile=/dev/null
 
-      Host sevastopol.home.urandom.io
-        StrictHostKeyChecking no
-        CheckHostIP no
-        UserKnownHostsFile=/dev/null
-
       Host n100-01.home.urandom.io
         StrictHostKeyChecking no
         CheckHostIP no

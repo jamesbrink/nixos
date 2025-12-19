@@ -42,17 +42,16 @@
         layout = "us";
         variant = "";
       };
-
-      displayManager = {
-        gdm.enable = true;
-      };
-
-      desktopManager.gnome.enable = true;
     };
+
+    # Display and desktop managers (moved out of xserver)
+    displayManager.gdm = {
+      enable = true;
+      wayland = false; # Disable Wayland to ensure X11 session (required for RustDesk)
+    };
+
+    desktopManager.gnome.enable = true;
 
     printing.enable = true;
   };
-
-  # Disable Wayland in GDM to ensure X11 session (required for RustDesk)
-  services.xserver.displayManager.gdm.wayland = false;
 }

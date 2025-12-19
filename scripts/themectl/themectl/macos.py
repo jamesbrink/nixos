@@ -92,9 +92,7 @@ _TCC_TARGETS: tuple[_TCCBinaryTarget, ...] = (
     ),
     _TCCBinaryTarget(
         name="macos-screenshot",
-        services=(
-            "kTCCServiceScreenCapture",
-        ),
+        services=("kTCCServiceScreenCapture",),
     ),
     _TCCBinaryTarget(
         name="bash",
