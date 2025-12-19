@@ -179,8 +179,11 @@
     runnerTierLabel = "selfhost-m";
   };
 
-  # Create k3s storage directory
-  systemd.tmpfiles.rules = [ "d /var/lib/rancher 0755 root root -" ];
+  # Create k3s storage directory and AI directory for ComfyUI
+  systemd.tmpfiles.rules = [
+    "d /var/lib/rancher 0755 root root -"
+    "d /home/jamesbrink/AI 0755 jamesbrink users -"
+  ];
 
   # Time and locale configuration
   time.timeZone = "America/Phoenix";
@@ -232,9 +235,59 @@
     zlib
   ];
 
+  # Touchpad configuration (physical buttons broken)
+  services.libinput = {
+    enable = true;
+    touchpad = {
+      tapping = true; # Tap to click
+      tappingButtonMap = "lrm"; # 1-finger=left, 2-finger=right, 3-finger=middle
+      clickMethod = "clickfinger"; # Use finger count for clicks
+      naturalScrolling = true; # Optional: reverse scroll direction
+      disableWhileTyping = true; # Prevent accidental touches while typing
+    };
+  };
+
   # Sound configuration with PipeWire
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
+
+  # Ollama AI service with CUDA support
+  services.ollama = {
+    enable = true;
+    host = "0.0.0.0";
+    port = 11434;
+    package = pkgs.unstablePkgs.ollama-cuda;
+    openFirewall = true;
+    environmentVariables = {
+      OLLAMA_ORIGINS = "*"; # Allow all origins (CORS)
+    };
+  };
+
+  # ComfyUI service running as jamesbrink
+  systemd.services.comfyui = {
+    description = "ComfyUI - Stable Diffusion GUI";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    environment = {
+      HOME = "/home/jamesbrink";
+    };
+    serviceConfig = {
+      Type = "simple";
+      User = "jamesbrink";
+      Group = "users";
+      WorkingDirectory = "/home/jamesbrink/AI";
+      ExecStart = "${pkgs.comfy-ui}/bin/comfy-ui --base-directory /home/jamesbrink/AI --listen 0.0.0.0 --use-pytorch-cross-attention --cuda-malloc --lowvram";
+      Restart = "on-failure";
+      RestartSec = "10s";
+      # GPU access
+      SupplementaryGroups = [
+        "video"
+        "render"
+      ];
+      StandardOutput = "journal";
+      StandardError = "journal";
+    };
+  };
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -449,6 +502,9 @@
 
   # Host-specific packages (beyond what's in shared modules and desktop profile)
   environment.systemPackages = with pkgs; [
+    # AI/ML tools
+    comfy-ui # ComfyUI via comfyui-nix overlay
+
     # CUDA and GPU tools
     cudaPackages.cudatoolkit
     nvtopPackages.nvidia
@@ -530,6 +586,7 @@
       47990 # Sunshine
       48010 # Sunshine
       7865 # Custom service
+      8188 # ComfyUI web UI
     ];
     allowedUDPPortRanges = [
       {

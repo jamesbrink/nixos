@@ -849,6 +849,7 @@
             {
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
+                comfyui-nix.overlays.default
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";

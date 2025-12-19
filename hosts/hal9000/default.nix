@@ -392,6 +392,7 @@
         7001 # AirPlay
         7100 # AirPlay screen mirroring
         7865 # Fooocus web UI
+        8188 # ComfyUI web UI
         # Development ports
         3000
         3001
@@ -616,6 +617,36 @@
     host = "0.0.0.0";
     port = 11434;
     package = pkgs.unstablePkgs.ollama-cuda;
+  };
+
+  # ComfyUI service running as jamesbrink
+  systemd.services.comfyui = {
+    description = "ComfyUI - Stable Diffusion GUI";
+    after = [
+      "network.target"
+      "home-jamesbrink-AI.mount"
+    ];
+    requires = [ "home-jamesbrink-AI.mount" ];
+    wantedBy = [ "multi-user.target" ];
+    environment = {
+      HOME = "/home/jamesbrink";
+    };
+    serviceConfig = {
+      Type = "simple";
+      User = "jamesbrink";
+      Group = "users";
+      WorkingDirectory = "/home/jamesbrink/AI";
+      ExecStart = "${pkgs.comfy-ui}/bin/comfy-ui --base-directory /home/jamesbrink/AI --listen 0.0.0.0 --use-pytorch-cross-attention --cuda-malloc --lowvram";
+      Restart = "on-failure";
+      RestartSec = "10s";
+      # GPU access
+      SupplementaryGroups = [
+        "video"
+        "render"
+      ];
+      StandardOutput = "journal";
+      StandardError = "journal";
+    };
   };
 
   security.rtkit.enable = true;
