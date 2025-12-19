@@ -453,6 +453,15 @@ in
   # Enable Ghostty terminfo support
   programs.ghostty-terminfo.enable = true;
 
+  # Syncthing service override to wait for API before syncthing-init runs
+  # This fixes race condition where syncthing-init tries to connect before syncthing is ready
+  systemd.services.syncthing-init = {
+    serviceConfig = {
+      # Wait up to 60 seconds for syncthing API to be ready before running init
+      ExecStartPre = "${pkgs.bash}/bin/bash -c 'for i in {1..60}; do ${pkgs.curl}/bin/curl -sf http://127.0.0.1:8384/rest/system/ping >/dev/null 2>&1 && exit 0; sleep 1; done; echo \"Syncthing API not ready after 60s\"; exit 1'";
+    };
+  };
+
   # Syncthing service
   services.syncthing = {
     enable = true;
