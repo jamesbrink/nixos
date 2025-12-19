@@ -14,6 +14,12 @@
     ../../users/root.nix
   ];
 
+  # RustDesk for headless remote desktop access (uses dummy X driver)
+  services.rustdesk-client = {
+    enable = true;
+    headless = true;
+  };
+
   # Enable zsh as default shell
   programs.zsh = {
     enable = true;

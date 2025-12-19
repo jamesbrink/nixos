@@ -264,12 +264,15 @@
   };
 
   # ComfyUI service running as jamesbrink
+  # Note: GTX 1080 (Pascal/sm_61) requires cu118, not cu124
   systemd.services.comfyui = {
     description = "ComfyUI - Stable Diffusion GUI";
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
     environment = {
       HOME = "/home/jamesbrink";
+      CUDA_VERSION = "cu118"; # GTX 1080 requires CUDA 11.8 for Pascal support
+      LD_LIBRARY_PATH = "/run/current-system/sw/share/nix-ld/lib";
     };
     serviceConfig = {
       Type = "simple";
