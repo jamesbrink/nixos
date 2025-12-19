@@ -458,7 +458,8 @@ in
   systemd.services.syncthing-init = {
     serviceConfig = {
       # Wait up to 60 seconds for syncthing API to be ready before running init
-      ExecStartPre = "${pkgs.bash}/bin/bash -c 'for i in {1..60}; do ${pkgs.curl}/bin/curl -sf http://127.0.0.1:8384/rest/system/ping >/dev/null 2>&1 && exit 0; sleep 1; done; echo \"Syncthing API not ready after 60s\"; exit 1'";
+      # The API requires authentication, so we extract the API key from config.xml
+      ExecStartPre = "${pkgs.bash}/bin/bash -c 'CONFIG=/home/jamesbrink/.config/syncthing/config.xml; for i in {1..60}; do if [ -f \"$CONFIG\" ]; then API_KEY=$(${pkgs.libxml2}/bin/xmllint --xpath \"string(configuration/gui/apikey)\" \"$CONFIG\" 2>/dev/null); if [ -n \"$API_KEY\" ]; then ${pkgs.curl}/bin/curl -sf -H \"X-API-Key: $API_KEY\" http://127.0.0.1:8384/rest/system/ping >/dev/null 2>&1 && exit 0; fi; fi; sleep 1; done; echo \"Syncthing API not ready after 60s\"; exit 1'";
     };
   };
 
