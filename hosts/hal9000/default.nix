@@ -50,15 +50,9 @@
   #   user = "jamesbrink";
   # };
 
+  # Audit disabled to prevent kauditd queue overflow
   security.audit.enable = false;
   security.auditd.enable = false;
-  security.audit.failureMode = "printk";
-  security.audit.rules = [
-    "-a exit,always -F arch=b64 -S execve"
-    "-w /etc/passwd -p wa -k passwd_changes"
-    "-w /etc/shadow -p wa -k shadow_changes"
-    "-w /var/log/audit/ -p wa -k audit_logs"
-  ];
 
   nix = {
     settings = {
@@ -86,7 +80,7 @@
     binfmt.emulatedSystems = [ "aarch64-linux" ];
 
     kernelParams = [
-      "audit=1"
+      "audit=0"
       "zfs.zfs_arc_max=17179869184"
       "zfs.zfs_txg_timeout=5" # Faster transaction group commits
     ];
@@ -102,7 +96,6 @@
     kernelModules = [
       "kvm-intel"
       "kvm-amd"
-      "audit"
     ];
     extraModprobeConfig = ''
       options kvm_intel nested=1

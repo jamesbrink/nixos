@@ -141,9 +141,9 @@ in
     enable = true;
     settings = {
       # Monitor configuration - Samsung Odyssey G95NC at native resolution
-      # HDMI-A-1 at 7680x2160@120Hz, fallback to preferred for other monitors
+      # DP-1 at 7680x2160@120Hz, fallback to preferred for other monitors
       monitor = [
-        "HDMI-A-1,7680x2160@120,0x0,1"
+        "DP-1,7680x2160@120,0x0,1"
         ",preferred,auto,1" # Fallback for any other monitors
       ];
 
@@ -230,8 +230,9 @@ in
 
       # Startup services
       "exec-once" = [
-        "${pkgs.systemd}/bin/systemctl --user import-environment DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP XDG_SESSION_TYPE && ${pkgs.systemd}/bin/systemctl --user restart hypridle.service"
-        # Waybar is now managed by systemd service (see programs.waybar.systemd.enable below)
+        # Import environment to systemd and restart services that may have failed during race condition
+        "${pkgs.systemd}/bin/systemctl --user import-environment DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP XDG_SESSION_TYPE && ${pkgs.systemd}/bin/systemctl --user restart hypridle.service xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service"
+        # Waybar is now managed by systemd service with hyprland-session.target dependency
         # Mako is now managed by services.mako (see below)
         "swayosd-server" # OSD server for volume/brightness overlays
         "wl-paste --type text --watch cliphist store" # Clipboard history for text
@@ -1655,6 +1656,7 @@ in
   programs.waybar = {
     enable = true;
     systemd.enable = true; # Manage waybar via systemd service for proper toggling
+    systemd.target = "hyprland-session.target"; # Wait for Hyprland to be fully ready
 
     settings = {
       mainBar = {

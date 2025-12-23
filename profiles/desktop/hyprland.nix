@@ -65,7 +65,7 @@ in
   # Default Hyprland configuration
   environment.etc."hypr/hyprland.conf".text = ''
     # Monitor configuration - Samsung Odyssey G95NC native resolution
-    monitor=HDMI-A-1,7680x2160@120,0x0,1
+    monitor=DP-1,7680x2160@120,0x0,1
 
     # Execute apps at launch
     exec-once = waybar
