@@ -687,21 +687,19 @@
   virtualisation = {
     containers = {
       enable = true;
+      # Runtime configuration using the correct NixOS structure
       containersConf.settings = {
-        engine = {
-          runtime = "crun";
-          runtimes = {
-            crun = [ "${pkgs.crun}/bin/crun" ];
-            runc = [ "${pkgs.runc}/bin/runc" ];
-          };
+        containers = {
+          default_sysctls = [ ];
         };
       };
+      # Specify crun as the OCI runtime
+      ociSeccompBpfHook.enable = true;
     };
     podman = {
       enable = true;
       dockerCompat = false; # Disable docker compatibility to use real Docker
       defaultNetwork.settings.dns_enabled = true;
-      # enableNvidia = true;
       extraPackages = with pkgs; [
         runc
         crun
@@ -719,6 +717,7 @@
           buildkit = true;
         };
       };
+      # NVIDIA GPU support is configured via hardware.nvidia-container-toolkit.enable = true
     };
     oci-containers = {
       containers = {
@@ -1235,6 +1234,8 @@
     podman
     podman-compose
     docker-compose
+    crun
+    runc
     samba4Full
     spice
     spice-gtk
