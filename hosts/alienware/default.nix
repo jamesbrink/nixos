@@ -286,8 +286,7 @@
       Group = "users";
       WorkingDirectory = "/home/jamesbrink/AI";
       ExecStart = "${pkgs.comfy-ui}/bin/comfy-ui --base-directory /home/jamesbrink/AI --listen 0.0.0.0 --use-pytorch-cross-attention --cuda-malloc --lowvram";
-      Restart = "on-failure";
-      RestartSec = "10s";
+      Restart = "no";
       # GPU access
       SupplementaryGroups = [
         "video"
