@@ -617,9 +617,13 @@
   services.comfyui = {
     enable = true;
     cuda = true;
+    enableManager = true;
     port = 8188;
     listenAddress = "0.0.0.0";
     dataDir = "/home/jamesbrink/AI";
+    user = "jamesbrink";
+    group = "users";
+    createUser = false;
     extraArgs = [
       "--use-pytorch-cross-attention"
       "--cuda-malloc"
