@@ -270,30 +270,18 @@
     };
   };
 
-  # ComfyUI service running as jamesbrink
-  systemd.services.comfyui = {
-    description = "ComfyUI - Stable Diffusion GUI";
-    after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ];
-    environment = {
-      HOME = "/home/jamesbrink";
-      LD_LIBRARY_PATH = "/run/current-system/sw/share/nix-ld/lib";
-    };
-    serviceConfig = {
-      Type = "simple";
-      User = "jamesbrink";
-      Group = "users";
-      WorkingDirectory = "/home/jamesbrink/AI";
-      ExecStart = "${pkgs.comfy-ui}/bin/comfy-ui --base-directory /home/jamesbrink/AI --listen 0.0.0.0 --use-pytorch-cross-attention --cuda-malloc --lowvram";
-      Restart = "no";
-      # GPU access
-      SupplementaryGroups = [
-        "video"
-        "render"
-      ];
-      StandardOutput = "journal";
-      StandardError = "journal";
-    };
+  # ComfyUI service
+  services.comfyui = {
+    enable = true;
+    cuda = true;
+    port = 8188;
+    listenAddress = "0.0.0.0";
+    dataDir = "/home/jamesbrink/AI";
+    extraArgs = [
+      "--use-pytorch-cross-attention"
+      "--cuda-malloc"
+      "--lowvram"
+    ];
   };
   services.pipewire = {
     enable = true;
@@ -540,8 +528,6 @@
 
   # Host-specific packages (beyond what's in shared modules and desktop profile)
   environment.systemPackages = with pkgs; [
-    # AI/ML tools
-    comfy-ui # ComfyUI via comfyui-nix overlay
 
     # CUDA and GPU tools
     cudaPackages.cudatoolkit

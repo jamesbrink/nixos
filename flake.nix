@@ -73,8 +73,7 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     comfyui-nix = {
-      url = "github:utensils/comfyui-nix/v0.6.0";
-      inputs.nixpkgs.follows = "nixos-unstable";
+      url = "github:utensils/comfyui-nix";
     };
   };
 
@@ -844,6 +843,7 @@
             agenix.nixosModules.default
             vscode-server.nixosModules.default
             ./modules/vscode-server.nix
+            comfyui-nix.nixosModules.default
             ./hosts/alienware/default.nix
             # Use unstable packages
             {
@@ -882,6 +882,7 @@
             agenix.nixosModules.default
             vscode-server.nixosModules.default
             ./modules/vscode-server.nix
+            comfyui-nix.nixosModules.default
             ./hosts/hal9000/default.nix
 
             # Use unstable packages
