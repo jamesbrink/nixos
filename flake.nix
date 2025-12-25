@@ -73,7 +73,7 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     comfyui-nix = {
-      url = "github:utensils/comfyui-nix";
+      url = "github:utensils/comfyui-nix/v0.6.0";
       inputs.nixpkgs.follows = "nixos-unstable";
     };
   };
