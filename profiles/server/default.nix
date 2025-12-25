@@ -3,6 +3,7 @@
 
 {
   imports = [
+    ../../modules/nix-caches.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/python.nix
     ../../modules/claude-desktop.nix

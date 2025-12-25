@@ -15,6 +15,7 @@
     ./hardware-configuration.nix
     # ./nginx.nix # Disabled - keeping only postgres13 and ollama
     # ./nginx-netboot.nix # Disabled - keeping only postgres13 and ollama
+    ../../modules/nix-caches.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix

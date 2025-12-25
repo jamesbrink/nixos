@@ -22,6 +22,7 @@ in
       dig
       dnsutils
       fastfetch
+      fh # FlakeHub CLI
       git-lfs
       gitleaks
       home-manager
