@@ -44,6 +44,7 @@ in
       "kvm"
       "libvirtd"
       "networkmanager"
+      "podman"
       "qemu-libvirtd"
       "wheel"
       "input"

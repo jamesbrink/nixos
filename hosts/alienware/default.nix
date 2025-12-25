@@ -44,6 +44,12 @@
         "flakes"
       ];
       auto-optimise-store = true;
+      # Allow remote build requests from trusted users
+      trusted-users = [
+        "root"
+        "jamesbrink"
+        "@wheel"
+      ];
     };
     gc = {
       automatic = true;
@@ -426,9 +432,40 @@
 
   # Virtualization configuration
   virtualisation = {
+    containers = {
+      enable = true;
+      # Runtime configuration using the correct NixOS structure
+      containersConf.settings = {
+        containers = {
+          default_sysctls = [ ];
+        };
+      };
+      # Specify crun as the OCI runtime
+      ociSeccompBpfHook.enable = true;
+    };
+    podman = {
+      enable = true;
+      dockerCompat = false; # Disable docker compatibility to use real Docker
+      defaultNetwork.settings.dns_enabled = true;
+      extraPackages = with pkgs; [
+        runc
+        crun
+        conmon
+      ];
+    };
     docker = {
       enable = true;
       enableOnBoot = true;
+      autoPrune = {
+        enable = true;
+        dates = "weekly";
+      };
+      daemon.settings = {
+        features = {
+          buildkit = true;
+        };
+      };
+      # NVIDIA GPU support is configured via hardware.nvidia-container-toolkit.enable = true
     };
     vmware.guest.enable = true;
     incus.enable = true;
@@ -522,6 +559,8 @@
     # Virtualization tools
     open-vm-tools
     openvswitch
+    podman
+    podman-compose
     vagrant
 
     # Gaming and streaming
