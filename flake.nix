@@ -199,6 +199,7 @@
               age # For secrets encryption
               (pkgs.callPackage "${inputs.agenix}/pkgs/agenix.nix" { }) # agenix from flake input
               nixos-anywhere # For initial deployments with disko
+              nixos-rebuild-ng # For remote NixOS deployments from Darwin
               nvd # For comparing NixOS generations/closures
               shellcheck # For shell script linting
               trufflehog # For secret scanning
