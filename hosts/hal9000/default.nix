@@ -13,8 +13,8 @@
   ];
   imports = [
     ./hardware-configuration.nix
-    # ./nginx.nix # Disabled - keeping only postgres13 and ollama
-    # ./nginx-netboot.nix # Disabled - keeping only postgres13 and ollama
+    # ./nginx.nix
+    # ./nginx-netboot.nix
     ../../modules/nix-caches.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/python.nix
@@ -166,30 +166,6 @@
     ];
   };
 
-  fileSystems."/storage-fast/quantierra" = {
-    device = "storage-fast/quantierra";
-    fsType = "zfs";
-    options = [
-      "zfsutil"
-      "X-mount.mkdir"
-    ];
-  };
-
-  systemd.services.zfs-quantierra-setup = {
-    description = "Configure ZFS properties for quantierra dataset";
-    after = [ "zfs.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      /run/current-system/sw/bin/zfs set recordsize=8K storage-fast/quantierra
-      /run/current-system/sw/bin/zfs set logbias=throughput storage-fast/quantierra
-      /run/current-system/sw/bin/zfs set primarycache=all storage-fast/quantierra
-    '';
-  };
-
   fileSystems."/storage-fast/Steam" = {
     device = "storage-fast/Steam";
     fsType = "zfs";
@@ -272,68 +248,6 @@
     AllowHybridSleep=no
     AllowSuspendThenHibernate=no
   '';
-
-  # PostgreSQL WAL sync service
-  systemd.services.postgresql-wal-sync = {
-    description = "Sync PostgreSQL WAL files from Quantierra server";
-    # Enable WAL sync to catch up on replication lag
-    enable = true;
-    serviceConfig = {
-      Type = "oneshot";
-      # Run as root since we need to manage permissions and ZFS snapshots
-      User = "root";
-      Group = "root";
-      # Use the full sync script with retention management
-      ExecStart = "/run/current-system/sw/bin/postgres13-wal-sync-full";
-      # Logging
-      StandardOutput = "journal";
-      StandardError = "journal";
-    };
-    # Ensure the service can access network
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-  };
-
-  # Timer for nightly execution
-  systemd.timers.postgresql-wal-sync = {
-    description = "Run PostgreSQL WAL sync nightly";
-    # Enable timer for automatic WAL sync
-    enable = true;
-    timerConfig = {
-      # Run at 3 AM every day
-      OnCalendar = "daily";
-      AccuracySec = "1h";
-      Persistent = true;
-    };
-    wantedBy = [ "timers.target" ];
-  };
-
-  # Service for creating base snapshots
-  systemd.services.postgresql-base-snapshot = {
-    description = "Create PostgreSQL base snapshot for reset operations";
-    serviceConfig = {
-      Type = "oneshot";
-      User = "root";
-      Group = "root";
-      ExecStart = "/run/current-system/sw/bin/postgres13-create-base-auto";
-      StandardOutput = "journal";
-      StandardError = "journal";
-    };
-    after = [ "postgresql-wal-sync.service" ];
-  };
-
-  # Timer for base snapshot creation every 3 days
-  systemd.timers.postgresql-base-snapshot = {
-    description = "Create PostgreSQL base snapshot every 3 days";
-    enable = true;
-    timerConfig = {
-      # Run every 3 days at 4 AM
-      OnCalendar = "*-*-1,4,7,10,13,16,19,22,25,28,31 04:00:00";
-      AccuracySec = "1h";
-      Persistent = true;
-    };
-    wantedBy = [ "timers.target" ];
-  };
 
   networking = {
     hostName = "hal9000";
@@ -624,17 +538,12 @@
     user = "jamesbrink";
     group = "users";
     createUser = false;
+    requiresMounts = [ "home-jamesbrink-AI.mount" ];
     extraArgs = [
       "--use-pytorch-cross-attention"
       "--cuda-malloc"
       "--lowvram"
     ];
-  };
-
-  # ComfyUI needs to wait for AI mount
-  systemd.services.comfyui = {
-    after = [ "home-jamesbrink-AI.mount" ];
-    requires = [ "home-jamesbrink-AI.mount" ];
   };
 
   security.rtkit.enable = true;
@@ -708,58 +617,6 @@
     };
     oci-containers = {
       containers = {
-        postgres13 = {
-          image = "postgis/postgis:13-3.5";
-          environment = {
-            POSTGRES_USER = "postgres";
-            POSTGRES_PASSWORD = "postgres";
-          };
-          volumes = [
-            "/storage-fast/quantierra/postgres13:/var/lib/postgresql/data"
-            "/storage-fast/quantierra/archive:/var/lib/postgresql/archive:ro"
-            "${../../modules/services/postgresql/postgresql.conf}:/etc/postgresql/postgresql.conf:ro"
-            "${../../modules/services/postgresql/pg_hba.conf}:/etc/postgresql/pg_hba.conf:ro"
-          ];
-          cmd = [
-            "postgres"
-            "-c"
-            "config_file=/etc/postgresql/postgresql.conf"
-            "-c"
-            "hba_file=/etc/postgresql/pg_hba.conf"
-          ];
-          ports = [
-            "5439:5432" # Expose container's 5432 as host's 5439
-          ];
-        };
-
-        # postgres17 = {
-        #   image = "postgis/postgis:17-3.5";
-        #   user = "postgres:postgres";
-        #   entrypoint = "/usr/lib/postgresql/17/bin/postgres";
-        #   environment = {
-        #     POSTGRES_USER = "postgres";
-        #     POSTGRES_PASSWORD = "postgres";
-        #     POSTGRES_HOST_AUTH_METHOD = "trust";
-        #     POSTGRES_INITDB_ARGS = "";
-        #   };
-        #   volumes = [
-        #     "/storage-fast/quantierra-dev-17:/var/lib/postgresql/data"
-        #     "${../../modules/services/postgresql/postgresql.conf}:/etc/postgresql/postgresql.conf:ro"
-        #     "${../../modules/services/postgresql/pg_hba.conf}:/etc/postgresql/pg_hba.conf:ro"
-        #   ];
-        #   cmd = [
-        #     "-D"
-        #     "/var/lib/postgresql/data/new"
-        #     "-c"
-        #     "config_file=/etc/postgresql/postgresql.conf"
-        #     "-c"
-        #     "hba_file=/etc/postgresql/pg_hba.conf"
-        #   ];
-        #   ports = [
-        #     "5439:5432"
-        #   ];
-        # };
-
         ollama = {
           image = "ollama/ollama:latest";
           environment = {
@@ -822,7 +679,6 @@
           autoStart = false;
         };
 
-        # Disabled - keeping only postgres13 and ollama
         # open-webui = {
         #   image = "ghcr.io/open-webui/open-webui:main";
         #   volumes = [
@@ -841,7 +697,6 @@
         #   autoStart = true;
         # };
 
-        # Disabled - keeping only postgres13 and ollama
         # pipelines = {
         #   image = "ghcr.io/open-webui/pipelines:main";
         #   volumes = [
@@ -1010,11 +865,9 @@
         # ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
         # ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:latest
         ${pkgs.podman}/bin/podman pull ollama/ollama:latest
-        ${pkgs.podman}/bin/podman pull postgis/postgis:13-3.5
 
         # Restart containers to use new images
         ${pkgs.systemd}/bin/systemctl restart podman-ollama
-        ${pkgs.systemd}/bin/systemctl restart podman-postgres13
         # ${pkgs.systemd}/bin/systemctl restart podman-comfyui
         # ${pkgs.systemd}/bin/systemctl restart podman-fooocus
         # ${pkgs.systemd}/bin/systemctl restart podman-open-webui # Disabled
@@ -1235,8 +1088,6 @@
     winetricks
     wineWowPackages.waylandFull
     xorriso
-    (import ../../modules/packages/postgres13-reset { inherit pkgs; })
-    (import ../../modules/packages/postgres13-reset/wal-sync.nix { inherit pkgs; })
     # GStreamer plugins for UxPlay
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-base
@@ -1396,7 +1247,6 @@
     };
   };
 
-  # Disabled - keeping only postgres13 and ollama
   # services.ai-starter-kit = {
   #   enable = true;
   #   storagePath = "/storage-fast/n8n";
