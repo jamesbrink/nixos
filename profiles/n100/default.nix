@@ -30,6 +30,12 @@
       # Limit build parallelism for N100's 4-core CPU to prevent kernel hangs
       max-jobs = 2; # Maximum parallel builds
       cores = 2; # CPU cores per build job
+      # Allow remote build requests from trusted users
+      trusted-users = [
+        "root"
+        "jamesbrink"
+        "@wheel"
+      ];
     };
     gc = {
       automatic = true;

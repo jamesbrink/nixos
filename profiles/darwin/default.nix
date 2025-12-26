@@ -24,7 +24,11 @@
       ];
       warn-dirty = false;
       auto-optimise-store = true;
-      trusted-users = [ "@admin" ];
+      trusted-users = [
+        "root"
+        "jamesbrink"
+        "@admin"
+      ];
     };
   };
 
