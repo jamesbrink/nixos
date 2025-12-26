@@ -29,25 +29,107 @@ with lib;
       exclude = mkOption {
         type = types.listOf types.str;
         default = [
-          "*.cache"
-          "*.trash"
-          "node_modules"
+          # General patterns
           ".DS_Store"
           "*.tmp"
           "*.temp"
           "*.swp"
+          "*.log"
+          "Thumbs.db"
+
+          # macOS system directories
+          "$HOME/.Trash"
           "$HOME/Library/Caches"
           "$HOME/Library/Logs"
+          "$HOME/Library/Developer"
           "$HOME/Library/Application Support/Steam"
-          "$HOME/.Trash"
+          "$HOME/Library/Application Support/Docker"
+          "$HOME/Library/Application Support/Slack/Cache"
+          "$HOME/Library/Application Support/Slack/Service Worker"
+          "$HOME/Library/Application Support/discord/Cache"
+          "$HOME/Library/Application Support/Code/Cache"
+          "$HOME/Library/Application Support/Code/CachedData"
+          "$HOME/Library/Application Support/Code/CachedExtensions"
+          "$HOME/Library/Application Support/Google/Chrome/Default/Service Worker"
+          "$HOME/Library/Application Support/Firefox/Profiles/*/cache2"
+          "$HOME/Library/Containers/com.docker.docker"
+          "$HOME/Library/CloudStorage"
+          "$HOME/Downloads"
+          "$HOME/OneDrive"
+
+          # General caches
           "$HOME/.cache"
           "$HOME/.local/share/Trash"
-          # AI/LLM model files
+          "$HOME/.local/state"
+
+          # Package manager caches
+          "$HOME/.npm"
+          "$HOME/.npm-global"
+          "$HOME/.bun"
+          "$HOME/.pnpm-store"
+          "$HOME/.yarn/cache"
+          "node_modules"
+          "$HOME/.bundle"
+          "$HOME/.gem"
+          "$HOME/.composer/cache"
+
+          # Language toolchains (recreatable)
+          "$HOME/.rustup"
+          "$HOME/.cargo/registry"
+          "$HOME/.cargo/git"
+          "$HOME/.local/share/uv"
+          "$HOME/.local/pipx"
+          "$HOME/.pyenv"
+          "$HOME/.virtualenvs"
+          "$HOME/go/pkg"
+          ".venv"
+          "venv"
+          "__pycache__"
+          "*.pyc"
+          "*.pyo"
+
+          # Build artifacts
+          "target"
+          "build"
+          "dist"
+          ".gradle"
+          "Pods"
+
+          # IDE/Editor caches
+          "$HOME/.vscode"
+          "$HOME/.cursor"
+          "$HOME/.windsurf"
+          "$HOME/.codeium"
+          "$HOME/.kiro"
+          "$HOME/.augmentcode"
+          "$HOME/.codex"
+          "$HOME/Library/Application Support/Kiro"
+          "$HOME/Library/Application Support/JetBrains"
+          ".idea"
+          "*.iml"
+
+          # Browser caches
+          "$HOME/Library/Application Support/Google/Chrome"
+          "$HOME/Library/Application Support/Microsoft Edge"
+          "$HOME/Library/Application Support/Zen Browser"
+          "$HOME/Library/Caches/Google"
+          "$HOME/Library/Caches/com.microsoft.Edge"
+
+          # AI/ML related
+          "$HOME/.ollama"
+          "$HOME/.lmstudio"
+          "$HOME/.cache/huggingface"
+          "$HOME/.config/fooocus"
+          "$HOME/stable-diffusion-webui/models"
+          "$HOME/ComfyUI/models"
+          "$HOME/sd-webui"
+          "$HOME/Library/Application Support/Jan"
+
+          # AI/LLM model files (by extension)
           "*.safetensors"
           "*.ckpt"
           "*.pt"
           "*.pth"
-          "*.bin"
           "*.onnx"
           "*.gguf"
           "*.ggml"
@@ -58,18 +140,38 @@ with lib;
           "*.q8_0"
           "*.f16"
           "*.f32"
-          "*.pkl"
           "*.h5"
           "*.msgpack"
           "*.npz"
           "*.tflite"
           "*.pb"
           "*.mlmodel"
-          # Model directories
-          "$HOME/.cache/huggingface"
-          "$HOME/stable-diffusion-webui/models"
-          "$HOME/ComfyUI/models"
-          "$HOME/.ollama/models"
+
+          # VMs and containers
+          "$HOME/.lima"
+          "$HOME/.docker"
+          "$HOME/.colima"
+          "$HOME/.orbstack"
+          "$HOME/OrbStack"
+          "$HOME/Library/Group Containers/HUAQ24HBR6.dev.orbstack"
+
+          # Cloud/DevOps caches
+          "$HOME/.amplify"
+          "$HOME/.tflint.d"
+          "$HOME/.terraform.d/plugin-cache"
+
+          # Testing frameworks
+          "$HOME/Library/Caches/ms-playwright"
+          "$HOME/Library/Caches/JetBrains"
+          "$HOME/Library/Caches/Cypress"
+
+          # Frontend build caches
+          ".next"
+          ".nuxt"
+          ".output"
+          ".parcel-cache"
+          ".turbo"
+          ".svelte-kit"
         ];
         description = "Patterns to exclude from backup";
       };
@@ -161,6 +263,9 @@ with lib;
             fi
             # Run backup in subshell with credentials
             (
+              # Set PATH to include restic
+              export PATH="${pkgs.restic}/bin:$PATH"
+
               # Load environment variables for the backup command
               if [ -f "$HOME/.config/restic/s3-env" ]; then
                 set -a
@@ -169,7 +274,7 @@ with lib;
               fi
               export RESTIC_REPOSITORY="$REPO_NAME"
               [ -f "$HOME/.config/restic/password" ] && export RESTIC_PASSWORD_FILE="$HOME/.config/restic/password"
-              
+
               eval restic backup --compression max --verbose $EXCLUDE_ARGS "''${BACKUP_PATHS[@]}"
             )
             ;;
