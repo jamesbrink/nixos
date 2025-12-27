@@ -7,11 +7,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1766813047,
-        "narHash": "sha256-+SFijiFcPK5rqvyLPZlVywq0lvDf+dH9RKIoDc3Q0K8=",
+        "lastModified": 1766819488,
+        "narHash": "sha256-Q+O0H/PAsBUHJbFHtdRYha4AAy0EcmXzcSmxlSnDrIc=",
         "ref": "refs/heads/main",
-        "rev": "56acdc2fd23d9c0fa2a1d9b6b20c8db21a84bbb2",
-        "revCount": 52,
+        "rev": "d22815a08730ba28c3a60185668efc110f9d6a09",
+        "revCount": 53,
         "type": "git",
         "url": "ssh://git@github.com/quantierra/acris-scrapers.git"
       },
