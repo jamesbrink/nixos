@@ -1383,6 +1383,7 @@
     protectHome = false;
     timezone = "America/Phoenix";
     resticHostname = "hal9000";
+    extraReadWritePaths = [ "/mnt/storage20tb" ];
   };
 
   # Samba server configuration - sharing same paths as NFS

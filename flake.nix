@@ -79,7 +79,7 @@
       url = "git+ssh://git@github.com/quantierra/acris-scrapers.git";
     };
     zerobyte = {
-      url = "github:jamesbrink/zerobyte/feature/pure-nixos-flake";
+      url = "github:jamesbrink/zerobyte/nixos";
     };
   };
 

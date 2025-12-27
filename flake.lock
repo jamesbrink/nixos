@@ -834,16 +834,16 @@
         "nixpkgs": "nixpkgs_5"
       },
       "locked": {
-        "lastModified": 1766815395,
-        "narHash": "sha256-66+yI8MMnazzMMnaqcEHnDm+EkRbE10KK8XGd8hpRYo=",
+        "lastModified": 1766818906,
+        "narHash": "sha256-/YknmtPphRmQZi+dKqbVgs+1R4y/9/9iW4c6EHmJADY=",
         "owner": "jamesbrink",
         "repo": "zerobyte",
-        "rev": "96c9e3704778fd9be9d96264c433ba7b9bbd612c",
+        "rev": "5cb092f130ada14a81413f4e634b889798e0f954",
         "type": "github"
       },
       "original": {
         "owner": "jamesbrink",
-        "ref": "feature/pure-nixos-flake",
+        "ref": "nixos",
         "repo": "zerobyte",
         "type": "github"
       }
