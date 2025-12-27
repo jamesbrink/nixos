@@ -75,6 +75,9 @@
     comfyui-nix = {
       url = "github:utensils/comfyui-nix";
     };
+    acris-scrapers = {
+      url = "git+ssh://git@github.com/quantierra/acris-scrapers.git";
+    };
   };
 
   outputs =
@@ -97,6 +100,7 @@
       homebrew-cask,
       zen-browser,
       comfyui-nix,
+      acris-scrapers,
       ...
     }@inputs:
     let
@@ -918,6 +922,7 @@
               agenix
               claude-desktop
               comfyui-nix
+              acris-scrapers
               ;
             secretsPath = "${inputs.secrets}";
             unstablePkgs = import nixos-unstable {

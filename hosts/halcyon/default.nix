@@ -5,6 +5,7 @@
   inputs,
   secretsPath,
   comfyui-nix,
+  acris-scrapers,
   ...
 }:
 
@@ -70,6 +71,7 @@
     # Additional build tools needed for compiling Python extensions
     clang
     comfyui-nix.packages.${pkgs.system}.comfyui
+    acris-scrapers.packages.${pkgs.system}.acris-scraper
   ];
 
   # Set environment variables for libpostal
