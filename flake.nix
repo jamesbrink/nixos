@@ -78,6 +78,9 @@
     acris-scrapers = {
       url = "git+ssh://git@github.com/quantierra/acris-scrapers.git";
     };
+    zerobyte = {
+      url = "github:jamesbrink/zerobyte/feature/pure-nixos-flake";
+    };
   };
 
   outputs =
@@ -101,6 +104,7 @@
       zen-browser,
       comfyui-nix,
       acris-scrapers,
+      zerobyte,
       ...
     }@inputs:
     let
@@ -889,6 +893,7 @@
             ./modules/vscode-server.nix
             comfyui-nix.nixosModules.default
             ./hosts/hal9000/default.nix
+            zerobyte.nixosModules.default
 
             # Use unstable packages
             {

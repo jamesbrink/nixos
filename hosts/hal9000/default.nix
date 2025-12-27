@@ -1371,6 +1371,20 @@
     coreDns.customServers = [ ];
   };
 
+  # Zerobyte backup management service
+  services.zerobyte = {
+    enable = true;
+    user = "root";
+    group = "root";
+    createUser = false;
+    port = 4096;
+    serverIp = "0.0.0.0";
+    fuse.enable = true;
+    protectHome = false;
+    timezone = "America/Phoenix";
+    resticHostname = "hal9000";
+  };
+
   # Samba server configuration - sharing same paths as NFS
   services.samba-server = {
     enable = true;
