@@ -4,6 +4,7 @@
   lib,
   inputs,
   secretsPath,
+  comfyui-nix,
   ...
 }:
 
@@ -68,6 +69,7 @@
     pkg-config
     # Additional build tools needed for compiling Python extensions
     clang
+    comfyui-nix.packages.${pkgs.system}.comfyui
   ];
 
   # Set environment variables for libpostal

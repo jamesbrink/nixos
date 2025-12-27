@@ -913,7 +913,12 @@
           system = "aarch64-darwin"; # M4 Mac
 
           specialArgs = {
-            inherit inputs agenix claude-desktop;
+            inherit
+              inputs
+              agenix
+              claude-desktop
+              comfyui-nix
+              ;
             secretsPath = "${inputs.secrets}";
             unstablePkgs = import nixos-unstable {
               system = "aarch64-darwin";
