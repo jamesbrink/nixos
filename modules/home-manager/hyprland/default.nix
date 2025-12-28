@@ -230,8 +230,8 @@ in
 
       # Startup services
       "exec-once" = [
-        # Import environment to systemd and restart services that may have failed during race condition
-        "${pkgs.systemd}/bin/systemctl --user import-environment DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP XDG_SESSION_TYPE && ${pkgs.systemd}/bin/systemctl --user restart hypridle.service xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service"
+        # Import environment to systemd and dbus, start hyprland-session.target, then restart portal services
+        "${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP XDG_SESSION_TYPE && ${pkgs.systemd}/bin/systemctl --user start hyprland-session.target && ${pkgs.systemd}/bin/systemctl --user restart hypridle.service xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service"
         # Waybar is now managed by systemd service with hyprland-session.target dependency
         # Mako is now managed by services.mako (see below)
         "swayosd-server" # OSD server for volume/brightness overlays
