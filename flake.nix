@@ -79,8 +79,11 @@
       url = "git+ssh://git@github.com/quantierra/acris-scrapers.git";
     };
     zerobyte = {
-      url = "github:jamesbrink/zerobyte/nixos";
+      url = "github:utensils/zerobyte-nix";
     };
+    # zerobyte = {
+    #   url = "path:/Users/jamesbrink/Projects/utensils/zerobyte-nix";
+    # };
     bun2nix = {
       url = "github:nix-community/bun2nix";
       inputs.nixpkgs.follows = "nixos-unstable";
@@ -715,6 +718,7 @@
             ./modules/home-manager/hotkeys-extra-args.nix
             agenix.nixosModules.default
             disko.nixosModules.disko
+            zerobyte.nixosModules.default
             ./hosts/n100-01/default.nix
             # Use unstable packages
             {

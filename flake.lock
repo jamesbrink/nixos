@@ -894,6 +894,27 @@
         "type": "github"
       }
     },
+    "treefmt-nix_3": {
+      "inputs": {
+        "nixpkgs": [
+          "zerobyte",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1766000401,
+        "narHash": "sha256-+cqN4PJz9y0JQXfAK5J1drd0U05D5fcAGhzhfVrDlsI=",
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "rev": "42d96e75aa56a3f70cab7e7dc4a32868db28e8fd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
     "vscode-server": {
       "inputs": {
         "flake-utils": "flake-utils_4",
@@ -940,19 +961,37 @@
       "inputs": {
         "bun2nix": "bun2nix_2",
         "flake-utils": "flake-utils_5",
-        "nixpkgs": "nixpkgs_5"
+        "nixpkgs": "nixpkgs_5",
+        "treefmt-nix": "treefmt-nix_3",
+        "zerobyte-src": "zerobyte-src"
       },
       "locked": {
-        "lastModified": 1766818906,
-        "narHash": "sha256-/YknmtPphRmQZi+dKqbVgs+1R4y/9/9iW4c6EHmJADY=",
-        "owner": "jamesbrink",
-        "repo": "zerobyte",
-        "rev": "5cb092f130ada14a81413f4e634b889798e0f954",
+        "lastModified": 1766958683,
+        "narHash": "sha256-P07ZfP062HsvzvgXv1ONnLhphjmLEDtE5oruWolIiYs=",
+        "owner": "utensils",
+        "repo": "zerobyte-nix",
+        "rev": "20499f5873b7ceb8e84a4ef458c435d8943455e5",
         "type": "github"
       },
       "original": {
-        "owner": "jamesbrink",
-        "ref": "nixos",
+        "owner": "utensils",
+        "repo": "zerobyte-nix",
+        "type": "github"
+      }
+    },
+    "zerobyte-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1766766582,
+        "narHash": "sha256-ar3pgzoS8QOs84VXzSMMnrCaCT1WeEfWS3dtaFG8Ixw=",
+        "owner": "nicotsx",
+        "repo": "zerobyte",
+        "rev": "52a6ed6070975b5d6a2dc5d9d94fa77d344ba6e5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nicotsx",
+        "ref": "v0.20.0",
         "repo": "zerobyte",
         "type": "github"
       }

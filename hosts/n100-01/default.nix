@@ -29,4 +29,11 @@
 
   # Override disk device if needed (default is /dev/sda)
   # disko.devices.disk.main.device = "/dev/nvme0n1";
+
+  # Zerobyte backup management service
+  services.zerobyte = {
+    enable = true;
+    port = 4096;
+    openFirewall = true;
+  };
 }
