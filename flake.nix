@@ -81,6 +81,10 @@
     zerobyte = {
       url = "github:jamesbrink/zerobyte/nixos";
     };
+    bun2nix = {
+      url = "github:nix-community/bun2nix";
+      inputs.nixpkgs.follows = "nixos-unstable";
+    };
   };
 
   outputs =
@@ -105,6 +109,7 @@
       comfyui-nix,
       acris-scrapers,
       zerobyte,
+      bun2nix,
       ...
     }@inputs:
     let
@@ -214,6 +219,7 @@
               gitleaks # For git-aware secret scanning
               pre-commit # For git hooks management
               python313Packages.pipx # For installing Python tools like omnara
+              bun2nix.packages.${system}.default # For converting bun lockfiles to Nix expressions
             ];
 
             commands = [

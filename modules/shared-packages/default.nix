@@ -65,6 +65,7 @@ in
       opencode
       nushell
       slack-cli
+      bun
       nodejs
       nodePackages.pnpm
 
