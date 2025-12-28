@@ -18,6 +18,8 @@ while [[ $# -gt 0 ]]; do
       echo "  <hostname>                Target host to deploy to"
       echo "  --build-host <hostname>   Optional: Host to build on (for low-resource targets)"
       echo ""
+      echo "Note: Local path inputs (path:/...) are automatically synced to remote hosts."
+      echo ""
       echo "Available hosts:"
       find ./hosts -maxdepth 1 -mindepth 1 -type d | sort | sed 's|./hosts/||'
       exit 0
@@ -46,6 +48,41 @@ fi
 HOSTNAME=$(hostname | cut -d. -f1 | tr '[:upper:]' '[:lower:]')
 SYSTEM=$(uname -s | tr '[:upper:]' '[:lower:]')
 HOST_LOWER=$(echo "$HOST" | tr '[:upper:]' '[:lower:]')
+
+# Function to detect and sync local path inputs
+# Returns override arguments for nix build commands
+sync_local_inputs() {
+  local remote_user="$1"
+  local remote_host="$2"
+  local remote_tmp="$3"
+  local overrides=""
+
+  # Find inputs with absolute path URLs (path:/...)
+  while IFS= read -r input_name; do
+    # Get the path for this input
+    local input_path
+    input_path=$(grep -A2 "^[[:space:]]*${input_name}[[:space:]]*=" flake.nix | grep 'url = "path:' | sed 's/.*path:\([^"]*\)".*/\1/')
+
+    # Skip empty, relative paths (./), or non-existent paths
+    if [[ -z "$input_path" ]] || [[ "$input_path" == ./* ]]; then
+      continue
+    fi
+
+    if [[ -d "$input_path" ]]; then
+      local input_basename
+      input_basename=$(basename "$input_path")
+      local remote_input_path="$remote_tmp/local-inputs/$input_basename"
+
+      echo "  Syncing local input '$input_name' from $input_path..." >&2
+      ssh -n "$remote_user@$remote_host" "mkdir -p '$remote_tmp/local-inputs'"
+      rsync -az --exclude '.git' "$input_path/" "$remote_user@$remote_host:$remote_input_path/"
+
+      overrides+=" --override-input $input_name path:$remote_input_path"
+    fi
+  done < <(awk '/^[[:space:]]+[a-zA-Z][a-zA-Z0-9_-]*[[:space:]]*=[[:space:]]*\{/{name=$1; gsub(/[[:space:]={}]/,"",name)} /url = "path:\// && name{print name; name=""}' flake.nix)
+
+  echo "$overrides"
+}
 
 # If build host is specified, use remote build strategy
 if [ -n "$BUILD_HOST" ]; then
@@ -160,6 +197,13 @@ else
     # Copy the flake to the remote NixOS server and build there
     rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . root@"$HOST":/tmp/nixos-config/
 
+    # Sync any local path inputs and get override arguments
+    echo "Checking for local path inputs..."
+    OVERRIDE_ARGS=$(sync_local_inputs "root" "$HOST" "/tmp/nixos-config")
+    if [ -n "$OVERRIDE_ARGS" ]; then
+      echo "Using overrides:$OVERRIDE_ARGS"
+    fi
+
     # Special handling for hal9000 PixInsight package
     if [ "$HOST_LOWER" = "hal9000" ]; then
       echo "Checking for PixInsight tarball cache on hal9000..."
@@ -183,7 +227,7 @@ ENDSSH
 
     # Build first to show changes
     echo "Building configuration on $HOST..."
-    ssh root@"$HOST" "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake .#$HOST --impure"
+    ssh root@"$HOST" "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake .#$HOST$OVERRIDE_ARGS --impure"
     # Show package changes with nvd
     echo ""
     echo "Package changes:"
@@ -191,7 +235,7 @@ ENDSSH
     echo ""
     # Now switch
     echo "Activating configuration on $HOST..."
-    ssh root@"$HOST" "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake /tmp/nixos-config#$HOST --verbose --impure"
+    ssh root@"$HOST" "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake /tmp/nixos-config#$HOST$OVERRIDE_ARGS --verbose --impure"
   fi
 fi
 
