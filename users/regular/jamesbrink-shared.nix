@@ -52,6 +52,11 @@ in
         "${homeDir}/.ssh/config_external"
       ];
 
+      # Shared packages across all platforms
+      home.packages = with pkgs; [
+        go
+      ];
+
       manual = {
         html.enable = false;
         manpages.enable = false;
@@ -91,10 +96,11 @@ in
         prefix=${homeDir}/.npm-global
       '';
 
-      # Add npm global bin and cargo bin to PATH
+      # Add npm global bin, cargo bin, and Go bin to PATH
       home.sessionPath = [
         "${homeDir}/.npm-global/bin"
         "${homeDir}/.cargo/bin"
+        "${homeDir}/go/bin"
       ];
 
       # Create npm global directory
