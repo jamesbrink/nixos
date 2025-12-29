@@ -54,7 +54,9 @@ in
 
       # Shared packages across all platforms
       home.packages = with pkgs; [
+        fish
         go
+        powershell
       ];
 
       manual = {
