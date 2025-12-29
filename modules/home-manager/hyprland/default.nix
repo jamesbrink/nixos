@@ -98,6 +98,10 @@ let
     "theme"
     "picker"
   ];
+  windowBalanceBinding = requireBinding [
+    "window"
+    "balance"
+  ];
   toLower = lib.strings.toLower;
   hyprMod =
     mod:
@@ -281,6 +285,7 @@ in
         "$mod SHIFT, right, swapwindow, r"
         "$mod SHIFT, up, swapwindow, u"
         "$mod SHIFT, down, swapwindow, d"
+        "${hyprChord windowBalanceBinding}, splitratio, exact 1" # Balance window sizes
 
         # Workspaces
         "$mod, 1, workspace, 1"

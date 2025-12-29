@@ -155,6 +155,11 @@ actions:
         increase:
           description: Grow vertically.
           command: "yabai -m window --resize bottom:0:40 || yabai -m window --resize top:0:40"
+    balance:
+      description: Balance window split ratios (equalize sizes).
+      commands:
+        darwin: "yabai -m space --balance"
+        linux: "hyprctl dispatch splitratio exact 1"
   space:
     cycle:
       next:
@@ -269,6 +274,7 @@ platforms:
       window.swap.east: "super+shift+right"
       window.swap.north: "super+shift+up"
       window.swap.south: "super+shift+down"
+      window.balance: "super+b"
       workspace.focus:
         chord: "super+{digit}"
       workspace.move:
