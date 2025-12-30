@@ -92,7 +92,7 @@
           "zerobyte",
           "nixpkgs"
         ],
-        "systems": "systems_7",
+        "systems": "systems_8",
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
@@ -361,7 +361,25 @@
     },
     "flake-utils_5": {
       "inputs": {
-        "systems": "systems_8"
+        "systems": "systems_7"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_6": {
+      "inputs": {
+        "systems": "systems_9"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -715,6 +733,7 @@
         "omarchy": "omarchy",
         "secrets": "secrets",
         "vscode-server": "vscode-server",
+        "why": "why",
         "zen-browser": "zen-browser",
         "zerobyte": "zerobyte"
       }
@@ -851,6 +870,21 @@
         "type": "github"
       }
     },
+    "systems_9": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
     "treefmt-nix": {
       "inputs": {
         "nixpkgs": [
@@ -936,6 +970,27 @@
         "type": "github"
       }
     },
+    "why": {
+      "inputs": {
+        "flake-utils": "flake-utils_5",
+        "nixpkgs": [
+          "nixos-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1767065946,
+        "narHash": "sha256-mZIpHr8Gtc4aKkMasvOnFEpcrSCLt2U3Z7AXseCf8OQ=",
+        "owner": "jamesbrink",
+        "repo": "why",
+        "rev": "53a6eeeca55d3e2dc37f689d76aa54c9e0db5915",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jamesbrink",
+        "repo": "why",
+        "type": "github"
+      }
+    },
     "zen-browser": {
       "inputs": {
         "home-manager": "home-manager_3",
@@ -960,7 +1015,7 @@
     "zerobyte": {
       "inputs": {
         "bun2nix": "bun2nix_2",
-        "flake-utils": "flake-utils_5",
+        "flake-utils": "flake-utils_6",
         "nixpkgs": "nixpkgs_5",
         "treefmt-nix": "treefmt-nix_3",
         "zerobyte-src": "zerobyte-src"
