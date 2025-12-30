@@ -66,6 +66,7 @@ in
       nushell
       slack-cli
       asciinema
+      asciinema-agg
       bun
       nodejs
       nodePackages.pnpm
