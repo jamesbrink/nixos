@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Pre-commit hook that uses pre-commit from PATH
+# This avoids hardcoded nix store paths that become stale after garbage collection
+
+set -e
+
+ARGS=(hook-impl --config=.pre-commit-config.yaml --hook-type=pre-commit)
+HERE="$(cd "$(dirname "$0")" && pwd)"
+ARGS+=(--hook-dir "$HERE" -- "$@")
+
+if command -v pre-commit &> /dev/null; then
+    exec pre-commit "${ARGS[@]}"
+else
+    echo "Warning: pre-commit not found in PATH, skipping hooks"
+    exit 0
+fi
