@@ -88,6 +88,10 @@
       url = "github:nix-community/bun2nix";
       inputs.nixpkgs.follows = "nixos-unstable";
     };
+    why = {
+      url = "github:jamesbrink/why";
+      inputs.nixpkgs.follows = "nixos-unstable";
+    };
   };
 
   outputs =

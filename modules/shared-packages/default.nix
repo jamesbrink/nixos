@@ -68,6 +68,7 @@ in
       bun
       nodejs
       nodePackages.pnpm
+      inputs.why.packages.${pkgs.stdenv.hostPlatform.system}.default
 
       # Restic browser with credential isolation wrapper
       (pkgs.writeShellScriptBin "restic-browser" ''
