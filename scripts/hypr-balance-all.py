@@ -74,7 +74,9 @@ def get_window(workspace_id: int, address: str) -> Window | None:
     """Get current state of a window by address."""
     for c in hyprctl_json(["clients"]):
         if c["address"] == address and c["workspace"]["id"] == workspace_id:
-            return Window(c["address"], c["at"][0], c["at"][1], c["size"][0], c["size"][1])
+            return Window(
+                c["address"], c["at"][0], c["at"][1], c["size"][0], c["size"][1]
+            )
     return None
 
 
@@ -187,7 +189,7 @@ def main():
             break
 
         if state in history:
-            print(f"\n⚠ Oscillation detected")
+            print("\n⚠ Oscillation detected")
             break
         history.append(state)
 
@@ -209,7 +211,7 @@ def main():
             # Try next most deviated column
             candidates = sorted(
                 [(i, abs(widths[i] - target)) for i in range(n) if i != best_i],
-                key=lambda x: -x[1]
+                key=lambda x: -x[1],
             )
             for idx, dev in candidates:
                 if dev > TOLERANCE:
@@ -222,7 +224,7 @@ def main():
         w = get_window(workspace_id, addr)
         widths.append(w.width if w else 0)
 
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f"Target: {target}")
     print(f"Final:  {widths}")
     max_dev = max(abs(w - target) for w in widths)
