@@ -10,6 +10,17 @@
   programs.bash = {
     enable = true;
 
+    # Override default shellOptions to be compatible with macOS's ancient bash 3.2
+    # Default includes globstar/checkjobs which require bash 4.0+
+    # Bash 4+ features are added in initExtra with version guards
+    shellOptions = [
+      "histappend"
+      "checkwinsize"
+      "extglob"
+      # globstar - bash 4.0+ only, added in initExtra
+      # checkjobs - bash 4.0+ only, added in initExtra
+    ];
+
     shellAliases = {
       # Basic aliases
       ll = "ls -l";
@@ -41,6 +52,12 @@
     historySize = -1; # Unlimited history size in memory
 
     initExtra = ''
+      # Enable bash 4.0+ features if available (macOS ships bash 3.2)
+      if [[ ''${BASH_VERSINFO[0]} -ge 4 ]]; then
+        shopt -s globstar     # ** recursive glob
+        shopt -s checkjobs    # Warn before exit with running jobs
+      fi
+
       # Bash history options for infinite history
       export HISTSIZE=-1                # Unlimited history in memory
       export HISTFILESIZE=-1            # Unlimited history file size
