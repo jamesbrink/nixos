@@ -58,3 +58,19 @@ Always refer to `README.md` for an overview, then consult:
 - `CLAUDE.md` documents Claude usage, experiment notes, and emerging patterns.
 - `HOTKEYS.md` catalogs custom keybindings and their rationale.
 - `TODO.md` tracks active tasks and backlog items.
+
+## Pending Actions
+
+### 2026-01-10: hal9000 PostgreSQL Replica Deploy Pending
+
+The PostgreSQL 17 replica module (`modules/services/postgresql-replica/`) was deployed to hal9000, but the final config with `ignore_invalid_pages = on` (in `extraConfig`) hasn't been applied via NixOS yet due to nix daemon crashes during deploy.
+
+**Current state:**
+
+- Replica is running via manual fix: `ignore_invalid_pages = on` was added directly to `/storage-fast/pg_base/postgresql.auto.conf`
+- The NixOS config in `hosts/hal9000/default.nix` has the correct `extraConfig` but hasn't been deployed
+
+**Action needed:**
+
+- Run `nixos-rebuild switch --flake .#hal9000` on hal9000 (or via remote deploy) to make the config NixOS-managed
+- Once deployed, the manual `postgresql.auto.conf` override becomes redundant but harmless
