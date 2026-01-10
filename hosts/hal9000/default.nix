@@ -1407,6 +1407,10 @@
     s3Bucket = "s3://quantierra-backups/postgresql-archive/";
     walSyncSchedule = "*-*-* 03:00:00"; # Daily at 3 AM
     snapshotSchedule = "*-*-1,4,7,10,13,16,19,22,25,28,31 04:00:00"; # Every 3 days at 4 AM
+    # Base backup was ZFS snapshot, not pg_basebackup - need to skip invalid pages
+    extraConfig = ''
+      ignore_invalid_pages = on
+    '';
   };
 
   # Samba server configuration - sharing same paths as NFS
