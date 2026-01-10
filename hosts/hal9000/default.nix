@@ -32,6 +32,7 @@
     ../../modules/services/windows11-vm.nix
     ../../modules/services/samba-server.nix
     ../../modules/services/internal-dns
+    ../../modules/services/postgresql-replica
     # ../../modules/services/netboot-server.nix  # Replaced by tftp-server.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
@@ -193,6 +194,15 @@
     ];
   };
 
+  fileSystems."/storage-fast/pg_base" = {
+    device = "storage-fast/pg_base";
+    fsType = "zfs";
+    options = [
+      "zfsutil"
+      "X-mount.mkdir"
+    ];
+  };
+
   fileSystems."/home/jamesbrink/AI" = {
     device = "/storage-fast/AI";
     options = [ "bind" ];
@@ -290,7 +300,7 @@
         139 # NetBIOS Session Service
         445 # SMB/CIFS
         3389
-        5439 # PostgreSQL 13 dev database (PostGIS)
+        5439 # PostgreSQL 17 read replica
         5900 # SPICE for VMs
         5901 # Additional SPICE ports
         5902
@@ -352,7 +362,7 @@
             4046 # NFS mountd
             4047 # NFS statd
             3389
-            5439 # PostgreSQL 13 dev database (PostGIS)
+            5439 # PostgreSQL 17 read replica
             7000 # AirPlay
             7001 # AirPlay
             7100 # AirPlay screen mirroring
@@ -1131,7 +1141,7 @@
     authKeyFile = "${config.age.secrets."hal9000-tailscale".path}";
   };
 
-  # webhook service configuration
+  # webhook service configuration for PostgreSQL 17 replica management
   environment.etc."webhook/hooks.json".text = ''
     [
       {
@@ -1178,7 +1188,7 @@
         ],
         "command-working-directory": "/",
         "execute-command": "/run/current-system/sw/bin/webhook-postgres-reset",
-        "response-message": "Database reset completed successfully",
+        "response-message": "PostgreSQL 17 replica operation completed",
         "include-command-output-in-response": true
       }
     ]
@@ -1384,6 +1394,19 @@
     timezone = "America/Phoenix";
     resticHostname = "hal9000";
     extraReadWritePaths = [ "/mnt/storage20tb" ];
+  };
+
+  # PostgreSQL 17 read replica from Quantierra production
+  services.postgresql-replica = {
+    enable = true;
+    dataDir = "/storage-fast/pg_base";
+    archiveDir = "/mnt/storage20tb/quantierra/wal";
+    zfsDataset = "storage-fast/pg_base";
+    port = 5439;
+    awsProfile = "quantierra";
+    s3Bucket = "s3://quantierra-backups/postgresql-archive/";
+    walSyncSchedule = "*-*-* 03:00:00"; # Daily at 3 AM
+    snapshotSchedule = "*-*-1,4,7,10,13,16,19,22,25,28,31 04:00:00"; # Every 3 days at 4 AM
   };
 
   # Samba server configuration - sharing same paths as NFS

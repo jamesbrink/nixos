@@ -120,11 +120,8 @@
     <script>
       const DATASETS_TO_SHOW = [
         "/storage-fast",
-        "/storage-fast/quantierra",
-        "/storage-fast/quantierra/base",
-        "/storage-fast/quantierra/archive",
-        "/storage-fast/quantierra/postgres13",
-        "/storage-fast/quantierra/postgres17",
+        "/storage-fast/pg_base",
+        "/storage-fast/pg_archive",
       ];
 
       function showModal(title, message, progress = 0) {
@@ -138,8 +135,9 @@
         document.getElementById("progressModal").classList.add("hidden");
       }
 
-      function resetDatabase(version) {
-        const token = version === 13 ? "reset" : "reset17";
+      function resetDatabase(action) {
+        const token = action === "reset" ? "reset17" : "active";
+        const actionName = action === "reset" ? "Reset" : "Activate";
         const xhr = new XMLHttpRequest();
         xhr.open(
           "POST",
@@ -149,23 +147,23 @@
         xhr.setRequestHeader("X-Webhook-Token", token);
 
         showModal(
-          `PostgreSQL ${version} Reset`,
-          "Initiating database reset...",
+          `PostgreSQL 17 ${actionName}`,
+          `Initiating database ${action}...`,
           0,
         );
 
         xhr.onload = function () {
           if (xhr.status >= 200 && xhr.status < 300) {
             showModal(
-              `PostgreSQL ${version} Reset`,
-              `PostgreSQL ${version} reset initiated successfully`,
+              `PostgreSQL 17 ${actionName}`,
+              `PostgreSQL 17 ${action} completed successfully`,
               100,
             );
             setTimeout(closeModal, 3000);
           } else {
             showModal(
-              `PostgreSQL ${version} Reset`,
-              `Failed to reset PostgreSQL ${version}`,
+              `PostgreSQL 17 ${actionName}`,
+              `Failed to ${action} PostgreSQL 17`,
               0,
             );
             setTimeout(closeModal, 3000);
@@ -174,8 +172,8 @@
 
         xhr.onerror = function () {
           showModal(
-            `PostgreSQL ${version} Reset`,
-            `Failed to reset PostgreSQL ${version}`,
+            `PostgreSQL 17 ${actionName}`,
+            `Failed to ${action} PostgreSQL 17`,
             0,
           );
           setTimeout(closeModal, 3000);
@@ -185,27 +183,25 @@
       }
 
       function getResetButton(dataset) {
-        if (dataset === "/storage-fast/quantierra/postgres13") {
-          return `<button type="button" onclick="resetDatabase(13);" 
-                    class="bg-pg-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Reset PostgreSQL 13
-                </button>`;
-        }
-        if (dataset === "/storage-fast/quantierra/postgres17") {
-          return `<button type="button" onclick="resetDatabase(17);" 
-                    class="bg-pg-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Reset PostgreSQL 17
+        if (dataset === "/storage-fast/pg_base") {
+          return `<button type="button" onclick="resetDatabase('reset');"
+                    class="bg-pg-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
+                    Reset to Snapshot
+                </button>
+                <button type="button" onclick="resetDatabase('activate');"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    Activate Dev Mode
                 </button>`;
         }
         return "";
       }
 
       function formatDatasetName(name) {
-        if (name === "/storage-fast/quantierra-dev") {
-          return name + " (PostgreSQL 13)";
+        if (name === "/storage-fast/pg_base") {
+          return name + " (PostgreSQL 17 Replica)";
         }
-        if (name === "/storage-fast/quantierra-dev-17") {
-          return name + " (PostgreSQL 17)";
+        if (name === "/storage-fast/pg_archive") {
+          return name + " (WAL Archive)";
         }
         return name;
       }
