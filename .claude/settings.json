@@ -11,11 +11,12 @@
       "MultiEdit",
       "Write",
       "WebFetch",
-      "WebSearch"
+      "WebSearch",
+      "Skill(pg-replica)"
     ],
     "deny": ["Bash(rm:-rf /)"],
     "defaultMode": "acceptEdits",
-    "additionalDirectories": ["../nix-secrets"]
+    "additionalDirectories": []
   },
   "includeCoAuthoredBy": true,
   "cleanupPeriodDays": 30,
