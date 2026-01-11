@@ -30,8 +30,8 @@ in
 
     package = mkOption {
       type = types.package;
-      default = pkgs.postgresql_17;
-      description = "PostgreSQL package to use";
+      default = pkgs.postgresql_17.withPackages (ps: [ ps.postgis ]);
+      description = "PostgreSQL package to use (includes PostGIS by default)";
     };
 
     dataDir = mkOption {
