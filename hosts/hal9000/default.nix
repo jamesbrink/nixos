@@ -1397,21 +1397,20 @@
   };
 
   # PostgreSQL 17 read replica from Quantierra production
-  # Temporarily disabled - using manual postgres for dev work
-  # services.postgresql-replica = {
-  #   enable = true;
-  #   dataDir = "/storage-fast/pg_base";
-  #   archiveDir = "/mnt/storage20tb/quantierra/wal";
-  #   zfsDataset = "storage-fast/pg_base";
-  #   port = 5432;
-  #   awsProfile = "quantierra";
-  #   s3Bucket = "s3://quantierra-backups/postgresql-archive/";
-  #   walSyncSchedule = "*-*-* 03:00:00"; # Daily at 3 AM
-  #   snapshotSchedule = "*-*-1,4,7,10,13,16,19,22,25,28,31 04:00:00"; # Every 3 days at 4 AM
-  #   extraConfig = ''
-  #     ignore_invalid_pages = off
-  #   '';
-  # };
+  services.postgresql-replica = {
+    enable = true;
+    dataDir = "/storage-fast/pg_base";
+    archiveDir = "/mnt/storage20tb/quantierra/wal";
+    zfsDataset = "storage-fast/pg_base";
+    port = 5432;
+    awsProfile = "quantierra";
+    s3Bucket = "s3://quantierra-backups/postgresql-archive/";
+    walSyncSchedule = "*-*-* 03:00:00"; # Daily at 3 AM
+    snapshotSchedule = "*-*-1,4,7,10,13,16,19,22,25,28,31 04:00:00"; # Every 3 days at 4 AM
+    extraConfig = ''
+      ignore_invalid_pages = off
+    '';
+  };
 
   # Samba server configuration - sharing same paths as NFS
   services.samba-server = {
