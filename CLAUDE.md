@@ -46,6 +46,20 @@ Confirm with `gh run view <run_id> -R <owner>/<repo> --json status,conclusion`; 
 - If you prefer the generic helper (`./scripts/deploy-k8s.py helm rancher-monitoring rancher-charts/rancher-monitoring -n cattle-monitoring-system -f k8s/rancher/monitoring-values.yaml`), the script now performs the same config sync automatically after Helm finishes.
 - Always verify via Rancher → Cluster → Monitoring plus direct <https://grafana.home.urandom.io> to ensure both access paths load without 404s.
 
+## PostgreSQL Replica on hal9000
+
+The PostgreSQL 17 replica runs on hal9000 (port 5432) replicating from Quantierra production via WAL shipping from S3. Use the `pg-replica` skill for status checks and queries.
+
+**Mode switching:** The systemd service always starts in standby mode. To switch to read/write:
+
+```bash
+# Stop service, remove standby.signal, start postgres manually
+ssh hal9000 "sudo systemctl stop postgresql-replica"
+ssh hal9000 "sudo rm -f /storage-fast/pg_base/standby.signal && sudo -u postgres /run/current-system/sw/bin/postgres -D /storage-fast/pg_base &"
+```
+
+To return to standby: `ssh hal9000 "sudo pkill -u postgres postgres && sudo systemctl start postgresql-replica"`
+
 ## Core Docs
 
 Always refer to `README.md` for an overview, then consult:

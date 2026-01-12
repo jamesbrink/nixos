@@ -49,6 +49,32 @@ For operations not covered by scripts, SSH to hal9000 and use these system comma
 | `sudo pg17-activate`                         | Promote to writable (stops replication) |
 | `sudo systemctl <action> postgresql-replica` | Service control (start/stop/restart)    |
 
+## Switching Between Standby and Read/Write Modes
+
+The systemd service always starts in **standby mode** (it creates `standby.signal` on startup). To switch modes, you must manage postgres manually.
+
+### Promote to Read/Write (stop replication)
+
+```bash
+# Stop the systemd service
+ssh hal9000 "sudo systemctl stop postgresql-replica"
+
+# Remove standby.signal and start postgres manually
+ssh hal9000 "sudo rm -f /storage-fast/pg_base/standby.signal && sudo -u postgres /run/current-system/sw/bin/postgres -D /storage-fast/pg_base &"
+```
+
+### Return to Standby Mode
+
+```bash
+# Stop the manual postgres process
+ssh hal9000 "sudo pkill -u postgres postgres"
+
+# Restart the systemd service (will recreate standby.signal)
+ssh hal9000 "sudo systemctl start postgresql-replica"
+```
+
+**Note:** The `pg17-activate` script attempts to promote while the service is running, but this conflicts with the pre-start script. For reliable mode switching, use the manual steps above.
+
 ## Architecture
 
 See [architecture.md](architecture.md) for detailed infrastructure information.
