@@ -6,7 +6,7 @@
 | ---------------------- | --------------------------------------------- |
 | **Host**               | hal9000                                       |
 | **Service**            | `postgresql-replica.service`                  |
-| **Port**               | 5439 (TCP via localhost)                      |
+| **Port**               | 5432 (TCP via localhost)                      |
 | **PostgreSQL Version** | 17                                            |
 | **Data Directory**     | `/storage-fast/pg_base` (ZFS dataset)         |
 | **WAL Archive**        | `/mnt/storage20tb/quantierra/wal`             |
@@ -37,13 +37,12 @@ When connecting manually (not via helper scripts), always use:
 
 ```
 Host: localhost (or -h localhost)
-Port: 5439 (or -p 5439)
+Port: 5432 (or -p 5432)
 ```
 
 **Never**:
 
-- Use port 5432 or 5433 (wrong ports)
-- Use `-p 5439` without `-h localhost` (socket path issues)
+- Use `-p 5432` without `-h localhost` (socket path issues)
 - Try to find socket files (use TCP via localhost)
 
 ## NixOS Module
