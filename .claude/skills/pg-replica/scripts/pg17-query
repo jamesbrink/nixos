@@ -13,7 +13,7 @@ QUERY="$1"
 DATABASE="${2:-}"
 
 if [[ -n "$DATABASE" ]]; then
-    ssh hal9000 "sudo -u postgres psql -h localhost -p 5439 -d '$DATABASE' -c \"$QUERY\""
+    ssh hal9000 "sudo -u postgres psql -h localhost -p 5432 -d '$DATABASE' -c \"$QUERY\""
 else
-    ssh hal9000 "sudo -u postgres psql -h localhost -p 5439 -c \"$QUERY\""
+    ssh hal9000 "sudo -u postgres psql -h localhost -p 5432 -c \"$QUERY\""
 fi

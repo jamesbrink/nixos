@@ -24,7 +24,7 @@ Manage the read replica of Quantierra's PostgreSQL 17 database running on hal900
 
 ## Usage
 
-**Always use the helper scripts** located in `.claude/skills/pg-replica/scripts/`. These scripts handle SSH connection, proper port (5439), and host (localhost) configuration automatically.
+**Always use the helper scripts** located in `.claude/skills/pg-replica/scripts/`. These scripts handle SSH connection, proper port (5432), and host (localhost) configuration automatically.
 
 ```bash
 # Check replica status

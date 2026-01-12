@@ -300,7 +300,7 @@
         139 # NetBIOS Session Service
         445 # SMB/CIFS
         3389
-        5439 # PostgreSQL 17 read replica
+        5432 # PostgreSQL 17 read replica
         5900 # SPICE for VMs
         5901 # Additional SPICE ports
         5902
@@ -362,7 +362,7 @@
             4046 # NFS mountd
             4047 # NFS statd
             3389
-            5439 # PostgreSQL 17 read replica
+            5432 # PostgreSQL 17 read replica
             7000 # AirPlay
             7001 # AirPlay
             7100 # AirPlay screen mirroring
@@ -1221,7 +1221,7 @@
     };
     serviceConfig = {
       Type = "simple";
-      ExecStart = "${pkgs.pgweb}/bin/pgweb --bind=0.0.0.0 --listen=8081 --host=127.0.0.1 --port=5439 --user=postgres --pass=postgres --db=nyc_real_estate_dev --skip-open --sessions";
+      ExecStart = "${pkgs.pgweb}/bin/pgweb --bind=0.0.0.0 --listen=8081 --host=127.0.0.1 --port=5432 --user=postgres --pass=postgres --db=nyc_real_estate_dev --skip-open --sessions";
       Restart = "always";
       RestartSec = "5s";
       User = "jamesbrink";
@@ -1402,7 +1402,7 @@
     dataDir = "/storage-fast/pg_base";
     archiveDir = "/mnt/storage20tb/quantierra/wal";
     zfsDataset = "storage-fast/pg_base";
-    port = 5439;
+    port = 5432;
     awsProfile = "quantierra";
     s3Bucket = "s3://quantierra-backups/postgresql-archive/";
     walSyncSchedule = "*-*-* 03:00:00"; # Daily at 3 AM

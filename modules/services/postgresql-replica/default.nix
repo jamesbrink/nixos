@@ -60,7 +60,7 @@ in
 
     port = mkOption {
       type = types.port;
-      default = 5439;
+      default = 5432;
       description = "Port for the PostgreSQL replica to listen on";
     };
 

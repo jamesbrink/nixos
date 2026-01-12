@@ -10,4 +10,4 @@ fi
 
 DATABASE="$1"
 
-ssh hal9000 "sudo -u postgres psql -h localhost -p 5439 -d '$DATABASE' -c \"SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname || '.' || tablename)) as size FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema') ORDER BY pg_total_relation_size(schemaname || '.' || tablename) DESC LIMIT 20;\""
+ssh hal9000 "sudo -u postgres psql -h localhost -p 5432 -d '$DATABASE' -c \"SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname || '.' || tablename)) as size FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema') ORDER BY pg_total_relation_size(schemaname || '.' || tablename) DESC LIMIT 20;\""

@@ -161,13 +161,13 @@ let
     echo "Time: $(date)"
 
     # Check if PostgreSQL is in recovery mode
-    IS_RECOVERY=$(sudo -u postgres ${postgresqlPackage}/bin/psql -p 5439 -tAc "SELECT pg_is_in_recovery();" 2>/dev/null || echo "error")
+    IS_RECOVERY=$(sudo -u postgres ${postgresqlPackage}/bin/psql -p 5432 -tAc "SELECT pg_is_in_recovery();" 2>/dev/null || echo "error")
 
     if [ "$IS_RECOVERY" = "t" ]; then
       echo "PostgreSQL is in recovery mode (standby)"
 
       # Check recovery lag
-      LAG_SECONDS=$(sudo -u postgres ${postgresqlPackage}/bin/psql -p 5439 -tAc "
+      LAG_SECONDS=$(sudo -u postgres ${postgresqlPackage}/bin/psql -p 5432 -tAc "
         SELECT CASE
           WHEN pg_last_wal_receive_lsn() IS NULL THEN -1
           ELSE EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))::integer
@@ -261,7 +261,7 @@ let
     echo "WARNING: This will stop replication and make the database writable!"
 
     # Check current state
-    IS_RECOVERY=$(sudo -u postgres ${postgresqlPackage}/bin/psql -p 5439 -tAc "SELECT pg_is_in_recovery();" 2>/dev/null || echo "error")
+    IS_RECOVERY=$(sudo -u postgres ${postgresqlPackage}/bin/psql -p 5432 -tAc "SELECT pg_is_in_recovery();" 2>/dev/null || echo "error")
 
     if [ "$IS_RECOVERY" = "f" ]; then
       echo "PostgreSQL is already in development mode (not in recovery)"
@@ -279,7 +279,7 @@ let
     # Wait for promotion
     echo "Waiting for promotion to complete..."
     for i in {1..30}; do
-      IS_RECOVERY=$(sudo -u postgres ${postgresqlPackage}/bin/psql -p 5439 -tAc "SELECT pg_is_in_recovery();" 2>/dev/null || echo "error")
+      IS_RECOVERY=$(sudo -u postgres ${postgresqlPackage}/bin/psql -p 5432 -tAc "SELECT pg_is_in_recovery();" 2>/dev/null || echo "error")
       if [ "$IS_RECOVERY" = "f" ]; then
         echo "Promotion complete! PostgreSQL is now in development mode."
         exit 0
@@ -311,12 +311,12 @@ let
 
     # PostgreSQL status
     echo "--- PostgreSQL Status ---"
-    IS_RECOVERY=$(sudo -u postgres ${postgresqlPackage}/bin/psql -p 5439 -tAc "SELECT pg_is_in_recovery();" 2>/dev/null || echo "error")
+    IS_RECOVERY=$(sudo -u postgres ${postgresqlPackage}/bin/psql -p 5432 -tAc "SELECT pg_is_in_recovery();" 2>/dev/null || echo "error")
     if [ "$IS_RECOVERY" = "t" ]; then
       echo "Mode: STANDBY (read-only replica)"
 
       # Get recovery info
-      sudo -u postgres ${postgresqlPackage}/bin/psql -p 5439 -c "
+      sudo -u postgres ${postgresqlPackage}/bin/psql -p 5432 -c "
         SELECT
           pg_last_wal_receive_lsn() as last_receive_lsn,
           pg_last_wal_replay_lsn() as last_replay_lsn,
