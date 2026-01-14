@@ -202,6 +202,10 @@ in
       local   all             all                                     trust
       host    all             all             127.0.0.1/32           trust
       host    all             all             ::1/128                trust
+      # Trusted networks (no auth required)
+      host    all             all             10.70.100.0/24         trust
+      host    all             all             100.64.0.0/10          trust
+      # All other hosts require password
       host    all             all             0.0.0.0/0              md5
       host    all             all             ::/0                   md5
     '';
