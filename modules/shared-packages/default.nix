@@ -124,6 +124,8 @@ in
       # Linux-only packages
       below
       bitwarden-cli
+      gcr # Provides org.gnome.keyring.SystemPrompter for libsecret
+      libsecret
       fio
       hdparm
       inxi

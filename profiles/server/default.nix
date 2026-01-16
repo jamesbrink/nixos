@@ -14,6 +14,11 @@
     ../../users/root.nix
   ];
 
+  # Enable gnome-keyring as Secret Service provider for libsecret
+  # Required for CLI tools that store credentials (coderabbit, gh, etc.)
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services.login.enableGnomeKeyring = true;
+
   # Enable zsh as default shell
   programs.zsh = {
     enable = true;
