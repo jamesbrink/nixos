@@ -145,6 +145,10 @@ in
       port = ${toString cfg.port}
       max_connections = 500  # Must be >= primary server (400)
 
+      # Query statistics (for slow query analysis)
+      shared_preload_libraries = 'pg_stat_statements'
+      pg_stat_statements.track = all
+
       # Performance settings for development on ZFS
       fsync = off
       synchronous_commit = off
