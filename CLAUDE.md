@@ -1,74 +1,117 @@
-# Repository Guidelines
+# CLAUDE.md
 
-## Project Structure & Module Organization
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-`flake.nix` pins nixpkgs, agenix, and Darwin revisions, exports dev shells, and composes hosts under `hosts/<hostname>/`. Shared logic lives in `modules/darwin`, `modules/services`, `modules/home-manager`, and `profiles/`. Place package overrides in `pkgs/` and `overlays/`, user tweaks in `users/`, helper scripts in `scripts/`, and encrypted credentials in `secrets/` with recipients tracked in `SECRETS.md`. Review `VISION.md`, `DESIGN.md`, `TECH_STACK.md`, and `STANDARDS.md` before editing fleet-wide modules.
+## Build, Test, and Deploy Commands
 
-## Build, Test, and Development Commands
+Enter the dev shell first: `nix develop` (or `direnv allow`) — sets `NIXPKGS_ALLOW_UNFREE=1` and exposes all helpers.
 
-- `nix develop` (or `direnv allow`) enters the dev shell with shared helpers and `NIXPKGS_ALLOW_UNFREE=1`.
-- `format` runs treefmt (`nixfmt` + `prettier`) to enforce repository formatting.
-- `nix flake check --impure` provides the baseline validation for all changes.
-- `nix build .#nixosConfigurations.<host>.config.system.build.toplevel` (or `.darwinConfigurations.<host>.system`) builds a specific host profile.
-- `deploy <host>`, `deploy-test <host>`, and `deploy-local <host>` perform production, rehearsal, or constrained rollouts; follow deployments with `scripts/health-check.sh <host>` and `scripts/show-generations.sh <host>`.
+| Command                                                               | Purpose                                             |
+| --------------------------------------------------------------------- | --------------------------------------------------- |
+| `format`                                                              | Run treefmt (nixfmt + prettier)                     |
+| `nix flake check --impure`                                            | Baseline validation for all changes                 |
+| `nix build .#nixosConfigurations.<host>.config.system.build.toplevel` | Build NixOS host                                    |
+| `nix build .#darwinConfigurations.<host>.system`                      | Build Darwin host                                   |
+| `deploy <host>`                                                       | Production deployment                               |
+| `deploy-test <host>`                                                  | Dry-run deployment (no activation)                  |
+| `deploy-local <host>`                                                 | Build locally, push to remote (for low-RAM targets) |
+| `scripts/health-check.sh <host>`                                      | Post-deploy service verification                    |
+| `scripts/show-generations.sh <host>`                                  | List rollback points                                |
+| `scripts/rollback.sh <host>`                                          | Revert to previous generation                       |
 
-## Coding Style & Naming Conventions
+**Secrets management:**
 
-treefmt enforces two-space indentation and sorted attribute sets in `*.nix`, while structured data runs through `prettier`. All files, modules, hosts, and profiles use lowercase hyphenated names (e.g., `hosts/halcyon`, `ghostty-terminfo.nix`). Bash helpers start with `#!/usr/bin/env bash`, set `-euo pipefail`, avoid ad-hoc shells when a declarative module suffices, and must pass `shellcheck scripts/*.sh`.
+- `secrets-edit <path>` — edit/create encrypted secret (auto-adds to secrets.nix)
+- `secrets-rekey` — re-encrypt all secrets with current recipients
+- `secrets-verify` — check all secrets decrypt correctly
+- `scan-gitleaks` or `scan-secrets --all` — scan for leaked credentials before push
 
-## Testing Guidelines
+**Kubernetes (Rancher + monitoring):**
 
-Minimum verification is `nix flake check --impure` plus `deploy-test <host>` for each impacted machine. After activation, run `scripts/health-check.sh <host>` to confirm services and `scripts/show-generations.sh <host>` to confirm rollback points. Secrets-heavy changes require `scripts/secrets-verify.sh` and `scripts/scan-gitleaks.sh` or `scripts/scan-secrets.sh --all`. Name tests after the host or module they verify (e.g., `deploy-test halcyon`).
+- `./scripts/deploy-k8s.py rancher` — bootstrap/refresh Rancher + Grafana proxy
 
-## Commit & Pull Request Guidelines
+## Architecture Overview
 
-Use Conventional Commits that scope paths (e.g., `feat(hosts/halcyon): enable yabai toggle`). Before opening a PR, run `format`, `nix flake check --impure`, and `deploy-test` for each affected host, then report results in the PR body alongside impacted hosts/profiles, linked issues, and screenshots or command snippets for UI changes. Document any new secrets or manual steps in `SECRETS.md` or `docs/`.
+### Flake Structure
 
-## Security & Configuration Tips
+`flake.nix` defines:
 
-Encrypt sensitive data with `scripts/secrets-edit.sh <path>` and rotate recipients via `scripts/secrets-rekey.sh`. Keep secrets confined to `secrets/`, never commit plaintext, and scan before pushing using `scripts/scan-gitleaks.sh` or `scripts/scan-secrets.sh --all`. Pair risky rollouts with `scripts/health-check.sh`, `scripts/show-generations.sh`, and `scripts/rollback.sh` to validate and recover quickly.
+- **Inputs**: nixpkgs (stable 25.11), nixos-unstable, home-manager, nix-darwin, agenix, disko, plus external flakes (comfyui-nix, zerobyte, etc.)
+- **Dev shells**: Cross-platform (x86_64-linux, aarch64-darwin, x86_64-darwin) with Python 3.13, Ruff, BasedPyright, treefmt, age, and deployment helpers
+- **Host outputs**: `nixosConfigurations` (hal9000, alienware, n100-01 through n100-04) and `darwinConfigurations` (halcyon)
+- **Packages**: `themectl` CLI for cross-platform theme management
 
-## GitHub Actions Troubleshooting
+### Module Hierarchy
 
-If a workflow run stays `queued` after fixing runner labels, force-cancel it with:
-
-```bash
-gh api --method POST -H "Accept: application/vnd.github+json" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  /repos/<owner>/<repo>/actions/runs/<run_id>/force-cancel
+```
+hosts/<hostname>/default.nix   # Thin host definitions — imports only, no inline logic
+    ↓ imports
+profiles/{desktop,server,darwin,n100}/   # Role bundles (aggregate modules)
+    ↓ imports
+modules/
+├── darwin/          # nix-darwin specifics (Dock, file sharing, yabai, skhd)
+├── home-manager/    # User programs, shells, editors, theming
+│   └── hyprland/themes/lib.nix  # Shared theme registry for Darwin + Hyprland
+├── services/        # Daemons (AI stack, Postgres/PostGIS, restic, netboot)
+└── netboot/         # PXE installer automation
 ```
 
-Confirm with `gh run view <run_id> -R <owner>/<repo> --json status,conclusion`; delete with `gh api --method DELETE /repos/<owner>/<repo>/actions/runs/<run_id>` only if the force step fails. See `docs/github-actions.md` for full notes (applied to runs 19433417619 and 19432457397).
+### Key Patterns
 
-## Rancher Monitoring Deployment
+**Host files** should only stitch profiles and host-specific overrides. Business logic belongs in modules or `scripts/`.
 
-- Run `./scripts/deploy-k8s.py rancher` to bootstrap or refresh Rancher + monitoring. The script copies `k8s/rancher/grafana-nginx.conf` into the `grafana-nginx-proxy-config` ConfigMap and restarts Grafana so the Rancher UI proxy keeps working.
-- If you prefer the generic helper (`./scripts/deploy-k8s.py helm rancher-monitoring rancher-charts/rancher-monitoring -n cattle-monitoring-system -f k8s/rancher/monitoring-values.yaml`), the script now performs the same config sync automatically after Helm finishes.
-- Always verify via Rancher → Cluster → Monitoring plus direct <https://grafana.home.urandom.io> to ensure both access paths load without 404s.
+**Overlays** (`overlays/`) provide `unstablePkgs` and custom derivations (PixInsight, llama-cpp). Access via `pkgs.unstablePkgs.<package>`.
 
-## PostgreSQL Replica on hal9000
+**Secrets** live in `secrets/` as `.age` files encrypted via agenix. Recipients are tracked in `secrets/secrets.nix`. Hosts decrypt using their SSH host key (`/etc/ssh/ssh_host_ed25519_key`).
 
-The PostgreSQL 17 replica runs on hal9000 (port 5432) replicating from Quantierra production via WAL shipping from S3. Use the `pg-replica` skill for status checks and queries.
+**Theme system** (`scripts/themectl/`) is a Python CLI that:
 
-**Mode switching:** The systemd service always starts in standby mode. To switch to read/write:
+- Reads theme metadata from `modules/home-manager/hyprland/themes/lib.nix`
+- Syncs wallpapers from `external/omarchy/` submodule
+- Rewrites configs for Alacritty, Ghostty, VSCode, Neovim, tmux
+- Drives yabai BSP/native mode toggle on macOS
+
+### PostgreSQL Replica (hal9000)
+
+Port 5432, replicating from Quantierra production via S3 WAL shipping. Use the `pg-replica` skill for status/queries.
+
+**Mode switching:**
 
 ```bash
-# Stop service, remove standby.signal, start postgres manually
+# To read/write mode:
 ssh hal9000 "sudo systemctl stop postgresql-replica"
 ssh hal9000 "sudo rm -f /storage-fast/pg_base/standby.signal && sudo -u postgres /run/current-system/sw/bin/postgres -D /storage-fast/pg_base &"
+
+# Back to standby:
+ssh hal9000 "sudo pkill -u postgres postgres && sudo systemctl start postgresql-replica"
 ```
 
-To return to standby: `ssh hal9000 "sudo pkill -u postgres postgres && sudo systemctl start postgresql-replica"`
+## Coding Standards
 
-## Core Docs
+**Nix**: Two-space indentation, sorted attribute sets, formatted by nixfmt. Prefer upstream modules before writing custom logic.
 
-Always refer to `README.md` for an overview, then consult:
+**Bash**: `#!/usr/bin/env bash` with `set -euo pipefail`. Must pass `shellcheck scripts/*.sh`.
 
-- `VISION.md` captures fleet goals and guardrails.
-- `TECH_STACK.md` lists the supported platforms, languages, and tooling.
-- `DESIGN.md` explains repository layout and ownership boundaries.
-- `STANDARDS.md` codifies testing, documentation, and language-specific requirements (including the Python `themectl` rules).
-- `AGENTS.md` covers collaboration with AI agents (Claude, GitHub Copilot, etc.).
-- `CLAUDE.md` documents Claude usage, experiment notes, and emerging patterns.
-- `HOTKEYS.md` catalogs custom keybindings and their rationale.
-- `TODO.md` tracks active tasks and backlog items.
+**Python** (`scripts/themectl/`): Type hints everywhere, Ruff for lint/format, BasedPyright for type checking, pytest for tests. Keep files under 800 lines.
+
+**Naming**: Lowercase hyphenated names for files, modules, hosts, profiles (e.g., `hosts/halcyon`, `ghostty-terminfo.nix`).
+
+**Commits**: Conventional Commits scoped to paths (e.g., `feat(hosts/halcyon): enable yabai toggle`).
+
+## Pre-Push Checklist
+
+1. `format` — run treefmt
+2. `nix flake check --impure` — validate all hosts build
+3. `deploy-test <host>` — for each affected host
+4. `scan-gitleaks` or `scan-secrets --all` — no leaked credentials
+5. Stage relevant files before `deploy` to avoid "missing file" failures on remote builds
+
+## Reference Docs
+
+- `VISION.md` — fleet goals and guardrails
+- `DESIGN.md` — repository layout and ownership boundaries
+- `TECH_STACK.md` — supported platforms, languages, tooling
+- `STANDARDS.md` — testing, documentation, language-specific requirements
+- `HOTKEYS.md` — keybinding reference (Yabai, Hyprland, tmux, Neovim)
+- `TODO.md` — active tasks and backlog
+- `SECRETS.md` — secrets lifecycle and Kubernetes integration
