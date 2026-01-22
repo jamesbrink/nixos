@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+# Document Nix flake structure using nix flake show/metadata
+set -euo pipefail
+
+usage() {
+    cat <<EOF
+Usage: doc-nix-flake [path] [options]
+
+Document Nix flake structure using nix flake introspection.
+Uses nix flake show and metadata for accurate schema parsing.
+
+Arguments:
+    path            Path to flake (default: current directory)
+                    Can be local path or flake reference (github:owner/repo)
+
+Options:
+    --json          Output as JSON
+    --inputs        Show only inputs (with lock info)
+    --outputs       Show only outputs
+    --full          Show all details (inputs + outputs + metadata)
+    --help, -h      Show this help message
+
+Output includes:
+    - Inputs: flake dependencies with URLs and revisions
+    - Outputs: packages, devShells, nixosConfigurations, etc.
+    - Metadata: description, last modified, path info
+
+Examples:
+    doc-nix-flake
+    doc-nix-flake /path/to/flake
+    doc-nix-flake github:NixOS/nixpkgs
+    doc-nix-flake --inputs
+    doc-nix-flake --outputs --json
+EOF
+    exit 0
+}
+
+# Check for help flag
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+# Default values
+FLAKE_PATH="."
+SHOW_INPUTS=true
+SHOW_OUTPUTS=true
+OUTPUT_JSON=false
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --json)
+            OUTPUT_JSON=true
+            shift
+            ;;
+        --inputs)
+            SHOW_INPUTS=true
+            SHOW_OUTPUTS=false
+            shift
+            ;;
+        --outputs)
+            SHOW_INPUTS=false
+            SHOW_OUTPUTS=true
+            shift
+            ;;
+        --full)
+            SHOW_INPUTS=true
+            SHOW_OUTPUTS=true
+            shift
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+        *)
+            FLAKE_PATH="$1"
+            shift
+            ;;
+    esac
+done
+
+# Check nix is available
+if ! command -v nix &>/dev/null; then
+    echo "Error: nix not found" >&2
+    exit 1
+fi
+
+if [[ "$OUTPUT_JSON" == "true" ]]; then
+    # JSON output - combine metadata and show
+    echo "{"
+
+    if [[ "$SHOW_INPUTS" == "true" ]]; then
+        echo '  "metadata":'
+        nix flake metadata "$FLAKE_PATH" --json 2>/dev/null | sed 's/^/    /'
+        if [[ "$SHOW_OUTPUTS" == "true" ]]; then
+            echo ","
+        fi
+    fi
+
+    if [[ "$SHOW_OUTPUTS" == "true" ]]; then
+        echo '  "outputs":'
+        nix flake show "$FLAKE_PATH" --json 2>/dev/null | sed 's/^/    /'
+    fi
+
+    echo "}"
+else
+    # Human-readable output
+    if [[ "$SHOW_INPUTS" == "true" ]]; then
+        echo "# Flake Metadata & Inputs"
+        echo ""
+        nix flake metadata "$FLAKE_PATH" 2>/dev/null
+        echo ""
+    fi
+
+    if [[ "$SHOW_OUTPUTS" == "true" ]]; then
+        echo "# Flake Outputs"
+        echo ""
+        nix flake show "$FLAKE_PATH" 2>/dev/null
+    fi
+fi

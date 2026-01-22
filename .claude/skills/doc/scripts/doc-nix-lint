@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# Lint Nix code using statix (AST-based analysis with rnix-parser)
+set -euo pipefail
+
+usage() {
+    cat <<EOF
+Usage: doc-nix-lint <path> [options]
+
+Lint Nix code using statix for AST-aware analysis.
+statix uses rnix-parser (Rust) for accurate parsing.
+
+Arguments:
+    path            Path to file or directory to lint
+
+Options:
+    --fix           Apply automatic fixes
+    --json          Output as JSON
+    --stdin         Read from stdin
+    --explain       Show detailed explanations for each warning
+    --help, -h      Show this help message
+
+Checks include:
+    - Deprecated or legacy syntax
+    - Anti-patterns (empty patterns, manual inherit, etc.)
+    - Style issues (eta reduction, bool comparison, etc.)
+    - Correctness issues (unused bindings, missing arguments)
+
+Examples:
+    doc-nix-lint modules/darwin/
+    doc-nix-lint hosts/halcyon/default.nix
+    doc-nix-lint . --fix
+    doc-nix-lint flake.nix --explain
+EOF
+    exit 0
+}
+
+# Check for help flag
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+# Require path argument
+if [[ $# -lt 1 ]]; then
+    echo "Error: Path required" >&2
+    echo "Usage: doc-nix-lint <path> [options]" >&2
+    exit 1
+fi
+
+LINT_PATH="$1"
+shift
+
+# Verify path exists (unless stdin)
+if [[ "$LINT_PATH" != "-" ]] && [[ ! -e "$LINT_PATH" ]]; then
+    echo "Error: Path not found: $LINT_PATH" >&2
+    exit 1
+fi
+
+# Check for statix
+if ! command -v statix &>/dev/null; then
+    echo "Error: statix not found. Install via:" >&2
+    echo "  nix-shell -p statix" >&2
+    exit 1
+fi
+
+# Build statix arguments
+STATIX_CMD="check"
+STATIX_ARGS=()
+
+# Parse remaining arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --fix)
+            STATIX_CMD="fix"
+            shift
+            ;;
+        --json)
+            STATIX_ARGS+=("--format=json")
+            shift
+            ;;
+        --stdin)
+            STATIX_ARGS+=("--stdin")
+            shift
+            ;;
+        --explain)
+            # Run explain mode separately
+            echo "Running statix explain..."
+            statix explain
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+echo "Running statix $STATIX_CMD on: $LINT_PATH"
+echo "---"
+
+# Run statix
+if [[ "$STATIX_CMD" == "fix" ]]; then
+    statix fix "${STATIX_ARGS[@]}" "$LINT_PATH"
+    echo "Fixes applied."
+else
+    # Check returns non-zero if issues found
+    statix check "${STATIX_ARGS[@]}" "$LINT_PATH" || true
+fi

@@ -334,6 +334,7 @@
         8008
         8009
         8010
+        18789 # clawdbot
       ];
       allowedUDPPorts = [
         111 # RPC portmapper
@@ -349,6 +350,7 @@
         7000 # AirPlay
         7001 # AirPlay
         7011 # AirPlay control
+        18789 # clawdbot
       ];
       interfaces = {
         br0 = {

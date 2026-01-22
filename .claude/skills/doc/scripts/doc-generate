@@ -1,0 +1,246 @@
+#!/usr/bin/env bash
+# Unified documentation generator - auto-detects file types and generates docs
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+usage() {
+    cat <<EOF
+Usage: doc-generate <path> [options]
+
+Unified documentation generator that auto-detects file types
+and uses appropriate AST/CST tools for accurate documentation.
+
+Arguments:
+    path            Path to file or directory to document
+
+Options:
+    --format, -f    Output format: md (default), json
+    --full          Run full analysis (lint + dead code + docs)
+    --terraform     Force Terraform mode
+    --nix           Force Nix mode
+    --output, -o    Write to file instead of stdout
+    --help, -h      Show this help message
+
+Supported file types:
+    - Terraform (.tf, .tfvars) - uses terraform-docs, tflint
+    - Nix (.nix, flake.nix) - uses nix eval, statix, deadnix
+
+Examples:
+    doc-generate modules/
+    doc-generate modules/terraform/vpc/
+    doc-generate hosts/hal9000/ --full
+    doc-generate flake.nix --format json
+    doc-generate . --output docs/generated.md
+EOF
+    exit 0
+}
+
+# Check for help flag
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+# Require path argument
+if [[ $# -lt 1 ]]; then
+    echo "Error: Path required" >&2
+    echo "Usage: doc-generate <path> [options]" >&2
+    exit 1
+fi
+
+TARGET_PATH="$1"
+shift
+
+# Verify path exists
+if [[ ! -e "$TARGET_PATH" ]]; then
+    echo "Error: Path not found: $TARGET_PATH" >&2
+    exit 1
+fi
+
+# Default values
+OUTPUT_FORMAT="md"
+FULL_ANALYSIS=false
+FORCE_TYPE=""
+OUTPUT_FILE=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --format|-f)
+            OUTPUT_FORMAT="$2"
+            shift 2
+            ;;
+        --full)
+            FULL_ANALYSIS=true
+            shift
+            ;;
+        --terraform)
+            FORCE_TYPE="terraform"
+            shift
+            ;;
+        --nix)
+            FORCE_TYPE="nix"
+            shift
+            ;;
+        --output|-o)
+            OUTPUT_FILE="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Detect file type
+detect_type() {
+    local path="$1"
+
+    # Check for forced type
+    if [[ -n "$FORCE_TYPE" ]]; then
+        echo "$FORCE_TYPE"
+        return
+    fi
+
+    # Check for specific files
+    if [[ -f "$path" ]]; then
+        case "$path" in
+            *.tf|*.tfvars)
+                echo "terraform"
+                return
+                ;;
+            *.nix|flake.nix)
+                echo "nix"
+                return
+                ;;
+        esac
+    fi
+
+    # Check directory contents
+    if [[ -d "$path" ]]; then
+        # Check for Terraform files
+        if find "$path" -maxdepth 2 -name "*.tf" -type f 2>/dev/null | grep -q .; then
+            echo "terraform"
+            return
+        fi
+
+        # Check for Nix files
+        if [[ -f "$path/flake.nix" ]] || find "$path" -maxdepth 2 -name "*.nix" -type f 2>/dev/null | grep -q .; then
+            echo "nix"
+            return
+        fi
+    fi
+
+    echo "unknown"
+}
+
+# Generate Terraform documentation
+generate_terraform_docs() {
+    local path="$1"
+
+    echo "# Terraform Module Documentation"
+    echo ""
+    echo "Path: \`$path\`"
+    echo ""
+    echo "Generated using terraform-docs (HCL2 AST parser)"
+    echo ""
+
+    if [[ "$FULL_ANALYSIS" == "true" ]]; then
+        echo "## Lint Analysis (tflint)"
+        echo ""
+        echo '```'
+        "$SCRIPT_DIR/doc-terraform-lint" "$path" 2>&1 || true
+        echo '```'
+        echo ""
+    fi
+
+    echo "## Module Interface"
+    echo ""
+
+    if [[ "$OUTPUT_FORMAT" == "json" ]]; then
+        "$SCRIPT_DIR/doc-terraform" "$path" --output json
+    else
+        "$SCRIPT_DIR/doc-terraform" "$path"
+    fi
+}
+
+# Generate Nix documentation
+generate_nix_docs() {
+    local path="$1"
+
+    echo "# Nix Documentation"
+    echo ""
+    echo "Path: \`$path\`"
+    echo ""
+    echo "Generated using Nix AST tools (nix eval, statix, deadnix)"
+    echo ""
+
+    # Check if it's a flake
+    if [[ -f "$path/flake.nix" ]] || [[ "$path" == *"flake.nix" ]]; then
+        local flake_path="$path"
+        if [[ -f "$path" ]]; then
+            flake_path="$(dirname "$path")"
+        fi
+
+        echo "## Flake Structure"
+        echo ""
+        echo '```'
+        "$SCRIPT_DIR/doc-nix-flake" "$flake_path" 2>&1 || true
+        echo '```'
+        echo ""
+    fi
+
+    if [[ "$FULL_ANALYSIS" == "true" ]]; then
+        echo "## Lint Analysis (statix)"
+        echo ""
+        echo '```'
+        "$SCRIPT_DIR/doc-nix-lint" "$path" 2>&1 || true
+        echo '```'
+        echo ""
+
+        echo "## Dead Code Analysis (deadnix)"
+        echo ""
+        echo '```'
+        "$SCRIPT_DIR/doc-nix-deadcode" "$path" 2>&1 || true
+        echo '```'
+        echo ""
+    fi
+
+    # For single files, show AST analysis
+    if [[ -f "$path" ]]; then
+        echo "## AST Analysis"
+        echo ""
+        echo '```'
+        "$SCRIPT_DIR/doc-nix-ast" "$path" 2>&1 || true
+        echo '```'
+    fi
+}
+
+# Main execution
+FILE_TYPE=$(detect_type "$TARGET_PATH")
+
+# Generate documentation based on type
+generate_output() {
+    case "$FILE_TYPE" in
+        terraform)
+            generate_terraform_docs "$TARGET_PATH"
+            ;;
+        nix)
+            generate_nix_docs "$TARGET_PATH"
+            ;;
+        unknown)
+            echo "Error: Could not determine file type for: $TARGET_PATH" >&2
+            echo "Use --terraform or --nix to specify explicitly" >&2
+            exit 1
+            ;;
+    esac
+}
+
+# Output handling
+if [[ -n "$OUTPUT_FILE" ]]; then
+    generate_output > "$OUTPUT_FILE"
+    echo "Documentation written to: $OUTPUT_FILE"
+else
+    generate_output
+fi

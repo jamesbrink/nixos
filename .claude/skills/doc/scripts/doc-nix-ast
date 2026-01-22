@@ -1,0 +1,187 @@
+#!/usr/bin/env bash
+# Analyze Nix file AST structure using nix-instantiate and parsing
+set -euo pipefail
+
+usage() {
+    cat <<EOF
+Usage: doc-nix-ast <file> [options]
+
+Analyze Nix file structure using AST parsing.
+Uses nix-instantiate for evaluation and rnix-based tools for static analysis.
+
+Arguments:
+    file            Path to .nix file to analyze
+
+Options:
+    --functions     Extract function definitions and signatures
+    --imports       List all import statements
+    --attrs         Show top-level attribute structure
+    --eval          Evaluate and show resulting structure
+    --json          Output as JSON where possible
+    --help, -h      Show this help message
+
+Analysis includes:
+    - Function parameters and signatures
+    - Import dependencies
+    - Attribute set structure
+    - Let bindings
+    - With expressions
+
+Examples:
+    doc-nix-ast modules/home-manager/shell/zsh.nix
+    doc-nix-ast flake.nix --imports
+    doc-nix-ast hosts/hal9000/default.nix --attrs
+    doc-nix-ast modules/services/postgresql.nix --functions
+EOF
+    exit 0
+}
+
+# Check for help flag
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+# Require file argument
+if [[ $# -lt 1 ]]; then
+    echo "Error: Nix file path required" >&2
+    echo "Usage: doc-nix-ast <file> [options]" >&2
+    exit 1
+fi
+
+NIX_FILE="$1"
+shift
+
+# Verify file exists
+if [[ ! -f "$NIX_FILE" ]]; then
+    echo "Error: File not found: $NIX_FILE" >&2
+    exit 1
+fi
+
+# Default values
+SHOW_FUNCTIONS=false
+SHOW_IMPORTS=false
+SHOW_ATTRS=false
+DO_EVAL=false
+OUTPUT_JSON=false
+
+# If no specific option, show all
+SHOW_ALL=true
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --functions)
+            SHOW_FUNCTIONS=true
+            SHOW_ALL=false
+            shift
+            ;;
+        --imports)
+            SHOW_IMPORTS=true
+            SHOW_ALL=false
+            shift
+            ;;
+        --attrs)
+            SHOW_ATTRS=true
+            SHOW_ALL=false
+            shift
+            ;;
+        --eval)
+            DO_EVAL=true
+            SHOW_ALL=false
+            shift
+            ;;
+        --json)
+            OUTPUT_JSON=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# If showing all, enable everything except eval
+if [[ "$SHOW_ALL" == "true" ]]; then
+    SHOW_FUNCTIONS=true
+    SHOW_IMPORTS=true
+    SHOW_ATTRS=true
+fi
+
+echo "# AST Analysis: $NIX_FILE"
+echo ""
+
+# Extract imports using grep (simple pattern matching)
+if [[ "$SHOW_IMPORTS" == "true" ]]; then
+    echo "## Imports"
+    echo ""
+
+    # Look for import patterns
+    if grep -E '^\s*import\s+|^\s*imports\s*=|builtins\.import' "$NIX_FILE" >/dev/null 2>&1; then
+        grep -En '^\s*import\s+|^\s*imports\s*=|builtins\.import|\./[a-zA-Z0-9_-]+\.nix|\.\./|\./' "$NIX_FILE" | head -50
+    else
+        echo "No explicit imports found"
+    fi
+    echo ""
+fi
+
+# Extract function signatures
+if [[ "$SHOW_FUNCTIONS" == "true" ]]; then
+    echo "## Functions and Parameters"
+    echo ""
+
+    # Look for function patterns: { args }: or arg: or { arg, arg2, ... }:
+    # This is a heuristic - for perfect accuracy use rnix-parser
+    if grep -E '^\s*\{[^}]*\}\s*:|\s+[a-zA-Z_][a-zA-Z0-9_]*\s*:' "$NIX_FILE" >/dev/null 2>&1; then
+        echo "Function signatures found:"
+        grep -En '^\s*\{[^}]*\}\s*:|^[a-zA-Z_][a-zA-Z0-9_]*\s*=' "$NIX_FILE" | head -30
+    else
+        echo "No function definitions found"
+    fi
+    echo ""
+fi
+
+# Show top-level attribute structure
+if [[ "$SHOW_ATTRS" == "true" ]]; then
+    echo "## Top-level Structure"
+    echo ""
+
+    # Try to parse with nix-instantiate in parse-only mode
+    if command -v nix-instantiate &>/dev/null; then
+        # Attempt to show structure via evaluation
+        # This is a safe operation that just parses
+        if nix-instantiate --parse "$NIX_FILE" >/dev/null 2>&1; then
+            echo "File parses successfully."
+            echo ""
+
+            # Extract attribute names from the file
+            echo "Top-level attributes (heuristic):"
+            grep -E '^\s*[a-zA-Z_][a-zA-Z0-9_]*\s*=' "$NIX_FILE" | head -20 | sed 's/=.*//' | sort -u
+        else
+            echo "Parse error in file"
+            nix-instantiate --parse "$NIX_FILE" 2>&1 | head -10
+        fi
+    else
+        echo "nix-instantiate not available"
+    fi
+    echo ""
+fi
+
+# Evaluate the expression
+if [[ "$DO_EVAL" == "true" ]]; then
+    echo "## Evaluation Result"
+    echo ""
+
+    if [[ "$OUTPUT_JSON" == "true" ]]; then
+        nix eval --file "$NIX_FILE" --json 2>&1 | head -100 || echo "Evaluation failed (may require arguments)"
+    else
+        nix eval --file "$NIX_FILE" 2>&1 | head -100 || echo "Evaluation failed (may require arguments)"
+    fi
+fi
+
+# Check with statix if available
+if command -v statix &>/dev/null; then
+    echo "## Static Analysis (statix)"
+    echo ""
+    statix check "$NIX_FILE" 2>&1 || true
+fi

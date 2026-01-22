@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# Detect unused Nix code using deadnix (AST-based analysis)
+set -euo pipefail
+
+usage() {
+    cat <<EOF
+Usage: doc-nix-deadcode <path> [options]
+
+Detect unused code in Nix files using deadnix.
+deadnix uses rnix-parser for accurate AST-based analysis.
+
+Arguments:
+    path            Path to file or directory to analyze
+
+Options:
+    --edit, -e      Edit files to remove dead code (interactive)
+    --no-lambda     Don't check lambda arguments
+    --no-let        Don't check let bindings
+    --no-underscore Don't check _ prefixed bindings
+    --quiet, -q     Only show file names with issues
+    --json          Output as JSON
+    --help, -h      Show this help message
+
+Detects:
+    - Unused let bindings
+    - Unused function arguments
+    - Unused inherit statements
+    - Unused with expressions
+    - Unused rec attributes
+
+Examples:
+    doc-nix-deadcode modules/
+    doc-nix-deadcode hosts/hal9000/default.nix
+    doc-nix-deadcode . --quiet
+    doc-nix-deadcode modules/ --edit
+EOF
+    exit 0
+}
+
+# Check for help flag
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+# Require path argument
+if [[ $# -lt 1 ]]; then
+    echo "Error: Path required" >&2
+    echo "Usage: doc-nix-deadcode <path> [options]" >&2
+    exit 1
+fi
+
+SCAN_PATH="$1"
+shift
+
+# Verify path exists
+if [[ ! -e "$SCAN_PATH" ]]; then
+    echo "Error: Path not found: $SCAN_PATH" >&2
+    exit 1
+fi
+
+# Check for deadnix
+if ! command -v deadnix &>/dev/null; then
+    echo "Error: deadnix not found. Install via:" >&2
+    echo "  nix-shell -p deadnix" >&2
+    exit 1
+fi
+
+# Build deadnix arguments
+DEADNIX_ARGS=()
+
+# Parse remaining arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --edit|-e)
+            DEADNIX_ARGS+=("--edit")
+            shift
+            ;;
+        --no-lambda)
+            DEADNIX_ARGS+=("--no-lambda-arg")
+            shift
+            ;;
+        --no-let)
+            DEADNIX_ARGS+=("--no-let-binding")
+            shift
+            ;;
+        --no-underscore)
+            DEADNIX_ARGS+=("--no-underscore")
+            shift
+            ;;
+        --quiet|-q)
+            DEADNIX_ARGS+=("--quiet")
+            shift
+            ;;
+        --json)
+            DEADNIX_ARGS+=("--output-format=json")
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+echo "Running deadnix AST analysis on: $SCAN_PATH"
+echo "---"
+
+# Run deadnix (returns non-zero if issues found)
+deadnix "${DEADNIX_ARGS[@]}" "$SCAN_PATH" || true

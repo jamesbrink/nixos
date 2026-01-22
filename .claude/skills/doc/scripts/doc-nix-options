@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+# Extract NixOS/Darwin module options using nix eval
+set -euo pipefail
+
+usage() {
+    cat <<EOF
+Usage: doc-nix-options <config-attr> [options]
+
+Extract module options from NixOS/Darwin configurations using nix eval.
+Uses the Nix evaluator for accurate semantic analysis.
+
+Arguments:
+    config-attr     Flake attribute to analyze, e.g.:
+                    .#nixosConfigurations.hal9000
+                    .#darwinConfigurations.halcyon
+                    .#homeConfigurations.jamesbrink
+
+Options:
+    --option, -o    Specific option path to document (e.g., services.postgresql)
+    --json          Output as JSON
+    --recursive     Include nested options (default: top-level only)
+    --help, -h      Show this help message
+
+Output includes:
+    - Option name and path
+    - Type information
+    - Default values
+    - Description text
+    - Example values (if defined)
+
+Examples:
+    doc-nix-options .#nixosConfigurations.hal9000
+    doc-nix-options .#nixosConfigurations.hal9000 --option services.postgresql
+    doc-nix-options .#darwinConfigurations.halcyon --option homebrew --json
+EOF
+    exit 0
+}
+
+# Check for help flag
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+# Require config attribute
+if [[ $# -lt 1 ]]; then
+    echo "Error: Configuration attribute required" >&2
+    echo "Usage: doc-nix-options <config-attr> [options]" >&2
+    exit 1
+fi
+
+CONFIG_ATTR="$1"
+shift
+
+# Default values
+OPTION_PATH=""
+OUTPUT_JSON=false
+RECURSIVE=false
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --option|-o)
+            OPTION_PATH="$2"
+            shift 2
+            ;;
+        --json)
+            OUTPUT_JSON=true
+            shift
+            ;;
+        --recursive)
+            RECURSIVE=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Check nix is available
+if ! command -v nix &>/dev/null; then
+    echo "Error: nix not found" >&2
+    exit 1
+fi
+
+# Build the evaluation expression
+if [[ -n "$OPTION_PATH" ]]; then
+    # Evaluate specific option path
+    EVAL_EXPR="(${CONFIG_ATTR}.options.${OPTION_PATH} or null)"
+
+    echo "# Option: $OPTION_PATH"
+    echo ""
+
+    if [[ "$OUTPUT_JSON" == "true" ]]; then
+        nix eval --json "$EVAL_EXPR" 2>/dev/null || echo "null"
+    else
+        # Try to get option metadata
+        nix eval --raw "${CONFIG_ATTR}.options.${OPTION_PATH}.description or \"No description\"" 2>/dev/null || true
+        echo ""
+        echo ""
+        echo "Type:"
+        nix eval --raw "${CONFIG_ATTR}.options.${OPTION_PATH}.type.description or \"unknown\"" 2>/dev/null || echo "unknown"
+        echo ""
+        echo ""
+        echo "Default:"
+        nix eval "${CONFIG_ATTR}.options.${OPTION_PATH}.default or \"<none>\"" 2>/dev/null || echo "<none>"
+        echo ""
+    fi
+else
+    # List top-level options
+    echo "# Configuration Options for $CONFIG_ATTR"
+    echo ""
+    echo "Extracting top-level option categories..."
+    echo ""
+
+    if [[ "$OUTPUT_JSON" == "true" ]]; then
+        nix eval --json "${CONFIG_ATTR}.options" --apply 'opts: builtins.attrNames opts' 2>/dev/null || echo "[]"
+    else
+        # Get top-level option names
+        nix eval "${CONFIG_ATTR}.options" --apply 'opts: builtins.attrNames opts' 2>/dev/null | tr ',' '\n' | tr -d '[]" ' | while read -r opt; do
+            if [[ -n "$opt" ]]; then
+                echo "- $opt"
+            fi
+        done
+    fi
+fi

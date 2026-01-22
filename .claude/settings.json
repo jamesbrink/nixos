@@ -12,7 +12,8 @@
       "Write",
       "WebFetch",
       "WebSearch",
-      "Skill(pg-replica)"
+      "Skill(pg-replica)",
+      "Skill(doc)"
     ],
     "deny": ["Bash(rm:-rf /)"],
     "defaultMode": "acceptEdits",

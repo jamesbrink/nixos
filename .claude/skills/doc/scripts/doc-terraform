@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+# Generate documentation for Terraform modules using terraform-docs (AST-based HCL2 parser)
+set -euo pipefail
+
+usage() {
+    cat <<EOF
+Usage: doc-terraform <path> [options]
+
+Generate documentation for Terraform modules using terraform-docs.
+terraform-docs uses the HCL2 AST parser for accurate extraction.
+
+Arguments:
+    path            Path to Terraform module directory
+
+Options:
+    --output, -o    Output format: markdown (default), json, yaml, toml, asciidoc, xml
+    --sort-by       Sort by: name, required, type (default: name)
+    --show          Sections to show: all, inputs, outputs, providers, resources, modules
+    --hide          Sections to hide (comma-separated)
+    --header-from   Read module header from file (e.g., README.md)
+    --help, -h      Show this help message
+
+Examples:
+    doc-terraform modules/terraform/vpc/
+    doc-terraform modules/terraform/vpc/ --output json
+    doc-terraform modules/terraform/vpc/ --show inputs,outputs
+    doc-terraform . --sort-by required
+
+Output includes (extracted via AST):
+    - Variables: name, type, default, description, validation
+    - Outputs: name, description, value, sensitive
+    - Resources: type, name, provider
+    - Modules: source, version
+    - Providers: name, version constraints
+EOF
+    exit 0
+}
+
+# Check for help flag
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+# Require path argument
+if [[ $# -lt 1 ]]; then
+    echo "Error: Path to Terraform module required" >&2
+    echo "Usage: doc-terraform <path> [options]" >&2
+    exit 1
+fi
+
+MODULE_PATH="$1"
+shift
+
+# Verify path exists
+if [[ ! -d "$MODULE_PATH" ]]; then
+    echo "Error: Directory not found: $MODULE_PATH" >&2
+    exit 1
+fi
+
+# Check for .tf files
+if ! find "$MODULE_PATH" -maxdepth 1 -name "*.tf" -type f 2>/dev/null | grep -q .; then
+    echo "Error: No .tf files found in $MODULE_PATH" >&2
+    exit 1
+fi
+
+# Check for terraform-docs
+if ! command -v terraform-docs &>/dev/null; then
+    echo "Error: terraform-docs not found. Install via:" >&2
+    echo "  nix-shell -p terraform-docs" >&2
+    exit 1
+fi
+
+# Default options
+OUTPUT_FORMAT="markdown"
+EXTRA_ARGS=()
+
+# Parse remaining arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --output|-o)
+            OUTPUT_FORMAT="$2"
+            shift 2
+            ;;
+        --sort-by)
+            EXTRA_ARGS+=("--sort-by-required" )
+            if [[ "$2" == "required" ]]; then
+                EXTRA_ARGS+=("--sort-by-required")
+            elif [[ "$2" == "type" ]]; then
+                EXTRA_ARGS+=("--sort-by-type")
+            fi
+            shift 2
+            ;;
+        --show)
+            # Convert comma-separated to terraform-docs format
+            IFS=',' read -ra SECTIONS <<< "$2"
+            for section in "${SECTIONS[@]}"; do
+                EXTRA_ARGS+=("--show" "$section")
+            done
+            shift 2
+            ;;
+        --hide)
+            IFS=',' read -ra SECTIONS <<< "$2"
+            for section in "${SECTIONS[@]}"; do
+                EXTRA_ARGS+=("--hide" "$section")
+            done
+            shift 2
+            ;;
+        --header-from)
+            EXTRA_ARGS+=("--header-from" "$2")
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Map output format to terraform-docs command
+case "$OUTPUT_FORMAT" in
+    markdown|md)
+        terraform-docs markdown table "${EXTRA_ARGS[@]}" "$MODULE_PATH"
+        ;;
+    json)
+        terraform-docs json "${EXTRA_ARGS[@]}" "$MODULE_PATH"
+        ;;
+    yaml)
+        terraform-docs yaml "${EXTRA_ARGS[@]}" "$MODULE_PATH"
+        ;;
+    toml)
+        terraform-docs toml "${EXTRA_ARGS[@]}" "$MODULE_PATH"
+        ;;
+    asciidoc)
+        terraform-docs asciidoc table "${EXTRA_ARGS[@]}" "$MODULE_PATH"
+        ;;
+    xml)
+        terraform-docs xml "${EXTRA_ARGS[@]}" "$MODULE_PATH"
+        ;;
+    *)
+        echo "Error: Unknown output format: $OUTPUT_FORMAT" >&2
+        echo "Supported: markdown, json, yaml, toml, asciidoc, xml" >&2
+        exit 1
+        ;;
+esac

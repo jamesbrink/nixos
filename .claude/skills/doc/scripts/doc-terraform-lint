@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# Lint Terraform code using tflint (AST-based HCL2 analysis)
+set -euo pipefail
+
+usage() {
+    cat <<EOF
+Usage: doc-terraform-lint <path> [options]
+
+Lint Terraform code using tflint for AST-aware analysis.
+tflint parses HCL2 and validates against provider schemas.
+
+Arguments:
+    path            Path to Terraform module or file
+
+Options:
+    --format, -f    Output format: default, json, checkstyle, junit, compact, sarif
+    --fix           Auto-fix issues where possible
+    --only          Run only specific rules (comma-separated)
+    --init          Initialize tflint plugins
+    --help, -h      Show this help message
+
+Analysis includes:
+    - Deprecated syntax detection
+    - Resource argument validation against provider schemas
+    - Unused variable detection
+    - Naming convention checks
+    - AWS/Azure/GCP specific rules (with plugins)
+
+Examples:
+    doc-terraform-lint modules/terraform/vpc/
+    doc-terraform-lint . --format json
+    doc-terraform-lint . --fix
+    doc-terraform-lint . --only terraform_deprecated_interpolation
+EOF
+    exit 0
+}
+
+# Check for help flag
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+# Require path argument
+if [[ $# -lt 1 ]]; then
+    echo "Error: Path to Terraform code required" >&2
+    echo "Usage: doc-terraform-lint <path> [options]" >&2
+    exit 1
+fi
+
+LINT_PATH="$1"
+shift
+
+# Verify path exists
+if [[ ! -e "$LINT_PATH" ]]; then
+    echo "Error: Path not found: $LINT_PATH" >&2
+    exit 1
+fi
+
+# Check for tflint
+if ! command -v tflint &>/dev/null; then
+    echo "Error: tflint not found. Install via:" >&2
+    echo "  nix-shell -p tflint" >&2
+    exit 1
+fi
+
+# Build tflint arguments
+TFLINT_ARGS=()
+
+# Parse remaining arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --format|-f)
+            TFLINT_ARGS+=("--format=$2")
+            shift 2
+            ;;
+        --fix)
+            TFLINT_ARGS+=("--fix")
+            shift
+            ;;
+        --only)
+            IFS=',' read -ra RULES <<< "$2"
+            for rule in "${RULES[@]}"; do
+                TFLINT_ARGS+=("--only=$rule")
+            done
+            shift 2
+            ;;
+        --init)
+            echo "Initializing tflint plugins..."
+            tflint --init --chdir="$LINT_PATH"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Change to target directory if it's a directory
+if [[ -d "$LINT_PATH" ]]; then
+    TFLINT_ARGS+=("--chdir=$LINT_PATH")
+else
+    # Single file - lint its directory
+    TFLINT_ARGS+=("--chdir=$(dirname "$LINT_PATH")")
+fi
+
+# Run tflint
+echo "Running tflint AST analysis on: $LINT_PATH"
+echo "---"
+
+# tflint returns non-zero on findings, so we capture the output
+if tflint "${TFLINT_ARGS[@]}" 2>&1; then
+    echo "No issues found."
+fi
