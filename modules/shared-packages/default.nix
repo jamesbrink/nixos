@@ -134,6 +134,7 @@ in
       nfs-utils
       nvme-cli
       parted
+      signal-cli
       sysstat
       # GUI applications (Linux-only, macOS uses Homebrew casks)
       meld

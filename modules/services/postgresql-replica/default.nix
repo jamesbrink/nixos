@@ -28,6 +28,12 @@ in
   options.services.postgresql-replica = {
     enable = mkEnableOption "PostgreSQL 17 read replica from S3 WAL archive";
 
+    standbyMode = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Run in standby/replica mode (true) or read/write mode (false)";
+    };
+
     package = mkOption {
       type = types.package;
       default = pkgs.postgresql_17.withPackages (ps: [ ps.postgis ]);
@@ -229,7 +235,7 @@ in
 
     # Main PostgreSQL replica service
     systemd.services.${cfg.serviceName} = {
-      description = "PostgreSQL 17 Read Replica";
+      description = "PostgreSQL 17 ${if cfg.standbyMode then "Read Replica (Standby)" else "Read/Write"}";
       after = [
         "network.target"
         "local-fs.target"
@@ -249,11 +255,22 @@ in
         cp /etc/postgresql-replica/pg_hba.conf "${cfg.dataDir}/pg_hba.conf"
         chown postgres:postgres "${cfg.dataDir}/postgresql.conf" "${cfg.dataDir}/pg_hba.conf"
 
-        # Ensure standby.signal exists for replica mode
-        if [ ! -f "${cfg.dataDir}/standby.signal" ]; then
-          touch "${cfg.dataDir}/standby.signal"
-          chown postgres:postgres "${cfg.dataDir}/standby.signal"
-        fi
+        # Manage standby.signal based on standbyMode
+        ${
+          if cfg.standbyMode then
+            ''
+              # Standby mode: ensure standby.signal exists
+              if [ ! -f "${cfg.dataDir}/standby.signal" ]; then
+                touch "${cfg.dataDir}/standby.signal"
+                chown postgres:postgres "${cfg.dataDir}/standby.signal"
+              fi
+            ''
+          else
+            ''
+              # Read/write mode: remove standby.signal if present
+              rm -f "${cfg.dataDir}/standby.signal"
+            ''
+        }
 
         # Remove backup_label if present (from pg_basebackup)
         if [ -f "${cfg.dataDir}/backup_label" ]; then
