@@ -103,9 +103,9 @@
     ];
   };
 
-  # Neovim colorscheme
+  # Neovim colorscheme (custom colorscheme in nvim/colors/)
   nvim = {
-    colorscheme = "tokyonight";
+    colorscheme = "osaka-jade";
   };
 
   # VSCode theme name

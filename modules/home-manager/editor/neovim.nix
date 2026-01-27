@@ -18,7 +18,7 @@ let
     everforest = "everforest";
     kanagawa = "kanagawa";
     matte-black = "matte-black"; # Custom colorscheme in nvim/colors/
-    osaka-jade = "tokyonight";
+    osaka-jade = "osaka-jade"; # Custom colorscheme in nvim/colors/
     ristretto = "monokai-pro-ristretto";
     flexoki-light = "flexoki-light";
   };
@@ -92,6 +92,7 @@ in
 
   # Custom colorschemes (themes not available as plugins)
   xdg.configFile."nvim/colors/matte-black.lua".source = ./nvim-colors/matte-black.lua;
+  xdg.configFile."nvim/colors/osaka-jade.lua".source = ./nvim-colors/osaka-jade.lua;
 
   # Disable animated scrolling (Omarchy preference)
   xdg.configFile."nvim/lua/plugins/snacks-animated-scrolling-off.lua".text = ''
