@@ -625,6 +625,11 @@ def update_btop(theme: Theme, console: Console) -> None:
 
     if updated:
         btop_conf.write_text("\n".join(new_lines))
+        # Send SIGUSR2 to reload config in running btop instances
+        try:
+            subprocess.run(["pkill", "-USR2", "btop"], capture_output=True)
+        except Exception:
+            pass  # btop may not be running
         console.print(f"[green]✓[/green] Updated btop theme to {theme.slug}")
     else:
         console.print("[yellow]-[/yellow] No color_theme line found in btop.conf")
