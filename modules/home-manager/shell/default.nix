@@ -166,7 +166,7 @@
           family = "JetBrainsMono Nerd Font";
           style = "Regular";
         };
-        size = 9;
+        size = 18;
       };
 
       # Commented out: now using runtime theme import (themectl)

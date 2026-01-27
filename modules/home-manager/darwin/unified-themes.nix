@@ -170,7 +170,7 @@ in
       # Font
       font-family = "JetBrainsMono Nerd Font"
       font-style = Regular
-      font-size = 9
+      font-size = 18
 
       # Window
       window-theme = ghostty
