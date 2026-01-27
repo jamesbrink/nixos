@@ -41,9 +41,123 @@
   # will reset the keys on login. The parameters encode the key combo:
   #   - param[0]: ASCII keycode (51='3', 52='4', 53='5')
   #   - param[1]: virtual keycode
-  #   - param[2]: modifier flags (1179648=cmd+shift, 1441792=cmd+shift+ctrl)
+  #   - param[2]: modifier flags (1179648=cmd+shift, 1441792=cmd+shift+ctrl, 262144=ctrl)
   system.defaults.CustomUserPreferences."com.apple.symbolichotkeys" = {
     AppleSymbolicHotKeys = {
+      # Enable native macOS Space switching with Ctrl+1-9,0
+      # These work WITHOUT yabai scripting addition!
+      # 118-127 are "Switch to Desktop 1-10"
+      "118" = {
+        enabled = true;
+        value = {
+          type = "standard";
+          parameters = [
+            49 # '1' key
+            18 # virtual keycode
+            262144 # ctrl modifier
+          ];
+        };
+      };
+      "119" = {
+        enabled = true;
+        value = {
+          type = "standard";
+          parameters = [
+            50 # '2' key
+            19
+            262144
+          ];
+        };
+      };
+      "120" = {
+        enabled = true;
+        value = {
+          type = "standard";
+          parameters = [
+            51 # '3' key
+            20
+            262144
+          ];
+        };
+      };
+      "121" = {
+        enabled = true;
+        value = {
+          type = "standard";
+          parameters = [
+            52 # '4' key
+            21
+            262144
+          ];
+        };
+      };
+      "122" = {
+        enabled = true;
+        value = {
+          type = "standard";
+          parameters = [
+            53 # '5' key
+            23
+            262144
+          ];
+        };
+      };
+      "123" = {
+        enabled = true;
+        value = {
+          type = "standard";
+          parameters = [
+            54 # '6' key
+            22
+            262144
+          ];
+        };
+      };
+      "124" = {
+        enabled = true;
+        value = {
+          type = "standard";
+          parameters = [
+            55 # '7' key
+            26
+            262144
+          ];
+        };
+      };
+      "125" = {
+        enabled = true;
+        value = {
+          type = "standard";
+          parameters = [
+            56 # '8' key
+            28
+            262144
+          ];
+        };
+      };
+      "126" = {
+        enabled = true;
+        value = {
+          type = "standard";
+          parameters = [
+            57 # '9' key
+            25
+            262144
+          ];
+        };
+      };
+      "127" = {
+        enabled = true;
+        value = {
+          type = "standard";
+          parameters = [
+            48 # '0' key
+            29
+            262144
+          ];
+        };
+      };
+
       # Disable cmd+shift+3 (Save picture of screen as a file)
       "28" = {
         enabled = false;

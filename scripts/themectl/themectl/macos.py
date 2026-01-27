@@ -29,7 +29,51 @@ PROCESSES = (
 )
 
 
+def check_sip_allows_yabai() -> bool:
+    """
+    Check if SIP configuration allows yabai scripting addition.
+
+    Returns True if SIP is disabled or configured to allow yabai SA.
+    """
+    result = subprocess.run(
+        ["csrutil", "status"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        # If csrutil fails, assume SIP is enabled (safer default)
+        return False
+
+    output = result.stdout.lower()
+
+    # SIP fully disabled
+    if "disabled" in output:
+        return True
+
+    # Check if debugging restrictions are disabled (required for yabai SA)
+    # csrutil output format: "System Integrity Protection status: enabled (Custom Configuration)."
+    # followed by lines like "Debugging Restrictions: disabled"
+    if "debugging restrictions: disabled" in output:
+        return True
+
+    # SIP is enabled with debugging restrictions - yabai SA won't work
+    return False
+
+
 def ensure_yabai_sa(console: Console | None = None) -> bool:
+    """
+    Ensure yabai scripting addition is loaded.
+
+    Only attempts to load if SIP allows it, to avoid notification spam.
+    """
+    # Check if SIP allows yabai SA
+    if not check_sip_allows_yabai():
+        if console:
+            console.print(
+                "[dim]Skipping SA load (SIP enabled - workspace switching unavailable)[/dim]"
+            )
+        return True  # Not a failure, just not applicable
+
     yabai = shutil.which("yabai")
     if not yabai:
         if console:
@@ -37,6 +81,7 @@ def ensure_yabai_sa(console: Console | None = None) -> bool:
                 "[yellow]![/yellow] yabai not found; skipping scripting addition reload"
             )
         return True
+
     sudo = shutil.which("sudo") or "/usr/bin/sudo"
     result = subprocess.run(
         [sudo, yabai, "--load-sa"],
@@ -47,6 +92,7 @@ def ensure_yabai_sa(console: Console | None = None) -> bool:
         if console:
             console.print("[green]✓[/green] Ensured yabai scripting addition is loaded")
         return True
+
     if console:
         console.print(
             Panel(
