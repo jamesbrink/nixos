@@ -163,10 +163,10 @@
 
       font = {
         normal = {
-          family = "MesloLGS Nerd Font";
+          family = "JetBrainsMono Nerd Font";
           style = "Regular";
         };
-        size = if pkgs.stdenv.isDarwin then 14 else 10;
+        size = 9;
       };
 
       # Commented out: now using runtime theme import (themectl)

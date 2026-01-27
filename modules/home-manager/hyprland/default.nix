@@ -1620,7 +1620,7 @@ in
       # Font
       font-family = "${fontFamily}"
       font-style = Regular
-      font-size = ${toString (fontSize * 1.0)}
+      font-size = 9
 
       # Window
       window-theme = ghostty
