@@ -633,7 +633,8 @@ def run_reload_hooks(theme: Theme, cfg: ThemectlConfig, console: Console) -> Non
         ("Alacritty", lambda: reload_alacritty(console)),
         ("Hyprland", lambda: reload_hyprland(console)),
         ("Wallpaper", lambda: update_wallpaper(console)),
-        ("Ghostty", lambda: reload_ghostty(console)),
+        ("Ghostty (update)", lambda: update_ghostty(theme, console)),
+        ("Ghostty (reload)", lambda: reload_ghostty(console)),
         ("btop", lambda: update_btop(theme, console)),
     )
     for label, action in actions:

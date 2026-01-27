@@ -1634,10 +1634,6 @@ in
       cursor-style = "block"
       cursor-style-blink = false
 
-      # Cursor styling + SSH session terminfo
-      # (all shell integration options must be passed together)
-      shell-integration-features = no-cursor,ssh-env
-
       # Keyboard bindings
       keybind = shift+insert=paste_from_clipboard
       keybind = control+insert=copy_to_clipboard

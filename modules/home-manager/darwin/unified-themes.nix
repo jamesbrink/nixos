@@ -162,10 +162,10 @@ in
   )
   // ghosttyCustomThemes
   // {
-    # Ghostty configuration for Darwin
-    ".config/ghostty/config".text = lib.mkDefault ''
-      # Dynamic theme colors
-      config-file = ?"~/.config/omarchy/current/theme/ghostty.conf"
+    # Ghostty configuration template for Darwin (will be copied to mutable config)
+    ".config/ghostty/config.template".text = ''
+      # Theme (managed by themectl)
+      theme = tokyonight_night
 
       # Font
       font-family = "JetBrainsMono Nerd Font"
@@ -183,21 +183,27 @@ in
       cursor-style = "block"
       cursor-style-blink = false
 
-      # Cursor styling + SSH session terminfo
-      shell-integration-features = no-cursor,ssh-env
-
       # Keyboard bindings
       keybind = shift+insert=paste_from_clipboard
       keybind = control+insert=copy_to_clipboard
-      keybind = super+control+shift+alt+arrow_down=resize_split:down,100
-      keybind = super+control+shift+alt+arrow_up=resize_split:up,100
-      keybind = super+control+shift+alt+arrow_left=resize_split:left,100
-      keybind = super+control+shift+alt+arrow_right=resize_split:right,100
 
       # Slowdown mouse scrolling
       mouse-scroll-multiplier = 0.95
     '';
   };
+
+  # Copy template to create mutable ghostty config
+  home.activation.createMutableGhostty = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    CONFIG_FILE="${config.home.homeDirectory}/.config/ghostty/config"
+    TEMPLATE_FILE="${config.home.homeDirectory}/.config/ghostty/config.template"
+
+    if [[ -L "$CONFIG_FILE" ]] || [[ ! -f "$CONFIG_FILE" ]]; then
+      $DRY_RUN_CMD rm -f "$CONFIG_FILE"
+      $DRY_RUN_CMD cp "$TEMPLATE_FILE" "$CONFIG_FILE"
+      $DRY_RUN_CMD chmod 644 "$CONFIG_FILE"
+      echo "Created mutable Ghostty config"
+    fi
+  '';
 
   # LaunchAgent to restore wallpaper on login
   launchd.agents.restore-wallpaper = {
