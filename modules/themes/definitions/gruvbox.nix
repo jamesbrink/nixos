@@ -91,6 +91,11 @@
     theme = "GruvboxDark";
   };
 
+  # Neovim colorscheme
+  nvim = {
+    colorscheme = "gruvbox";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Gruvbox Material Dark";

@@ -95,6 +95,11 @@
     theme = "tokyonight_night";
   };
 
+  # Neovim colorscheme
+  nvim = {
+    colorscheme = "tokyonight";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Tokyo Night";

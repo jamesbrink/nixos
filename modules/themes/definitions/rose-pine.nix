@@ -93,6 +93,11 @@
     theme = "rose-pine-moon";
   };
 
+  # Neovim colorscheme
+  nvim = {
+    colorscheme = "rose-pine";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Rosé Pine Moon";

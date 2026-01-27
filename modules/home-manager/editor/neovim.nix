@@ -43,18 +43,20 @@ in
   };
 
   # Colorscheme plugins configuration
+  # Note: lazy = false ensures plugins are loaded at startup for runtime theme switching via themectl
   xdg.configFile."nvim/lua/plugins/colorschemes.lua".text = ''
     return {
       -- Install all colorscheme plugins for runtime theme switching
-      { "folke/tokyonight.nvim", lazy = true },
-      { "catppuccin/nvim", name = "catppuccin", lazy = true },
-      { "ellisonleao/gruvbox.nvim", lazy = true },
-      { "EdenEast/nightfox.nvim", lazy = true }, -- Provides nordfox
-      { "rose-pine/neovim", name = "rose-pine", lazy = true },
-      { "sainnhe/everforest", lazy = true },
-      { "rebelot/kanagawa.nvim", lazy = true },
-      { "loctvl842/monokai-pro.nvim", lazy = true }, -- Provides monokai-pro-ristretto
-      { "kepano/flexoki-neovim", name = "flexoki", lazy = true },
+      -- Using lazy = false so they're available for themectl hot-reload
+      { "folke/tokyonight.nvim", lazy = false, priority = 900 },
+      { "catppuccin/nvim", name = "catppuccin", lazy = false, priority = 900 },
+      { "ellisonleao/gruvbox.nvim", lazy = false, priority = 900 },
+      { "EdenEast/nightfox.nvim", lazy = false, priority = 900 }, -- Provides nordfox
+      { "rose-pine/neovim", name = "rose-pine", lazy = false, priority = 900 },
+      { "sainnhe/everforest", lazy = false, priority = 900 },
+      { "rebelot/kanagawa.nvim", lazy = false, priority = 900 },
+      { "loctvl842/monokai-pro.nvim", lazy = false, priority = 900 }, -- Provides monokai-pro-ristretto
+      { "kepano/flexoki-neovim", name = "flexoki", lazy = false, priority = 900 },
     }
   '';
 

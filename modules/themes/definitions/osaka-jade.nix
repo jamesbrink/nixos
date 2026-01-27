@@ -103,6 +103,11 @@
     ];
   };
 
+  # Neovim colorscheme
+  nvim = {
+    colorscheme = "tokyonight";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Ocean Green: Dark";

@@ -83,6 +83,11 @@
     theme = "flexoki-light";
   };
 
+  # Neovim colorscheme
+  nvim = {
+    colorscheme = "flexoki-light";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Flexoki Light";

@@ -203,6 +203,34 @@ def _update_neovim_theme_file(colorscheme: str, console: Console) -> None:
         console.print(f"[green]✓[/green] Updated Neovim config to {colorscheme}")
 
 
+def _get_nvim_colorscheme_command(colorscheme: str) -> str:
+    """Generate the appropriate Lua/Vim command to set a colorscheme.
+
+    Some colorscheme plugins require setup() to select variants:
+    - catppuccin: needs flavour set via setup()
+    - monokai-pro: needs filter set via setup()
+
+    Also sets vim background (light/dark) appropriately.
+    """
+    # Determine if this is a light theme
+    light_themes = {"flexoki-light", "catppuccin-latte"}
+    bg = "light" if colorscheme in light_themes else "dark"
+    bg_cmd = f"set background={bg}"
+
+    # Catppuccin variants: catppuccin-latte, catppuccin-frappe, catppuccin-macchiato, catppuccin-mocha
+    if colorscheme.startswith("catppuccin-"):
+        flavour = colorscheme.replace("catppuccin-", "")
+        return f"lua vim.o.background='{bg}' require('catppuccin').setup({{flavour='{flavour}'}}) vim.cmd('colorscheme catppuccin')"
+
+    # Monokai-pro variants: monokai-pro-ristretto, monokai-pro-classic, etc.
+    if colorscheme.startswith("monokai-pro-"):
+        filter_name = colorscheme.replace("monokai-pro-", "")
+        return f"lua vim.o.background='{bg}' require('monokai-pro').setup({{filter='{filter_name}'}}) vim.cmd('colorscheme monokai-pro')"
+
+    # Default: set background then colorscheme
+    return f"{bg_cmd} | colorscheme {colorscheme}"
+
+
 def _reload_neovim_instances(colorscheme: str, console: Console) -> None:
     binary = shutil.which("nvr")
     if not binary:
@@ -217,11 +245,12 @@ def _reload_neovim_instances(colorscheme: str, console: Console) -> None:
         console.print("[yellow]![/yellow] Unable to query nvr servers")
         return
     names = [server.strip() for server in servers.stdout.split() if server.strip()]
-    expr = f"execute('colorscheme ''{colorscheme}''')"
+    cmd = _get_nvim_colorscheme_command(colorscheme)
     reloaded = 0
     for server in names:
+        # Use -c to send command directly (--remote-expr with execute() doesn't work reliably)
         result = subprocess.run(
-            [binary, "--servername", server, "--remote-expr", expr],
+            [binary, "--servername", server, "-c", cmd],
             capture_output=True,
             text=True,
         )

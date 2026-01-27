@@ -94,6 +94,11 @@
     theme = "catppuccin-latte";
   };
 
+  # Neovim colorscheme
+  nvim = {
+    colorscheme = "catppuccin-latte";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Catppuccin Latte";

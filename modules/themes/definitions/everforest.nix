@@ -84,6 +84,11 @@
     theme = "Everforest Dark - Hard";
   };
 
+  # Neovim colorscheme
+  nvim = {
+    colorscheme = "everforest";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Everforest Dark";

@@ -92,6 +92,11 @@
     theme = "Kanagawa Wave";
   };
 
+  # Neovim colorscheme
+  nvim = {
+    colorscheme = "kanagawa";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Kanagawa";

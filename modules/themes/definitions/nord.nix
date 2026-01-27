@@ -90,6 +90,11 @@
     theme = "nord";
   };
 
+  # Neovim colorscheme
+  nvim = {
+    colorscheme = "nordfox";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Nord";

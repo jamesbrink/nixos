@@ -84,6 +84,11 @@
     theme = "Monokai Pro Ristretto";
   };
 
+  # Neovim colorscheme
+  nvim = {
+    colorscheme = "monokai-pro-ristretto";
+  };
+
   # VSCode theme name
   vscode = {
     theme = "Monokai Pro (Filter Ristretto)";
