@@ -498,6 +498,46 @@ def _restart_dock(console: Console) -> None:
         )
 
 
+def update_ghostty(theme: Theme, console: Console) -> None:
+    """Update Ghostty theme in main config file."""
+    home = get_home()
+    config_file = home / ".config" / "ghostty" / "config"
+
+    if not config_file.exists():
+        console.print("[yellow]-[/yellow] Ghostty config not found")
+        return
+
+    # Get theme name from theme definition
+    ghostty_section = theme.section("ghostty")
+    if not ghostty_section:
+        console.print(f"[yellow]-[/yellow] No Ghostty theme defined for {theme.display_name}")
+        return
+
+    theme_name = ghostty_section.get("theme")
+    if not theme_name:
+        console.print(f"[yellow]-[/yellow] No Ghostty theme name for {theme.display_name}")
+        return
+
+    # Read and update config
+    content = config_file.read_text()
+    lines = content.split("\n")
+    new_lines = []
+    updated = False
+
+    for line in lines:
+        if line.startswith("theme =") or line.startswith("theme="):
+            new_lines.append(f"theme = {theme_name}")
+            updated = True
+        else:
+            new_lines.append(line)
+
+    if updated:
+        config_file.write_text("\n".join(new_lines))
+        console.print(f"[green]✓[/green] Updated Ghostty theme to {theme_name}")
+    else:
+        console.print("[yellow]-[/yellow] No theme line found in Ghostty config")
+
+
 def reload_ghostty(console: Console) -> None:
     config = get_home() / ".config" / "ghostty" / "config"
     if not config.exists():
@@ -593,6 +633,7 @@ def run_reload_hooks(theme: Theme, cfg: ThemectlConfig, console: Console) -> Non
         ("Alacritty", lambda: reload_alacritty(console)),
         ("Hyprland", lambda: reload_hyprland(console)),
         ("Wallpaper", lambda: update_wallpaper(console)),
+        ("Ghostty", lambda: update_ghostty(theme, console)),
         ("Ghostty", lambda: reload_ghostty(console)),
         ("btop", lambda: update_btop(theme, console)),
     )

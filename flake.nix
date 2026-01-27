@@ -663,6 +663,12 @@
               for color_file in ${./modules/themes/colors}/*.toml; do
                 cp "$color_file" themectl/colors/
               done
+
+              # Bundle btop themes from modules/themes/assets/btop/
+              mkdir -p themectl/assets/btop
+              for btop_file in ${./modules/themes/assets/btop}/*.theme; do
+                cp "$btop_file" themectl/assets/btop/
+              done
             '';
             checkPhase = ''
               pytest

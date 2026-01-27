@@ -255,7 +255,10 @@ def _render_neovim(theme: Theme) -> str:
 
 
 def _render_starship(theme: Theme) -> str:
-    """Generate Starship prompt config using theme colors from colors.toml."""
+    """Generate Starship prompt config using theme colors from colors.toml.
+
+    Preserves the user's comprehensive format from Nix config, only theming colors.
+    """
     colors = _load_colors_toml(theme)
     if not colors:
         return ""
@@ -263,50 +266,93 @@ def _render_starship(theme: Theme) -> str:
     accent = colors.get("accent", "#7aa2f7")
 
     return f"""# Starship colors for {theme.display_name}
-add_newline = true
-command_timeout = 200
-format = "[$directory$git_branch$git_status]($style)$character"
+# Full format preserved from Nix config, only colors themed
+format = "$username$hostname$directory$git_branch$git_status$nix_shell$aws\\n$character"
 
-[character]
-error_symbol = "[✗](bold {accent})"
-success_symbol = "[❯](bold {accent})"
+# Use single line prompt
+add_newline = false
 
-[directory]
-truncation_length = 2
-truncation_symbol = "…/"
-style = "bold {accent}"
-repo_root_style = "bold {accent}"
-repo_root_format = "[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
-
-[git_branch]
-format = "[$branch]($style) "
-style = "italic {accent}"
-
-[git_status]
-format = '[$all_status]($style)'
-style = "{accent}"
-ahead = "⇡${{count}} "
-diverged = "⇕⇡${{ahead_count}}⇣${{behind_count}} "
-behind = "⇣${{count}} "
-conflicted = " "
-up_to_date = " "
-untracked = "? "
-modified = " "
-stashed = ""
-staged = ""
-renamed = ""
-deleted = ""
-
+# Username configuration
 [username]
 show_always = true
 style_user = "{accent} bold"
 style_root = "red bold"
 format = "[$user]($style) "
 
+# Hostname configuration
 [hostname]
 ssh_only = false
 style = "dimmed {accent}"
 format = "@ [$hostname]($style) "
+
+# Directory configuration
+[directory]
+style = "{accent} bold"
+format = "[$path]($style) "
+truncation_length = 3
+truncate_to_repo = false
+
+# Git branch
+[git_branch]
+style = "{accent} bold"
+format = "[$symbol$branch]($style) "
+
+# Git status
+[git_status]
+style = "red bold"
+format = "[$all_status$ahead_behind]($style) "
+
+# AWS profile
+[aws]
+style = "yellow bold"
+format = " (\\\\($region\\\\)) "
+symbol = ""
+
+# Character (prompt symbol)
+[character]
+success_symbol = "[❯](bold {accent})"
+error_symbol = "[❯](bold red)"
+
+# Disable line break module
+[line_break]
+disabled = false
+
+# Disable cmd_duration
+[cmd_duration]
+disabled = true
+
+# Disable jobs
+[jobs]
+disabled = true
+
+# Language/tool version modules (enabled but concise)
+[nodejs]
+format = "via [⬢ $version](bold {accent}) "
+detect_extensions = ["js", "mjs", "cjs", "ts", "mts", "cts"]
+
+[python]
+format = "via [🐍 $version](bold yellow) "
+detect_extensions = ["py"]
+
+[rust]
+format = "via [🦀 $version](bold red) "
+detect_extensions = ["rs"]
+
+[golang]
+format = "via [🐹 $version](bold {accent}) "
+detect_extensions = ["go"]
+
+[terraform]
+format = "via [💠 $version](bold purple) "
+detect_extensions = ["tf", "tfplan", "tfstate"]
+
+[docker_context]
+format = "via [🐋 $context](blue bold) "
+only_with_files = true
+
+[kubernetes]
+format = "on [⛵ $context\\\\($namespace\\\\)]({accent} bold) "
+disabled = true
 
 [nix_shell]
 format = "via [❄️ $state( \\\\($name\\\\))]({accent} bold) "
@@ -345,10 +391,14 @@ def _render_hyprlock(theme: Theme, fallback_hex: str) -> str:
 
 
 def _copy_btop_theme(theme: Theme, dest_dir: Path) -> None:
-    """Copy btop theme file from repo assets to theme directory."""
-    # Try to find btop theme in repo
-    repo_root = Path(__file__).parent.parent.parent.parent
-    btop_asset = repo_root / "modules" / "themes" / "assets" / "btop" / f"{theme.slug}.theme"
+    """Copy btop theme file from bundled assets to theme directory."""
+    # Try bundled location first (package install)
+    btop_asset = Path(__file__).parent / "assets" / "btop" / f"{theme.slug}.theme"
+
+    # Fall back to repo location (development)
+    if not btop_asset.exists():
+        repo_root = Path(__file__).parent.parent.parent.parent
+        btop_asset = repo_root / "modules" / "themes" / "assets" / "btop" / f"{theme.slug}.theme"
 
     if btop_asset.exists():
         dest_file = dest_dir / "btop.theme"
