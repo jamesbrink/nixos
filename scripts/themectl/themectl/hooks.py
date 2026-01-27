@@ -42,15 +42,15 @@ end run
 
 GHOSTTY_SCRIPT = """
 tell application "System Events"
-  if exists process "Ghostty" then
+  if exists process "ghostty" then
     set frontApp to first application process whose frontmost is true
     set frontName to name of frontApp
-    tell application "Ghostty" to activate
-    delay 0.05
+    tell process "ghostty" to set frontmost to true
+    delay 0.1
     keystroke "," using {command down, shift down}
-    delay 0.05
-    if frontName is not "Ghostty" then
-      tell application frontName to activate
+    delay 0.1
+    if frontName is not "ghostty" then
+      tell process frontName to set frontmost to true
     end if
   end if
 end tell
@@ -512,7 +512,7 @@ def reload_ghostty(console: Console) -> None:
         if result.returncode == 0:
             console.print("[green]✓[/green] Reloaded Ghostty config")
             return
-    if platform.system() == "Darwin" and _process_running("Ghostty"):
+    if platform.system() == "Darwin" and (_process_running("ghostty") or _process_running("Ghostty")):
         if _run_osascript(GHOSTTY_SCRIPT, []):
             console.print("[green]✓[/green] Reloaded Ghostty via automation")
             return

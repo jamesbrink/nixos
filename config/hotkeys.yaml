@@ -234,8 +234,8 @@ platforms:
     modes:
       bsp:
         bindings:
-          theme.cycle: "cmd+shift+ctrl+space"
-          macos_mode.toggle: "cmd+shift+space"
+          theme.cycle: "cmd+shift+space"
+          macos_mode.toggle: "cmd+shift+ctrl+space"
           launcher.terminal: "cmd+return"
           launcher.walker: "cmd+d"
           launcher.browser.default: "cmd+shift+b"
