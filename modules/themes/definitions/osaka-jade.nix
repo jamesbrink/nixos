@@ -78,6 +78,7 @@
 
   # Ghostty terminal theme (custom colors - no built-in theme)
   ghostty = {
+    theme = "osaka-jade";
     background = "#111c18";
     foreground = "#C1C497";
     cursor-color = "#D7C995";

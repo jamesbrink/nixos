@@ -598,30 +598,36 @@ def update_btop(theme: Theme, console: Console) -> None:
     home = get_home()
     btop_themes_dir = home / ".config" / "btop" / "themes"
     btop_conf = home / ".config" / "btop" / "btop.conf"
-    theme_source = home / ".config" / "omarchy" / "themes" / theme.slug / "btop.theme"
 
-    # Copy theme file to btop themes directory
-    if theme_source.exists():
-        btop_themes_dir.mkdir(parents=True, exist_ok=True)
-        theme_dest = btop_themes_dir / f"{theme.slug}.theme"
-        shutil.copy2(theme_source, theme_dest)
+    # Check if theme exists in btop themes directory (deployed by Nix)
+    theme_file = btop_themes_dir / f"{theme.slug}.theme"
 
-        # Update btop.conf to use this theme
-        if btop_conf.exists():
-            content = btop_conf.read_text()
-            lines = content.split("\n")
-            new_lines = []
-            for line in lines:
-                if line.startswith("color_theme"):
-                    new_lines.append(f'color_theme = "{theme.slug}"')
-                else:
-                    new_lines.append(line)
-            btop_conf.write_text("\n".join(new_lines))
-            console.print(f"[green]✓[/green] Updated btop theme to {theme.slug}")
-        else:
-            console.print("[yellow]-[/yellow] btop.conf not found")
-    else:
+    if not theme_file.exists():
         console.print(f"[yellow]-[/yellow] btop theme not available for {theme.display_name}")
+        return
+
+    # Update btop.conf to use this theme
+    if not btop_conf.exists():
+        console.print("[yellow]-[/yellow] btop.conf not found")
+        return
+
+    content = btop_conf.read_text()
+    lines = content.split("\n")
+    new_lines = []
+    updated = False
+
+    for line in lines:
+        if line.startswith("color_theme"):
+            new_lines.append(f'color_theme = "{theme.slug}"')
+            updated = True
+        else:
+            new_lines.append(line)
+
+    if updated:
+        btop_conf.write_text("\n".join(new_lines))
+        console.print(f"[green]✓[/green] Updated btop theme to {theme.slug}")
+    else:
+        console.print("[yellow]-[/yellow] No color_theme line found in btop.conf")
 
 
 def run_reload_hooks(theme: Theme, cfg: ThemectlConfig, console: Console) -> None:

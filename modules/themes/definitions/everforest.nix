@@ -17,31 +17,31 @@
     inactiveBorder = "rgba(475258aa)";
   };
 
-  # Alacritty color scheme
+  # Alacritty color scheme (Everforest Dark Hard - matches Ghostty)
   alacritty = {
     primary = {
-      background = "#2d353b";
+      background = "#1e2326";
       foreground = "#d3c6aa";
     };
     normal = {
-      black = "#475258";
+      black = "#7a8478";
       red = "#e67e80";
       green = "#a7c080";
       yellow = "#dbbc7f";
       blue = "#7fbbb3";
       magenta = "#d699b6";
       cyan = "#83c092";
-      white = "#d3c6aa";
+      white = "#f2efdf";
     };
     bright = {
-      black = "#475258";
-      red = "#e67e80";
-      green = "#a7c080";
-      yellow = "#dbbc7f";
-      blue = "#7fbbb3";
-      magenta = "#d699b6";
-      cyan = "#83c092";
-      white = "#d3c6aa";
+      black = "#a6b0a0";
+      red = "#f85552";
+      green = "#8da101";
+      yellow = "#dfa000";
+      blue = "#3a94c5";
+      magenta = "#df69ba";
+      cyan = "#35a77c";
+      white = "#fffbef";
     };
     indexed_colors = [ ];
   };
@@ -93,58 +93,58 @@
   walker = {
     selectedText = "#dbbc7f";
     text = "#d3c6aa";
-    base = "#2d353b";
+    base = "#1e2326";
     border = "#d3c6aa";
     foreground = "#d3c6aa";
-    background = "#2d353b";
+    background = "#1e2326";
   };
 
   # Waybar colors
   waybar = {
     foreground = "#d3c6aa";
-    background = "#2d353b";
+    background = "#1e2326";
   };
 
   # wlogout power menu colors
   wlogout = {
-    backgroundColor = "#2d353b";
+    backgroundColor = "#1e2326";
     buttonBackground = "#343f44";
     buttonHoverBackground = "#a7c080";
     textColor = "#d3c6aa";
-    textHoverColor = "#2d353b";
+    textHoverColor = "#1e2326";
   };
 
   # tmux status bar colors
   tmux = {
-    statusBackground = "#2d353b";
+    statusBackground = "#1e2326";
     statusForeground = "#d3c6aa";
     windowStatusCurrent = "#a7c080";
     paneActiveBorder = "#a7c080";
     paneInactiveBorder = "#475258";
     messageBackground = "#a7c080";
-    messageForeground = "#2d353b";
+    messageForeground = "#1e2326";
   };
 
   # Mako notification colors
   mako = {
     textColor = "#d3c6aa";
     borderColor = "#d3c6aa";
-    backgroundColor = "#2d353b";
+    backgroundColor = "#1e2326";
     progressColor = "#d3c6aa";
   };
 
   # SwayOSD colors
   swayosd = {
-    backgroundColor = "#2d353b";
+    backgroundColor = "#1e2326";
     borderColor = "#d3c6aa";
     textColor = "#d3c6aa";
   };
 
   # Hyprlock colors
   hyprlock = {
-    general = "#2d353b";
-    input = "#2d353b";
-    innerColor = "#2d353bcc";
+    general = "#1e2326";
+    input = "#1e2326";
+    innerColor = "#1e2326cc";
     outerColor = "#d3c6aa";
     fontColor = "#d3c6aa";
     checkColor = "#83c092";
@@ -153,13 +153,13 @@
 
   # btop system monitor colors
   btop = {
-    main_bg = "#2d353b";
+    main_bg = "#1e2326";
     main_fg = "#d3c6aa";
     title = "#d3c6aa";
     hi_fg = "#e67e80";
     selected_bg = "#3d484d";
     selected_fg = "#dbbc7f";
-    inactive_fg = "#2d353b";
+    inactive_fg = "#1e2326";
     graph_text = "#d3c6aa";
     proc_misc = "#a7c080";
     cpu_box = "#3d484d";
@@ -301,7 +301,7 @@
 
   # Browser theme color (RGB format for Chrome/Brave managed policy)
   browser = {
-    themeColor = "45,53,59"; # RGB values from primary background #2d353b
+    themeColor = "30,35,38"; # RGB values from primary background #1e2326
   };
 
   # Fastfetch system info colors
