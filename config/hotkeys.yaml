@@ -168,6 +168,31 @@ actions:
       prev:
         description: Focus previous space (wraps).
         command: "yabai -m space --focus prev || yabai -m space --focus last"
+  display:
+    focus:
+      next:
+        description: Focus next display/monitor.
+        command: "yabai -m display --focus next || yabai -m display --focus first"
+      prev:
+        description: Focus previous display/monitor.
+        command: "yabai -m display --focus prev || yabai -m display --focus last"
+      by_number:
+        description: Focus display by number.
+        template:
+          chord: "cmd+alt+{digit}"
+          digits: ["1", "2", "3", "4"]
+    move:
+      next:
+        description: Move window to next display and follow focus.
+        command: "yabai -m window --display next && yabai -m display --focus next"
+      prev:
+        description: Move window to previous display and follow focus.
+        command: "yabai -m window --display prev && yabai -m display --focus prev"
+      by_number:
+        description: Move window to display by number and follow focus.
+        template:
+          chord: "cmd+shift+alt+{digit}"
+          digits: ["1", "2", "3", "4"]
   window_cycle:
     next:
       description: Focus next window (wraps).
@@ -239,6 +264,10 @@ platforms:
           window.resize.vertical.increase: "cmd+shift+0x18"
           space.cycle.next: "cmd+tab"
           space.cycle.prev: "cmd+shift+tab"
+          display.focus.next: "cmd+0x1E"
+          display.focus.prev: "cmd+0x21"
+          display.move.next: "cmd+shift+0x1E"
+          display.move.prev: "cmd+shift+0x21"
           window_cycle.next: "alt+tab"
           window_cycle.prev: "alt+shift+tab"
           layout.rotate: "cmd+r"

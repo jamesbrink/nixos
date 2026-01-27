@@ -13,8 +13,7 @@
   imports = [
     ./hardware.nix
     ../../profiles/darwin/desktop.nix # Use full desktop profile
-    # TEMPORARILY DISABLED: Re-enable when SIP/security can be relaxed
-    # ../../profiles/darwin/tiling.nix # Tiling window manager (yabai + SketchyBar)
+    ../../profiles/darwin/tiling.nix # Tiling window manager (yabai + SketchyBar)
     ../../modules/darwin/packages.nix
     ../../modules/darwin/dock.nix
     ../../modules/darwin/restic-backups.nix

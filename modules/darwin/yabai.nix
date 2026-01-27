@@ -370,6 +370,52 @@ let
   workspaceMoveBindings = skhdDigitBindings workspaceMoveChord workspaceMoveDigits (
     digit: "${yabaiSpaceHelper}/bin/yabai-space-helper move ${spaceIndex digit}"
   );
+  displayFocusChord = lib.attrsets.attrByPath [
+    "actions"
+    "display"
+    "focus"
+    "by_number"
+    "template"
+    "chord"
+  ] null hotkeysData;
+  displayFocusDigits =
+    lib.attrsets.attrByPath
+      [
+        "actions"
+        "display"
+        "focus"
+        "by_number"
+        "template"
+        "digits"
+      ]
+      [ ]
+      hotkeysData;
+  displayMoveChord = lib.attrsets.attrByPath [
+    "actions"
+    "display"
+    "move"
+    "by_number"
+    "template"
+    "chord"
+  ] null hotkeysData;
+  displayMoveDigits =
+    lib.attrsets.attrByPath
+      [
+        "actions"
+        "display"
+        "move"
+        "by_number"
+        "template"
+        "digits"
+      ]
+      [ ]
+      hotkeysData;
+  displayFocusBindings = skhdDigitBindings displayFocusChord displayFocusDigits (
+    digit: "yabai -m display --focus ${digit}"
+  );
+  displayMoveBindings = skhdDigitBindings displayMoveChord displayMoveDigits (
+    digit: "yabai -m window --display ${digit} && yabai -m display --focus ${digit}"
+  );
   restartWmScript = pkgs.writeShellScript "restart-wm.sh" ''
     #!/bin/bash
     launchctl kickstart -k "gui/''${UID}/org.nixos.yabai"
@@ -614,6 +660,40 @@ in
         "cycle"
         "prev"
       ] "cmd+shift+tab" "yabai -m space --focus prev || yabai -m space --focus last"}
+
+      # ====================
+      # DISPLAY/MONITOR MANAGEMENT
+      # ====================
+
+      # Focus displays (cycle)
+      ${skhdBindingFromPath [
+        "display"
+        "focus"
+        "next"
+      ] "cmd+0x1E" "yabai -m display --focus next || yabai -m display --focus first"}
+      ${skhdBindingFromPath [
+        "display"
+        "focus"
+        "prev"
+      ] "cmd+0x21" "yabai -m display --focus prev || yabai -m display --focus last"}
+
+      # Focus display by number (cmd+alt+1-4)
+      ${displayFocusBindings}
+
+      # Move window to display (cycle)
+      ${skhdBindingFromPath [
+        "display"
+        "move"
+        "next"
+      ] "cmd+shift+0x1E" "yabai -m window --display next && yabai -m display --focus next"}
+      ${skhdBindingFromPath [
+        "display"
+        "move"
+        "prev"
+      ] "cmd+shift+0x21" "yabai -m window --display prev && yabai -m display --focus prev"}
+
+      # Move window to display by number (cmd+shift+alt+1-4)
+      ${displayMoveBindings}
 
       # ====================
       # WINDOW CYCLING
