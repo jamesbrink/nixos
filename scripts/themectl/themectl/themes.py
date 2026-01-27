@@ -39,6 +39,10 @@ class Theme:
     def cursor_theme(self) -> str | None:
         return self.section("cursor").get("theme")
 
+    @property
+    def cursor_extension(self) -> str | None:
+        return self.section("cursor").get("extension")
+
 
 @dataclass(slots=True)
 class ThemeRepository:

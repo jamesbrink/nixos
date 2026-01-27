@@ -655,8 +655,17 @@ def _refresh_cursor(theme: Theme, cfg: ThemectlConfig, console: Console) -> None
     if not theme_name:
         return
 
-    # Install extension if needed (use same extension as VSCode)
-    extension_id = theme.vscode_extension
+    # Install extension if needed
+    # cursor_extension="" means explicitly skip (not available in Cursor marketplace)
+    # cursor_extension=None means fallback to vscode_extension
+    cursor_ext = theme.cursor_extension
+    if cursor_ext is None:
+        extension_id = theme.vscode_extension
+    elif cursor_ext:
+        extension_id = cursor_ext
+    else:
+        extension_id = None  # Empty string = skip installation
+
     if extension_id:
         _ensure_extension_installed("cursor", extension_id, console, "Cursor")
 

@@ -94,6 +94,12 @@
     extension = "kepano.flexoki";
   };
 
+  # Cursor (extension not available in Cursor marketplace)
+  cursor = {
+    theme = "Flexoki Light";
+    extension = "";
+  };
+
   # Walker launcher colors
   walker = {
     selectedText = "#205EA6";

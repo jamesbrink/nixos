@@ -103,6 +103,12 @@
     extension = "qufiwefefwoyn.kanagawa";
   };
 
+  # Cursor (extension not available in Cursor marketplace)
+  cursor = {
+    theme = "Kanagawa";
+    extension = "";
+  };
+
   # Walker launcher colors
   walker = {
     selectedText = "#dca561";

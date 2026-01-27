@@ -114,6 +114,12 @@
     extension = "jovejonovski.ocean-green";
   };
 
+  # Cursor (extension not available in Cursor marketplace)
+  cursor = {
+    theme = "Ocean Green: Dark";
+    extension = "";
+  };
+
   # Walker launcher colors
   walker = {
     selectedText = "#e1b55e";
