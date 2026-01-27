@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import shutil
+import tomllib
 from typing import Mapping
 
 from rich.console import Console
@@ -22,6 +23,26 @@ def _ensure_dir(path: Path) -> None:
 def _write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content.rstrip() + "\n")
+
+
+def _load_colors_toml(theme: Theme) -> Mapping[str, str]:
+    """Load colors from bundled colors/{slug}.toml file."""
+    # Try bundled location first (package install)
+    colors_file = Path(__file__).parent / "colors" / f"{theme.slug}.toml"
+
+    # Fall back to repo location (development)
+    if not colors_file.exists():
+        repo_root = Path(__file__).parent.parent.parent.parent
+        colors_file = repo_root / "modules" / "themes" / "colors" / f"{theme.slug}.toml"
+
+    if not colors_file.exists():
+        return {}
+
+    try:
+        with open(colors_file, "rb") as f:
+            return tomllib.load(f)
+    except Exception:
+        return {}
 
 
 def _hex_to_rgb(color: str) -> tuple[int, int, int] | None:
@@ -233,6 +254,67 @@ def _render_neovim(theme: Theme) -> str:
     return f'return "{colorscheme}"\n'
 
 
+def _render_starship(theme: Theme) -> str:
+    """Generate Starship prompt config using theme colors from colors.toml."""
+    colors = _load_colors_toml(theme)
+    if not colors:
+        return ""
+
+    accent = colors.get("accent", "#7aa2f7")
+
+    return f"""# Starship colors for {theme.display_name}
+add_newline = true
+command_timeout = 200
+format = "[$directory$git_branch$git_status]($style)$character"
+
+[character]
+error_symbol = "[✗](bold {accent})"
+success_symbol = "[❯](bold {accent})"
+
+[directory]
+truncation_length = 2
+truncation_symbol = "…/"
+style = "bold {accent}"
+repo_root_style = "bold {accent}"
+repo_root_format = "[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
+
+[git_branch]
+format = "[$branch]($style) "
+style = "italic {accent}"
+
+[git_status]
+format = '[$all_status]($style)'
+style = "{accent}"
+ahead = "⇡${{count}} "
+diverged = "⇕⇡${{ahead_count}}⇣${{behind_count}} "
+behind = "⇣${{count}} "
+conflicted = " "
+up_to_date = " "
+untracked = "? "
+modified = " "
+stashed = ""
+staged = ""
+renamed = ""
+deleted = ""
+
+[username]
+show_always = true
+style_user = "{accent} bold"
+style_root = "red bold"
+format = "[$user]($style) "
+
+[hostname]
+ssh_only = false
+style = "dimmed {accent}"
+format = "@ [$hostname]($style) "
+
+[nix_shell]
+format = "via [❄️ $state( \\($name\\))]({accent} bold) "
+impure_msg = "[impure](bold red)"
+pure_msg = "[pure](bold {accent})"
+"""
+
+
 def _render_hyprlock(theme: Theme, fallback_hex: str) -> str:
     hyprlock = theme.section("hyprlock")
     if not hyprlock:
@@ -331,6 +413,10 @@ def sync_assets(repo: ThemeRepository, console: Console | None = None) -> None:
         neovim = _render_neovim(theme)
         if neovim:
             _write_text(dest / "neovim.lua", neovim)
+
+        starship = _render_starship(theme)
+        if starship:
+            _write_text(dest / "starship.toml", starship)
 
         alacritty_section = theme.section("alacritty")
         primary_bg = ""

@@ -9,7 +9,7 @@
 }:
 
 let
-  hyprThemes = import ../hyprland/themes/lib.nix {
+  hyprThemes = import ../../themes/lib.nix {
     omarchySrc = inputs.omarchy or null;
   };
 

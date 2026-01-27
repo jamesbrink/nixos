@@ -7,11 +7,19 @@
 }:
 
 {
+  # Starship config is managed by themectl via XDG_CONFIG_HOME override
+  # The actual config is symlinked to ~/.config/omarchy/current/theme/starship.toml
+  # This allows dynamic theme switching without rebuilding the system
+  home.sessionVariables = {
+    STARSHIP_CONFIG = lib.mkForce "${config.home.homeDirectory}/.config/omarchy/current/theme/starship.toml";
+  };
+
   programs.starship = {
     enable = true;
     enableZshIntegration = true;
     enableBashIntegration = true;
 
+    # Static fallback config (used if theme file doesn't exist)
     settings = {
       # Two-line minimal prompt format
       format = "$username$hostname$directory$git_branch$git_status$nix_shell$aws\n$character";

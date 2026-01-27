@@ -8,7 +8,7 @@
 let
   # Theme selection (must match Home Manager theme selection)
   selectedTheme = "ristretto";
-  themeConfig = import (../../modules/home-manager/hyprland/themes + "/${selectedTheme}.nix");
+  themeConfig = import (../../modules/themes/definitions + "/${selectedTheme}.nix");
 
   # Convert RGB string "R,G,B" to hex color "#RRGGBB"
   rgbToHex =

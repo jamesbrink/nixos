@@ -631,7 +631,7 @@
             config.allowUnfree = true;
           };
           python = pkgs.python311Packages;
-          themeLib = import ./modules/home-manager/hyprland/themes/lib.nix {
+          themeLib = import ./modules/themes/lib.nix {
             omarchySrc = inputs.omarchy;
           };
           themeData =
@@ -657,6 +657,13 @@
               python."pytest-mock"
             ];
             pythonImportsCheck = [ "themectl" ];
+            preBuild = ''
+              # Bundle colors from modules/themes/colors/ into themectl package
+              mkdir -p themectl/colors
+              for color_file in ${./modules/themes/colors}/*.toml; do
+                cp "$color_file" themectl/colors/
+              done
+            '';
             checkPhase = ''
               pytest
             '';
