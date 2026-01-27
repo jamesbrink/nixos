@@ -120,11 +120,15 @@ in
     zoxide = {
       enable = true;
       enableZshIntegration = true;
+      # Disable bash - zoxide init uses bash 4.4+ features that hang macOS /bin/bash 3.2
+      enableBashIntegration = false;
     };
 
     fzf = {
       enable = true;
       enableZshIntegration = true;
+      # Disable bash - fzf init uses bash 4+ features that hang macOS /bin/bash 3.2
+      enableBashIntegration = false;
       defaultCommand = "fd --type f --hidden --follow --exclude .git";
       defaultOptions = [
         "--height 40%"
@@ -157,6 +161,8 @@ in
     direnv = {
       enable = true;
       enableZshIntegration = true;
+      # Disable bash - direnv hook uses features that may hang macOS /bin/bash 3.2
+      enableBashIntegration = false;
       nix-direnv = {
         enable = !pkgs.stdenv.isDarwin;
       };

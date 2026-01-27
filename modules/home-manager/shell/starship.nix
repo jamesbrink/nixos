@@ -17,7 +17,9 @@
   programs.starship = {
     enable = true;
     enableZshIntegration = true;
-    enableBashIntegration = true;
+    # Disable bash integration - starship init uses bash 4+ features (local -a ARGS=(...))
+    # which hang macOS /bin/bash (version 3.2)
+    enableBashIntegration = false;
 
     # Static fallback config (used if theme file doesn't exist)
     settings = {
