@@ -102,6 +102,12 @@
     extension = "sainnhe.gruvbox-material";
   };
 
+  # Cursor (same as VSCode - extension available in Cursor marketplace)
+  cursor = {
+    theme = "Gruvbox Material Dark";
+    extension = "sainnhe.gruvbox-material";
+  };
+
   # Walker launcher colors
   walker = {
     selectedText = "#fabd2f";

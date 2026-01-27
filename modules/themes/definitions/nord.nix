@@ -101,6 +101,12 @@
     extension = "arcticicestudio.nord-visual-studio-code";
   };
 
+  # Cursor (same as VSCode - extension available in Cursor marketplace)
+  cursor = {
+    theme = "Nord";
+    extension = "arcticicestudio.nord-visual-studio-code";
+  };
+
   # Walker launcher colors
   walker = {
     selectedText = "#88C0D0";

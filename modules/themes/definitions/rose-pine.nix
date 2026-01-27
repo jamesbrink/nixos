@@ -104,6 +104,12 @@
     extension = "mvllow.rose-pine";
   };
 
+  # Cursor (same as VSCode - extension available in Cursor marketplace)
+  cursor = {
+    theme = "Rosé Pine Moon";
+    extension = "mvllow.rose-pine";
+  };
+
   # Walker launcher colors (Rose Pine Moon - dark variant)
   walker = {
     selectedText = "#c4a7e7"; # Iris (magenta)

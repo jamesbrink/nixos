@@ -105,6 +105,12 @@
     extension = "catppuccin.catppuccin-vsc";
   };
 
+  # Cursor (same as VSCode - extension available in Cursor marketplace)
+  cursor = {
+    theme = "Catppuccin Macchiato";
+    extension = "catppuccin.catppuccin-vsc";
+  };
+
   # Walker launcher colors
   walker = {
     selectedText = "#8caaee";

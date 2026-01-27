@@ -119,6 +119,12 @@
     extension = "TahaYVR.matteblack";
   };
 
+  # Cursor (same as VSCode - extension available in Cursor marketplace)
+  cursor = {
+    theme = "Matte Black";
+    extension = "TahaYVR.matteblack";
+  };
+
   # Walker launcher colors
   walker = {
     selectedText = "#B91C1C";

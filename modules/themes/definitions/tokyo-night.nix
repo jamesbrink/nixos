@@ -106,6 +106,12 @@
     extension = "enkia.tokyo-night";
   };
 
+  # Cursor (same as VSCode - extension available in Cursor marketplace)
+  cursor = {
+    theme = "Tokyo Night";
+    extension = "enkia.tokyo-night";
+  };
+
   # Walker launcher colors
   walker = {
     selectedText = "#7dcfff";

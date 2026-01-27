@@ -95,6 +95,12 @@
     extension = "sainnhe.everforest";
   };
 
+  # Cursor (same as VSCode - extension available in Cursor marketplace)
+  cursor = {
+    theme = "Everforest Dark";
+    extension = "sainnhe.everforest";
+  };
+
   # Walker launcher colors
   walker = {
     selectedText = "#dbbc7f";

@@ -95,6 +95,12 @@
     extension = "monokai.theme-monokai-pro-vscode";
   };
 
+  # Cursor (same as VSCode - extension available in Cursor marketplace)
+  cursor = {
+    theme = "Monokai Pro (Filter Ristretto)";
+    extension = "monokai.theme-monokai-pro-vscode";
+  };
+
   # Walker launcher colors
   walker = {
     selectedText = "#fabd2f";
