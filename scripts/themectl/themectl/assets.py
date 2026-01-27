@@ -309,7 +309,7 @@ style = "dimmed {accent}"
 format = "@ [$hostname]($style) "
 
 [nix_shell]
-format = "via [❄️ $state( \\($name\\))]({accent} bold) "
+format = "via [❄️ $state( \\\\($name\\\\))]({accent} bold) "
 impure_msg = "[impure](bold red)"
 pure_msg = "[pure](bold {accent})"
 """
@@ -342,6 +342,18 @@ def _render_hyprlock(theme: Theme, fallback_hex: str) -> str:
             "",
         ]
     )
+
+
+def _copy_btop_theme(theme: Theme, dest_dir: Path) -> None:
+    """Copy btop theme file from repo assets to theme directory."""
+    # Try to find btop theme in repo
+    repo_root = Path(__file__).parent.parent.parent.parent
+    btop_asset = repo_root / "modules" / "themes" / "assets" / "btop" / f"{theme.slug}.theme"
+
+    if btop_asset.exists():
+        dest_file = dest_dir / "btop.theme"
+        _ensure_dir(dest_dir)
+        shutil.copy2(btop_asset, dest_file)
 
 
 def _copy_wallpapers(theme: Theme, dest_dir: Path, console: Console) -> None:
@@ -429,5 +441,6 @@ def sync_assets(repo: ThemeRepository, console: Console | None = None) -> None:
             _write_text(dest / "hyprlock.conf", hyprlock)
 
         _copy_wallpapers(theme, dest / "backgrounds", active_console)
+        _copy_btop_theme(theme, dest)
 
         active_console.print(f"[green]•[/green] Synced {theme.display_name}")

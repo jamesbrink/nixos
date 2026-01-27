@@ -553,6 +553,37 @@ def _refresh_neovim(theme: Theme, cfg: ThemectlConfig, console: Console) -> None
     _reload_neovim_instances(colorscheme, console)
 
 
+def update_btop(theme: Theme, console: Console) -> None:
+    """Update btop theme configuration."""
+    home = get_home()
+    btop_themes_dir = home / ".config" / "btop" / "themes"
+    btop_conf = home / ".config" / "btop" / "btop.conf"
+    theme_source = home / ".config" / "omarchy" / "themes" / theme.slug / "btop.theme"
+
+    # Copy theme file to btop themes directory
+    if theme_source.exists():
+        btop_themes_dir.mkdir(parents=True, exist_ok=True)
+        theme_dest = btop_themes_dir / f"{theme.slug}.theme"
+        shutil.copy2(theme_source, theme_dest)
+
+        # Update btop.conf to use this theme
+        if btop_conf.exists():
+            content = btop_conf.read_text()
+            lines = content.split("\n")
+            new_lines = []
+            for line in lines:
+                if line.startswith("color_theme"):
+                    new_lines.append(f'color_theme = "{theme.slug}"')
+                else:
+                    new_lines.append(line)
+            btop_conf.write_text("\n".join(new_lines))
+            console.print(f"[green]✓[/green] Updated btop theme to {theme.slug}")
+        else:
+            console.print("[yellow]-[/yellow] btop.conf not found")
+    else:
+        console.print(f"[yellow]-[/yellow] btop theme not available for {theme.display_name}")
+
+
 def run_reload_hooks(theme: Theme, cfg: ThemectlConfig, console: Console) -> None:
     actions = (
         ("VSCode", lambda: _refresh_vscode(theme, cfg, console)),
@@ -563,6 +594,7 @@ def run_reload_hooks(theme: Theme, cfg: ThemectlConfig, console: Console) -> Non
         ("Hyprland", lambda: reload_hyprland(console)),
         ("Wallpaper", lambda: update_wallpaper(console)),
         ("Ghostty", lambda: reload_ghostty(console)),
+        ("btop", lambda: update_btop(theme, console)),
     )
     for label, action in actions:
         try:
