@@ -17,7 +17,7 @@ let
     rose-pine = "rose-pine";
     everforest = "everforest";
     kanagawa = "kanagawa";
-    matte-black = "midnight";
+    matte-black = "matte-black"; # Custom colorscheme in nvim/colors/
     osaka-jade = "tokyonight";
     ristretto = "monokai-pro-ristretto";
     flexoki-light = "flexoki-light";
@@ -89,6 +89,9 @@ in
       echo "Created mutable Neovim theme config"
     fi
   '';
+
+  # Custom colorschemes (themes not available as plugins)
+  xdg.configFile."nvim/colors/matte-black.lua".source = ./nvim-colors/matte-black.lua;
 
   # Disable animated scrolling (Omarchy preference)
   xdg.configFile."nvim/lua/plugins/snacks-animated-scrolling-off.lua".text = ''

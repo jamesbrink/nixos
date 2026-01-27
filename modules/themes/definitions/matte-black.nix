@@ -108,9 +108,9 @@
     ];
   };
 
-  # Neovim colorscheme
+  # Neovim colorscheme (custom colorscheme in nvim/colors/)
   nvim = {
-    colorscheme = "midnight";
+    colorscheme = "matte-black";
   };
 
   # VSCode theme name
