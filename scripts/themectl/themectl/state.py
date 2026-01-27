@@ -31,3 +31,22 @@ def write_background_index(path: Path, index: int) -> None:
     """Write the current background index."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(str(index))
+
+
+def read_current_background_path(path: Path) -> str | None:
+    """Read the current global background path.
+
+    Returns None if no state exists.
+    """
+    if not path.exists():
+        return None
+    try:
+        return path.read_text().strip() or None
+    except OSError:
+        return None
+
+
+def write_background_path(path: Path, bg_path: str) -> None:
+    """Write the current global background path."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(bg_path)

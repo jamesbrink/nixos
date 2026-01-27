@@ -24,9 +24,9 @@ from .macos import (
     ensure_yabai_sa,
 )
 from .state import (
-    read_current_background_index,
+    read_current_background_path,
     read_current_theme,
-    write_background_index,
+    write_background_path,
 )
 from .themes import Theme, ThemeRepository, load_theme_metadata
 
@@ -306,80 +306,73 @@ def cycle_background(
     direction: str = typer.Option("next", "--direction", "-d", help="Cycle direction"),
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ) -> None:
-    """Cycle through wallpapers for the current theme."""
+    """Cycle through wallpapers from ALL themes."""
 
     cfg = _load(config)
-    repo = _load_repo(cfg)
 
-    # Get current theme
-    current_slug = read_current_theme(cfg.state_path)
-    if not current_slug:
-        console.print(
-            "[yellow]No theme currently applied. Run `themectl apply <theme>` first.[/yellow]"
-        )
-        raise Exit(1)
-
-    theme = repo.get(current_slug)
-    if not theme:
-        console.print(f"[red]Theme '{current_slug}' not found in metadata[/red]")
-        raise Exit(1)
-
-    # Find backgrounds in the theme directory
     home = get_home()
-    theme_dir = home / ".config" / "omarchy" / "themes" / theme.slug
-    backgrounds_dir = theme_dir / "backgrounds"
+    themes_dir = home / ".config" / "omarchy" / "themes"
 
-    if not backgrounds_dir.exists():
-        console.print(
-            f"[yellow]No backgrounds directory for {theme.display_name}[/yellow]"
-        )
+    if not themes_dir.exists():
+        console.print("[yellow]No themes directory found. Run `themectl sync-assets` first.[/yellow]")
         raise Exit(1)
 
-    # List all image files in backgrounds directory
-    backgrounds = sorted(
-        p
-        for p in backgrounds_dir.iterdir()
-        if p.is_file() and p.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")
-    )
+    # Collect ALL wallpapers from ALL themes
+    all_backgrounds: list[Path] = []
+    for theme_dir in sorted(themes_dir.iterdir()):
+        if not theme_dir.is_dir():
+            continue
+        backgrounds_dir = theme_dir / "backgrounds"
+        if not backgrounds_dir.exists():
+            continue
+        for bg in sorted(backgrounds_dir.iterdir()):
+            if bg.is_file() and bg.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"):
+                all_backgrounds.append(bg)
 
-    if not backgrounds:
-        console.print(f"[yellow]No wallpapers found for {theme.display_name}[/yellow]")
+    if not all_backgrounds:
+        console.print("[yellow]No wallpapers found in any theme[/yellow]")
         raise Exit(1)
 
-    if len(backgrounds) == 1:
-        console.print(
-            f"[cyan]Only one wallpaper available for {theme.display_name}[/cyan]"
-        )
+    if len(all_backgrounds) == 1:
+        console.print("[cyan]Only one wallpaper available across all themes[/cyan]")
         return
 
-    # Determine current index
-    background_state = cfg.state_path.parent / ".current-background-index"
-    current_idx = read_current_background_index(background_state)
+    # Read current background path
+    background_state = cfg.state_path.parent / ".current-background-path"
+    current_path_str = read_current_background_path(background_state)
 
-    # Ensure index is within bounds
-    if current_idx >= len(backgrounds):
-        current_idx = 0
+    # Find current index in the global list
+    current_idx = 0
+    if current_path_str:
+        current_path = Path(current_path_str)
+        for i, bg in enumerate(all_backgrounds):
+            if bg == current_path or bg.resolve() == current_path.resolve():
+                current_idx = i
+                break
 
     # Calculate next index
     if direction == "prev":
-        new_idx = (current_idx - 1) % len(backgrounds)
+        new_idx = (current_idx - 1) % len(all_backgrounds)
     else:
-        new_idx = (current_idx + 1) % len(backgrounds)
+        new_idx = (current_idx + 1) % len(all_backgrounds)
 
     # Update symlink to new background
-    new_background = backgrounds[new_idx]
+    new_background = all_backgrounds[new_idx]
     current_root = home / ".config" / "omarchy" / "current"
     _safe_symlink(new_background, current_root / "background")
 
-    # Save new index
-    write_background_index(background_state, new_idx)
+    # Save new background path
+    write_background_path(background_state, str(new_background))
 
     # Update wallpaper
     update_wallpaper(console)
 
+    # Extract theme name from path for display
+    theme_name = new_background.parent.parent.name
+
     console.print(
         Panel(
-            f"[cyan]Cycled[/cyan] to wallpaper {new_idx + 1}/{len(backgrounds)} for {theme.display_name}",
+            f"[cyan]Cycled[/cyan] to wallpaper {new_idx + 1}/{len(all_backgrounds)} ({theme_name}/{new_background.name})",
             title="themectl",
             border_style="green",
         )
