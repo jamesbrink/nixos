@@ -110,7 +110,7 @@
 
   # Neovim colorscheme
   nvim = {
-    colorscheme = "tokyonight-night";
+    colorscheme = "midnight";
   };
 
   # VSCode theme name

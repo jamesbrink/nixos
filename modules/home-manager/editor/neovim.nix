@@ -17,7 +17,7 @@ let
     rose-pine = "rose-pine";
     everforest = "everforest";
     kanagawa = "kanagawa";
-    matte-black = "tokyonight-night";
+    matte-black = "midnight";
     osaka-jade = "tokyonight";
     ristretto = "monokai-pro-ristretto";
     flexoki-light = "flexoki-light";
@@ -57,6 +57,7 @@ in
       { "rebelot/kanagawa.nvim", lazy = false, priority = 900 },
       { "loctvl842/monokai-pro.nvim", lazy = false, priority = 900 }, -- Provides monokai-pro-ristretto
       { "kepano/flexoki-neovim", name = "flexoki", lazy = false, priority = 900 },
+      { "dasupradyumna/midnight.nvim", lazy = false, priority = 900 }, -- Matte black theme
     }
   '';
 
