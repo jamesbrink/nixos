@@ -46,7 +46,11 @@ in
       imports = [
         ../../modules/home-manager/darwin/unified-themes.nix
         ../../modules/home-manager/darwin/hammerspoon.nix
+        ../../modules/home-manager/darwin/cursor-extensions.nix
       ];
+
+      # Install missing theme extensions to VSCode and Cursor
+      programs.editor.extraThemeExtensions.enable = true;
 
       home.packages = with pkgs; [
         # Common packages for darwin

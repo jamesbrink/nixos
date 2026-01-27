@@ -94,10 +94,10 @@
     extension = "kepano.flexoki";
   };
 
-  # Cursor (extension not available in Cursor marketplace)
+  # Cursor (extension installed via Nix)
   cursor = {
     theme = "Flexoki Light";
-    extension = "";
+    extension = "kepano.flexoki";
   };
 
   # Walker launcher colors

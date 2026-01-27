@@ -103,10 +103,10 @@
     extension = "qufiwefefwoyn.kanagawa";
   };
 
-  # Cursor (extension not available in Cursor marketplace)
+  # Cursor (extension installed via Nix)
   cursor = {
     theme = "Kanagawa";
-    extension = "";
+    extension = "qufiwefefwoyn.kanagawa";
   };
 
   # Walker launcher colors

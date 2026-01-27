@@ -114,10 +114,10 @@
     extension = "jovejonovski.ocean-green";
   };
 
-  # Cursor (extension not available in Cursor marketplace)
+  # Cursor (extension installed via Nix)
   cursor = {
     theme = "Ocean Green: Dark";
-    extension = "";
+    extension = "jovejonovski.ocean-green";
   };
 
   # Walker launcher colors
