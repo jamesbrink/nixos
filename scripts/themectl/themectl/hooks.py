@@ -594,17 +594,58 @@ def reload_ghostty(console: Console) -> None:
     console.print("[yellow]![/yellow] Ghostty reload skipped (app not running)")
 
 
+def _ensure_extension_installed(
+    editor_cmd: str, extension_id: str, console: Console, label: str
+) -> None:
+    """Install VSCode/Cursor extension if not already installed."""
+    binary = shutil.which(editor_cmd)
+    if not binary:
+        return
+
+    # Check if extension is installed
+    result = subprocess.run(
+        [binary, "--list-extensions"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return
+
+    installed = result.stdout.strip().split("\n")
+    if extension_id.lower() in [ext.lower() for ext in installed]:
+        return
+
+    # Install extension
+    console.print(f"[cyan]...[/cyan] Installing {label} extension: {extension_id}")
+    install_result = subprocess.run(
+        [binary, "--install-extension", extension_id],
+        capture_output=True,
+        text=True,
+    )
+    if install_result.returncode == 0:
+        console.print(f"[green]✓[/green] Installed {label} extension: {extension_id}")
+    else:
+        console.print(
+            f"[yellow]![/yellow] Failed to install {label} extension: {extension_id}"
+        )
+
+
 def _refresh_vscode(theme: Theme, cfg: ThemectlConfig, console: Console) -> None:
     if not cfg.editor_automation.vscode:
         return
     theme_name = theme.vscode_theme
     if not theme_name:
         return
-    changed = _update_editor_settings(
+
+    # Install extension if needed
+    extension_id = theme.vscode_extension
+    if extension_id:
+        _ensure_extension_installed("code", extension_id, console, "VSCode")
+
+    # Update settings.json - VSCode auto-reloads when the file changes
+    _update_editor_settings(
         _vscode_settings_paths(cfg.platform), theme_name, console, "VSCode"
     )
-    if changed:
-        _trigger_editor_reload("Visual Studio Code", "Code", theme_name, console)
 
 
 def _refresh_cursor(theme: Theme, cfg: ThemectlConfig, console: Console) -> None:
@@ -613,11 +654,16 @@ def _refresh_cursor(theme: Theme, cfg: ThemectlConfig, console: Console) -> None
     theme_name = theme.cursor_theme or theme.vscode_theme
     if not theme_name:
         return
-    changed = _update_editor_settings(
+
+    # Install extension if needed (use same extension as VSCode)
+    extension_id = theme.vscode_extension
+    if extension_id:
+        _ensure_extension_installed("cursor", extension_id, console, "Cursor")
+
+    # Update settings.json - Cursor auto-reloads when the file changes
+    _update_editor_settings(
         _cursor_settings_paths(cfg.platform), theme_name, console, "Cursor"
     )
-    if changed:
-        _trigger_editor_reload("Cursor", "Cursor", theme_name, console)
 
 
 def _refresh_neovim(theme: Theme, cfg: ThemectlConfig, console: Console) -> None:

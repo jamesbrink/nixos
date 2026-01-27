@@ -102,6 +102,7 @@
   # VSCode theme name
   vscode = {
     theme = "Catppuccin Macchiato";
+    extension = "catppuccin.catppuccin-vsc";
   };
 
   # Walker launcher colors

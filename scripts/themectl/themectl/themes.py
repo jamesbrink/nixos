@@ -32,6 +32,10 @@ class Theme:
         return self.section("vscode").get("theme")
 
     @property
+    def vscode_extension(self) -> str | None:
+        return self.section("vscode").get("extension")
+
+    @property
     def cursor_theme(self) -> str | None:
         return self.section("cursor").get("theme")
 

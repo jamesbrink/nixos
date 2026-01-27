@@ -116,6 +116,7 @@
   # VSCode theme name
   vscode = {
     theme = "Matte Black";
+    extension = "TahaYVR.matteblack";
   };
 
   # Walker launcher colors

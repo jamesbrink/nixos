@@ -92,6 +92,7 @@
   # VSCode theme name
   vscode = {
     theme = "Everforest Dark";
+    extension = "sainnhe.everforest";
   };
 
   # Walker launcher colors

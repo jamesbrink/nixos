@@ -99,6 +99,7 @@
   # VSCode theme name
   vscode = {
     theme = "Gruvbox Material Dark";
+    extension = "sainnhe.gruvbox-material";
   };
 
   # Walker launcher colors

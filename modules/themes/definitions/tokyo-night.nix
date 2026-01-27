@@ -103,6 +103,7 @@
   # VSCode theme name
   vscode = {
     theme = "Tokyo Night";
+    extension = "enkia.tokyo-night";
   };
 
   # Walker launcher colors

@@ -101,6 +101,7 @@
   # VSCode theme name
   vscode = {
     theme = "Rosé Pine Moon";
+    extension = "mvllow.rose-pine";
   };
 
   # Walker launcher colors (Rose Pine Moon - dark variant)

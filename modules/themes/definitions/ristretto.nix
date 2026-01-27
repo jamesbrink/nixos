@@ -92,6 +92,7 @@
   # VSCode theme name
   vscode = {
     theme = "Monokai Pro (Filter Ristretto)";
+    extension = "monokai.theme-monokai-pro-vscode";
   };
 
   # Walker launcher colors

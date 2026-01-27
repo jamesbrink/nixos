@@ -91,6 +91,7 @@
   # VSCode theme name
   vscode = {
     theme = "Flexoki Light";
+    extension = "kepano.flexoki";
   };
 
   # Walker launcher colors

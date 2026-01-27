@@ -100,6 +100,7 @@
   # VSCode theme name
   vscode = {
     theme = "Kanagawa";
+    extension = "qufiwefefwoyn.kanagawa";
   };
 
   # Walker launcher colors

@@ -98,6 +98,7 @@
   # VSCode theme name
   vscode = {
     theme = "Nord";
+    extension = "arcticicestudio.nord-visual-studio-code";
   };
 
   # Walker launcher colors

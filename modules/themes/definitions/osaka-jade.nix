@@ -111,6 +111,7 @@
   # VSCode theme name
   vscode = {
     theme = "Ocean Green: Dark";
+    extension = "jovejonovski.ocean-green";
   };
 
   # Walker launcher colors
