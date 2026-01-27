@@ -398,7 +398,9 @@ def _copy_btop_theme(theme: Theme, dest_dir: Path) -> None:
     # Fall back to repo location (development)
     if not btop_asset.exists():
         repo_root = Path(__file__).parent.parent.parent.parent
-        btop_asset = repo_root / "modules" / "themes" / "assets" / "btop" / f"{theme.slug}.theme"
+        btop_asset = (
+            repo_root / "modules" / "themes" / "assets" / "btop" / f"{theme.slug}.theme"
+        )
 
     if btop_asset.exists():
         dest_file = dest_dir / "btop.theme"

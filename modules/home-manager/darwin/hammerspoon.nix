@@ -44,6 +44,8 @@ let
       key = key;
     };
   hsThemeCycle = hsHotkey darwinBindings.theme.cycle;
+  hsBackgroundNext = hsHotkey (darwinBindings.theme.background_cycle.next or "cmd+shift+w");
+  hsBackgroundPrev = hsHotkey (darwinBindings.theme.background_cycle.prev or "cmd+shift+alt+w");
   hsModeToggle = hsHotkey darwinBindings.macos_mode.toggle;
 in
 {
@@ -173,6 +175,30 @@ in
       end)
     end
 
+    local function cycleBackgroundNext()
+      runAfterModifiersClear(function()
+        runThemectl("cycle-background --direction next", function(output)
+          local match = output:match("wallpaper (%d+/%d+)")
+          if match then
+            return "Wallpaper " .. match
+          end
+          return "Wallpaper cycled"
+        end)
+      end)
+    end
+
+    local function cycleBackgroundPrev()
+      runAfterModifiersClear(function()
+        runThemectl("cycle-background --direction prev", function(output)
+          local match = output:match("wallpaper (%d+/%d+)")
+          if match then
+            return "Wallpaper " .. match
+          end
+          return "Wallpaper cycled"
+        end)
+      end)
+    end
+
     -- Unified theme cycling (Alacritty + Ghostty + VSCode + Wallpaper + System Appearance)
     -- Bind Cmd+Shift+T to cycle all themes via themectl
     hs.hotkey.bind(${hsThemeCycle.mods}, "${hsThemeCycle.key}", cycleThemes)
@@ -180,6 +206,12 @@ in
     -- Toggle between BSP tiling and native macOS mode
     -- Bind Cmd+Shift+Space to toggle via themectl
     hs.hotkey.bind(${hsModeToggle.mods}, "${hsModeToggle.key}", toggleMacMode)
+
+    -- Cycle wallpapers within current theme
+    -- Bind Cmd+Shift+W to cycle to next wallpaper
+    hs.hotkey.bind(${hsBackgroundNext.mods}, "${hsBackgroundNext.key}", cycleBackgroundNext)
+    -- Bind Cmd+Shift+Alt+W to cycle to previous wallpaper
+    hs.hotkey.bind(${hsBackgroundPrev.mods}, "${hsBackgroundPrev.key}", cycleBackgroundPrev)
 
     -- Manual Hammerspoon reload
     -- Bind Cmd+Ctrl+Option+R to reload configuration
@@ -191,7 +223,7 @@ in
     -- Show notification on startup
     hs.notify.new({
       title = "Hammerspoon",
-      informativeText = "Config loaded\nCmd+Shift+T: Cycle themes\nCmd+Shift+Space: Toggle WM\nCmd+Shift+[3-5]: Screenshots\nCmd+Ctrl+Option+R: Reload"
+      informativeText = "Config loaded\nCmd+Shift+Space: Cycle themes\nCmd+Shift+W: Cycle wallpapers\nCmd+Shift+Ctrl+Space: Toggle WM\nCmd+Ctrl+Option+R: Reload"
     }):send()
   '';
 

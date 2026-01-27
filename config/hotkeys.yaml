@@ -19,6 +19,15 @@ actions:
       description: Cycle the active theme and trigger reload hooks.
       command: "themectl cycle --direction {next|prev}"
       tags: [theme, automation]
+    background_cycle:
+      next:
+        description: Cycle to next wallpaper in current theme.
+        command: "themectl cycle-background --direction next"
+        tags: [theme, automation]
+      prev:
+        description: Cycle to previous wallpaper in current theme.
+        command: "themectl cycle-background --direction prev"
+        tags: [theme, automation]
     picker:
       description: Walker menu that shells into `themectl apply <slug>`.
       command: "~/.local/bin/theme-picker"
@@ -235,6 +244,8 @@ platforms:
       bsp:
         bindings:
           theme.cycle: "cmd+shift+space"
+          theme.background_cycle.next: "cmd+shift+w"
+          theme.background_cycle.prev: "cmd+shift+alt+w"
           macos_mode.toggle: "cmd+shift+ctrl+space"
           launcher.terminal: "cmd+return"
           launcher.walker: "cmd+d"
@@ -292,6 +303,8 @@ platforms:
     targets: [hyprland, walker]
     bindings:
       theme.cycle: "super+ctrl+alt+t"
+      theme.background_cycle.next: "super+ctrl+space"
+      theme.background_cycle.prev: "super+ctrl+alt+space"
       theme.picker: "super+shift+ctrl+space"
       launcher.terminal: "super+return"
       launcher.walker: "super+space"

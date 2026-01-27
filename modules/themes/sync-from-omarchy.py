@@ -126,8 +126,10 @@ def sync_wallpapers(
         log_verbose(f"No backgrounds directory for {theme_name}", verbose)
         return stats
 
-    wallpapers = list(src_dir.glob("*.png")) + list(src_dir.glob("*.jpg")) + list(
-        src_dir.glob("*.jpeg")
+    wallpapers = (
+        list(src_dir.glob("*.png"))
+        + list(src_dir.glob("*.jpg"))
+        + list(src_dir.glob("*.jpeg"))
     )
 
     if not wallpapers:

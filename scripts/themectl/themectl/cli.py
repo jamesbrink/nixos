@@ -17,13 +17,17 @@ from . import __version__
 from .assets import sync_assets
 from .config import ThemectlConfig, get_home, load_config
 from .hotkeys import flatten_bindings, load_manifest
-from .hooks import run_reload_hooks
+from .hooks import run_reload_hooks, update_wallpaper
 from .macos import (
     MacOSModeController,
     ensure_tcc_permissions,
     ensure_yabai_sa,
 )
-from .state import read_current_theme
+from .state import (
+    read_current_background_index,
+    read_current_theme,
+    write_background_index,
+)
 from .themes import Theme, ThemeRepository, load_theme_metadata
 
 console = Console()
@@ -291,6 +295,91 @@ def cycle(
     console.print(
         Panel(
             f"[cyan]Cycled[/cyan] to {target.display_name} ({direction})",
+            title="themectl",
+            border_style="green",
+        )
+    )
+
+
+@app.command("cycle-background")
+def cycle_background(
+    direction: str = typer.Option("next", "--direction", "-d", help="Cycle direction"),
+    config: Optional[Path] = typer.Option(None, "--config", "-c"),
+) -> None:
+    """Cycle through wallpapers for the current theme."""
+
+    cfg = _load(config)
+    repo = _load_repo(cfg)
+
+    # Get current theme
+    current_slug = read_current_theme(cfg.state_path)
+    if not current_slug:
+        console.print(
+            "[yellow]No theme currently applied. Run `themectl apply <theme>` first.[/yellow]"
+        )
+        raise Exit(1)
+
+    theme = repo.get(current_slug)
+    if not theme:
+        console.print(f"[red]Theme '{current_slug}' not found in metadata[/red]")
+        raise Exit(1)
+
+    # Find backgrounds in the theme directory
+    home = get_home()
+    theme_dir = home / ".config" / "omarchy" / "themes" / theme.slug
+    backgrounds_dir = theme_dir / "backgrounds"
+
+    if not backgrounds_dir.exists():
+        console.print(
+            f"[yellow]No backgrounds directory for {theme.display_name}[/yellow]"
+        )
+        raise Exit(1)
+
+    # List all image files in backgrounds directory
+    backgrounds = sorted(
+        p
+        for p in backgrounds_dir.iterdir()
+        if p.is_file() and p.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")
+    )
+
+    if not backgrounds:
+        console.print(f"[yellow]No wallpapers found for {theme.display_name}[/yellow]")
+        raise Exit(1)
+
+    if len(backgrounds) == 1:
+        console.print(
+            f"[cyan]Only one wallpaper available for {theme.display_name}[/cyan]"
+        )
+        return
+
+    # Determine current index
+    background_state = cfg.state_path.parent / ".current-background-index"
+    current_idx = read_current_background_index(background_state)
+
+    # Ensure index is within bounds
+    if current_idx >= len(backgrounds):
+        current_idx = 0
+
+    # Calculate next index
+    if direction == "prev":
+        new_idx = (current_idx - 1) % len(backgrounds)
+    else:
+        new_idx = (current_idx + 1) % len(backgrounds)
+
+    # Update symlink to new background
+    new_background = backgrounds[new_idx]
+    current_root = home / ".config" / "omarchy" / "current"
+    _safe_symlink(new_background, current_root / "background")
+
+    # Save new index
+    write_background_index(background_state, new_idx)
+
+    # Update wallpaper
+    update_wallpaper(console)
+
+    console.print(
+        Panel(
+            f"[cyan]Cycled[/cyan] to wallpaper {new_idx + 1}/{len(backgrounds)} for {theme.display_name}",
             title="themectl",
             border_style="green",
         )

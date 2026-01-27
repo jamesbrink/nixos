@@ -69,7 +69,7 @@ exec "$@"
     )
 
     # Mock csrutil to simulate SIP disabled (allows SA loading)
-    csrutil_stub = _write_exec(
+    _write_exec(
         bin_dir / "csrutil",
         """#!/usr/bin/env bash
 echo "System Integrity Protection status: disabled."

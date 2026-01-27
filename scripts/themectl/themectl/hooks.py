@@ -510,12 +510,16 @@ def update_ghostty(theme: Theme, console: Console) -> None:
     # Get theme name from theme definition
     ghostty_section = theme.section("ghostty")
     if not ghostty_section:
-        console.print(f"[yellow]-[/yellow] No Ghostty theme defined for {theme.display_name}")
+        console.print(
+            f"[yellow]-[/yellow] No Ghostty theme defined for {theme.display_name}"
+        )
         return
 
     theme_name = ghostty_section.get("theme")
     if not theme_name:
-        console.print(f"[yellow]-[/yellow] No Ghostty theme name for {theme.display_name}")
+        console.print(
+            f"[yellow]-[/yellow] No Ghostty theme name for {theme.display_name}"
+        )
         return
 
     # Read and update config
@@ -552,7 +556,9 @@ def reload_ghostty(console: Console) -> None:
         if result.returncode == 0:
             console.print("[green]✓[/green] Reloaded Ghostty config")
             return
-    if platform.system() == "Darwin" and (_process_running("ghostty") or _process_running("Ghostty")):
+    if platform.system() == "Darwin" and (
+        _process_running("ghostty") or _process_running("Ghostty")
+    ):
         if _run_osascript(GHOSTTY_SCRIPT, []):
             console.print("[green]✓[/green] Reloaded Ghostty via automation")
             return
@@ -603,7 +609,9 @@ def update_btop(theme: Theme, console: Console) -> None:
     theme_file = btop_themes_dir / f"{theme.slug}.theme"
 
     if not theme_file.exists():
-        console.print(f"[yellow]-[/yellow] btop theme not available for {theme.display_name}")
+        console.print(
+            f"[yellow]-[/yellow] btop theme not available for {theme.display_name}"
+        )
         return
 
     # Update btop.conf to use this theme
