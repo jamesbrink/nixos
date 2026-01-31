@@ -87,8 +87,7 @@ if [ "${1:-}" = "--all" ]; then
         NIXOS_HOSTS=$(echo "$FLAKE_JSON" | jq -r '.nixosConfigurations | keys[]' 2>/dev/null | sort) || NIXOS_HOSTS=""
         DARWIN_HOSTS=$(echo "$FLAKE_JSON" | jq -r '.darwinConfigurations | keys[] | select(. != "type")' 2>/dev/null | sort) || DARWIN_HOSTS=""
         if [ -z "$DARWIN_HOSTS" ] || [ "$DARWIN_HOSTS" = "type" ]; then
-            DARWIN_HOSTS="halcyon
-bender"
+            DARWIN_HOSTS=$(printf '%s\n' halcyon bender)
         fi
     fi
 
