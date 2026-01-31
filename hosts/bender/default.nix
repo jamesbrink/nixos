@@ -42,24 +42,35 @@
     ripgrep # session-logs skill (rg)
     gh # github skill
 
-    # Audio/Voice
-    # openai-whisper # local speech-to-text (large, enable if needed)
+    # Email
+    himalaya # IMAP/SMTP CLI
 
-    # macOS automation
-    # Add via homebrew: peekaboo, remindctl, imsg, camsnap
+    # Audio/Voice
+    openai-whisper # local speech-to-text
+
+    # Music
+    spotify-player
   ];
 
-  # Homebrew packages for OpenClaw (steipete/tap has many useful tools)
+  # Homebrew packages for OpenClaw
   homebrew.taps = [
     "steipete/tap"
+    "openhue/cli"
+    "yakitrak/yakitrak"
   ];
 
   homebrew.brews = [
     # OpenClaw macOS skills
     "steipete/tap/peekaboo" # macOS UI automation
     "steipete/tap/gifgrep" # GIF search
-    # "steipete/tap/imsg"      # iMessage CLI (requires Full Disk Access)
-    # "steipete/tap/camsnap"   # IP camera snapshots
-    # "steipete/tap/remindctl" # Apple Reminders
+    "steipete/tap/imsg" # iMessage CLI (requires Full Disk Access)
+    "steipete/tap/camsnap" # IP camera snapshots
+    "steipete/tap/remindctl" # Apple Reminders
+
+    # Smart Home
+    "openhue/cli/openhue-cli" # Philips Hue lights
+
+    # Productivity
+    "yakitrak/yakitrak/obsidian-cli" # Obsidian vault
   ];
 }
