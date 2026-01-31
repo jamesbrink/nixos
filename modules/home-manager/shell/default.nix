@@ -100,6 +100,11 @@
         CheckHostIP no
         UserKnownHostsFile=/dev/null
 
+      Host bender.home.urandom.io
+        StrictHostKeyChecking no
+        CheckHostIP no
+        UserKnownHostsFile=/dev/null
+
       Host n100-01.home.urandom.io
         StrictHostKeyChecking no
         CheckHostIP no

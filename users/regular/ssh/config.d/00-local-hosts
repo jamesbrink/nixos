@@ -21,6 +21,11 @@ Host halcyon halcyon.home.urandom.io
   CheckHostIP no
   UserKnownHostsFile=/dev/null
 
+Host bender bender.home.urandom.io
+  StrictHostKeyChecking no
+  CheckHostIP no
+  UserKnownHostsFile=/dev/null
+
 Host n100-01 n100-01.home.urandom.io
   StrictHostKeyChecking no
   CheckHostIP no

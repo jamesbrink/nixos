@@ -100,7 +100,7 @@ if [ "${1:-}" = "--all" ]; then
 
     TOTAL_HOSTS=$(echo "$ALL_HOSTS" | wc -l | tr -d ' ')
     echo -e "${GREEN}Found $TOTAL_HOSTS hosts:${NC}"
-    echo "$ALL_HOSTS" | sed 's/^/  - /'
+    while IFS= read -r host; do echo "  - $host"; done <<< "$ALL_HOSTS"
     echo ""
 
     # Export function and variables for parallel execution
@@ -111,10 +111,6 @@ if [ "${1:-}" = "--all" ]; then
     START_TIME=$(date +%s)
 
     # Run GC on all hosts in parallel
-    SUCCESS_COUNT=0
-    FAILED_COUNT=0
-    FAILED_HOSTS=""
-
     # Use GNU parallel if available, otherwise fall back to xargs
     if command -v parallel &> /dev/null; then
         echo "$ALL_HOSTS" | parallel --jobs 0 --tag run_gc {} || true

@@ -998,6 +998,51 @@
             ./hosts/halcyon/default.nix
           ];
         };
+
+        bender = darwin.lib.darwinSystem {
+          system = "aarch64-darwin"; # M4 Mac Mini
+
+          specialArgs = {
+            inherit inputs agenix;
+            secretsPath = "${inputs.secrets}";
+            unstablePkgs = import nixos-unstable {
+              system = "aarch64-darwin";
+              config.allowUnfree = true;
+              overlays = [ ];
+            };
+          };
+
+          modules = [
+            home-manager-unstable.darwinModules.home-manager
+            agenix.darwinModules.default
+            nix-homebrew.darwinModules.nix-homebrew
+            {
+              nix-homebrew = {
+                user = "jamesbrink";
+                enable = true;
+                taps = {
+                  "homebrew/homebrew-core" = homebrew-core;
+                  "homebrew/homebrew-cask" = homebrew-cask;
+                  "homebrew/homebrew-bundle" = homebrew-bundle;
+                };
+                mutableTaps = true;
+                autoMigrate = true;
+              };
+            }
+            {
+              nixpkgs.config.allowUnfree = true;
+              nixpkgs.overlays = [
+                (final: prev: {
+                  unstablePkgs = import nixos-unstable {
+                    system = "aarch64-darwin";
+                    config.allowUnfree = true;
+                  };
+                })
+              ];
+            }
+            ./hosts/bender/default.nix
+          ];
+        };
       };
     };
 }

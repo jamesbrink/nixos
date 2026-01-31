@@ -314,7 +314,9 @@ def cycle_background(
     themes_dir = home / ".config" / "omarchy" / "themes"
 
     if not themes_dir.exists():
-        console.print("[yellow]No themes directory found. Run `themectl sync-assets` first.[/yellow]")
+        console.print(
+            "[yellow]No themes directory found. Run `themectl sync-assets` first.[/yellow]"
+        )
         raise Exit(1)
 
     # Collect ALL wallpapers from ALL themes
