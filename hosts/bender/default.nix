@@ -25,4 +25,21 @@
 
   # Time zone
   time.timeZone = "America/Phoenix";
+
+  # OpenClaw dependencies
+  # Gateway + CLI require Node 22+, pnpm for builds
+  # Channel integrations use API libraries (no native clients needed for Discord/Telegram/Slack/WhatsApp)
+  # Signal channel requires signal-cli binary
+  environment.systemPackages = with pkgs; [
+    # Core runtime
+    nodejs_22
+    nodePackages.pnpm
+
+    # Signal channel support
+    signal-cli
+
+    # Skills dependencies
+    ffmpeg # video-frames skill
+    uv # Python-based skills (nano-banana-pro, local-places, etc.)
+  ];
 }
