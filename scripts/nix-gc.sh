@@ -77,8 +77,8 @@ if [ "${1:-}" = "--all" ]; then
     if [ -z "$FLAKE_JSON" ]; then
         echo -e "${YELLOW}Using alternative host discovery method...${NC}"
         if [ -d "hosts" ]; then
-            NIXOS_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -v -E '^(halcyon)$' | sort)
-            DARWIN_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -E '^(halcyon)$' | sort)
+            NIXOS_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -v -E '^(halcyon|bender)$' | sort)
+            DARWIN_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -E '^(halcyon|bender)$' | sort)
         else
             echo -e "${RED}Error: hosts directory not found${NC}"
             exit 1
@@ -87,7 +87,7 @@ if [ "${1:-}" = "--all" ]; then
         NIXOS_HOSTS=$(echo "$FLAKE_JSON" | jq -r '.nixosConfigurations | keys[]' 2>/dev/null | sort) || NIXOS_HOSTS=""
         DARWIN_HOSTS=$(echo "$FLAKE_JSON" | jq -r '.darwinConfigurations | keys[] | select(. != "type")' 2>/dev/null | sort) || DARWIN_HOSTS=""
         if [ -z "$DARWIN_HOSTS" ] || [ "$DARWIN_HOSTS" = "type" ]; then
-            DARWIN_HOSTS="halcyon"
+            DARWIN_HOSTS="halcyon bender"
         fi
     fi
 

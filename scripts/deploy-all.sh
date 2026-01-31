@@ -110,8 +110,8 @@ if [ -z "$FLAKE_JSON" ]; then
     echo -e "${YELLOW}Using alternative host discovery method...${NC}"
     # Alternative: list directories in hosts/
     if [ -d "hosts" ]; then
-        NIXOS_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -v -E '^(halcyon)$' | sort)
-        DARWIN_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -E '^(halcyon)$' | sort)
+        NIXOS_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -v -E '^(halcyon|bender)$' | sort)
+        DARWIN_HOSTS=$(find hosts -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | grep -E '^(halcyon|bender)$' | sort)
     else
         echo -e "${RED}Error: hosts directory not found. Are you in the nixos configuration directory?${NC}"
         exit 1
@@ -128,7 +128,7 @@ if [ -n "$FLAKE_JSON" ]; then
     # If darwinConfigurations is completely unevaluated, fall back to known hosts
     if [ -z "$DARWIN_HOSTS" ] || [ "$DARWIN_HOSTS" = "type" ]; then
         # Known Darwin hosts based on the codebase
-        DARWIN_HOSTS="halcyon"
+        DARWIN_HOSTS="halcyon bender"
     fi
 fi
 
