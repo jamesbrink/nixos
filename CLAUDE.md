@@ -38,7 +38,7 @@ Enter the dev shell first: `nix develop` (or `direnv allow`) — sets `NIXPKGS_A
 
 - **Inputs**: nixpkgs (stable 25.11), nixos-unstable, home-manager, nix-darwin, agenix, disko, plus external flakes (comfyui-nix, zerobyte, etc.)
 - **Dev shells**: Cross-platform (x86_64-linux, aarch64-darwin, x86_64-darwin) with Python 3.13, Ruff, BasedPyright, treefmt, age, and deployment helpers
-- **Host outputs**: `nixosConfigurations` (hal9000, alienware, n100-01 through n100-04) and `darwinConfigurations` (halcyon)
+- **Host outputs**: `nixosConfigurations` (hal9000, alienware, n100-01 through n100-04) and `darwinConfigurations` (halcyon, bender)
 - **Packages**: `themectl` CLI for cross-platform theme management
 
 ### Module Hierarchy

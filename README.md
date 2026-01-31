@@ -19,7 +19,7 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 ## Repository layout
 
 - `flake.nix`, `flake.lock` – inputs for nixpkgs (stable/unstable), nix-darwin, Home Manager, deploy-rs helpers, dev shells, overlays, and host outputs.
-- `hosts/<hostname>/` – thin host definitions for both NixOS (e.g., `hal9000`, `n100-*`) and Darwin (e.g., `halcyon`) that stitch together profiles, services, disks, and secrets.
+- `hosts/<hostname>/` – thin host definitions for both NixOS (e.g., `hal9000`, `n100-*`) and Darwin (e.g., `halcyon`, `bender`) that stitch together profiles, services, disks, and secrets.
 - `profiles/` – shareable building blocks (`desktop/`, `server/`, `darwin/`, `n100/`, `keychron/`) that capture roles instead of repeating options per host.
 - `modules/` – cross-host logic:
   - `darwin/` for nix-darwin specifics (Dock, file sharing, package bundles).
@@ -45,6 +45,7 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 │   ├── hal9000/
 │   ├── n100-01/
 │   ├── halcyon/
+│   ├── bender/
 │   └── ...
 ├── profiles/
 │   ├── desktop/

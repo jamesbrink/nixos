@@ -10,7 +10,7 @@
 
 - **Nix** (nixfmt via treefmt) for system config.
 - **Bash** for small helpers; guarded with `set -euo pipefail` + `shellcheck`.
-- **Python** (upcoming `scripts/themectl/`) using Ruff, Pyright, pytest.
+- **Python** (`scripts/themectl/`) using Ruff, Pyright, pytest.
 - **Lua** for Hammerspoon/Neovim glue.
 
 ## Desktop & UX Stack
