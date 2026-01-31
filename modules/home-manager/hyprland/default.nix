@@ -33,7 +33,7 @@ let
   selectedTheme = "ristretto";
 
   # Load theme configuration
-  themeConfig = import (./themes + "/${selectedTheme}.nix");
+  themeConfig = import (../../themes/definitions + "/${selectedTheme}.nix");
 
   # Resolve GTK theme package
   gtkThemePackage =
@@ -59,7 +59,7 @@ let
   # Wallpaper path (first wallpaper from theme)
   wallpaperPath =
     if (builtins.length themeConfig.wallpapers) > 0 then
-      "${./wallpapers}/${selectedTheme}/${builtins.head themeConfig.wallpapers}"
+      "${../../themes/wallpapers}/${selectedTheme}/${builtins.head themeConfig.wallpapers}"
     else
       null;
   hotkeysBundleArg = attrByPath [ "_module" "args" "hotkeysBundle" ] null config;
@@ -1281,7 +1281,7 @@ in
   # Create wallpaper symlinks for current theme (Omarchy-style)
   # This allows the rotate-background script to find wallpapers
   home.activation.setupWallpaperSymlinks = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    WALLPAPERS_SOURCE="${./wallpapers}/${selectedTheme}"
+    WALLPAPERS_SOURCE="${../../themes/wallpapers}/${selectedTheme}"
     WALLPAPERS_TARGET="${config.home.homeDirectory}/.config/hyprland/current-theme-wallpapers"
 
     # Create hyprland config directory if it doesn't exist
