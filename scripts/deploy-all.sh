@@ -127,8 +127,9 @@ if [ -n "$FLAKE_JSON" ]; then
     
     # If darwinConfigurations is completely unevaluated, fall back to known hosts
     if [ -z "$DARWIN_HOSTS" ] || [ "$DARWIN_HOSTS" = "type" ]; then
-        # Known Darwin hosts based on the codebase
-        DARWIN_HOSTS="halcyon bender"
+        # Known Darwin hosts based on the codebase (newline-separated)
+        DARWIN_HOSTS="halcyon
+bender"
     fi
 fi
 
