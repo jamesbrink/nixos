@@ -67,13 +67,9 @@ let
       "server02"
       "server02.home.urandom.io"
     ];
-    "10.70.100.168" = [
+    "10.70.100.209" = [
       "bender"
       "bender.home.urandom.io"
-    ];
-    "10.70.100.209" = [
-      "derp"
-      "derp.home.urandom.io"
     ];
   };
 

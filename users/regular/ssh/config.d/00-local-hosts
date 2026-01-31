@@ -46,11 +46,6 @@ Host n100-04 n100-04.home.urandom.io
   CheckHostIP no
   UserKnownHostsFile=/dev/null
 
-Host derp derp.home.urandom.io
-  StrictHostKeyChecking no
-  CheckHostIP no
-  UserKnownHostsFile=/dev/null
-
 # Special installer host
 Host nixos-installer nixos-installer.home.urandom.io
   StrictHostKeyChecking no

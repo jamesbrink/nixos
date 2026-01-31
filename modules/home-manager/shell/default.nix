@@ -125,11 +125,6 @@
         CheckHostIP no
         UserKnownHostsFile=/dev/null
 
-      Host derp.home.urandom.io
-        StrictHostKeyChecking no
-        CheckHostIP no
-        UserKnownHostsFile=/dev/null
-
       Host server01
         StrictHostKeyChecking no
         CheckHostIP no
