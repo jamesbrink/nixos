@@ -27,19 +27,39 @@
   time.timeZone = "America/Phoenix";
 
   # OpenClaw dependencies
-  # Gateway + CLI require Node 22+, pnpm for builds
+  # Core runtime (nodejs, pnpm, bun) comes from shared-packages
   # Channel integrations use API libraries (no native clients needed for Discord/Telegram/Slack/WhatsApp)
-  # Signal channel requires signal-cli binary
   environment.systemPackages = with pkgs; [
-    # Core runtime
-    nodejs_22
-    nodePackages.pnpm
-
     # Signal channel support
     signal-cli
 
     # Skills dependencies
-    ffmpeg # video-frames skill
+    ffmpeg # video-frames skill, camsnap, sherpa-onnx-tts
     uv # Python-based skills (nano-banana-pro, local-places, etc.)
+
+    # Productivity tools for OpenClaw skills
+    jq # session-logs, trello
+    ripgrep # session-logs skill (rg)
+    gh # github skill
+
+    # Audio/Voice
+    # openai-whisper # local speech-to-text (large, enable if needed)
+
+    # macOS automation
+    # Add via homebrew: peekaboo, remindctl, imsg, camsnap
+  ];
+
+  # Homebrew packages for OpenClaw (steipete/tap has many useful tools)
+  homebrew.taps = [
+    "steipete/tap"
+  ];
+
+  homebrew.brews = [
+    # OpenClaw macOS skills
+    "steipete/tap/peekaboo" # macOS UI automation
+    "steipete/tap/gifgrep" # GIF search
+    # "steipete/tap/imsg"      # iMessage CLI (requires Full Disk Access)
+    # "steipete/tap/camsnap"   # IP camera snapshots
+    # "steipete/tap/remindctl" # Apple Reminders
   ];
 }

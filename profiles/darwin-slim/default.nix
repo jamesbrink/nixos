@@ -10,6 +10,7 @@
 {
   imports = [
     ../../modules/nix-caches.nix
+    ../../modules/shared-packages # Full shared packages (includes bun, nodejs, pnpm, etc.)
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops-darwin.nix
   ];
