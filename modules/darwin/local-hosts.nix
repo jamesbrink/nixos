@@ -71,6 +71,10 @@ let
       "bender"
       "bender.home.urandom.io"
     ];
+    "10.70.100.210" = [
+      "halcyon"
+      "halcyon.home.urandom.io"
+    ];
     "10.70.100.207" = [
       "derp"
       "derp.home.urandom.io"

@@ -34,6 +34,8 @@ let
     "10.70.100.196" = [ "vmware" ];
     "100.105.134.43" = [ "plato" ];
     "10.70.100.192" = [ "server02" ];
+    "10.70.100.209" = [ "bender" ];
+    "10.70.100.210" = [ "halcyon" ];
   };
 
   # Convert the localHosts attribute set to hosts file entries
