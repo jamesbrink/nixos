@@ -73,4 +73,8 @@
     # Productivity
     "yakitrak/yakitrak/obsidian-cli" # Obsidian vault
   ];
+
+  homebrew.casks = [
+    "tailscale" # VPN/mesh networking
+  ];
 }
