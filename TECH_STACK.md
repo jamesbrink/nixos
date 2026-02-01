@@ -19,6 +19,12 @@
 - **Alacritty**, **Ghostty**, **Neovim**, **VSCode/Cursor** as primary dev tools.
 - **Sketchybar**, **Karabiner**, **AltTab**, **Walker/fzf launcher** for ergonomics.
 
+## Network Infrastructure
+
+- **MikroTik CRS310-8G+2S+** router managed via Terraform (`mikrotik-terraform/` submodule).
+- **Terraform** with `terraform-routeros` provider for DHCP, DNS, WireGuard VPNs, PXE boot.
+- Network: `10.70.100.0/24` with domain `home.urandom.io`.
+
 ## Supporting Services
 
 - **Agenix** for secrets, `restic` for backups, `tailscale`, `docker`, `podman`, and language runtimes (Go, Rust, Node, Python) provided via dev shells.

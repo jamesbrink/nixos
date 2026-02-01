@@ -14,10 +14,12 @@
 - `pkgs/` + `overlays/`: custom derivations and modifications to upstream packages.
 - `scripts/`: operational helpers (deploy, secrets, diagnostics). `scripts/themectl/` hosts the cross-platform theme CLI.
 - `external/omarchy/`: upstream theme assets managed as a submodule.
+- `mikrotik-terraform/`: MikroTik router IaC (submodule, private repo with secrets). Manages DHCP, DNS, VPN, and PXE boot for the `10.70.100.0/24` network.
 
 ## State & Secrets
 
 - Secrets live under `secrets/` as `.age` files; `SECRETS.md` tracks recipients.
+- Network secrets (router credentials, tfstate) live in `mikrotik-terraform/` submodule.
 - Mutable runtime state (e.g., `~/.config/alacritty/alacritty.toml`) is either generated via activation hooks or managed through helper scripts like `themectl`.
 
 ## Workflow

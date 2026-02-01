@@ -64,6 +64,13 @@ modules/
 
 **Secrets** live in `secrets/` as `.age` files encrypted via agenix. Recipients are tracked in `secrets/secrets.nix`. Hosts decrypt using their SSH host key (`/etc/ssh/ssh_host_ed25519_key`).
 
+**Network Infrastructure** is managed via the `mikrotik-terraform/` submodule (private repo with secrets). It configures the MikroTik CRS310-8G+2S+ router:
+
+- Network: `10.70.100.0/24` with domain `home.urandom.io`
+- DHCP static leases, DNS records, WireGuard VPNs, PXE boot
+- Commands: `cd mikrotik-terraform && nix develop`, then `tf-plan` / `tf-apply`
+- See `mikrotik-terraform/README.md` for full documentation
+
 **Theme system** (`scripts/themectl/`) is a Python CLI that:
 
 - Reads theme metadata from `modules/home-manager/hyprland/themes/lib.nix`
@@ -106,6 +113,14 @@ ssh hal9000 "sudo pkill -u postgres postgres && sudo systemctl start postgresql-
 4. `scan-gitleaks` or `scan-secrets --all` — no leaked credentials
 5. Stage relevant files before `deploy` to avoid "missing file" failures on remote builds
 
+## Submodules
+
+| Path                  | Purpose                                    | Contains Secrets      |
+| --------------------- | ------------------------------------------ | --------------------- |
+| `secrets/`            | Agenix-encrypted secrets (.age files)      | Yes                   |
+| `mikrotik-terraform/` | MikroTik router IaC (DHCP, DNS, VPN, PXE)  | Yes (tfvars, tfstate) |
+| `external/omarchy/`   | Upstream theme assets (wallpapers, colors) | No                    |
+
 ## Reference Docs
 
 - `VISION.md` — fleet goals and guardrails
@@ -115,3 +130,4 @@ ssh hal9000 "sudo pkill -u postgres postgres && sudo systemctl start postgresql-
 - `HOTKEYS.md` — keybinding reference (Yabai, Hyprland, tmux, Neovim)
 - `TODO.md` — active tasks and backlog
 - `SECRETS.md` — secrets lifecycle and Kubernetes integration
+- `mikrotik-terraform/README.md` — network infrastructure management
