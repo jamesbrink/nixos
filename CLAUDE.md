@@ -121,6 +121,13 @@ ssh hal9000 "sudo pkill -u postgres postgres && sudo systemctl start postgresql-
 | `mikrotik-terraform/` | MikroTik router IaC (DHCP, DNS, VPN, PXE)  | Yes (tfvars, tfstate) |
 | `external/omarchy/`   | Upstream theme assets (wallpapers, colors) | No                    |
 
+**Keeping submodules in sync:** Private submodules (`secrets/`, `mikrotik-terraform/`) must be pushed before the main repo. This is enforced by:
+
+1. Git config `push.recurseSubmodules = on-demand` — auto-pushes submodules
+2. Pre-push hook — blocks push if submodules have unpushed commits
+
+To install hooks after cloning: `./scripts/git-hooks/install-hooks.sh`
+
 ## Reference Docs
 
 - `VISION.md` — fleet goals and guardrails
