@@ -4,3 +4,6 @@
 [submodule "external/omarchy"]
 	path = external/omarchy
 	url = https://github.com/basecamp/omarchy.git
+[submodule "mikrotik-terraform"]
+	path = mikrotik-terraform
+	url = git@github.com:jamesbrink/mikrotik-terraform.git
