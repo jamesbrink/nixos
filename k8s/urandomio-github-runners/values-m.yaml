@@ -1,0 +1,47 @@
+githubConfigUrl: "https://github.com/urandomio"
+githubConfigSecret:
+  github_token: "REDACTED"
+
+runnerGroup: "Default"
+
+minRunners: 1
+maxRunners: 2
+
+runnerScaleSetName: "urandomio-m"
+
+template:
+  spec:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: gha-tier
+                  operator: In
+                  values:
+                    - selfhost-m
+                    - selfhost-l
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: runner
+    containers:
+      - name: runner
+        image: ghcr.io/jamesbrink/github-runner-full:latest
+        command: ["/home/runner/run.sh"]
+        env:
+          - name: RUNNER_LABELS
+            value: "urandomio-m,selfhost-m"
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+
+containerMode:
+  type: "dind"

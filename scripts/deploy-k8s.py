@@ -291,30 +291,52 @@ class GitHubRunnersDeployer:
     )
     VERSION = "0.13.0"
     NAMESPACE = "github-runners"
-    SECRET_PATH = "jamesbrink/github/quantierra-runner-token"
 
-    TIERS = {
-        "xl": {"release": "arc-runner-set-xl", "values_file": "values-xl.yaml"},
-        "l": {"release": "arc-runner-set-l", "values_file": "values-l.yaml"},
-        "m": {"release": "arc-runner-set-m", "values_file": "values-m.yaml"},
-        "s": {"release": "arc-runner-set-s", "values_file": "values-s.yaml"},
+    # Organization configurations
+    ORGS = {
+        "quantierra": {
+            "secret_path": "jamesbrink/github/quantierra-runner-token",
+            "runners_dir": "quantierra-github-runners",
+            "tiers": {
+                "xl": {"release": "arc-runner-set-xl", "values_file": "values-xl.yaml"},
+                "l": {"release": "arc-runner-set-l", "values_file": "values-l.yaml"},
+                "m": {"release": "arc-runner-set-m", "values_file": "values-m.yaml"},
+                "s": {"release": "arc-runner-set-s", "values_file": "values-s.yaml"},
+            },
+        },
+        "urandomio": {
+            "secret_path": "jamesbrink/github/urandomio-runner-token",
+            "runners_dir": "urandomio-github-runners",
+            "tiers": {
+                "m": {"release": "arc-runner-set-urandomio-m", "values_file": "values-m.yaml"},
+                "s": {"release": "arc-runner-set-urandomio-s", "values_file": "values-s.yaml"},
+            },
+        },
     }
 
-    def __init__(self, project_root: Path, helm_deployer: HelmDeployer):
+    def __init__(self, project_root: Path, helm_deployer: HelmDeployer, org: str = "quantierra"):
         self.project_root = project_root
         self.helm_deployer = helm_deployer
-        self.runners_dir = project_root / "k8s" / "quantierra-github-runners"
+        self.org = org
+
+        if org not in self.ORGS:
+            raise ValueError(f"Unknown org '{org}'. Valid orgs: {', '.join(self.ORGS.keys())}")
+
+        org_config = self.ORGS[org]
+        self.secret_path = org_config["secret_path"]
+        self.runners_dir = project_root / "k8s" / org_config["runners_dir"]
+        self.tiers = org_config["tiers"]
 
     def deploy_tier(self, tier: str) -> bool:
         """Deploy a specific runner tier."""
-        if tier not in self.TIERS:
+        if tier not in self.tiers:
             print(
-                f"Error: Unknown tier '{tier}'. Valid tiers: {', '.join(self.TIERS.keys())}",
+                f"Error: Unknown tier '{tier}' for org '{self.org}'. Valid tiers: {', '.join(self.tiers.keys())}",
                 file=sys.stderr,
             )
             return False
 
-        tier_config = self.TIERS[tier]
+        tier_config = self.tiers[tier]
         values_file = self.runners_dir / tier_config["values_file"]
 
         if not values_file.exists():
@@ -327,7 +349,7 @@ class GitHubRunnersDeployer:
 
         # Inject GitHub token
         values_with_secrets = self.helm_deployer.inject_secrets(
-            values, {self.SECRET_PATH: "githubConfigSecret.github_token"}
+            values, {self.secret_path: "githubConfigSecret.github_token"}
         )
 
         # Deploy
@@ -342,9 +364,9 @@ class GitHubRunnersDeployer:
         )
 
     def deploy_all(self) -> bool:
-        """Deploy all runner tiers."""
+        """Deploy all runner tiers for this org."""
         success = True
-        for tier in self.TIERS.keys():
+        for tier in self.tiers.keys():
             if not self.deploy_tier(tier):
                 success = False
         return success
@@ -584,10 +606,15 @@ def main():
         "github-runners", help="Deploy GitHub Actions runners"
     )
     runners_parser.add_argument(
+        "--org",
+        choices=["quantierra", "urandomio"],
+        default="quantierra",
+        help="GitHub organization (default: quantierra)",
+    )
+    runners_parser.add_argument(
         "--tier",
-        choices=["xl", "l", "m", "s", "all"],
         default="all",
-        help="Runner tier to deploy (default: all)",
+        help="Runner tier to deploy, or 'all' (default: all). Available tiers vary by org.",
     )
 
     # Helm command
@@ -642,7 +669,11 @@ def main():
 
     # Execute command
     if args.command == "github-runners":
-        runners_deployer = GitHubRunnersDeployer(project_root, helm_deployer)
+        try:
+            runners_deployer = GitHubRunnersDeployer(project_root, helm_deployer, org=args.org)
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
 
         if args.tier == "all":
             success = runners_deployer.deploy_all()
