@@ -26,26 +26,6 @@
   # Time zone
   time.timeZone = "America/Phoenix";
 
-  # NFS automounts
-  # macOS uses automount (/System/Library/Autofs)
-  # Mounts will appear under /private/nfs/<name> when accessed
-  environment.etc."auto_nfs".text = ''
-    # hal9000 AI share (dedicated export)
-    hal9000-AI -fstype=nfs,resvport,rw,bg,hard,intr,tcp hal9000.home.urandom.io:/storage-fast/AI
-    
-    # hal9000 storage-fast (with crossmnt for nested mounts)
-    hal9000-storage-fast -fstype=nfs,resvport,rw,bg,hard,intr,tcp,crossmnt hal9000.home.urandom.io:/export/storage-fast
-  '';
-
-  # Enable autofs and configure it to use our auto_nfs map
-  system.activationScripts.postActivation.text = ''
-    # Create automount map directory if needed
-    sudo mkdir -p /private/nfs
-
-    # Reload automount daemon
-    sudo automount -vc || true
-  '';
-
   # OpenClaw dependencies
   # Core runtime (nodejs, pnpm, bun) comes from shared-packages
   # Channel integrations use API libraries (no native clients needed for Discord/Telegram/Slack/WhatsApp)
