@@ -243,8 +243,9 @@
     enable = true;
     exports = ''
       /export                 10.70.100.0/24(rw,fsid=0,no_subtree_check) 100.64.0.0/10(rw,fsid=0,no_subtree_check)
-      /export/storage-fast    10.70.100.0/24(rw,nohide,insecure,no_subtree_check) 100.64.0.0/10(rw,nohide,insecure,no_subtree_check)
+      /export/storage-fast    10.70.100.0/24(rw,nohide,insecure,no_subtree_check,crossmnt) 100.64.0.0/10(rw,nohide,insecure,no_subtree_check,crossmnt)
       /export/storage20tb     10.70.100.0/24(rw,nohide,insecure,no_subtree_check) 100.64.0.0/10(rw,nohide,insecure,no_subtree_check)
+      /storage-fast/AI        10.70.100.0/24(rw,sync,no_subtree_check) 100.64.0.0/10(rw,sync,no_subtree_check)
     '';
     # Ensure NFS listens on all interfaces
     lockdPort = 4045;
