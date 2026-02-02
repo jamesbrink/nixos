@@ -54,25 +54,29 @@ RUN add-apt-repository ppa:deadsnakes/ppa && \
     pipx \
     && rm -rf /var/lib/apt/lists/*
 
-# Set Python 3.13 as default
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.13 1
+# Set Python 3.12 as default
+# (Python 3.13 packaging has been flaky in this image build, especially for native wheels.)
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
 
-# Bootstrap pip for Python 3.13 (distutils removed in 3.12+)
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13 && \
-    ln -sf /usr/local/bin/pip3.13 /usr/local/bin/pip3 && \
-    ln -sf /usr/local/bin/pip3.13 /usr/local/bin/pip
+# Ensure pip points at the default python
+RUN python3.12 -m pip --version && \
+    PIP_BIN="$(python3.12 -c 'import shutil; print(shutil.which("pip3") or shutil.which("pip") or "")')" && \
+    test -n "$PIP_BIN" && \
+    ln -sf "$PIP_BIN" /usr/local/bin/pip3 && \
+    ln -sf "$PIP_BIN" /usr/local/bin/pip
 
-# Install common Python tools
-RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip3 install --no-cache-dir \
-    poetry \
-    virtualenv \
-    tox \
-    pytest \
-    black \
-    ruff \
-    mypy
+# Install common Python tools via pipx (isolated venvs; avoids apt-managed python packages w/ no RECORD)
+ENV PIPX_HOME=/opt/pipx \
+    PIPX_BIN_DIR=/usr/local/bin \
+    PIPX_DEFAULT_PYTHON=/usr/bin/python3.12
+RUN pipx install poetry && \
+    pipx install virtualenv && \
+    pipx install tox && \
+    pipx install pytest && \
+    pipx install black && \
+    pipx install ruff && \
+    pipx install mypy
 
 # Install uv (fast Python package installer)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
@@ -107,7 +111,7 @@ RUN mkdir -p /usr/local/share/libpostal && \
     /usr/local/bin/libpostal_data download all /usr/local/share/libpostal
 
 # Install Python bindings for libpostal
-RUN pip3 install --no-cache-dir postal
+RUN python3.12 -m pip install --no-cache-dir --break-system-packages --ignore-installed postal
 
 # ============================================================================
 # Node.js (LTS - v20)
