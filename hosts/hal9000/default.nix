@@ -221,7 +221,7 @@
 
   fileSystems."/export/storage-fast" = {
     device = "/storage-fast";
-    options = [ "bind" ];
+    options = [ "rbind" ];
   };
 
   # New 20TB storage drive
