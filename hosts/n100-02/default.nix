@@ -10,6 +10,8 @@
   imports = [
     ./hardware-configuration.nix
     ../../profiles/n100/default.nix
+    # KDE Plasma desktop
+    ../../profiles/desktop/kde.nix
   ];
 
   # Host-specific configuration
