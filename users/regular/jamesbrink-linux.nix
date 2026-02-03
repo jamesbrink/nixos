@@ -348,6 +348,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."anthropic-key" = {
+    file = "${effectiveSecretsPath}/jamesbrink/anthropic-key.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
   age.secrets."jamesbrink-hashed-password" = {
     file = "${effectiveSecretsPath}/jamesbrink/hashed-password.age";
     owner = "root";
@@ -530,6 +537,26 @@ in
       })\"" > /home/jamesbrink/.config/environment.d/openrouter-key.sh
       chmod 600 /home/jamesbrink/.config/environment.d/openrouter-key.sh
       chown jamesbrink:users /home/jamesbrink/.config/environment.d/openrouter-key.sh
+    '';
+  };
+
+  systemd.services.anthropic-key-setup = {
+    description = "Setup Anthropic API key environment";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+      # Read the Anthropic API key and create a shell source file
+      mkdir -p /home/jamesbrink/.config/environment.d
+      echo "export ANTHROPIC_API_KEY=\"$(cat ${
+        config.age.secrets."anthropic-key".path
+      })\"" > /home/jamesbrink/.config/environment.d/anthropic-key.sh
+      chmod 600 /home/jamesbrink/.config/environment.d/anthropic-key.sh
+      chown jamesbrink:users /home/jamesbrink/.config/environment.d/anthropic-key.sh
     '';
   };
 

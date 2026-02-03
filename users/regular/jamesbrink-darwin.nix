@@ -135,7 +135,12 @@ in
     group = "staff";
     mode = "0600";
   };
-
+  age.secrets."anthropic-key" = {
+    file = "${secretsPath}/jamesbrink/anthropic-key.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
   age.secrets."hal9000-kubeconfig" = {
     file = "${secretsPath}/jamesbrink/k8s/hal9000-kubeconfig.age";
     owner = "jamesbrink";
@@ -250,6 +255,22 @@ in
           chmod 600 /Users/jamesbrink/.config/environment.d/pypi-token.sh
         "
         echo "PyPI token environment deployed to /Users/jamesbrink/.config/environment.d/"
+
+        echo "Setting up Anthropic API key environment for jamesbrink..."
+        sudo -u jamesbrink bash -c "
+          mkdir -p /Users/jamesbrink/.config/environment.d
+
+          if [[ -f ${config.age.secrets."anthropic-key".path} ]]; then
+            echo 'export ANTHROPIC_API_KEY=\"\$(cat ${
+              config.age.secrets."anthropic-key".path
+            })\"' > /Users/jamesbrink/.config/environment.d/anthropic-key.sh
+          else
+            echo '# Anthropic API key not yet available from agenix' > /Users/jamesbrink/.config/environment.d/anthropic-key.sh
+          fi
+
+          chmod 600 /Users/jamesbrink/.config/environment.d/anthropic-key.sh
+        "
+        echo "Anthropic API key environment deployed"
 
         echo "Installing hal9000 kubeconfig for jamesbrink..."
         sudo -u jamesbrink ${pkgs.bash}/bin/bash -c '
