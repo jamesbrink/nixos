@@ -298,6 +298,7 @@
       xclip         # Clipboard access
       scrot         # Screenshots
       imagemagick   # Image tools (import command)
+      ydotool       # uinput-based automation (works with login screens)
     ];
   };
 
