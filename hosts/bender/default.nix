@@ -50,6 +50,9 @@
 
     # Music
     spotify-player
+
+    # Terminal
+    alacritty
   ];
 
   # Homebrew packages for OpenClaw
@@ -75,7 +78,6 @@
   ];
 
   homebrew.casks = [
-    "alacritty" # Terminal emulator
     "ghostty" # Terminal emulator
     "tailscale" # VPN/mesh networking
   ];
