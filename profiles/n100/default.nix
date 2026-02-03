@@ -322,5 +322,11 @@
   # Tailscale VPN for OpenClaw node connectivity
   services.tailscale.enable = true;
 
+  # Auto-login as bender for headless GUI access
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "bender";
+  };
+
   system.stateVersion = "25.05";
 }
