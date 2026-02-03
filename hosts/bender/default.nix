@@ -75,6 +75,8 @@
   ];
 
   homebrew.casks = [
+    "alacritty" # Terminal emulator
+    "ghostty" # Terminal emulator
     "tailscale" # VPN/mesh networking
   ];
 }

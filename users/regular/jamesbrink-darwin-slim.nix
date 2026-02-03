@@ -46,9 +46,6 @@
     {
       _module.args.inputs = inputs;
 
-      # Disable Alacritty on darwin-slim (no GUI needed)
-      programs.alacritty.enable = lib.mkForce false;
-
       # Override update alias for this host
       programs.zsh.shellAliases.update = lib.mkForce "darwin-rebuild switch --flake ~/Projects/jamesbrink/nixos#bender";
     };
