@@ -17,6 +17,7 @@
     # Desktop profile - uncomment for RustDesk server mode (X11/XFCE)
     # ../../profiles/desktop/xfce.nix
     ../../users/regular/jamesbrink.nix
+    ../../users/regular/bender.nix
   ];
 
   # Basic Nix configuration
