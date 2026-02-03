@@ -310,5 +310,8 @@
 
   users.defaultUserShell = pkgs.zsh;
 
+  # Tailscale VPN for OpenClaw node connectivity
+  services.tailscale.enable = true;
+
   system.stateVersion = "25.05";
 }
