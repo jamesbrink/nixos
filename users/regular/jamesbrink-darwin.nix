@@ -150,6 +150,27 @@ in
     mode = "0600";
   };
 
+  age.secrets."claude-primary" = {
+    file = "${secretsPath}/jamesbrink/claude-primary.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
+  age.secrets."claude-secondary" = {
+    file = "${secretsPath}/jamesbrink/claude-secondary.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
+  age.secrets."openrouter-key" = {
+    file = "${secretsPath}/jamesbrink/openrouter-key.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
   # Darwin-specific activation script for AWS config and GitHub token
   system.activationScripts.postActivation.text = lib.mkAfter ''
         echo "Setting up AWS configuration for jamesbrink..."
@@ -261,5 +282,52 @@ in
           chmod 600 /Users/jamesbrink/.config/environment.d/deadmansnitch-api-key.sh
         '
         echo "Dead Man's Snitch API key environment deployed to /Users/jamesbrink/.config/environment.d/"
+
+        echo "Setting up Claude Code OAuth tokens for jamesbrink..."
+        # Run as the user with sudo
+        sudo -u jamesbrink bash -c '
+          mkdir -p /Users/jamesbrink/.config/environment.d
+
+          # Create Claude token environment files (check if agenix paths exist first)
+          if [[ -f ${config.age.secrets."claude-primary".path} ]]; then
+            echo "export CLAUDE_CODE_OAUTH_TOKEN_PRIMARY=\"\$(cat ${
+              config.age.secrets."claude-primary".path
+            })\"" > /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
+          else
+            echo "# Claude primary token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
+          fi
+
+          if [[ -f ${config.age.secrets."claude-secondary".path} ]]; then
+            echo "export CLAUDE_CODE_OAUTH_TOKEN_SECONDARY=\"\$(cat ${
+              config.age.secrets."claude-secondary".path
+            })\"" > /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
+          else
+            echo "# Claude secondary token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
+          fi
+
+          # Fix permissions
+          chmod 600 /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
+          chmod 600 /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
+        '
+        echo "Claude Code OAuth tokens deployed to /Users/jamesbrink/.config/environment.d/"
+
+        echo "Setting up OpenRouter API key for jamesbrink..."
+        # Run as the user with sudo
+        sudo -u jamesbrink bash -c '
+          mkdir -p /Users/jamesbrink/.config/environment.d
+
+          # Create OpenRouter API key environment file (check if agenix path exists first)
+          if [[ -f ${config.age.secrets."openrouter-key".path} ]]; then
+            echo "export OPENROUTER_API_KEY=\"\$(cat ${
+              config.age.secrets."openrouter-key".path
+            })\"" > /Users/jamesbrink/.config/environment.d/openrouter-key.sh
+          else
+            echo "# OpenRouter API key not yet available from agenix" > /Users/jamesbrink/.config/environment.d/openrouter-key.sh
+          fi
+
+          # Fix permissions
+          chmod 600 /Users/jamesbrink/.config/environment.d/openrouter-key.sh
+        '
+        echo "OpenRouter API key deployed to /Users/jamesbrink/.config/environment.d/"
   '';
 }

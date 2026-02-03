@@ -194,7 +194,7 @@ in
       # See modules/restic-shell-init.nix for credential isolation implementation
 
       # Source environment files (with race condition protection)
-      for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key; do
+      for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key claude-primary-token claude-secondary-token openrouter-key; do
         if [[ -f ~/.config/environment.d/$env_file.sh ]]; then
           source ~/.config/environment.d/$env_file.sh 2>/dev/null || true
         fi
@@ -241,6 +241,34 @@ in
         export AWS_SECRET_ACCESS_KEY="$SOURCE_AWS_SECRET_ACCESS_KEY"
         export AWS_SESSION_TOKEN="$SOURCE_AWS_SESSION_TOKEN"
       }
+
+      # Claude Code account switching
+      claude-profile() {
+        local profile_name="$1"
+        case "$profile_name" in
+          primary|1)
+            export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY"
+            export CLAUDE_CURRENT_PROFILE="primary"
+            echo "Switched to Claude primary account"
+            ;;
+          secondary|2)
+            export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_SECONDARY"
+            export CLAUDE_CURRENT_PROFILE="secondary"
+            echo "Switched to Claude secondary account"
+            ;;
+          *)
+            echo "Usage: claude-profile {primary|secondary|1|2}"
+            echo "Current profile: ''${CLAUDE_CURRENT_PROFILE:-none}"
+            return 1
+            ;;
+        esac
+      }
+
+      # Initialize with primary by default
+      if [[ -n "$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY" ]]; then
+        export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY"
+        export CLAUDE_CURRENT_PROFILE="primary"
+      fi
 
       # Ghostty SSH helper
       ghostty-ssh-setup() {

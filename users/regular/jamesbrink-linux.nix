@@ -327,6 +327,27 @@ in
     mode = "0600";
   };
 
+  age.secrets."claude-primary" = {
+    file = "${effectiveSecretsPath}/jamesbrink/claude-primary.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
+  age.secrets."claude-secondary" = {
+    file = "${effectiveSecretsPath}/jamesbrink/claude-secondary.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
+  age.secrets."openrouter-key" = {
+    file = "${effectiveSecretsPath}/jamesbrink/openrouter-key.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
   age.secrets."jamesbrink-hashed-password" = {
     file = "${effectiveSecretsPath}/jamesbrink/hashed-password.age";
     owner = "root";
@@ -449,6 +470,66 @@ in
       })\"" > /home/jamesbrink/.config/environment.d/deadmansnitch-api-key.sh
       chmod 600 /home/jamesbrink/.config/environment.d/deadmansnitch-api-key.sh
       chown jamesbrink:users /home/jamesbrink/.config/environment.d/deadmansnitch-api-key.sh
+    '';
+  };
+
+  systemd.services.claude-primary-token-setup = {
+    description = "Setup Claude primary OAuth token environment";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+      # Read the Claude primary token and create a shell source file
+      mkdir -p /home/jamesbrink/.config/environment.d
+      echo "export CLAUDE_CODE_OAUTH_TOKEN_PRIMARY=\"$(cat ${
+        config.age.secrets."claude-primary".path
+      })\"" > /home/jamesbrink/.config/environment.d/claude-primary-token.sh
+      chmod 600 /home/jamesbrink/.config/environment.d/claude-primary-token.sh
+      chown jamesbrink:users /home/jamesbrink/.config/environment.d/claude-primary-token.sh
+    '';
+  };
+
+  systemd.services.claude-secondary-token-setup = {
+    description = "Setup Claude secondary OAuth token environment";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+      # Read the Claude secondary token and create a shell source file
+      mkdir -p /home/jamesbrink/.config/environment.d
+      echo "export CLAUDE_CODE_OAUTH_TOKEN_SECONDARY=\"$(cat ${
+        config.age.secrets."claude-secondary".path
+      })\"" > /home/jamesbrink/.config/environment.d/claude-secondary-token.sh
+      chmod 600 /home/jamesbrink/.config/environment.d/claude-secondary-token.sh
+      chown jamesbrink:users /home/jamesbrink/.config/environment.d/claude-secondary-token.sh
+    '';
+  };
+
+  systemd.services.openrouter-key-setup = {
+    description = "Setup OpenRouter API key environment";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+      # Read the OpenRouter API key and create a shell source file
+      mkdir -p /home/jamesbrink/.config/environment.d
+      echo "export OPENROUTER_API_KEY=\"$(cat ${
+        config.age.secrets."openrouter-key".path
+      })\"" > /home/jamesbrink/.config/environment.d/openrouter-key.sh
+      chmod 600 /home/jamesbrink/.config/environment.d/openrouter-key.sh
+      chown jamesbrink:users /home/jamesbrink/.config/environment.d/openrouter-key.sh
     '';
   };
 
