@@ -292,6 +292,13 @@
     variables = {
       EDITOR = "vim";
     };
+    # GUI automation tools for remote control
+    systemPackages = with pkgs; [
+      xdotool       # X11 automation (mouse/keyboard)
+      xclip         # Clipboard access
+      scrot         # Screenshots
+      imagemagick   # Image tools (import command)
+    ];
   };
 
   # Programs
