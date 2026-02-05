@@ -51,7 +51,10 @@ profiles/{desktop,server,darwin,n100}/   # Role bundles (aggregate modules)
 modules/
 ├── darwin/          # nix-darwin specifics (Dock, file sharing, yabai, skhd)
 ├── home-manager/    # User programs, shells, editors, theming
-│   └── hyprland/themes/lib.nix  # Shared theme registry for Darwin + Hyprland
+├── themes/          # Shared theme registry for Darwin + Hyprland
+│   ├── lib.nix      # Theme metadata, wallpaper refs, JSON export
+│   ├── colors/      # Per-theme TOML color definitions
+│   └── definitions/ # Per-theme Nix attribute sets
 ├── services/        # Daemons (AI stack, Postgres/PostGIS, restic, netboot)
 └── netboot/         # PXE installer automation
 ```
@@ -73,9 +76,9 @@ modules/
 
 **Theme system** (`scripts/themectl/`) is a Python CLI that:
 
-- Reads theme metadata from `modules/home-manager/hyprland/themes/lib.nix`
+- Reads theme metadata from `modules/themes/lib.nix` and color definitions in `modules/themes/colors/`
 - Syncs wallpapers from `external/omarchy/` submodule
-- Rewrites configs for Alacritty, Ghostty, VSCode, Neovim, tmux
+- Rewrites configs for Alacritty, Ghostty, VSCode, Neovim, tmux, btop
 - Drives yabai BSP/native mode toggle on macOS
 
 ### PostgreSQL Replica (hal9000)
@@ -127,6 +130,18 @@ ssh hal9000 "sudo pkill -u postgres postgres && sudo systemctl start postgresql-
 2. Pre-push hook — blocks push if submodules have unpushed commits
 
 To install hooks after cloning: `./scripts/git-hooks/install-hooks.sh`
+
+## GitHub Actions
+
+If a workflow run stays `queued` after fixing runner labels, force-cancel it:
+
+```bash
+gh api --method POST -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  /repos/<owner>/<repo>/actions/runs/<run_id>/force-cancel
+```
+
+Confirm with `gh run view <run_id> -R <owner>/<repo> --json status,conclusion`. See `docs/github-actions.md` for full notes.
 
 ## Reference Docs
 
