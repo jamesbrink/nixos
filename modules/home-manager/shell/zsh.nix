@@ -95,6 +95,9 @@ in
     };
 
     initContent = ''
+      # Increase file descriptor limit for Nix operations (especially on macOS)
+      ulimit -n 10240 2>/dev/null || true
+
       # Add ~/.local/bin for pipx and ~/.claude/local for Claude CLI
       export PATH="$HOME/.local/bin:$HOME/.claude/local:$PATH"
 
