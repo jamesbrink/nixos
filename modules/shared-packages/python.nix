@@ -99,7 +99,6 @@ in
       python313Packages.ruff
       python313Packages.uv
       pyright # Language server (keeping from original)
-      poetry # Dependency management (top-level package)
       python313Packages.pipx # Install Python apps in isolated environments
 
       # Individual packages that were in original (for direct access)
@@ -110,6 +109,9 @@ in
       # ML/AI packages (conditional for Linux due to heavy dependencies)
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
+      # Poetry - rapidfuzz dependency fails to build on Darwin (libatomic issue)
+      poetry
+
       # GUI support (tkinter causes zig-hook issues on Darwin)
       python313Packages.tkinter
 
