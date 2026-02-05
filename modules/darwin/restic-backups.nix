@@ -331,14 +331,9 @@ with lib;
     ];
 
     # Create launchd agent for scheduled backups
+    # Using command instead of script to avoid FDA prompts for sh
     launchd.user.agents.restic-backup = {
-      script = ''
-        # Only run if restic config exists
-        if [ -f "$HOME/.config/restic/s3-env" ] && [ -f "$HOME/.config/restic/password" ]; then
-          # Run backup in a clean environment without polluting the shell
-          exec /run/current-system/sw/bin/restic-backup backup
-        fi
-      '';
+      command = "/run/current-system/sw/bin/restic-backup backup";
 
       serviceConfig = {
         StartCalendarInterval = [
