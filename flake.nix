@@ -73,7 +73,7 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     comfyui-nix = {
-      url = "github:utensils/comfyui-nix";
+      url = "github:utensils/comfyui-nix/hal9000";
     };
     acris-scrapers = {
       url = "git+ssh://git@github.com/quantierra/acris-scrapers.git";
