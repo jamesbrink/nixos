@@ -178,7 +178,7 @@ in
       marksman # Markdown LSP
 
       # Formatters
-      nixfmt-rfc-style
+      nixfmt
       stylua
       black
       isort
@@ -192,7 +192,7 @@ in
       lazygit
     ];
 
-    extraLuaConfig = ''
+    initLua = ''
       -- Bootstrap lazy.nvim
       local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
       if not (vim.uv or vim.loop).fs_stat(lazypath) then

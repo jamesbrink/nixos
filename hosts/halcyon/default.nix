@@ -70,8 +70,8 @@
     pkg-config
     # Additional build tools needed for compiling Python extensions
     clang
-    comfyui-nix.packages.${pkgs.system}.comfyui
-    acris-scrapers.packages.${pkgs.system}.acris-scraper
+    comfyui-nix.packages.${pkgs.stdenv.hostPlatform.system}.comfyui
+    acris-scrapers.packages.${pkgs.stdenv.hostPlatform.system}.acris-scraper
   ];
 
   # Set environment variables for libpostal

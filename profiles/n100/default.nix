@@ -10,6 +10,7 @@
 {
   imports = [
     ../../modules/n100-disko.nix
+    ../../modules/nix-limits.nix
     ../../modules/restic-backups.nix
     ../../modules/services/samba-server.nix
     ../../modules/services/k3s.nix
@@ -294,11 +295,11 @@
     };
     # GUI automation tools for remote control
     systemPackages = with pkgs; [
-      xdotool       # X11 automation (mouse/keyboard)
-      xclip         # Clipboard access
-      scrot         # Screenshots
-      imagemagick   # Image tools (import command)
-      ydotool       # uinput-based automation (works with login screens)
+      xdotool # X11 automation (mouse/keyboard)
+      xclip # Clipboard access
+      scrot # Screenshots
+      imagemagick # Image tools (import command)
+      ydotool # uinput-based automation (works with login screens)
     ];
   };
 

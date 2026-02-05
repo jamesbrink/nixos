@@ -33,7 +33,7 @@ in
       neofetch
       neovim-remote
       netcat
-      nixfmt-rfc-style
+      nixfmt
       nixpkgs-fmt
       openssh
       p7zip

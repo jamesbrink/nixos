@@ -16,6 +16,7 @@
     ./hardware-configuration.nix
     ../../profiles/desktop/hyprland.nix
     ../../modules/nix-caches.nix
+    ../../modules/nix-limits.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix

@@ -1,26 +1,7 @@
-# Shared Nix configuration for all hosts (caches + system limits)
+# Shared binary cache configuration for all hosts
 { lib, ... }:
 
 {
-  # Increase file descriptor limits to prevent "Too many open files" during builds
-  security.pam.loginLimits = [
-    {
-      domain = "*";
-      type = "soft";
-      item = "nofile";
-      value = "65536";
-    }
-    {
-      domain = "*";
-      type = "hard";
-      item = "nofile";
-      value = "65536";
-    }
-  ];
-
-  # Also increase limits for nix-daemon specifically
-  systemd.services.nix-daemon.serviceConfig.LimitNOFILE = 65536;
-
   nix.settings = {
     substituters = lib.mkAfter [
       "https://cache.nixos.org"

@@ -204,7 +204,7 @@
             ];
 
             packages = with pkgs; [
-              nixfmt-rfc-style
+              nixfmt
               treefmt
               rsync
               openssh
