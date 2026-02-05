@@ -274,7 +274,6 @@
   services.comfyui = {
     enable = true;
     cuda = true;
-    cudaArch = "sm61"; # GTX 1080
     enableManager = true;
     port = 8188;
     listenAddress = "0.0.0.0";
