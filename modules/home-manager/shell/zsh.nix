@@ -272,13 +272,17 @@ in
               return 1
             fi
             ;;
+          none|unset|off|0)
+            unset CLAUDE_CODE_OAUTH_TOKEN ANTHROPIC_API_KEY CLAUDE_CURRENT_PROFILE
+            echo "All Claude credentials unset"
+            ;;
           status|s)
             echo "Profile:  ''${CLAUDE_CURRENT_PROFILE:-none}"
             echo "OAuth:    $([[ -n "''${CLAUDE_CODE_OAUTH_TOKEN:-}" ]] && echo "set (...''${CLAUDE_CODE_OAUTH_TOKEN: -8})" || echo "unset")"
             echo "API key:  $([[ -n "''${ANTHROPIC_API_KEY:-}" ]] && echo "set (...''${ANTHROPIC_API_KEY: -8})" || echo "unset")"
             ;;
           ""|*)
-            echo "Usage: claude-profile {primary|secondary|api|status|1|2|s}"
+            echo "Usage: claude-profile {primary|secondary|api|none|status|1|2|s|0}"
             echo ""
             echo "Profile:  ''${CLAUDE_CURRENT_PROFILE:-none}"
             echo "OAuth:    $([[ -n "''${CLAUDE_CODE_OAUTH_TOKEN:-}" ]] && echo "set (...''${CLAUDE_CODE_OAUTH_TOKEN: -8})" || echo "unset")"
