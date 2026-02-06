@@ -114,7 +114,7 @@
       export AWS_PAGER=""
 
       # Source environment files
-      for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key claude-primary-token claude-secondary-token openrouter-key anthropic-key; do
+      for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key claude-primary-token claude-secondary-token openrouter-key; do
         if [[ -f ~/.config/environment.d/$env_file.sh ]]; then
           source ~/.config/environment.d/$env_file.sh 2>/dev/null || true
         fi
@@ -125,17 +125,35 @@
         local profile_name="$1"
         case "$profile_name" in
           primary|1)
+            unset ANTHROPIC_API_KEY
             export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY"
             export CLAUDE_CURRENT_PROFILE="primary"
-            echo "Switched to Claude primary account"
+            echo "Switched to Claude primary account (OAuth)"
             ;;
           secondary|2)
+            unset ANTHROPIC_API_KEY
             export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_SECONDARY"
             export CLAUDE_CURRENT_PROFILE="secondary"
-            echo "Switched to Claude secondary account"
+            echo "Switched to Claude secondary account (OAuth)"
+            ;;
+          api)
+            unset CLAUDE_CODE_OAUTH_TOKEN
+            if [[ -f ~/.config/environment.d/anthropic-key.sh ]]; then
+              source ~/.config/environment.d/anthropic-key.sh
+              export CLAUDE_CURRENT_PROFILE="api"
+              echo "Switched to Anthropic API key"
+            else
+              echo "Error: anthropic-key.sh not found"
+              return 1
+            fi
+            ;;
+          status|s)
+            echo "Profile:  ''${CLAUDE_CURRENT_PROFILE:-none}"
+            echo "OAuth:    ''${CLAUDE_CODE_OAUTH_TOKEN:+set}''${CLAUDE_CODE_OAUTH_TOKEN:-unset}"
+            echo "API key:  ''${ANTHROPIC_API_KEY:+set}''${ANTHROPIC_API_KEY:-unset}"
             ;;
           *)
-            echo "Usage: claude-profile {primary|secondary|1|2}"
+            echo "Usage: claude-profile {primary|secondary|api|status|1|2|s}"
             echo "Current profile: ''${CLAUDE_CURRENT_PROFILE:-none}"
             return 1
             ;;
@@ -143,6 +161,8 @@
       }
 
       # Initialize default Claude profile (halcyon uses primary, all others use secondary)
+      # Unset ANTHROPIC_API_KEY to avoid conflicts with OAuth tokens
+      unset ANTHROPIC_API_KEY
       if [[ "$(hostname -s)" == "halcyon" ]] && [[ -n "$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY" ]]; then
         export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY"
         export CLAUDE_CURRENT_PROFILE="primary"
