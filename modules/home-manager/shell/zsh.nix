@@ -274,13 +274,16 @@ in
             ;;
           status|s)
             echo "Profile:  ''${CLAUDE_CURRENT_PROFILE:-none}"
-            echo "OAuth:    $([[ -n "''${CLAUDE_CODE_OAUTH_TOKEN:-}" ]] && echo "set" || echo "unset")"
-            echo "API key:  $([[ -n "''${ANTHROPIC_API_KEY:-}" ]] && echo "set" || echo "unset")"
+            echo "OAuth:    $([[ -n "''${CLAUDE_CODE_OAUTH_TOKEN:-}" ]] && echo "set (...''${CLAUDE_CODE_OAUTH_TOKEN: -8})" || echo "unset")"
+            echo "API key:  $([[ -n "''${ANTHROPIC_API_KEY:-}" ]] && echo "set (...''${ANTHROPIC_API_KEY: -8})" || echo "unset")"
             ;;
-          *)
+          ""|*)
             echo "Usage: claude-profile {primary|secondary|api|status|1|2|s}"
-            echo "Current profile: ''${CLAUDE_CURRENT_PROFILE:-none}"
-            return 1
+            echo ""
+            echo "Profile:  ''${CLAUDE_CURRENT_PROFILE:-none}"
+            echo "OAuth:    $([[ -n "''${CLAUDE_CODE_OAUTH_TOKEN:-}" ]] && echo "set (...''${CLAUDE_CODE_OAUTH_TOKEN: -8})" || echo "unset")"
+            echo "API key:  $([[ -n "''${ANTHROPIC_API_KEY:-}" ]] && echo "set (...''${ANTHROPIC_API_KEY: -8})" || echo "unset")"
+            [[ -n "$profile_name" ]] && return 1
             ;;
         esac
       }
