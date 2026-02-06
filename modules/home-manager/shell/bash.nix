@@ -142,10 +142,13 @@
         esac
       }
 
-      # Initialize with primary by default
-      if [[ -n "$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY" ]]; then
+      # Initialize default Claude profile (halcyon uses primary, all others use secondary)
+      if [[ "$(hostname -s)" == "halcyon" ]] && [[ -n "$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY" ]]; then
         export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY"
         export CLAUDE_CURRENT_PROFILE="primary"
+      elif [[ -n "$CLAUDE_CODE_OAUTH_TOKEN_SECONDARY" ]]; then
+        export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_SECONDARY"
+        export CLAUDE_CURRENT_PROFILE="secondary"
       fi
     '';
   };

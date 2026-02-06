@@ -92,6 +92,27 @@
     mode = "0600";
   };
 
+  age.secrets."claude-primary" = {
+    file = "${secretsPath}/jamesbrink/claude-primary.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
+  age.secrets."claude-secondary" = {
+    file = "${secretsPath}/jamesbrink/claude-secondary.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
+  age.secrets."openrouter-key" = {
+    file = "${secretsPath}/jamesbrink/openrouter-key.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
   age.secrets."hal9000-kubeconfig" = {
     file = "${secretsPath}/jamesbrink/k8s/hal9000-kubeconfig.age";
     owner = "jamesbrink";
@@ -247,5 +268,46 @@
           chmod 600 /Users/jamesbrink/.kube/config
         '
         echo "hal9000 kubeconfig deployed to /Users/jamesbrink/.kube/config"
+
+        echo "Setting up Claude Code OAuth tokens for jamesbrink..."
+        sudo -u jamesbrink bash -c '
+          mkdir -p /Users/jamesbrink/.config/environment.d
+
+          if [[ -f ${config.age.secrets."claude-primary".path} ]]; then
+            echo "export CLAUDE_CODE_OAUTH_TOKEN_PRIMARY=\"\$(cat ${
+              config.age.secrets."claude-primary".path
+            })\"" > /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
+          else
+            echo "# Claude primary token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
+          fi
+
+          if [[ -f ${config.age.secrets."claude-secondary".path} ]]; then
+            echo "export CLAUDE_CODE_OAUTH_TOKEN_SECONDARY=\"\$(cat ${
+              config.age.secrets."claude-secondary".path
+            })\"" > /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
+          else
+            echo "# Claude secondary token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
+          fi
+
+          chmod 600 /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
+          chmod 600 /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
+        '
+        echo "Claude Code OAuth tokens deployed to /Users/jamesbrink/.config/environment.d/"
+
+        echo "Setting up OpenRouter API key for jamesbrink..."
+        sudo -u jamesbrink bash -c '
+          mkdir -p /Users/jamesbrink/.config/environment.d
+
+          if [[ -f ${config.age.secrets."openrouter-key".path} ]]; then
+            echo "export OPENROUTER_API_KEY=\"\$(cat ${
+              config.age.secrets."openrouter-key".path
+            })\"" > /Users/jamesbrink/.config/environment.d/openrouter-key.sh
+          else
+            echo "# OpenRouter API key not yet available from agenix" > /Users/jamesbrink/.config/environment.d/openrouter-key.sh
+          fi
+
+          chmod 600 /Users/jamesbrink/.config/environment.d/openrouter-key.sh
+        '
+        echo "OpenRouter API key deployed to /Users/jamesbrink/.config/environment.d/"
   '';
 }
