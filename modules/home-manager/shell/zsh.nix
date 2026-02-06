@@ -274,8 +274,8 @@ in
             ;;
           status|s)
             echo "Profile:  ''${CLAUDE_CURRENT_PROFILE:-none}"
-            echo "OAuth:    ''${CLAUDE_CODE_OAUTH_TOKEN:+set}''${CLAUDE_CODE_OAUTH_TOKEN:-unset}"
-            echo "API key:  ''${ANTHROPIC_API_KEY:+set}''${ANTHROPIC_API_KEY:-unset}"
+            echo "OAuth:    $([[ -n "''${CLAUDE_CODE_OAUTH_TOKEN:-}" ]] && echo "set" || echo "unset")"
+            echo "API key:  $([[ -n "''${ANTHROPIC_API_KEY:-}" ]] && echo "set" || echo "unset")"
             ;;
           *)
             echo "Usage: claude-profile {primary|secondary|api|status|1|2|s}"
