@@ -89,7 +89,9 @@ jobs:
         if: steps.needs_update.outputs.needs_update == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Use a PAT when repo-level Actions permissions restrict GITHUB_TOKEN from creating PRs.
+          # Falls back to the built-in token when allowed.
+          token: ${{ secrets.CI_PR_TOKEN || github.token }}
           commit-message: |
             chore(runner): update upstream actions-runner image
 
