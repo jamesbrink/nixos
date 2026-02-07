@@ -136,16 +136,15 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1770252616,
-        "narHash": "sha256-+5jxvOA+l0C8B67K16Xf+Nzh8MpEmDYvdWLD4su9jMk=",
+        "lastModified": 1770501766,
+        "narHash": "sha256-GWAsk06uDuLoKpvEcEP7h3PdWLhdJCxHM7C96s9X7UA=",
         "owner": "utensils",
         "repo": "comfyui-nix",
-        "rev": "29b9a218754d9aae96891cfeba6fcccda97b7f2f",
+        "rev": "dc0e4a2efc036092a98bb20503f827247f36f49a",
         "type": "github"
       },
       "original": {
         "owner": "utensils",
-        "ref": "hal9000",
         "repo": "comfyui-nix",
         "type": "github"
       }
