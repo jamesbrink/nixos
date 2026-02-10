@@ -120,6 +120,19 @@
         fi
       done
 
+      # Open remote directory in local VS Code via Remote-SSH
+      rcode() {
+        local host="$1"
+        local dir="''${2:-/home/jamesbrink}"
+        if [[ -z "$host" ]]; then
+          echo "Usage: rcode <host> [path]"
+          echo "  Opens a remote directory in local VS Code via Remote-SSH"
+          echo "  Example: rcode hal9000 /home/jamesbrink/projects"
+          return 1
+        fi
+        code --remote "ssh-remote+$host" "$dir"
+      }
+
       # Claude Code account switching
       claude-profile() {
         local profile_name="$1"
