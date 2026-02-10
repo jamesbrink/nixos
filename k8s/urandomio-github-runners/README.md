@@ -27,10 +27,10 @@ Shares the existing ARC controller (`arc-systems` namespace) with the quantierra
 ```yaml
 jobs:
   build:
-    runs-on: urandomio-s  # Small tier for Astro/Node builds
+    runs-on: urandomio-s # Small tier for Astro/Node builds
 
   docker:
-    runs-on: urandomio-m  # Medium tier for Docker operations
+    runs-on: urandomio-m # Medium tier for Docker operations
 ```
 
 ## Installation
@@ -39,7 +39,7 @@ Requires a GitHub PAT with `admin:org` scope for the urandomio organization.
 
 ### Create GitHub PAT
 
-1. Go to https://github.com/settings/tokens
+1. Go to <https://github.com/settings/tokens>
 2. Generate new token (classic) with scopes:
    - `repo` (full)
    - `admin:org` → `manage_runners:org`

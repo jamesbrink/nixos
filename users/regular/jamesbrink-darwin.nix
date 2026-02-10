@@ -176,6 +176,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."huggingface-token" = {
+    file = "${secretsPath}/jamesbrink/huggingface-token.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
   # Darwin-specific activation script for AWS config and GitHub token
   system.activationScripts.postActivation.text = lib.mkAfter ''
         echo "Setting up AWS configuration for jamesbrink..."
@@ -350,5 +357,21 @@ in
           chmod 600 /Users/jamesbrink/.config/environment.d/openrouter-key.sh
         '
         echo "OpenRouter API key deployed to /Users/jamesbrink/.config/environment.d/"
+
+        echo "Setting up HuggingFace token environment for jamesbrink..."
+        sudo -u jamesbrink bash -c '
+          mkdir -p /Users/jamesbrink/.config/environment.d
+
+          if [[ -f ${config.age.secrets."huggingface-token".path} ]]; then
+            echo "export HF_TOKEN=\"\$(cat ${
+              config.age.secrets."huggingface-token".path
+            })\"" > /Users/jamesbrink/.config/environment.d/huggingface-token.sh
+          else
+            echo "# HuggingFace token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/huggingface-token.sh
+          fi
+
+          chmod 600 /Users/jamesbrink/.config/environment.d/huggingface-token.sh
+        '
+        echo "HuggingFace token deployed to /Users/jamesbrink/.config/environment.d/"
   '';
 }

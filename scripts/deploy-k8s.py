@@ -308,19 +308,29 @@ class GitHubRunnersDeployer:
             "secret_path": "jamesbrink/github/urandomio-runner-token",
             "runners_dir": "urandomio-github-runners",
             "tiers": {
-                "m": {"release": "arc-runner-set-urandomio-m", "values_file": "values-m.yaml"},
-                "s": {"release": "arc-runner-set-urandomio-s", "values_file": "values-s.yaml"},
+                "m": {
+                    "release": "arc-runner-set-urandomio-m",
+                    "values_file": "values-m.yaml",
+                },
+                "s": {
+                    "release": "arc-runner-set-urandomio-s",
+                    "values_file": "values-s.yaml",
+                },
             },
         },
     }
 
-    def __init__(self, project_root: Path, helm_deployer: HelmDeployer, org: str = "quantierra"):
+    def __init__(
+        self, project_root: Path, helm_deployer: HelmDeployer, org: str = "quantierra"
+    ):
         self.project_root = project_root
         self.helm_deployer = helm_deployer
         self.org = org
 
         if org not in self.ORGS:
-            raise ValueError(f"Unknown org '{org}'. Valid orgs: {', '.join(self.ORGS.keys())}")
+            raise ValueError(
+                f"Unknown org '{org}'. Valid orgs: {', '.join(self.ORGS.keys())}"
+            )
 
         org_config = self.ORGS[org]
         self.secret_path = org_config["secret_path"]
@@ -670,7 +680,9 @@ def main():
     # Execute command
     if args.command == "github-runners":
         try:
-            runners_deployer = GitHubRunnersDeployer(project_root, helm_deployer, org=args.org)
+            runners_deployer = GitHubRunnersDeployer(
+                project_root, helm_deployer, org=args.org
+            )
         except ValueError as e:
             print(f"Error: {e}", file=sys.stderr)
             return 1

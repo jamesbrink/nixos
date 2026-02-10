@@ -114,7 +114,7 @@
       export AWS_PAGER=""
 
       # Source environment files
-      for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key claude-primary-token claude-secondary-token openrouter-key; do
+      for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key claude-primary-token claude-secondary-token openrouter-key huggingface-token; do
         if [[ -f ~/.config/environment.d/$env_file.sh ]]; then
           source ~/.config/environment.d/$env_file.sh 2>/dev/null || true
         fi

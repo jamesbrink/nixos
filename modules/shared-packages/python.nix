@@ -107,6 +107,9 @@ in
       python313Packages.pip # Package installer (keeping from original)
       python313Packages.pynvim # Neovim support (keeping from original)
 
+      # HuggingFace CLI (cross-platform)
+      python313Packages.huggingface-hub
+
       # ML/AI packages (conditional for Linux due to heavy dependencies)
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
@@ -117,7 +120,6 @@ in
       python313Packages.torch # (keeping from original)
       python313Packages.torchvision # (keeping from original)
       python313Packages.torchaudio # (keeping from original)
-      python313Packages.huggingface-hub # (keeping from original)
       python313Packages.llvmlite # (keeping from original)
       python313Packages.numba # (keeping from original)
 

@@ -197,7 +197,7 @@ in
       # See modules/restic-shell-init.nix for credential isolation implementation
 
       # Source environment files (with race condition protection)
-      for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key claude-primary-token claude-secondary-token openrouter-key; do
+      for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key claude-primary-token claude-secondary-token openrouter-key huggingface-token; do
         if [[ -f ~/.config/environment.d/$env_file.sh ]]; then
           source ~/.config/environment.d/$env_file.sh 2>/dev/null || true
         fi
