@@ -81,4 +81,10 @@
     "ghostty" # Terminal emulator
     "tailscale" # VPN/mesh networking
   ];
+
+  # InvokeAI service
+  services.invokeai = {
+    enable = true;
+    user = "jamesbrink";
+  };
 }

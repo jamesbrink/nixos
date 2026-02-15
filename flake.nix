@@ -1044,8 +1044,10 @@
                     config.allowUnfree = true;
                   };
                 })
+                invokeai.overlays.default
               ];
             }
+            invokeai.darwinModules.default
             ./hosts/bender/default.nix
           ];
         };
