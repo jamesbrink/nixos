@@ -560,6 +560,18 @@
     ];
   };
 
+  # InvokeAI service
+  services.invokeai = {
+    enable = true;
+    dataDir = "/home/jamesbrink/.local/share/invokeai";
+    host = "0.0.0.0";
+    port = 9090;
+    openFirewall = true;
+    user = "jamesbrink";
+    group = "users";
+    createUser = false;
+  };
+
   security.rtkit.enable = true;
 
   age = {

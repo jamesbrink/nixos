@@ -75,6 +75,9 @@
     comfyui-nix = {
       url = "github:utensils/comfyui-nix";
     };
+    invokeai = {
+      url = "github:jamesbrink/InvokeAI/feature/nix-flake";
+    };
     acris-scrapers = {
       url = "git+ssh://git@github.com/quantierra/acris-scrapers.git";
     };
@@ -114,6 +117,7 @@
       homebrew-cask,
       zen-browser,
       comfyui-nix,
+      invokeai,
       acris-scrapers,
       zerobyte,
       bun2nix,
@@ -919,6 +923,7 @@
             vscode-server.nixosModules.default
             ./modules/vscode-server.nix
             comfyui-nix.nixosModules.default
+            invokeai.nixosModules.default
             ./hosts/hal9000/default.nix
             zerobyte.nixosModules.default
 
@@ -927,6 +932,7 @@
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
                 comfyui-nix.overlays.default
+                invokeai.overlays.default
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
