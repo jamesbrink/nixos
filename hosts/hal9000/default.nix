@@ -573,6 +573,19 @@
     requiresMounts = [ "storage\\x2dfast-AI.mount" ];
   };
 
+  # AI Toolkit training service
+  services.ai-toolkit = {
+    enable = true;
+    dataDir = "/storage-fast/AI/ai-toolkit";
+    host = "0.0.0.0";
+    port = 8675;
+    openFirewall = true;
+    user = "jamesbrink";
+    group = "users";
+    createUser = false;
+    requiresMounts = [ "storage\\x2dfast-AI.mount" ];
+  };
+
   security.rtkit.enable = true;
 
   age = {

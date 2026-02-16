@@ -78,6 +78,9 @@
     invokeai = {
       url = "github:jamesbrink/InvokeAI/feature/nix-flake";
     };
+    ai-toolkit = {
+      url = "github:jamesbrink/ai-toolkit/refactor";
+    };
     acris-scrapers = {
       url = "git+ssh://git@github.com/quantierra/acris-scrapers.git";
     };
@@ -119,6 +122,7 @@
       comfyui-nix,
       invokeai,
       acris-scrapers,
+      ai-toolkit,
       zerobyte,
       bun2nix,
       ...
@@ -924,6 +928,7 @@
             ./modules/vscode-server.nix
             comfyui-nix.nixosModules.default
             invokeai.nixosModules.default
+            ai-toolkit.nixosModules.default
             ./hosts/hal9000/default.nix
             zerobyte.nixosModules.default
 
@@ -933,6 +938,7 @@
                 (import ./overlays/pixinsight.nix)
                 comfyui-nix.overlays.default
                 invokeai.overlays.default
+                ai-toolkit.overlays.default
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
