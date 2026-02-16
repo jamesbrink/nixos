@@ -87,4 +87,10 @@
     enable = true;
     user = "jamesbrink";
   };
+
+  # AI Toolkit training service
+  services.ai-toolkit = {
+    enable = true;
+    user = "jamesbrink";
+  };
 }

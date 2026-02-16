@@ -1051,9 +1051,11 @@
                   };
                 })
                 invokeai.overlays.default
+                ai-toolkit.overlays.default
               ];
             }
             invokeai.darwinModules.default
+            ai-toolkit.darwinModules.default
             ./hosts/bender/default.nix
           ];
         };
