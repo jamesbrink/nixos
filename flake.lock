@@ -51,11 +51,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1771281010,
-        "narHash": "sha256-VnKuV3o80yGrzWhDH3c75EdA0viZy3QNDl7rRhsN8Bo=",
+        "lastModified": 1771281462,
+        "narHash": "sha256-heFhe0ifDHSEi809sQqesHVFKEgeZKPOJEMLeAV5F/0=",
         "owner": "jamesbrink",
         "repo": "ai-toolkit",
-        "rev": "9f98c457f1a9c5d0f7ee57aefcd1efea16500123",
+        "rev": "dfe3891e1f7947aeafbd3fb1a5c668ff47820b10",
         "type": "github"
       },
       "original": {
