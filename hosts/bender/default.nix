@@ -81,6 +81,7 @@
     "bitwarden" # Password manager
     "ghostty" # Terminal emulator
     "tailscale" # VPN/mesh networking
+    "telegram" # Messaging
   ];
 
   # InvokeAI service

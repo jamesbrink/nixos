@@ -51,7 +51,6 @@ in
       speedtest-cli
       tmuxinator
       # restic-browser wrapper added below with credential isolation
-      telegram-desktop
       terraform
       tree
       unzip
@@ -141,6 +140,7 @@ in
       sysstat
       # GUI applications (Linux-only, macOS uses Homebrew casks)
       meld
+      telegram-desktop
       wireshark
       # Zen Browser (twilight version for reproducibility)
       inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.twilight

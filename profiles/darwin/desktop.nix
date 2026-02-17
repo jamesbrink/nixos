@@ -59,6 +59,7 @@
       # Communication
       "discord"
       "slack"
+      "telegram"
       "zoom"
 
       # Security
