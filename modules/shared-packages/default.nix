@@ -25,6 +25,7 @@ in
       fh # FlakeHub CLI
       git-lfs
       gitleaks
+      bitwarden-cli
       gogcli
       google-cloud-sdk
       home-manager
@@ -125,7 +126,6 @@ in
       unstable.code-cursor
       # Linux-only packages
       below
-      bitwarden-cli
       gcr # Provides org.gnome.keyring.SystemPrompter for libsecret
       libsecret
       fio

@@ -78,6 +78,7 @@
   ];
 
   homebrew.casks = [
+    "bitwarden" # Password manager
     "ghostty" # Terminal emulator
     "tailscale" # VPN/mesh networking
   ];
