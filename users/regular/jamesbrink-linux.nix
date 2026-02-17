@@ -355,6 +355,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."huggingface-token" = {
+    file = "${effectiveSecretsPath}/jamesbrink/huggingface-token.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
   age.secrets."jamesbrink-hashed-password" = {
     file = "${effectiveSecretsPath}/jamesbrink/hashed-password.age";
     owner = "root";

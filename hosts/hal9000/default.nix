@@ -584,6 +584,10 @@
     group = "users";
     createUser = false;
     requiresMounts = [ "storage\\x2dfast-AI.mount" ];
+    secrets = {
+      claudeOauthTokenFile = config.age.secrets."claude-secondary".path;
+      hfTokenFile = config.age.secrets."huggingface-token".path;
+    };
   };
 
   security.rtkit.enable = true;

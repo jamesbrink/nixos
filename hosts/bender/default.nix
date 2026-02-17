@@ -92,5 +92,9 @@
   services.ai-toolkit = {
     enable = true;
     user = "jamesbrink";
+    secrets = {
+      claudeOauthTokenFile = config.age.secrets."claude-secondary".path;
+      hfTokenFile = config.age.secrets."huggingface-token".path;
+    };
   };
 }
