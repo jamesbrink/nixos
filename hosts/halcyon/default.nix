@@ -44,6 +44,7 @@
       { path = "/Applications/Claude.app"; }
       { path = "/Applications/Slack.app"; }
       { path = "/Applications/Discord.app"; }
+      { path = "/System/Applications/Utilities/Screen Sharing.app"; }
       { path = "/System/Applications/System Settings.app"; }
       {
         path = "${config.users.users.jamesbrink.home}/.Trash";
