@@ -51,6 +51,7 @@ in
       speedtest-cli
       tmuxinator
       # restic-browser wrapper added below with credential isolation
+      telegram-desktop
       terraform
       tree
       unzip
