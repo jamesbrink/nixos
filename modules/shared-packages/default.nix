@@ -25,6 +25,8 @@ in
       fh # FlakeHub CLI
       git-lfs
       gitleaks
+      gogcli
+      google-cloud-sdk
       home-manager
       httpie
       jq

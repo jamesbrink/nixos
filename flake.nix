@@ -137,6 +137,7 @@
         };
         overlays = [
           (import ./overlays/pixinsight.nix)
+          (import ./overlays/gogcli.nix)
           (final: prev: {
             unstablePkgs = import nixos-unstable {
               inherit system;
@@ -749,6 +750,7 @@
             {
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
+                (import ./overlays/gogcli.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
@@ -780,6 +782,7 @@
             {
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
+                (import ./overlays/gogcli.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
@@ -811,6 +814,7 @@
             {
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
+                (import ./overlays/gogcli.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
@@ -855,6 +859,7 @@
             {
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
+                (import ./overlays/gogcli.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";
@@ -893,6 +898,7 @@
             {
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
+                (import ./overlays/gogcli.nix)
                 comfyui-nix.overlays.default
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
@@ -936,6 +942,7 @@
             {
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
+                (import ./overlays/gogcli.nix)
                 comfyui-nix.overlays.default
                 invokeai.overlays.default
                 ai-toolkit.overlays.default
@@ -999,6 +1006,7 @@
               nixpkgs.config.allowUnfree = true;
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
+                (import ./overlays/gogcli.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "aarch64-darwin";
@@ -1044,6 +1052,7 @@
             {
               nixpkgs.config.allowUnfree = true;
               nixpkgs.overlays = [
+                (import ./overlays/gogcli.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "aarch64-darwin";
