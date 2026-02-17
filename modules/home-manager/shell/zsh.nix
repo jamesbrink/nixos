@@ -19,16 +19,14 @@ in
       enable = true;
       plugins = [
         "git"
-        "docker"
-        "kubectl"
-        "terraform"
-        "aws"
         "npm"
         "python"
         "sudo"
-        "systemd"
         "tmux"
         "z"
+      ]
+      ++ lib.optionals pkgs.stdenv.isLinux [
+        "systemd"
       ];
       theme = "robbyrussell";
     };
