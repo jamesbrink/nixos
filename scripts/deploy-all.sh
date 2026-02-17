@@ -283,6 +283,23 @@ deploy_host() {
             else
                 deploy_cmd="ssh jamesbrink@$host 'cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nix build .#darwinConfigurations.$host.system --impure && echo \"\" && echo \"Package changes:\" && (nvd diff /run/current-system $TEMP_DIR/result 2>/dev/null || echo \"  (nvd not available)\") && echo \"\" && echo \"Activating configuration...\" && sudo NIXPKGS_ALLOW_UNFREE=1 nix run nix-darwin -- switch --flake $TEMP_DIR#$host --impure --no-update-lock-file'"
             fi
+        elif [[ "$HOST_LOWER" == n100-* ]]; then
+            # n100 hosts: build on hal9000 (more RAM/CPU), copy closure to target, then switch
+            # Per-host temp dir to avoid races when deploying multiple n100s in parallel
+            TEMP_DIR="/tmp/nixos-config-${host}"
+            BUILDER="hal9000"
+            echo "[Building on $BUILDER for $host]" >> "$log_file"
+
+            # Rsync flake to hal9000 (builder)
+            rsync -avz --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' "$FLAKE_DIR/" "root@$BUILDER:$TEMP_DIR/" >> "$log_file" 2>&1
+
+            if [ "$DRY_RUN" = true ]; then
+                deploy_cmd="ssh root@$BUILDER 'cd $TEMP_DIR && NIXPKGS_ALLOW_UNFREE=1 nix build .#nixosConfigurations.$host.config.system.build.toplevel --impure && echo \"\" && echo \"Build for $host completed on $BUILDER\" && echo \"Store path:\" && readlink -f $TEMP_DIR/result'"
+            else
+                # Build on hal9000, copy closure to n100, then switch
+                # All done via hal9000 since it has direct root SSH to n100 hosts
+                deploy_cmd="ssh root@$BUILDER 'set -e && cd $TEMP_DIR && echo \"Building $host on $BUILDER...\" && NIXPKGS_ALLOW_UNFREE=1 nix build .#nixosConfigurations.$host.config.system.build.toplevel --impure && STORE_PATH=\$(readlink -f $TEMP_DIR/result) && echo \"Copying closure to $host...\" && nix-copy-closure --to root@$host \$STORE_PATH && echo \"Switching configuration on $host...\" && ssh root@$host \"nix-env -p /nix/var/nix/profiles/system --set \$STORE_PATH && /nix/var/nix/profiles/system/bin/switch-to-configuration switch\"'"
+            fi
         else
             # NixOS remote deployment
             TEMP_DIR="/tmp/nixos-config"
