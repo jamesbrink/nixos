@@ -679,11 +679,11 @@
         "treefmt-nix": "treefmt-nix_3"
       },
       "locked": {
-        "lastModified": 1771189506,
-        "narHash": "sha256-94Rzqz3D47cxMq/Pww5xLiIucuif8s3qQQCbUHYkbM4=",
+        "lastModified": 1771377550,
+        "narHash": "sha256-gNH6tVYDOD9592CyC5YcIZSIdovDYPZqtM/OOGUTwQc=",
         "owner": "jamesbrink",
         "repo": "InvokeAI",
-        "rev": "bf115bb2d9ef47db662e6021bd8b9d35debd44cc",
+        "rev": "703b7848af92e65d9a72449c47e09177b052fe4a",
         "type": "github"
       },
       "original": {
