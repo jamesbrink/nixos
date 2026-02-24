@@ -544,7 +544,7 @@
   # ComfyUI service
   services.comfyui = {
     enable = true;
-    cuda = true;
+    gpuSupport = "cuda";
     enableManager = true;
     port = 8188;
     listenAddress = "0.0.0.0";
