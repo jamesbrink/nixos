@@ -71,8 +71,11 @@ in
       asciinema
       asciinema-agg
       bun
+      cloudflared
+      flarectl
       nodejs
       nodePackages.pnpm
+      wrangler
       inputs.why.packages.${pkgs.stdenv.hostPlatform.system}.default
 
       # Restic browser with credential isolation wrapper
