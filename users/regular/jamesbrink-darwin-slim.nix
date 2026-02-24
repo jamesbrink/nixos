@@ -120,6 +120,13 @@
     mode = "0600";
   };
 
+  age.secrets."cloudflare-token" = {
+    file = "${secretsPath}/jamesbrink/cloudflare-token.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
   age.secrets."hal9000-kubeconfig" = {
     file = "${secretsPath}/jamesbrink/k8s/hal9000-kubeconfig.age";
     owner = "jamesbrink";
@@ -180,157 +187,175 @@
 
   # Post-activation for authorized_keys and secrets
   system.activationScripts.postActivation.text = lib.mkAfter ''
-        echo "Copying authorized_keys to standard location for compatibility..."
+            echo "Copying authorized_keys to standard location for compatibility..."
 
-        # Ensure .ssh directory exists with correct permissions
-        mkdir -p /Users/jamesbrink/.ssh
-        chown jamesbrink:staff /Users/jamesbrink/.ssh
-        chmod 700 /Users/jamesbrink/.ssh
+            # Ensure .ssh directory exists with correct permissions
+            mkdir -p /Users/jamesbrink/.ssh
+            chown jamesbrink:staff /Users/jamesbrink/.ssh
+            chmod 700 /Users/jamesbrink/.ssh
 
-        # Copy nix-managed authorized_keys to standard location
-        if [ -f /etc/ssh/nix_authorized_keys.d/jamesbrink ]; then
-          cp /etc/ssh/nix_authorized_keys.d/jamesbrink /Users/jamesbrink/.ssh/authorized_keys
-          chown jamesbrink:staff /Users/jamesbrink/.ssh/authorized_keys
-          chmod 600 /Users/jamesbrink/.ssh/authorized_keys
-          echo "Authorized keys copied to ~/.ssh/authorized_keys"
-        fi
+            # Copy nix-managed authorized_keys to standard location
+            if [ -f /etc/ssh/nix_authorized_keys.d/jamesbrink ]; then
+              cp /etc/ssh/nix_authorized_keys.d/jamesbrink /Users/jamesbrink/.ssh/authorized_keys
+              chown jamesbrink:staff /Users/jamesbrink/.ssh/authorized_keys
+              chmod 600 /Users/jamesbrink/.ssh/authorized_keys
+              echo "Authorized keys copied to ~/.ssh/authorized_keys"
+            fi
 
-        echo "Setting up AWS configuration for jamesbrink..."
-        sudo -u jamesbrink bash -c "
-          mkdir -p /Users/jamesbrink/.aws
+            echo "Setting up AWS configuration for jamesbrink..."
+            sudo -u jamesbrink bash -c "
+              mkdir -p /Users/jamesbrink/.aws
 
-          # Copy the decrypted AWS config files
-          cp -f ${config.age.secrets."aws-config".path} /Users/jamesbrink/.aws/config
-          cp -f ${config.age.secrets."aws-credentials".path} /Users/jamesbrink/.aws/credentials
+              # Copy the decrypted AWS config files
+              cp -f ${config.age.secrets."aws-config".path} /Users/jamesbrink/.aws/config
+              cp -f ${config.age.secrets."aws-credentials".path} /Users/jamesbrink/.aws/credentials
 
-          # Fix permissions
-          chmod 600 /Users/jamesbrink/.aws/config /Users/jamesbrink/.aws/credentials
-        "
-        echo "AWS configuration deployed to /Users/jamesbrink/.aws/"
+              # Fix permissions
+              chmod 600 /Users/jamesbrink/.aws/config /Users/jamesbrink/.aws/credentials
+            "
+            echo "AWS configuration deployed to /Users/jamesbrink/.aws/"
 
-        echo "Setting up GitHub token environment for jamesbrink..."
-        sudo -u jamesbrink bash -c "
-          mkdir -p /Users/jamesbrink/.config/environment.d
+            echo "Setting up GitHub token environment for jamesbrink..."
+            sudo -u jamesbrink bash -c "
+              mkdir -p /Users/jamesbrink/.config/environment.d
 
-          if [[ -f ${config.age.secrets."github-token".path} ]]; then
-            echo 'export GITHUB_TOKEN=\"\$(cat ${
-              config.age.secrets."github-token".path
-            })\"' > /Users/jamesbrink/.config/environment.d/github-token.sh
-          else
-            echo '# GitHub token not yet available from agenix' > /Users/jamesbrink/.config/environment.d/github-token.sh
-          fi
+              if [[ -f ${config.age.secrets."github-token".path} ]]; then
+                echo 'export GITHUB_TOKEN=\"\$(cat ${
+                  config.age.secrets."github-token".path
+                })\"' > /Users/jamesbrink/.config/environment.d/github-token.sh
+              else
+                echo '# GitHub token not yet available from agenix' > /Users/jamesbrink/.config/environment.d/github-token.sh
+              fi
 
-          chmod 600 /Users/jamesbrink/.config/environment.d/github-token.sh
-        "
-        echo "GitHub token environment deployed"
+              chmod 600 /Users/jamesbrink/.config/environment.d/github-token.sh
+            "
+            echo "GitHub token environment deployed"
 
-        echo "Setting up PyPI token environment for jamesbrink..."
-        sudo -u jamesbrink bash -c "
-          mkdir -p /Users/jamesbrink/.config/environment.d
+            echo "Setting up PyPI token environment for jamesbrink..."
+            sudo -u jamesbrink bash -c "
+              mkdir -p /Users/jamesbrink/.config/environment.d
 
-          if [[ -f ${config.age.secrets."pypi-key".path} ]]; then
-            TOKEN=\"\$(cat ${config.age.secrets."pypi-key".path})\"
-            cat > /Users/jamesbrink/.config/environment.d/pypi-token.sh <<EOF
-    export PYPI_TOKEN=\"\$TOKEN\"
-    export PYPI_API_TOKEN=\"\$TOKEN\"
-    export UV_PUBLISH_TOKEN=\"\$TOKEN\"
-    export UV_PUBLISH_USERNAME=\"jamesbrink\"
-    export POETRY_PYPI_TOKEN_PYPI=\"\$TOKEN\"
-    export TWINE_USERNAME=\"__token__\"
-    export TWINE_PASSWORD=\"\$TOKEN\"
+              if [[ -f ${config.age.secrets."pypi-key".path} ]]; then
+                TOKEN=\"\$(cat ${config.age.secrets."pypi-key".path})\"
+                cat > /Users/jamesbrink/.config/environment.d/pypi-token.sh <<EOF
+        export PYPI_TOKEN=\"\$TOKEN\"
+        export PYPI_API_TOKEN=\"\$TOKEN\"
+        export UV_PUBLISH_TOKEN=\"\$TOKEN\"
+        export UV_PUBLISH_USERNAME=\"jamesbrink\"
+        export POETRY_PYPI_TOKEN_PYPI=\"\$TOKEN\"
+        export TWINE_USERNAME=\"__token__\"
+        export TWINE_PASSWORD=\"\$TOKEN\"
+        EOF
+              else
+                echo '# PyPI token not yet available from agenix' > /Users/jamesbrink/.config/environment.d/pypi-token.sh
+              fi
+
+              chmod 600 /Users/jamesbrink/.config/environment.d/pypi-token.sh
+            "
+            echo "PyPI token environment deployed"
+
+            echo "Setting up Anthropic API key environment for jamesbrink..."
+            sudo -u jamesbrink bash -c "
+              mkdir -p /Users/jamesbrink/.config/environment.d
+
+              if [[ -f ${config.age.secrets."anthropic-key".path} ]]; then
+                echo 'export ANTHROPIC_API_KEY=\"\$(cat ${
+                  config.age.secrets."anthropic-key".path
+                })\"' > /Users/jamesbrink/.config/environment.d/anthropic-key.sh
+              else
+                echo '# Anthropic API key not yet available from agenix' > /Users/jamesbrink/.config/environment.d/anthropic-key.sh
+              fi
+
+              chmod 600 /Users/jamesbrink/.config/environment.d/anthropic-key.sh
+            "
+            echo "Anthropic API key environment deployed"
+
+            echo "Installing hal9000 kubeconfig for jamesbrink..."
+            sudo -u jamesbrink ${pkgs.bash}/bin/bash -c '
+              set -euo pipefail
+              HAL_URL="https://hal9000.home.urandom.io:6443"
+              mkdir -p /Users/jamesbrink/.kube
+              '"${pkgs.gnused}/bin/sed"' \
+                -e "s|https://127.0.0.1:6443|$HAL_URL|g" \
+                -e "s|https://localhost:6443|$HAL_URL|g" \
+                '"${config.age.secrets."hal9000-kubeconfig".path}"' > /Users/jamesbrink/.kube/config
+              chmod 600 /Users/jamesbrink/.kube/config
+            '
+            echo "hal9000 kubeconfig deployed to /Users/jamesbrink/.kube/config"
+
+            echo "Setting up Claude Code OAuth tokens for jamesbrink..."
+            sudo -u jamesbrink bash -c '
+              mkdir -p /Users/jamesbrink/.config/environment.d
+
+              if [[ -f ${config.age.secrets."claude-primary".path} ]]; then
+                echo "export CLAUDE_CODE_OAUTH_TOKEN_PRIMARY=\"\$(cat ${
+                  config.age.secrets."claude-primary".path
+                })\"" > /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
+              else
+                echo "# Claude primary token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
+              fi
+
+              if [[ -f ${config.age.secrets."claude-secondary".path} ]]; then
+                echo "export CLAUDE_CODE_OAUTH_TOKEN_SECONDARY=\"\$(cat ${
+                  config.age.secrets."claude-secondary".path
+                })\"" > /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
+              else
+                echo "# Claude secondary token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
+              fi
+
+              chmod 600 /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
+              chmod 600 /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
+            '
+            echo "Claude Code OAuth tokens deployed to /Users/jamesbrink/.config/environment.d/"
+
+            echo "Setting up OpenRouter API key for jamesbrink..."
+            sudo -u jamesbrink bash -c '
+              mkdir -p /Users/jamesbrink/.config/environment.d
+
+              if [[ -f ${config.age.secrets."openrouter-key".path} ]]; then
+                echo "export OPENROUTER_API_KEY=\"\$(cat ${
+                  config.age.secrets."openrouter-key".path
+                })\"" > /Users/jamesbrink/.config/environment.d/openrouter-key.sh
+              else
+                echo "# OpenRouter API key not yet available from agenix" > /Users/jamesbrink/.config/environment.d/openrouter-key.sh
+              fi
+
+              chmod 600 /Users/jamesbrink/.config/environment.d/openrouter-key.sh
+            '
+            echo "OpenRouter API key deployed to /Users/jamesbrink/.config/environment.d/"
+
+            echo "Setting up HuggingFace token environment for jamesbrink..."
+            sudo -u jamesbrink bash -c '
+              mkdir -p /Users/jamesbrink/.config/environment.d
+
+              if [[ -f ${config.age.secrets."huggingface-token".path} ]]; then
+                echo "export HF_TOKEN=\"\$(cat ${
+                  config.age.secrets."huggingface-token".path
+                })\"" > /Users/jamesbrink/.config/environment.d/huggingface-token.sh
+              else
+                echo "# HuggingFace token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/huggingface-token.sh
+              fi
+
+              chmod 600 /Users/jamesbrink/.config/environment.d/huggingface-token.sh
+            '
+            echo "HuggingFace token deployed to /Users/jamesbrink/.config/environment.d/"
+
+            echo "Setting up Cloudflare API token environment for jamesbrink..."
+            sudo -u jamesbrink bash -c '
+              mkdir -p /Users/jamesbrink/.config/environment.d
+
+              if [[ -f ${config.age.secrets."cloudflare-token".path} ]]; then
+                TOKEN="$(cat ${config.age.secrets."cloudflare-token".path})"
+                cat > /Users/jamesbrink/.config/environment.d/cloudflare-token.sh <<EOF
+    export CLOUDFLARE_API_TOKEN="$TOKEN"
+    export CF_API_TOKEN="$TOKEN"
     EOF
-          else
-            echo '# PyPI token not yet available from agenix' > /Users/jamesbrink/.config/environment.d/pypi-token.sh
-          fi
+              else
+                echo "# Cloudflare token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/cloudflare-token.sh
+              fi
 
-          chmod 600 /Users/jamesbrink/.config/environment.d/pypi-token.sh
-        "
-        echo "PyPI token environment deployed"
-
-        echo "Setting up Anthropic API key environment for jamesbrink..."
-        sudo -u jamesbrink bash -c "
-          mkdir -p /Users/jamesbrink/.config/environment.d
-
-          if [[ -f ${config.age.secrets."anthropic-key".path} ]]; then
-            echo 'export ANTHROPIC_API_KEY=\"\$(cat ${
-              config.age.secrets."anthropic-key".path
-            })\"' > /Users/jamesbrink/.config/environment.d/anthropic-key.sh
-          else
-            echo '# Anthropic API key not yet available from agenix' > /Users/jamesbrink/.config/environment.d/anthropic-key.sh
-          fi
-
-          chmod 600 /Users/jamesbrink/.config/environment.d/anthropic-key.sh
-        "
-        echo "Anthropic API key environment deployed"
-
-        echo "Installing hal9000 kubeconfig for jamesbrink..."
-        sudo -u jamesbrink ${pkgs.bash}/bin/bash -c '
-          set -euo pipefail
-          HAL_URL="https://hal9000.home.urandom.io:6443"
-          mkdir -p /Users/jamesbrink/.kube
-          '"${pkgs.gnused}/bin/sed"' \
-            -e "s|https://127.0.0.1:6443|$HAL_URL|g" \
-            -e "s|https://localhost:6443|$HAL_URL|g" \
-            '"${config.age.secrets."hal9000-kubeconfig".path}"' > /Users/jamesbrink/.kube/config
-          chmod 600 /Users/jamesbrink/.kube/config
-        '
-        echo "hal9000 kubeconfig deployed to /Users/jamesbrink/.kube/config"
-
-        echo "Setting up Claude Code OAuth tokens for jamesbrink..."
-        sudo -u jamesbrink bash -c '
-          mkdir -p /Users/jamesbrink/.config/environment.d
-
-          if [[ -f ${config.age.secrets."claude-primary".path} ]]; then
-            echo "export CLAUDE_CODE_OAUTH_TOKEN_PRIMARY=\"\$(cat ${
-              config.age.secrets."claude-primary".path
-            })\"" > /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
-          else
-            echo "# Claude primary token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
-          fi
-
-          if [[ -f ${config.age.secrets."claude-secondary".path} ]]; then
-            echo "export CLAUDE_CODE_OAUTH_TOKEN_SECONDARY=\"\$(cat ${
-              config.age.secrets."claude-secondary".path
-            })\"" > /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
-          else
-            echo "# Claude secondary token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
-          fi
-
-          chmod 600 /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
-          chmod 600 /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
-        '
-        echo "Claude Code OAuth tokens deployed to /Users/jamesbrink/.config/environment.d/"
-
-        echo "Setting up OpenRouter API key for jamesbrink..."
-        sudo -u jamesbrink bash -c '
-          mkdir -p /Users/jamesbrink/.config/environment.d
-
-          if [[ -f ${config.age.secrets."openrouter-key".path} ]]; then
-            echo "export OPENROUTER_API_KEY=\"\$(cat ${
-              config.age.secrets."openrouter-key".path
-            })\"" > /Users/jamesbrink/.config/environment.d/openrouter-key.sh
-          else
-            echo "# OpenRouter API key not yet available from agenix" > /Users/jamesbrink/.config/environment.d/openrouter-key.sh
-          fi
-
-          chmod 600 /Users/jamesbrink/.config/environment.d/openrouter-key.sh
-        '
-        echo "OpenRouter API key deployed to /Users/jamesbrink/.config/environment.d/"
-
-        echo "Setting up HuggingFace token environment for jamesbrink..."
-        sudo -u jamesbrink bash -c '
-          mkdir -p /Users/jamesbrink/.config/environment.d
-
-          if [[ -f ${config.age.secrets."huggingface-token".path} ]]; then
-            echo "export HF_TOKEN=\"\$(cat ${
-              config.age.secrets."huggingface-token".path
-            })\"" > /Users/jamesbrink/.config/environment.d/huggingface-token.sh
-          else
-            echo "# HuggingFace token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/huggingface-token.sh
-          fi
-
-          chmod 600 /Users/jamesbrink/.config/environment.d/huggingface-token.sh
-        '
-        echo "HuggingFace token deployed to /Users/jamesbrink/.config/environment.d/"
+              chmod 600 /Users/jamesbrink/.config/environment.d/cloudflare-token.sh
+            '
+            echo "Cloudflare API token deployed to /Users/jamesbrink/.config/environment.d/"
   '';
 }

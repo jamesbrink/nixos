@@ -362,6 +362,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."cloudflare-token" = {
+    file = "${effectiveSecretsPath}/jamesbrink/cloudflare-token.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
   age.secrets."jamesbrink-hashed-password" = {
     file = "${effectiveSecretsPath}/jamesbrink/hashed-password.age";
     owner = "root";
@@ -544,6 +551,27 @@ in
       })\"" > /home/jamesbrink/.config/environment.d/openrouter-key.sh
       chmod 600 /home/jamesbrink/.config/environment.d/openrouter-key.sh
       chown jamesbrink:users /home/jamesbrink/.config/environment.d/openrouter-key.sh
+    '';
+  };
+
+  systemd.services.cloudflare-token-setup = {
+    description = "Setup Cloudflare API token environment";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+      mkdir -p /home/jamesbrink/.config/environment.d
+      TOKEN="$(cat ${config.age.secrets."cloudflare-token".path})"
+      cat > /home/jamesbrink/.config/environment.d/cloudflare-token.sh <<EOF
+      export CLOUDFLARE_API_TOKEN="$TOKEN"
+      export CF_API_TOKEN="$TOKEN"
+      EOF
+      chmod 600 /home/jamesbrink/.config/environment.d/cloudflare-token.sh
+      chown jamesbrink:users /home/jamesbrink/.config/environment.d/cloudflare-token.sh
     '';
   };
 
