@@ -1,6 +1,6 @@
 # Pin to an explicit runner version tag and immutable digest for reproducibility.
 # Digest verified via GitHub Packages API: actions/actions-runner:2.331.0 => sha256:dced476...
-FROM ghcr.io/actions/actions-runner:2.331.0@sha256:dced476aa42703ebd9aafc295ce52f160989c4528e831fc3be2aef83a1b3f6da
+FROM ghcr.io/actions/actions-runner:latest@sha256:8c3f5970b8ceb90cbd3e89b80c6806bb74d9c31686e9177c743323a4539d12f5
 
 # Switch to root to install packages
 USER root
