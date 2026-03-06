@@ -33,7 +33,6 @@ in
       jq
       lf
       lsof
-      neofetch
       neovim-remote
       netcat
       nixfmt
@@ -54,7 +53,6 @@ in
       terraform
       tree
       unzip
-      virt-viewer
       watch
       wget
       wireguard-tools
@@ -128,6 +126,7 @@ in
       # Code editors - Cursor on Linux (macOS uses Homebrew cask)
       unstable.code-cursor
       # Linux-only packages
+      virt-viewer
       below
       gcr # Provides org.gnome.keyring.SystemPrompter for libsecret
       libsecret

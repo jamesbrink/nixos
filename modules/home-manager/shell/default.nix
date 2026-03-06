@@ -24,7 +24,7 @@
     CLAUDE_BASH_COMMAND_MAX_TIMEOUT = "600000";
     CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
 
-    NPM_CONFIG_USERCONFIG = "$HOME/.npmrc.local";
+    NPM_CONFIG_PREFIX = "$HOME/.npm-global";
 
     PAGER = "less -FR";
 
@@ -33,6 +33,9 @@
 
     # Add ~/.local/bin to PATH
     PATH = "$HOME/.local/bin:$PATH";
+  }
+  // lib.optionalAttrs pkgs.stdenv.isDarwin {
+    NPM_CONFIG_USERCONFIG = "$HOME/.npmrc.local";
   }
   // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
     SSH_AUTH_SOCK = "/run/user/$(id -u)/ssh-agent";

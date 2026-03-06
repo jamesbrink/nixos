@@ -85,10 +85,11 @@
   ];
 
   # InvokeAI service
-  services.invokeai = {
-    enable = true;
-    user = "jamesbrink";
-  };
+  # TODO: disabled — mediapipe fails to build on aarch64-darwin (x86_64 wheel + missing jax/jaxlib)
+  # services.invokeai = {
+  #   enable = true;
+  #   user = "jamesbrink";
+  # };
 
   # AI Toolkit training service
   services.ai-toolkit = {
