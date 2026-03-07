@@ -457,20 +457,20 @@ in
       User = "jamesbrink";
     };
     script = ''
-            # Read the PyPI token and create a shell source file
-            mkdir -p /home/jamesbrink/.config/environment.d
-            TOKEN="$(cat ${config.age.secrets."pypi-key".path})"
-            cat > /home/jamesbrink/.config/environment.d/pypi-token.sh <<EOF
-      export PYPI_TOKEN="$TOKEN"
-      export PYPI_API_TOKEN="$TOKEN"
-      export UV_PUBLISH_TOKEN="$TOKEN"
-      export UV_PUBLISH_USERNAME="jamesbrink"
-      export POETRY_PYPI_TOKEN_PYPI="$TOKEN"
-      export TWINE_USERNAME="__token__"
-      export TWINE_PASSWORD="$TOKEN"
-      EOF
-            chmod 600 /home/jamesbrink/.config/environment.d/pypi-token.sh
-            chown jamesbrink:users /home/jamesbrink/.config/environment.d/pypi-token.sh
+      # Read the PyPI token and create a shell source file
+      mkdir -p /home/jamesbrink/.config/environment.d
+      TOKEN="$(cat ${config.age.secrets."pypi-key".path})"
+      {
+        echo "export PYPI_TOKEN=\"$TOKEN\""
+        echo "export PYPI_API_TOKEN=\"$TOKEN\""
+        echo "export UV_PUBLISH_TOKEN=\"$TOKEN\""
+        echo "export UV_PUBLISH_USERNAME=\"jamesbrink\""
+        echo "export POETRY_PYPI_TOKEN_PYPI=\"$TOKEN\""
+        echo "export TWINE_USERNAME=\"__token__\""
+        echo "export TWINE_PASSWORD=\"$TOKEN\""
+      } > /home/jamesbrink/.config/environment.d/pypi-token.sh
+      chmod 600 /home/jamesbrink/.config/environment.d/pypi-token.sh
+      chown jamesbrink:users /home/jamesbrink/.config/environment.d/pypi-token.sh
     '';
   };
 
@@ -566,10 +566,10 @@ in
     script = ''
       mkdir -p /home/jamesbrink/.config/environment.d
       TOKEN="$(cat ${config.age.secrets."cloudflare-token".path})"
-      cat > /home/jamesbrink/.config/environment.d/cloudflare-token.sh <<EOF
-      export CLOUDFLARE_API_TOKEN="$TOKEN"
-      export CF_API_TOKEN="$TOKEN"
-      EOF
+      {
+        echo "export CLOUDFLARE_API_TOKEN=\"$TOKEN\""
+        echo "export CF_API_TOKEN=\"$TOKEN\""
+      } > /home/jamesbrink/.config/environment.d/cloudflare-token.sh
       chmod 600 /home/jamesbrink/.config/environment.d/cloudflare-token.sh
       chown jamesbrink:users /home/jamesbrink/.config/environment.d/cloudflare-token.sh
     '';
