@@ -27,6 +27,7 @@ in
     gnumake
     infracost
     jdk
+    maven
     kind
     kubectl
     kubectx

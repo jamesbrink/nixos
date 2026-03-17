@@ -35,6 +35,7 @@ in
     incus
     infracost
     jdk
+    maven
     kind
     kubectl
     kubectx
