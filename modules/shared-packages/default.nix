@@ -18,6 +18,8 @@ in
       bandwhich
       bfg-repo-cleaner
       bzip2
+      cargo
+      rustc
       cachix
       dig
       dnsutils
