@@ -20,6 +20,7 @@ in
       bzip2
       cargo
       rustc
+      gcc
       cachix
       dig
       dnsutils
@@ -55,6 +56,7 @@ in
       terraform
       tree
       unzip
+      viu
       watch
       wget
       wireguard-tools
