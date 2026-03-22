@@ -50,6 +50,9 @@ in
         ../../modules/home-manager/darwin/cursor-extensions.nix
       ];
 
+      programs.zsh.shellAliases.cld = "claude --dangerously-skip-permissions";
+      programs.zsh.shellAliases.cldt = "claude --dangerously-skip-permissions --channels plugin:telegram@claude-plugins-official";
+
       # Install missing theme extensions to VSCode and Cursor
       programs.editor.extraThemeExtensions.enable = true;
 
