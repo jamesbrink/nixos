@@ -1132,6 +1132,7 @@
     winetricks
     wineWowPackages.waylandFull
     xorriso
+    inputs.mold.packages.x86_64-linux.default
     # GStreamer plugins for UxPlay
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-base
@@ -1428,6 +1429,14 @@
     timezone = "America/Phoenix";
     resticHostname = "hal9000";
     extraReadWritePaths = [ "/mnt/storage20tb" ];
+  };
+
+  # Mold AI image generation service
+  services.mold = {
+    enable = true;
+    package = inputs.mold.packages.x86_64-linux.default;
+    modelsDir = "/storage-fast/AI/mold/models";
+    openFirewall = true;
   };
 
   # PostgreSQL 17 read replica from Quantierra production

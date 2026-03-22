@@ -98,6 +98,9 @@
       url = "github:jamesbrink/why";
       inputs.nixpkgs.follows = "nixos-unstable";
     };
+    mold = {
+      url = "github:utensils/mold";
+    };
   };
 
   outputs =
@@ -125,6 +128,7 @@
       ai-toolkit,
       zerobyte,
       bun2nix,
+      mold,
       ...
     }@inputs:
     let
@@ -937,6 +941,7 @@
             ai-toolkit.nixosModules.default
             ./hosts/hal9000/default.nix
             zerobyte.nixosModules.default
+            mold.nixosModules.default
 
             # Use unstable packages
             {
