@@ -30,6 +30,9 @@
   # Core runtime (nodejs, pnpm, bun) comes from shared-packages
   # Channel integrations use API libraries (no native clients needed for Discord/Telegram/Slack/WhatsApp)
   environment.systemPackages = with pkgs; [
+    # AI image generation CLI
+    inputs.mold.packages.${pkgs.stdenv.hostPlatform.system}.default
+
     # Signal channel support
     signal-cli
 
