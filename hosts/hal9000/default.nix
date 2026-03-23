@@ -1436,6 +1436,7 @@
     enable = true;
     package = inputs.mold.packages.x86_64-linux.default;
     modelsDir = "/storage-fast/AI/mold/models";
+    hfTokenFile = config.age.secrets."huggingface-token".path;
     openFirewall = true;
   };
 
