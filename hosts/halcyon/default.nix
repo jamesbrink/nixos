@@ -73,6 +73,8 @@
     clang
     comfyui-nix.packages.${pkgs.stdenv.hostPlatform.system}.comfyui
     acris-scrapers.packages.${pkgs.stdenv.hostPlatform.system}.acris-scraper
+    # AI image generation CLI
+    inputs.mold.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
   # Set environment variables for libpostal
