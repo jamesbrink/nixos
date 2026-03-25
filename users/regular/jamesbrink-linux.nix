@@ -43,6 +43,7 @@ in
       "incus-admin"
       "kvm"
       "libvirtd"
+      "mold"
       "networkmanager"
       "podman"
       "qemu-libvirtd"

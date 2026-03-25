@@ -135,6 +135,11 @@
     "d ${config.users.users.jamesbrink.home}/.local/share/rustdesk 0755 jamesbrink users"
     # PixInsight cache directory - prevents garbage collection of the tar.xz file
     "d /var/cache/pixinsight 0755 root root"
+    # Allow mold service to traverse /storage-fast/AI (owned by jamesbrink:users, 750 by default)
+    "d /storage-fast/AI 0751 jamesbrink users -"
+    "d /storage-fast/AI/mold 0755 mold mold -"
+    # Allow mold group members to write to the models directory
+    "d /storage-fast/AI/mold/models 0775 mold mold -"
   ];
 
   fileSystems."/storage-fast" = {
