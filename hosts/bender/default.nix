@@ -27,6 +27,9 @@
   time.timeZone = "America/Phoenix";
 
   # OpenClaw dependencies
+  # Point mold CLI at hal9000's inference server
+  environment.variables.MOLD_HOST = "http://hal9000.home.urandom.io:7680";
+
   # Core runtime (nodejs, pnpm, bun) comes from shared-packages
   # Channel integrations use API libraries (no native clients needed for Discord/Telegram/Slack/WhatsApp)
   environment.systemPackages = with pkgs; [
