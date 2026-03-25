@@ -1436,7 +1436,9 @@
     extraReadWritePaths = [ "/mnt/storage20tb" ];
   };
 
-  # Mold AI image generation service
+  # Mold AI image generation — shared models directory for service + CLI
+  environment.variables.MOLD_MODELS_DIR = "/storage-fast/AI/mold/models";
+
   services.mold = {
     enable = true;
     package = inputs.mold.packages.x86_64-linux.default;
