@@ -135,11 +135,8 @@
     "d ${config.users.users.jamesbrink.home}/.local/share/rustdesk 0755 jamesbrink users"
     # PixInsight cache directory - prevents garbage collection of the tar.xz file
     "d /var/cache/pixinsight 0755 root root"
-    # Allow mold service to traverse /storage-fast/AI (owned by jamesbrink:users, 750 by default)
-    "d /storage-fast/AI 0751 jamesbrink users -"
-    "d /storage-fast/AI/mold 0755 mold mold -"
-    # Allow mold group members to write to the models directory
-    "d /storage-fast/AI/mold/models 0775 mold mold -"
+    # Root-owned so tmpfiles can safely create mold-owned subdirs (avoids unsafe path transition)
+    "d /storage-fast/AI 0755 root root -"
   ];
 
   fileSystems."/storage-fast" = {
@@ -1436,13 +1433,14 @@
     extraReadWritePaths = [ "/mnt/storage20tb" ];
   };
 
-  # Mold AI image generation — shared models directory for service + CLI
-  environment.variables.MOLD_MODELS_DIR = "/storage-fast/AI/mold/models";
+  # Mold AI image generation — homeDir drives models, cache, and output paths
+  environment.variables.MOLD_HOME = "/storage-fast/AI/mold";
 
   services.mold = {
     enable = true;
     package = inputs.mold.packages.x86_64-linux.default;
-    modelsDir = "/storage-fast/AI/mold/models";
+    homeDir = "/storage-fast/AI/mold";
+    outputDir = "/storage-fast/AI/mold/output";
     hfTokenFile = config.age.secrets."huggingface-token".path;
     openFirewall = true;
   };

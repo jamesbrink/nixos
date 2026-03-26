@@ -46,6 +46,7 @@
     speedtest-cli
 
     # Security
+    bubblewrap
     git-crypt
     git-secrets
 
