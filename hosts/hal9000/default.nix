@@ -623,6 +623,12 @@
         group = "root";
         mode = "0400";
       };
+      "mold-discord-token" = {
+        file = "${secretsPath}/mold-discord-token.age";
+        owner = "mold";
+        group = "mold";
+        mode = "0400";
+      };
     };
   };
 
@@ -1443,6 +1449,11 @@
     outputDir = "/storage-fast/AI/mold/output";
     hfTokenFile = config.age.secrets."huggingface-token".path;
     openFirewall = true;
+    discord = {
+      enable = true;
+      package = inputs.mold.packages.x86_64-linux.mold-discord;
+      tokenFile = config.age.secrets."mold-discord-token".path;
+    };
   };
 
   # PostgreSQL 17 read replica from Quantierra production
