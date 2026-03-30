@@ -1446,6 +1446,23 @@
   # Mold AI image generation — homeDir drives models, cache, and output paths
   environment.variables.MOLD_HOME = "/storage-fast/AI/mold";
 
+  # Ensure default ACL on mold directories so CLI-created files are group-writable
+  systemd.services.mold-acl = {
+    description = "Set default ACL on mold directories";
+    wantedBy = [ "multi-user.target" ];
+    before = [ "mold.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ${pkgs.acl}/bin/setfacl -R -d -m g::rwx /storage-fast/AI/mold
+    '';
+  };
+
+  # Allow mold server to read LoRAs and models from the broader AI directory
+  systemd.services.mold.serviceConfig.ReadWritePaths = [ "/storage-fast/AI" ];
+
   services.mold = {
     enable = true;
     package = inputs.mold.packages.x86_64-linux.default;

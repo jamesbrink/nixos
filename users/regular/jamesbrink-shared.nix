@@ -70,6 +70,10 @@ in
         email = "brink.james@gmail.com";
       };
 
+      # Claude Code aliases
+      programs.zsh.shellAliases.cld = "claude --dangerously-skip-permissions";
+      programs.zsh.shellAliases.cldt = "claude --dangerously-skip-permissions --channels plugin:telegram@claude-plugins-official";
+
       # Platform-specific update aliases
       programs.zsh.shellAliases.update =
         if pkgs.stdenv.isDarwin then
