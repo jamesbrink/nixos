@@ -37,6 +37,7 @@ in
     uid = 1000;
     description = "James Brink";
     createHome = true;
+    homeMode = "711";
     hashedPasswordFile = config.age.secrets."jamesbrink-hashed-password".path;
     extraGroups = [
       "docker"
