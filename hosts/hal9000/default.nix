@@ -543,7 +543,7 @@
     package = pkgs.unstablePkgs.ollama-cuda;
   };
 
-  # ComfyUI service
+  # ComfyUI service (manual start: systemctl start comfyui)
   services.comfyui = {
     enable = true;
     gpuSupport = "cuda";
@@ -562,7 +562,7 @@
     ];
   };
 
-  # InvokeAI service
+  # InvokeAI service (manual start: systemctl start invokeai)
   services.invokeai = {
     enable = true;
     dataDir = "/storage-fast/AI/InvokeAI";
@@ -574,6 +574,10 @@
     createUser = false;
     requiresMounts = [ "storage\\x2dfast-AI.mount" ];
   };
+
+  # Prevent GPU-hungry services from auto-starting — use systemctl start <service>
+  systemd.services.comfyui.wantedBy = lib.mkForce [ ];
+  systemd.services.invokeai.wantedBy = lib.mkForce [ ];
 
   # AI Toolkit training service
   services.ai-toolkit = {
@@ -1451,7 +1455,6 @@
     openFirewall = true;
     discord = {
       enable = true;
-      package = inputs.mold.packages.x86_64-linux.mold-discord;
       tokenFile = config.age.secrets."mold-discord-token".path;
     };
   };
