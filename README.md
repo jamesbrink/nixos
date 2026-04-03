@@ -10,10 +10,10 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 
 1. `direnv allow` or `nix develop` to enter the dev shell (sets `NIXPKGS_ALLOW_UNFREE=1` plus lint/test helpers).
 2. Run `format` (treefmt) before committing.
-3. Validate with `nix flake check --impure`.
-4. Build the desired target: `nix build .#nixosConfigurations.<host>.config.system.build.toplevel` or `.darwinConfigurations.<host>.system`.
-5. Deploy via `deploy-test <host>` → `deploy <host>` (or `deploy-local <host>`); follow with `scripts/health-check.sh <host>` and `scripts/show-generations.sh <host>`.
-6. Keep secrets encrypted with `scripts/secrets-edit.sh` + `secrets/`; track recipients in `SECRETS.md` and verify via `scripts/secrets-verify.sh`.
+3. Validate with `check` (runs `nix flake check --impure`).
+4. Build the desired target: `build <host>` (auto-detects NixOS vs Darwin).
+5. Deploy via `deploy-test <host>` → `deploy <host>` (or `deploy-local <host>`); follow with `health-check <host>` and `show-generations <host>`.
+6. Keep secrets encrypted with `secrets-edit <path>`; track recipients in `SECRETS.md` and verify via `secrets-verify`.
 7. Document major changes in `TODO.md` or module docs, and log new manual steps/secrets when touching infrastructure.
 
 ## Repository layout
@@ -104,9 +104,9 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 ## Tooling, quality, and safety checks
 
 - Dev shell packages include `nixfmt`, `treefmt`, `prettier`, `age`, `openssh`, Python 3.13 with pytest/typer/rich, Ruff, BasedPyright, markdownlint, and other helpers so agents can lint/test without global installs.
-- Secrets hygiene: run `scripts/scan-gitleaks.sh`, `scripts/scan-secrets.sh --all`, or the pre-commit hooks before pushing; never store plaintext outside `secrets/`.
-- System hygiene: `scripts/restic-*.sh` handle backups, `scripts/nix-gc.sh` cleans stores, and `scripts/show-generations.sh` plus `scripts/rollback.sh` make rollbacks explicit.
-- Rancher monitoring rollouts use `scripts/deploy-k8s.py rancher`, which syncs `k8s/rancher/grafana-nginx.conf` into the Grafana proxy ConfigMap and restarts Grafana automatically—verify via Rancher UI and <https://grafana.home.urandom.io>.
+- Secrets hygiene: run `scan-gitleaks`, `scan-secrets --all`, or the pre-commit hooks before pushing; never store plaintext outside `secrets/`.
+- System hygiene: `restic-status`, `restic-run <host>`, `restic-snapshots <host>` handle backups; `nix-gc` cleans stores; `show-generations <host>` and `rollback <host>` make rollbacks explicit.
+- Rancher monitoring rollouts use `deploy-k8s rancher`, which syncs `k8s/rancher/grafana-nginx.conf` into the Grafana proxy ConfigMap and restarts Grafana automatically—verify via Rancher UI and <https://grafana.home.urandom.io>.
 - GitHub Actions troubleshooting steps live in `docs/github-actions.md`; force-cancel stuck runs before deleting them.
 
 ## Conventions

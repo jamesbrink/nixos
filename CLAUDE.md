@@ -6,18 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Enter the dev shell first: `nix develop` (or `direnv allow`) — sets `NIXPKGS_ALLOW_UNFREE=1` and exposes all helpers.
 
-| Command                                                               | Purpose                                             |
-| --------------------------------------------------------------------- | --------------------------------------------------- |
-| `format`                                                              | Run treefmt (nixfmt + prettier)                     |
-| `nix flake check --impure`                                            | Baseline validation for all changes                 |
-| `nix build .#nixosConfigurations.<host>.config.system.build.toplevel` | Build NixOS host                                    |
-| `nix build .#darwinConfigurations.<host>.system`                      | Build Darwin host                                   |
-| `deploy <host>`                                                       | Production deployment                               |
-| `deploy-test <host>`                                                  | Dry-run deployment (no activation)                  |
-| `deploy-local <host>`                                                 | Build locally, push to remote (for low-RAM targets) |
-| `scripts/health-check.sh <host>`                                      | Post-deploy service verification                    |
-| `scripts/show-generations.sh <host>`                                  | List rollback points                                |
-| `scripts/rollback.sh <host>`                                          | Revert to previous generation                       |
+| Command                   | Purpose                                             |
+| ------------------------- | --------------------------------------------------- |
+| `format`                  | Run treefmt (nixfmt + prettier + ruff + shellcheck) |
+| `check`                   | Run `nix flake check --impure`                      |
+| `build <host>`            | Build host (auto-detects NixOS vs Darwin)           |
+| `deploy <host>`           | Production deployment                               |
+| `deploy-test <host>`      | Dry-run deployment (no activation)                  |
+| `deploy-local <host>`     | Build locally, push to remote (for low-RAM targets) |
+| `deploy-all`              | Parallel deploy to all hosts with summary report    |
+| `health-check <host>`     | Post-deploy service verification                    |
+| `show-generations <host>` | List rollback points                                |
+| `rollback <host>`         | Revert to previous generation                       |
+| `show-hosts`              | List all available host names                       |
+
+All devshell commands (including the ones below) require `--impure` under the hood since `NIXPKGS_ALLOW_UNFREE=1` is set. When running raw `nix build` or `nix flake check` outside the devshell, pass `--impure`.
 
 **Secrets management:**
 
@@ -28,7 +31,7 @@ Enter the dev shell first: `nix develop` (or `direnv allow`) — sets `NIXPKGS_A
 
 **Kubernetes (Rancher + monitoring):**
 
-- `./scripts/deploy-k8s.py rancher` — bootstrap/refresh Rancher + Grafana proxy
+- `deploy-k8s rancher` — bootstrap/refresh Rancher + Grafana proxy
 
 ## Architecture Overview
 
@@ -36,10 +39,20 @@ Enter the dev shell first: `nix develop` (or `direnv allow`) — sets `NIXPKGS_A
 
 `flake.nix` defines:
 
-- **Inputs**: nixpkgs (stable 25.11), nixos-unstable, home-manager, nix-darwin, agenix, disko, plus external flakes (comfyui-nix, zerobyte, etc.)
+- **Inputs**: nixpkgs (stable 25.11), nixos-unstable, home-manager, nix-darwin, agenix, disko, plus external flakes (comfyui-nix, invokeai, ai-toolkit, zerobyte, mold, etc.)
 - **Dev shells**: Cross-platform (x86_64-linux, aarch64-darwin, x86_64-darwin) with Python 3.13, Ruff, BasedPyright, treefmt, age, and deployment helpers
 - **Host outputs**: `nixosConfigurations` (hal9000, alienware, n100-01 through n100-04) and `darwinConfigurations` (halcyon, bender)
 - **Packages**: `themectl` CLI for cross-platform theme management
+
+### External Flake Wiring Pattern
+
+When adding an external flake to a host, three things must be wired in `flake.nix`:
+
+1. Add the flake input (e.g., `invokeai.url = "github:jamesbrink/InvokeAI/feature/nix-flake"`)
+2. Add `<flake>.nixosModules.default` (or `darwinModules.default`) to the host's `modules` list
+3. Add `<flake>.overlays.default` to the host's `nixpkgs.overlays` list
+
+Then configure the service in the host's `default.nix`. See hal9000 (comfyui, invokeai, ai-toolkit, zerobyte, mold) and bender (invokeai, ai-toolkit) as reference.
 
 ### Module Hierarchy
 
@@ -63,7 +76,11 @@ modules/
 
 **Host files** should only stitch profiles and host-specific overrides. Business logic belongs in modules or `scripts/`.
 
-**Overlays** (`overlays/`) provide `unstablePkgs` and custom derivations (PixInsight, llama-cpp). Access via `pkgs.unstablePkgs.<package>`.
+**Profiles** aggregate modules into roles: `server` (NixOS servers), `desktop` (NixOS with GUI), `darwin` (full macOS workstation), `darwin-slim` (headless macOS), `n100` (mini-PC cluster nodes), `keychron` (keyboard config). Darwin hosts use `home-manager-unstable` (follows `nixos-unstable`); NixOS hosts use stable `home-manager` (follows `nixpkgs`).
+
+**specialArgs** passed to every host include `inputs`, `agenix`, `secretsPath`, and `hotkeysBundle`. Some hosts also get `self`, `claude-desktop`, `unstablePkgs`, and external flake inputs (e.g., `comfyui-nix`, `acris-scrapers`). These are defined per-host in `flake.nix` and available in any imported module.
+
+**Overlays** (`overlays/`) provide `unstablePkgs` and custom derivations (PixInsight, gogcli). Access via `pkgs.unstablePkgs.<package>`.
 
 **Secrets** live in `secrets/` as `.age` files encrypted via agenix. Recipients are tracked in `secrets/secrets.nix`. Hosts decrypt using their SSH host key (`/etc/ssh/ssh_host_ed25519_key`).
 
@@ -98,11 +115,13 @@ ssh hal9000 "sudo pkill -u postgres postgres && sudo systemctl start postgresql-
 
 ## Coding Standards
 
-**Nix**: Two-space indentation, sorted attribute sets, formatted by nixfmt. Prefer upstream modules before writing custom logic.
+**Nix**: Two-space indentation, sorted attribute sets, formatted by `nixfmt`. Prefer upstream modules before writing custom logic.
 
-**Bash**: `#!/usr/bin/env bash` with `set -euo pipefail`. Must pass `shellcheck scripts/*.sh`.
+**Bash**: `#!/usr/bin/env bash` with `set -euo pipefail`. Checked by `shellcheck` (with `-x -e SC1091,SC2029`).
 
 **Python** (`scripts/themectl/`): Type hints everywhere, Ruff for lint/format, BasedPyright for type checking, pytest for tests. Keep files under 800 lines.
+
+**treefmt** (`treefmt.toml`) runs: `nixfmt` (_.nix), `prettier` (HTML/CSS/JS/JSON/YAML), `markdownlint --fix` (_.md), `ruff format` + `ruff check --fix` (_.py), `shellcheck` (_.sh), `basedpyright` (themectl only).
 
 **Naming**: Lowercase hyphenated names for files, modules, hosts, profiles (e.g., `hosts/halcyon`, `ghostty-terminfo.nix`).
 
