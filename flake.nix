@@ -897,6 +897,7 @@
             vscode-server.nixosModules.default
             ./modules/vscode-server.nix
             comfyui-nix.nixosModules.default
+            mold.nixosModules.default
             ./hosts/alienware/default.nix
             # Use unstable packages
             {

@@ -79,6 +79,7 @@ in
       pnpm
       wrangler
       inputs.why.packages.${pkgs.stdenv.hostPlatform.system}.default
+      inputs.mold.packages.${pkgs.stdenv.hostPlatform.system}.default
 
       # Restic browser with credential isolation wrapper
       (pkgs.writeShellScriptBin "restic-browser" ''

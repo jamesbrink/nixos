@@ -296,7 +296,6 @@
     };
     # GUI automation tools for remote control
     systemPackages = with pkgs; [
-      inputs.mold.packages.${pkgs.stdenv.hostPlatform.system}.default
       xdotool # X11 automation (mouse/keyboard)
       xclip # Clipboard access
       scrot # Screenshots

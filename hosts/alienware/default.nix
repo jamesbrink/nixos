@@ -271,7 +271,7 @@
     };
   };
 
-  # ComfyUI service
+  # ComfyUI service — installed but not auto-started
   services.comfyui = {
     enable = true;
     gpuSupport = "cuda";
@@ -288,6 +288,7 @@
       "--lowvram"
     ];
   };
+  systemd.services.comfyui.wantedBy = lib.mkForce [ ];
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -418,7 +419,36 @@
       "global-ssh-authorized-keys".file = "${secretsPath}/global/ssh/authorized_keys.age";
       "alienware-syncthing-password".file = "${secretsPath}/alienware/syncthing-password.age";
       "k3s-token".file = "${secretsPath}/alienware/k3s-token.age";
+      "huggingface-token".file = "${secretsPath}/jamesbrink/huggingface-token.age";
     };
+  };
+
+  # Mold AI image generation
+  environment.variables.MOLD_HOME = "/home/jamesbrink/AI/mold";
+
+  systemd.services.mold-acl = {
+    description = "Set default ACL on mold directories";
+    wantedBy = [ "multi-user.target" ];
+    before = [ "mold.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ${pkgs.acl}/bin/setfacl -R -d -m g::rwx /home/jamesbrink/AI/mold
+    '';
+  };
+
+  systemd.services.mold.serviceConfig.ProtectHome = lib.mkForce false;
+  systemd.services.mold.serviceConfig.ReadWritePaths = [ "/home/jamesbrink/AI" ];
+
+  services.mold = {
+    enable = true;
+    package = inputs.mold.packages.x86_64-linux.default;
+    homeDir = "/home/jamesbrink/AI/mold";
+    outputDir = "/home/jamesbrink/AI/mold/output";
+    hfTokenFile = config.age.secrets."huggingface-token".path;
+    openFirewall = true;
   };
 
   # Virtualization configuration
@@ -533,7 +563,6 @@
 
   # Host-specific packages (beyond what's in shared modules and desktop profile)
   environment.systemPackages = with pkgs; [
-
     # CUDA and GPU tools
     cudaPackages.cudatoolkit
     nvtopPackages.nvidia

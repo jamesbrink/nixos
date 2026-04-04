@@ -1144,7 +1144,6 @@
     winetricks
     wineWowPackages.waylandFull
     xorriso
-    inputs.mold.packages.x86_64-linux.default
     # GStreamer plugins for UxPlay
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-base
