@@ -152,8 +152,7 @@ in
           unstable.postman
           unstable.signal-desktop
           termius
-          unstable.claude-code
-          unstable.goose-cli
+          goose-cli
           unstable.windsurf
           unstable.warp-terminal
           waveterm

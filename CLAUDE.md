@@ -162,6 +162,10 @@ gh api --method POST -H "Accept: application/vnd.github+json" \
 
 Confirm with `gh run view <run_id> -R <owner>/<repo> --json status,conclusion`. See `docs/github-actions.md` for full notes.
 
+## Package Lookups
+
+Use the `mcp__nixos__nix` MCP tool as the **first choice** for checking package availability, versions, and options across channels. It supports `search`, `info`, `options`, and `flake-inputs` actions against nixos, home-manager, darwin, and other sources. Fall back to `nix eval` or `nix search` only when the MCP tool doesn't cover the query.
+
 ## Reference Docs
 
 - `VISION.md` — fleet goals and guardrails
