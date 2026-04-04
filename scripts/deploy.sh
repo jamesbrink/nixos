@@ -49,6 +49,12 @@ HOSTNAME=$(hostname | cut -d. -f1 | tr '[:upper:]' '[:lower:]')
 SYSTEM=$(uname -s | tr '[:upper:]' '[:lower:]')
 HOST_LOWER=$(echo "$HOST" | tr '[:upper:]' '[:lower:]')
 
+# Auto-set build host for n100 nodes (low-RAM targets)
+if [[ "$HOST_LOWER" == n100-* ]] && [ -z "$BUILD_HOST" ]; then
+  BUILD_HOST="hal9000"
+  echo "n100 host detected — using hal9000 as build host"
+fi
+
 # Function to detect and sync local path inputs
 # Returns override arguments for nix build commands
 sync_local_inputs() {
