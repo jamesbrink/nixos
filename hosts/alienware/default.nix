@@ -426,6 +426,9 @@
   # Mold AI image generation
   environment.variables.MOLD_HOME = "/home/jamesbrink/AI/mold";
 
+  # Add mold user to users group so it can traverse /home/jamesbrink/AI
+  users.users.mold.extraGroups = [ "users" ];
+
   systemd.services.mold-acl = {
     description = "Set default ACL on mold directories";
     wantedBy = [ "multi-user.target" ];
