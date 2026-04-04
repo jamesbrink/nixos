@@ -98,12 +98,13 @@
   # };
 
   # AI Toolkit training service
-  services.ai-toolkit = {
-    enable = true;
-    user = "jamesbrink";
-    secrets = {
-      claudeOauthTokenFile = config.age.secrets."claude-secondary".path;
-      hfTokenFile = config.age.secrets."huggingface-token".path;
-    };
-  };
+  # TODO: disabled — torchaudio 2.11.0 build broken in nixpkgs-unstable (empty TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_QUANTIZATION env var)
+  # services.ai-toolkit = {
+  #   enable = true;
+  #   user = "jamesbrink";
+  #   secrets = {
+  #     claudeOauthTokenFile = config.age.secrets."claude-secondary".path;
+  #     hfTokenFile = config.age.secrets."huggingface-token".path;
+  #   };
+  # };
 }
