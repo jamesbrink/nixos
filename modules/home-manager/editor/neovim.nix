@@ -170,9 +170,9 @@ in
       # Language servers
       lua-language-server
       nil # Nix LSP
-      nodePackages.bash-language-server
-      nodePackages.typescript-language-server
-      nodePackages.vscode-langservers-extracted # HTML/CSS/JSON
+      bash-language-server
+      typescript-language-server
+      vscode-langservers-extracted # HTML/CSS/JSON
       python3Packages.python-lsp-server
       terraform-ls
       marksman # Markdown LSP
@@ -183,7 +183,7 @@ in
       black
       isort
       shfmt
-      nodePackages.prettier
+      prettier
 
       # Tools
       ripgrep

@@ -222,8 +222,8 @@
               rsync
               openssh
               bash
-              nodePackages.prettier # For JSON and HTML formatting
-              nodePackages.markdownlint-cli # Markdown linting
+              prettier # For JSON and HTML formatting
+              markdownlint-cli # Markdown linting
               jq # For JSON processing
               pythonEnv
               ruff

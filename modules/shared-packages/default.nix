@@ -43,7 +43,7 @@ in
       openssh
       p7zip
       # Language servers for Neovim (kept here for system-wide availability)
-      nodePackages.bash-language-server
+      bash-language-server
       terraform-ls
       marksman
       nil
@@ -76,7 +76,7 @@ in
       cloudflared
       flarectl
       nodejs
-      nodePackages.pnpm
+      pnpm
       wrangler
       inputs.why.packages.${pkgs.stdenv.hostPlatform.system}.default
 
