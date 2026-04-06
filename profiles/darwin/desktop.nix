@@ -99,10 +99,11 @@
     ];
 
     # Mac App Store apps
-    masApps = {
-      "Amphetamine" = 937984704;
-      "Xcode" = 497799835;
-    };
+    # TODO: mas (Mac App Store CLI) failing as of 2026-04-06 — install these manually
+    # masApps = {
+    #   "Amphetamine" = 937984704;
+    #   "Xcode" = 497799835;
+    # };
   };
 
   # Enable file sharing on all Darwin desktop systems
