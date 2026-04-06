@@ -18,6 +18,7 @@ in
   environment.systemPackages = with pkgs; [
     act
     atool
+    (azure-cli.withExtensions [ azure-cli.extensions.azure-devops ])
     awscli2
     certbot
     cmake
