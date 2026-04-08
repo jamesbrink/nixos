@@ -90,7 +90,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "rose-pine-moon";
+    theme = "Rose Pine Moon";
   };
 
   # Neovim colorscheme

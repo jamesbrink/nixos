@@ -88,7 +88,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "GruvboxDark";
+    theme = "Gruvbox Dark";
   };
 
   # Neovim colorscheme

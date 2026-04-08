@@ -91,7 +91,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "catppuccin-macchiato";
+    theme = "Catppuccin Macchiato";
   };
 
   # Neovim colorscheme

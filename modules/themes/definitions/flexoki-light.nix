@@ -80,7 +80,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "flexoki-light";
+    theme = "Flexoki Light";
   };
 
   # Neovim colorscheme

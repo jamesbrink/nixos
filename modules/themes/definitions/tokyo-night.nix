@@ -92,7 +92,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "tokyonight_night";
+    theme = "TokyoNight Night";
   };
 
   # Neovim colorscheme

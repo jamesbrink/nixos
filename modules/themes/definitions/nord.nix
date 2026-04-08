@@ -87,7 +87,7 @@
 
   # Ghostty terminal theme
   ghostty = {
-    theme = "nord";
+    theme = "Nord";
   };
 
   # Neovim colorscheme
