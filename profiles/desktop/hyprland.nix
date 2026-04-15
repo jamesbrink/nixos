@@ -263,7 +263,8 @@ in
     swww # Animated wallpaper daemon (alternative to hyprpaper)
 
     # Application launcher and bar
-    unstablePkgs.walker # Wayland-native application launcher 0.13.26 (Omarchy-style)
+    unstablePkgs.walker # Wayland-native application launcher (Omarchy-style, themed)
+    unstablePkgs.elephant # Data provider backend required by walker 2.x (used by home-manager walker config)
     waybar # Status bar
     mako # Notification daemon
 

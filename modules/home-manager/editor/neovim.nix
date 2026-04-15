@@ -85,8 +85,13 @@ in
     if [[ -L "$CONFIG_FILE" ]] || [[ ! -f "$CONFIG_FILE" ]]; then
       $DRY_RUN_CMD rm -f "$CONFIG_FILE"
       $DRY_RUN_CMD cp "$TEMPLATE_FILE" "$CONFIG_FILE"
-      $DRY_RUN_CMD chmod 644 "$CONFIG_FILE"
       echo "Created mutable Neovim theme config"
+    fi
+
+    # Always ensure writable perms: themectl needs to rewrite this file on every
+    # theme change, and cp from the read-only template preserves 0444 by default.
+    if [[ -f "$CONFIG_FILE" && ! -L "$CONFIG_FILE" ]]; then
+      $DRY_RUN_CMD chmod 644 "$CONFIG_FILE"
     fi
   '';
 

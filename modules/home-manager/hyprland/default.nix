@@ -242,6 +242,8 @@ in
         "wl-paste --type text --watch cliphist store" # Clipboard history for text
         "wl-paste --type image --watch cliphist store" # Clipboard history for images
         "${pkgs.swww}/bin/swww-daemon" # Wallpaper daemon
+        "elephant" # Walker data provider backend (must start before walker service)
+        "walker --gapplication-service" # Walker launcher daemon (required for Super+Space)
       ]
       ++ (if wallpaperPath != null then [ "${pkgs.swww}/bin/swww img ${wallpaperPath}" ] else [ ]);
 
@@ -443,7 +445,7 @@ in
   # Walker configuration (Omarchy-style launcher)
   xdg.configFile."walker/config.toml".text = ''
     # Theme configuration
-    theme = "omarchy-default"
+    theme = "main"
     theme_base = []
     theme_location = ["~/.config/walker/themes/"]
     hotreload_theme = true
@@ -539,7 +541,7 @@ in
   '';
 
   # Walker theme - base CSS (Omarchy-style)
-  xdg.configFile."walker/themes/omarchy-default.css".text = ''
+  xdg.configFile."walker/themes/main.css".text = ''
     /* Reset all elements */
     #window,
     #box,
@@ -722,9 +724,23 @@ in
     @define-color background ${themeConfig.walker.background};
   '';
 
-  # Walker theme - omarchy-default TOML (main launcher dimensions)
-  xdg.configFile."walker/themes/omarchy-default.toml".text = ''
+  # Walker theme - main TOML (main launcher dimensions)
+  # Walker 2.x requires top-level [ui.anchors] and [ui.window] sections to recognize the theme;
+  # without them it falls back to the default theme with "theme not found" warning.
+  xdg.configFile."walker/themes/main.toml".text = ''
+    [ui.anchors]
+    bottom = true
+    left = true
+    right = true
+    top = true
+
+    [ui.window]
+    h_align = "fill"
+    v_align = "fill"
+
     [ui.window.box]
+    h_align = "center"
+    v_align = "center"
     width = 664
     min_width = 664
     max_width = 664
@@ -745,11 +761,23 @@ in
   # Walker theme - keybindings (larger for keybindings menu)
   xdg.configFile."walker/themes/keybindings.css".text = ''
     /* Import base CSS first - it will import tokyo-night.css at the end */
-    @import url("file://${config.home.homeDirectory}/.config/walker/themes/omarchy-default.css");
+    @import url("file://${config.home.homeDirectory}/.config/walker/themes/main.css");
   '';
 
   xdg.configFile."walker/themes/keybindings.toml".text = ''
+    [ui.anchors]
+    bottom = true
+    left = true
+    right = true
+    top = true
+
+    [ui.window]
+    h_align = "fill"
+    v_align = "fill"
+
     [ui.window.box]
+    h_align = "center"
+    v_align = "center"
     width = 964
     min_width = 964
     max_width = 964
@@ -913,7 +941,7 @@ in
               printf "%-35s → %s\n", key_combo, action;
           }
       }' | \
-        ${pkgs.walker}/bin/walker --dmenu --theme keybindings -p 'Keybindings'
+        walker --dmenu --theme keybindings -p 'Keybindings'
     '';
     executable = true;
   };
@@ -996,7 +1024,7 @@ in
       # Get current theme for default selection
       CURRENT_THEME=$(get_current_theme)
 
-      # Calculate the index of the current theme (0-based, Walker -a expects an index)
+      # Calculate the index of the current theme (0-based; walker 2.x --current expects an index)
       CURRENT_INDEX=0
       if [[ -n "$CURRENT_THEME" ]]; then
         CURRENT_INDEX=$(echo "$THEME_LIST" | ${pkgs.coreutils}/bin/cat -n | \
@@ -1004,9 +1032,10 @@ in
           ${pkgs.gawk}/bin/awk '{print $1-1}' || echo 0)
       fi
 
-      # Show theme picker with Walker (suppress GTK warnings, -a expects index not name)
+      # Show theme picker with Walker. Walker 2.x renamed the "mark current" flag
+      # from -a (0.13) to -c; using the old flag silently fails under 2>/dev/null.
       SELECTED_THEME=$(echo "$THEME_LIST" | \
-        ${pkgs.walker}/bin/walker --dmenu -p "Theme" -a "$CURRENT_INDEX" 2>/dev/null)
+        walker --dmenu -p "Theme" -c "$CURRENT_INDEX" 2>/dev/null)
 
       # If selection was made (not cancelled), apply theme
       if [[ -n "$SELECTED_THEME" && "$SELECTED_THEME" != "CNCLD" ]]; then
@@ -1645,11 +1674,27 @@ in
     CONFIG_FILE="${config.home.homeDirectory}/.config/ghostty/config"
     TEMPLATE_FILE="${config.home.homeDirectory}/.config/ghostty/config.template"
 
+    # Detect stock Ghostty-generated configs: Ghostty creates its own example
+    # config on first launch if one doesn't exist, which beats our activation
+    # and leaves the file as-is. Treat anything missing our config-file marker
+    # as uninitialized so the template is re-applied.
+    needs_install=0
     if [[ -L "$CONFIG_FILE" ]] || [[ ! -f "$CONFIG_FILE" ]]; then
+      needs_install=1
+    elif ! grep -q 'omarchy/current/theme/ghostty.conf' "$CONFIG_FILE"; then
+      needs_install=1
+    fi
+
+    if [[ "$needs_install" = 1 ]]; then
       $DRY_RUN_CMD rm -f "$CONFIG_FILE"
       $DRY_RUN_CMD cp "$TEMPLATE_FILE" "$CONFIG_FILE"
       $DRY_RUN_CMD chmod 644 "$CONFIG_FILE"
       echo "Created mutable Ghostty config"
+    fi
+
+    # Always ensure writable perms (cp from the read-only template preserves 0444).
+    if [[ -f "$CONFIG_FILE" && ! -L "$CONFIG_FILE" ]]; then
+      $DRY_RUN_CMD chmod 644 "$CONFIG_FILE"
     fi
   '';
 
