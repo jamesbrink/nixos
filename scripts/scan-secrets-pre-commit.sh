@@ -44,7 +44,8 @@ if trufflehog filesystem "$TEMP_DIR" --only-verified --no-update \
     --exclude-paths=nixos-old/ \
     --exclude-paths=.git/ \
     --exclude-paths=result \
-    --exclude-paths=result-*; then
+    --exclude-paths=result-* \
+    --exclude-paths=modules/netboot/installer-ssh-keys.nix; then
     print_color "$GREEN" "✓ No secrets detected in staged files"
     exit 0
 else

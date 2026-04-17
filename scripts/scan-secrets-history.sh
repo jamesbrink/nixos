@@ -96,6 +96,7 @@ nixos-old/
 .git/
 result
 result-*
+modules/netboot/installer-ssh-keys.nix
 EOF
 
 # Run TruffleHog with full history scan

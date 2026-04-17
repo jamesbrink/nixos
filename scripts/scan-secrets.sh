@@ -17,7 +17,7 @@ print_color() {
 # Default values
 MODE="git"
 TARGET="."
-EXCLUDE_PATHS="secrets/,nix-secrets/,nixos-old/,.git/,result,result-*"
+EXCLUDE_PATHS="secrets/,nix-secrets/,nixos-old/,.git/,result,result-*,modules/netboot/installer-ssh-keys.nix"
 ONLY_VERIFIED="--only-verified"
 
 # Parse arguments

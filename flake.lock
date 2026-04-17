@@ -757,11 +757,11 @@
         "treefmt-nix": "treefmt-nix_4"
       },
       "locked": {
-        "lastModified": 1776187878,
-        "narHash": "sha256-Bn1JbMA7cDv+aNDPvXf10MH/izmX75PEVSG2vugrkAo=",
+        "lastModified": 1776354990,
+        "narHash": "sha256-3MR8ca5XRi4NsgjIL6UH++y6P59YIzfJNzjilVwgye0=",
         "owner": "utensils",
         "repo": "mold",
-        "rev": "4b8ef75f0de70365132b1e2e4b6eb1233b598a34",
+        "rev": "3b0ad3692b9561318816a36bfe30fb956b8d5104",
         "type": "github"
       },
       "original": {
@@ -1071,11 +1071,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1773284828,
-        "narHash": "sha256-0qI+a9z7KpYCBbp4ENN32b2tf0VmC3MhgFw1KAroqxQ=",
+        "lastModified": 1776350315,
+        "narHash": "sha256-ijD4bgb5Iyap9F3MX73vLAZF/SYu+q7Gd7Ux4cbfCWw=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "2b18fe48d9a8a4ff3850d56b67cfe72f2a589237",
+        "rev": "62e3b8aedabc240e5b0cc9fae003bc9edfebbc9b",
         "type": "github"
       },
       "original": {
