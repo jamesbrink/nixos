@@ -135,6 +135,9 @@
     "d ${config.users.users.jamesbrink.home}/.local/share/rustdesk 0755 jamesbrink users"
     # PixInsight cache directory - prevents garbage collection of the tar.xz file
     "d /var/cache/pixinsight 0755 root root"
+    "d /storage-fast/ollama 0755 ollama ollama -"
+    "d /storage-fast/ollama/.ollama 0755 ollama ollama -"
+    "d /storage-fast/ollama/models 0755 ollama ollama -"
     # Root-owned so tmpfiles can safely create mold-owned subdirs (avoids unsafe path transition)
     "d /storage-fast/AI 0755 root root -"
   ];
@@ -218,7 +221,10 @@
       "rw"
       "noatime"
       "nofail"
+      "noauto"
       "x-systemd.automount"
+      "x-systemd.device-timeout=10"
+      "x-systemd.idle-timeout=600"
     ];
   };
 
@@ -537,10 +543,18 @@
   # };
 
   services.ollama = {
-    enable = false;
+    enable = true;
     host = "0.0.0.0";
     port = 11434;
+    openFirewall = true;
     package = pkgs.unstablePkgs.ollama-cuda;
+    user = "ollama";
+    group = "ollama";
+    home = "/storage-fast/ollama";
+    models = "/storage-fast/ollama/models";
+    environmentVariables = {
+      OLLAMA_ORIGINS = "*";
+    };
   };
 
   # ComfyUI service (manual start: systemctl start comfyui)
@@ -673,24 +687,6 @@
     };
     oci-containers = {
       containers = {
-        ollama = {
-          image = "ollama/ollama:latest";
-          environment = {
-            OLLAMA_ORIGINS = "*";
-          };
-          volumes = [
-            "/storage-fast/ollama:/root/.ollama"
-          ];
-          ports = [
-            "11434:11434"
-          ];
-          autoStart = true;
-          extraOptions = [
-            "--gpus=all"
-            "--name=ollama"
-          ];
-        };
-
         # comfyui = {
         #   image = "jamesbrink/comfyui:latest";
         #   volumes = [
@@ -907,39 +903,6 @@
         value = "10.70.100.192";
       }
     ];
-  };
-
-  # Keep Postgres13 and Ollama up to date
-  systemd.services.update-ai-containers = {
-    description = "Update AI container images";
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = pkgs.writeScript "update-ai-containers" ''
-        #!${pkgs.bash}/bin/bash
-        # ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/open-webui:main # Disabled
-        # ${pkgs.podman}/bin/podman pull ghcr.io/open-webui/pipelines:main # Disabled
-        # ${pkgs.podman}/bin/podman pull jamesbrink/fooocus:latest
-        # ${pkgs.podman}/bin/podman pull jamesbrink/comfyui:latest
-        ${pkgs.podman}/bin/podman pull ollama/ollama:latest
-
-        # Restart containers to use new images
-        ${pkgs.systemd}/bin/systemctl restart podman-ollama
-        # ${pkgs.systemd}/bin/systemctl restart podman-comfyui
-        # ${pkgs.systemd}/bin/systemctl restart podman-fooocus
-        # ${pkgs.systemd}/bin/systemctl restart podman-open-webui # Disabled
-        # ${pkgs.systemd}/bin/systemctl restart podman-pipelines # Disabled
-      '';
-    };
-  };
-
-  # Add a timer to run it daily
-  systemd.timers.update-ai-containers = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnCalendar = "daily";
-      Persistent = true;
-      RandomizedDelaySec = "1h";
-    };
   };
 
   # Create the default network configuration for libvirt
