@@ -163,9 +163,7 @@ in
       enableZshIntegration = true;
       # Disable bash - direnv hook uses features that may hang macOS /bin/bash 3.2
       enableBashIntegration = false;
-      nix-direnv = {
-        enable = !pkgs.stdenv.isDarwin;
-      };
+      nix-direnv.enable = true;
     };
 
     git = {
