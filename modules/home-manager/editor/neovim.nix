@@ -166,6 +166,8 @@ in
     viAlias = true;
     vimAlias = true;
     vimdiffAlias = true;
+    withRuby = true;
+    withPython3 = true;
 
     # LazyVim distribution (Omarchy-style)
     # Use the lazyvim package which includes lazy.nvim and LazyVim starter
@@ -197,7 +199,7 @@ in
       lazygit
     ];
 
-    extraLuaConfig = ''
+    initLua = ''
       -- Bootstrap lazy.nvim
       local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
       if not (vim.uv or vim.loop).fs_stat(lazypath) then

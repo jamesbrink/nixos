@@ -8,6 +8,12 @@
     nixos-unstable = {
       url = "github:nixos/nixpkgs/nixos-unstable";
     };
+    # Pinned nixpkgs for chromaprint 1.5.1 / kvazaar 2.3.1 on aarch64-darwin.
+    # Newer versions in 25.11 have test suites that get SIGKILL'd in macOS sandbox.
+    # See overlays/chromaprint-darwin.nix.
+    nixpkgs-ffmpeg-darwin-pin = {
+      url = "github:nixos/nixpkgs/f4b140d5b253f5e2a1ff4e5506edbf8267724bde";
+    };
 
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
@@ -1013,6 +1019,9 @@
               nixpkgs.overlays = [
                 (import ./overlays/pixinsight.nix)
                 (import ./overlays/gogcli.nix)
+                (import ./overlays/chromaprint-darwin.nix {
+                  inherit (inputs) nixpkgs-ffmpeg-darwin-pin;
+                })
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "aarch64-darwin";

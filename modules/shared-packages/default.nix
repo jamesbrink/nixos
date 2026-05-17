@@ -79,7 +79,9 @@ in
       pnpm
       wrangler
       inputs.why.packages.${pkgs.stdenv.hostPlatform.system}.default
-      inputs.mold.packages.${pkgs.stdenv.hostPlatform.system}.default
+      # TEMP: disabled — mold flake does live `bun install` in build phase,
+      # hits npm registry and hangs on aarch64-darwin. See utensils/mold#TBD.
+      # inputs.mold.packages.${pkgs.stdenv.hostPlatform.system}.default
 
       # Restic browser with credential isolation wrapper
       (pkgs.writeShellScriptBin "restic-browser" ''

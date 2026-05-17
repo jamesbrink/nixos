@@ -44,6 +44,14 @@ in
     {
       _module.args.inputs = inputs;
 
+      # Propagate system overlays (chromaprint/kvazaar darwin pins) into the
+      # user's home-manager pkgs so ffmpeg-full builds with working deps.
+      nixpkgs.overlays = [
+        (import ../../overlays/chromaprint-darwin.nix {
+          inherit (inputs) nixpkgs-ffmpeg-darwin-pin;
+        })
+      ];
+
       imports = [
         ../../modules/home-manager/darwin/unified-themes.nix
         ../../modules/home-manager/darwin/hammerspoon.nix
