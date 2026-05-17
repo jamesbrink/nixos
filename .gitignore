@@ -11,7 +11,6 @@ install-bootloader
 
 # System specific
 .direnv/
-.envrc
 
 # Editor/IDE specific
 .vscode/
