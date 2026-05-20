@@ -150,11 +150,8 @@
           done
         done < <(find "$TARGET" -maxdepth 4 -name go.mod -type f 2>/dev/null)
 
-        # .direnv (nix dev shell profiles)
-        while IFS= read -r d; do
-          size=$(get_size_bytes "$d")
-          TARGETS+=("direnv|$d|$size")
-        done < <(find "$TARGET" -maxdepth 4 -name ".direnv" -type d 2>/dev/null)
+        # .direnv holds each devShell's Nix GC root — deleting it frees only KB
+        # but unroots multi-GB closures and forces slow rebuilds. Use `nix-gc`.
 
         # Swift .build directories (SPM)
         while IFS= read -r d; do
