@@ -8,6 +8,18 @@
 
 let
   unstable = pkgs.unstablePkgs;
+  pipx =
+    if pkgs.stdenv.isDarwin then
+      pkgs.python313Packages.pipx.overridePythonAttrs (oldAttrs: {
+        disabledTests = (oldAttrs.disabledTests or [ ]) ++ [
+          # packaging now normalizes direct references with spaces around "@";
+          # pipx 1.8.0 still has stale expectations for that formatting.
+          "test_fix_package_name"
+          "test_parse_specifier_for_metadata"
+        ];
+      })
+    else
+      pkgs.python313Packages.pipx;
 
   # Python 3.13 with essential packages
   python313WithPackages = pkgs.python313.withPackages (
@@ -100,7 +112,7 @@ in
       python313Packages.uv
       pyright # Language server (keeping from original)
       # poetry removed - rapidfuzz build fails on Darwin (libatomic issue), use: pipx install poetry
-      python313Packages.pipx # Install Python apps in isolated environments
+      pipx # Install Python apps in isolated environments
 
       # Individual packages that were in original (for direct access)
       python313Packages.boto3 # AWS SDK (keeping from original)
