@@ -321,7 +321,8 @@
         if (( SNAPSHOT_SPACE < 0 )); then SNAPSHOT_SPACE=0; fi
 
         DATA_VOL="''${CONTAINER}s5"
-        SNAPSHOT_COUNT=$(diskutil apfs listSnapshots "$DATA_VOL" 2>/dev/null | grep -c "com.apple.TimeMachine" || echo "0")
+        # grep -c prints 0 on no match but exits 1 — use `|| true`, not `|| echo 0` (which would double the 0)
+        SNAPSHOT_COUNT=$(diskutil apfs listSnapshots "$DATA_VOL" 2>/dev/null | grep -c "com.apple.TimeMachine" || true)
         SNAPSHOT_LIST=$(tmutil listlocalsnapshotdates / 2>/dev/null | tail -n +2 || true)
         OLDEST_SNAP=$(echo "$SNAPSHOT_LIST" | head -1)
         NEWEST_SNAP=$(echo "$SNAPSHOT_LIST" | tail -1)
