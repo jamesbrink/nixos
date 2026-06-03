@@ -114,6 +114,7 @@
   # Additional Homebrew packages specific to this host
   homebrew = {
     brews = [
+      "cloudflare-wrangler"
       "ffmpeg"
       "imagemagick"
       "pinentry-mac"

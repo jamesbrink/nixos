@@ -77,7 +77,6 @@ in
       flarectl
       nodejs
       pnpm
-      wrangler
       inputs.why.packages.${pkgs.stdenv.hostPlatform.system}.default
       # TEMP: disabled — mold flake does live `bun install` in build phase,
       # hits npm registry and hangs on aarch64-darwin. See utensils/mold#TBD.
@@ -128,6 +127,11 @@ in
           fi
         )
       '')
+    ]
+    ++ lib.optionals (!pkgs.stdenv.isDarwin) [
+      # The Darwin build for Cloudflare Wrangler can fail inside tsup with EBADF;
+      # macOS hosts install the CLI through Homebrew as cloudflare-wrangler.
+      wrangler
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # Code editors - Cursor on Linux (macOS uses Homebrew cask)
