@@ -66,6 +66,7 @@ in
       # Additional development and utility tools
       act
       code2prompt
+      (callPackage ../../pkgs/create-context-model { })
       llm
       opencode
       nushell

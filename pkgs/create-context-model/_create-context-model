@@ -1,0 +1,25 @@
+#compdef create-context-model create_context_model.sh
+
+_create_context_model() {
+  local state
+  local -a models sizes
+
+  models=($(ollama list 2>/dev/null | awk 'NR > 1 { print $1 }'))
+  sizes=(4 8 16 32 64 128 256)
+
+  _arguments \
+    '(-h --help)'{-h,--help}'[show help]' \
+    '1:source model:->models' \
+    '2:context size in K:->sizes'
+
+  case "$state" in
+    models)
+      compadd -- "$models[@]"
+      ;;
+    sizes)
+      compadd -- "$sizes[@]"
+      ;;
+  esac
+}
+
+_create_context_model "$@"
