@@ -12,6 +12,7 @@
   imports = [
     ./hardware.nix
     ../../profiles/darwin-slim # Minimal darwin profile
+    ../../modules/darwin/maintenance-tools.nix
     ../../modules/ssh-keys.nix
     ../../users/regular/jamesbrink-darwin-slim.nix
   ];
