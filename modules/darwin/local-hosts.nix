@@ -10,75 +10,79 @@ with lib;
 
 let
   # Define all local network hosts based on your Terraform DHCP configuration
+  #
+  # DISABLED 2026-06-05: network changed, these IPs are stale. Entries commented
+  # out and networking.localHosts.enable defaulted to false below. Kept (not
+  # deleted) so they can be re-enabled with corrected IPs later.
   localHosts = {
     # Network infrastructure
-    "10.70.100.1" = [
-      "router"
-      "router.home.urandom.io"
-    ];
-    "10.70.100.200" = [
-      "TL-SG108E"
-      "switch"
-      "switch.home.urandom.io"
-    ];
+    # "10.70.100.1" = [
+    #   "router"
+    #   "router.home.urandom.io"
+    # ];
+    # "10.70.100.200" = [
+    #   "TL-SG108E"
+    #   "switch"
+    #   "switch.home.urandom.io"
+    # ];
 
     # Main servers
-    "10.70.100.2" = [
-      "corbelan"
-      "corbelan.home.urandom.io"
-    ];
-    "10.70.100.206" = [
-      "hal9000"
-      "hal9000.home.urandom.io"
-    ];
-    "10.70.100.205" = [
-      "alienware"
-      "alienware.home.urandom.io"
-    ];
+    # "10.70.100.2" = [
+    #   "corbelan"
+    #   "corbelan.home.urandom.io"
+    # ];
+    # "10.70.100.206" = [
+    #   "hal9000"
+    #   "hal9000.home.urandom.io"
+    # ];
+    # "10.70.100.205" = [
+    #   "alienware"
+    #   "alienware.home.urandom.io"
+    # ];
 
     # N100 cluster nodes
-    "10.70.100.201" = [
-      "n100-01"
-      "n100-01.home.urandom.io"
-    ];
-    "10.70.100.202" = [
-      "n100-02"
-      "n100-02.home.urandom.io"
-    ];
-    "10.70.100.203" = [
-      "n100-03"
-      "n100-03.home.urandom.io"
-    ];
-    "10.70.100.204" = [
-      "n100-04"
-      "n100-04.home.urandom.io"
-    ];
+    # "10.70.100.201" = [
+    #   "n100-01"
+    #   "n100-01.home.urandom.io"
+    # ];
+    # "10.70.100.202" = [
+    #   "n100-02"
+    #   "n100-02.home.urandom.io"
+    # ];
+    # "10.70.100.203" = [
+    #   "n100-03"
+    #   "n100-03.home.urandom.io"
+    # ];
+    # "10.70.100.204" = [
+    #   "n100-04"
+    #   "n100-04.home.urandom.io"
+    # ];
 
     # Other hosts
-    "10.70.100.196" = [
-      "vmware"
-      "vmware.home.urandom.io"
-    ];
-    "100.105.134.43" = [
-      "plato"
-      "plato.home.urandom.io"
-    ];
-    "10.70.100.192" = [
-      "server02"
-      "server02.home.urandom.io"
-    ];
-    "10.70.100.209" = [
-      "bender"
-      "bender.home.urandom.io"
-    ];
-    "10.70.100.210" = [
-      "halcyon"
-      "halcyon.home.urandom.io"
-    ];
-    "10.70.100.207" = [
-      "derp"
-      "derp.home.urandom.io"
-    ];
+    # "10.70.100.196" = [
+    #   "vmware"
+    #   "vmware.home.urandom.io"
+    # ];
+    # "100.105.134.43" = [
+    #   "plato"
+    #   "plato.home.urandom.io"
+    # ];
+    # "10.70.100.192" = [
+    #   "server02"
+    #   "server02.home.urandom.io"
+    # ];
+    # "10.70.100.209" = [
+    #   "bender"
+    #   "bender.home.urandom.io"
+    # ];
+    # "10.70.100.210" = [
+    #   "halcyon"
+    #   "halcyon.home.urandom.io"
+    # ];
+    # "10.70.100.207" = [
+    #   "derp"
+    #   "derp.home.urandom.io"
+    # ];
   };
 
   # Convert the localHosts attribute set to hosts file entries
@@ -89,18 +93,20 @@ in
   options.networking.localHosts = {
     enable = mkOption {
       type = types.bool;
-      default = true;
-      description = "Whether to enable local network hosts entries";
+      default = false;
+      description = "Whether to enable local network hosts entries (disabled 2026-06-05 after network change)";
     };
   };
 
-  config = mkIf config.networking.localHosts.enable {
+  config = {
     # Darwin: Use environment.etc to manage /etc/hosts entries
-    environment.etc."hosts.local" = {
-      text = lib.concatStringsSep "\n" hostsEntries;
+    environment.etc = mkIf config.networking.localHosts.enable {
+      "hosts.local".text = lib.concatStringsSep "\n" hostsEntries;
     };
 
-    # Use extraActivation instead of postUserActivation
+    # Always strip the Nix-managed block from /etc/hosts. When disabled this
+    # leaves /etc/hosts clean of the stale entries; when enabled the block is
+    # re-appended below. Use extraActivation instead of postUserActivation.
     system.activationScripts.extraActivation.text = ''
       echo "Configuring local hosts entries..."
       # Create backup of current hosts file if it doesn't exist
@@ -108,18 +114,20 @@ in
         cp /etc/hosts /etc/hosts.backup
       fi
 
-      # Remove old local hosts section and add new one
+      # Remove old local hosts section
       sed -i ''' '/# Local network hosts - managed by Nix/,/# End local network hosts/d' /etc/hosts
 
-      # Append new hosts entries
-      if [ -f /etc/hosts.local ]; then
-        {
-          echo ""
-          echo "# Local network hosts - managed by Nix"
-          cat /etc/hosts.local
-          echo "# End local network hosts"
-        } >> /etc/hosts
-      fi
+      ${lib.optionalString config.networking.localHosts.enable ''
+        # Append new hosts entries
+        if [ -f /etc/hosts.local ]; then
+          {
+            echo ""
+            echo "# Local network hosts - managed by Nix"
+            cat /etc/hosts.local
+            echo "# End local network hosts"
+          } >> /etc/hosts
+        fi
+      ''}
     '';
   };
 }
