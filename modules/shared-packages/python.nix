@@ -17,6 +17,11 @@ let
           "test_fix_package_name"
           "test_parse_specifier_for_metadata"
         ];
+        # pythonRuntimeDepsCheckHook spawns a fresh Python that cannot find a
+        # writable temp dir inside bender's Determinate build sandbox, failing
+        # with "No usable temporary directory found". This is a post-build
+        # validation step, not a real dependency mismatch — skip it on Darwin.
+        dontCheckRuntimeDeps = true;
       })
     else
       pkgs.python313Packages.pipx;
