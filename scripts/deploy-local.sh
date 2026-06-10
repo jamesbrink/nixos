@@ -24,11 +24,20 @@ if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
   exit 1
 fi
 
+# Stage the repo with submodule contents, mirroring deploy.sh. Building
+# straight from the git tree ('.#...') omits submodule contents (secrets/,
+# mikrotik-terraform/), producing closures whose agenix activation fails with
+# "encrypted file ... does not exist".
+STAGING=/private/tmp/nixos-config
+echo "Staging repo (with submodules) to $STAGING..."
+mkdir -p "$STAGING"
+rsync -az --delete --exclude '.git' --exclude '.gitignore' --exclude '.gitmodules' --exclude 'result' . "$STAGING/"
+
 # Check if host is Darwin or NixOS
 if nix eval --json .#darwinConfigurations."$HOST"._type 2>/dev/null >/dev/null; then
   # Darwin deployment
   echo "Building darwin configuration for $HOST locally..."
-  if ! NIXPKGS_ALLOW_UNFREE=1 nix build --impure ".#darwinConfigurations.${HOST}.system"; then
+  if ! NIXPKGS_ALLOW_UNFREE=1 nix build --impure "$STAGING#darwinConfigurations.${HOST}.system" -o ./result; then
     echo "Build failed! Aborting deployment."
     exit 1
   fi
@@ -41,7 +50,11 @@ if nix eval --json .#darwinConfigurations."$HOST"._type 2>/dev/null >/dev/null; 
   
   echo "Switching to new configuration on $HOST..."
   STORE_PATH=$(readlink -f ./result)
-  if ssh jamesbrink@"$HOST" "sudo $STORE_PATH/sw/bin/darwin-rebuild switch --flake .#$HOST"; then
+  # Activate the closure we just built and copied. Do NOT use
+  # 'darwin-rebuild switch --flake .#$HOST' here: it re-evaluates the flake
+  # from the remote $HOME, which has no repo checkout, and fails with
+  # "could not find a flake.nix file".
+  if ssh jamesbrink@"$HOST" "sudo nix-env -p /nix/var/nix/profiles/system --set $STORE_PATH && sudo $STORE_PATH/activate"; then
     echo "Deployment to $HOST complete!"
   else
     echo "Failed to switch configuration on $HOST!"
@@ -57,14 +70,14 @@ else
       echo "Found existing build result for $HOST, using it..."
     else
       echo "Existing build result is for '$RESULT_HOST', not '$HOST'. Building fresh..."
-      if ! NIXPKGS_ALLOW_UNFREE=1 nix build --impure ".#nixosConfigurations.${HOST}.config.system.build.toplevel"; then
+      if ! NIXPKGS_ALLOW_UNFREE=1 nix build --impure "$STAGING#nixosConfigurations.${HOST}.config.system.build.toplevel" -o ./result; then
         echo "Build failed! Aborting deployment."
         exit 1
       fi
     fi
   else
     echo "No existing build result found. Building configuration for $HOST locally..."
-    if ! NIXPKGS_ALLOW_UNFREE=1 nix build --impure ".#nixosConfigurations.${HOST}.config.system.build.toplevel"; then
+    if ! NIXPKGS_ALLOW_UNFREE=1 nix build --impure "$STAGING#nixosConfigurations.${HOST}.config.system.build.toplevel" -o ./result; then
       echo "Build failed! Aborting deployment."
       exit 1
     fi
