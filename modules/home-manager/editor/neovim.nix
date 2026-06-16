@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  options,
   ...
 }:
 
@@ -199,7 +200,11 @@ in
       lazygit
     ];
 
-    initLua = ''
+    # Channel-aware: unstable home-manager (Darwin hosts) renamed `extraLuaConfig`
+    # to `initLua`; stable home-manager (NixOS hosts) still uses `extraLuaConfig`.
+    # Pick whichever option the active home-manager actually declares so this shared
+    # module builds on both channels without flip-flopping.
+    ${if options.programs.neovim ? initLua then "initLua" else "extraLuaConfig"} = ''
       -- Bootstrap lazy.nvim
       local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
       if not (vim.uv or vim.loop).fs_stat(lazypath) then
