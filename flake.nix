@@ -102,7 +102,13 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     mold = {
-      url = "github:utensils/mold";
+      # Pinned to the last-good 0.9.0 revision (fdf5085). Newer mold (0.10.0, rev
+      # 11cdebc) regressed its mold-web build to a bare `bun install` that needs npm
+      # network — impossible under `sandbox = true` — so it stalls forever. This exact
+      # rev's bun-cache FOD is complete and already built in the store (mold-0.9.0
+      # 052159b), so it's a cache hit with no network. Revisit when upstream restores
+      # the offline build pattern for newer releases.
+      url = "github:utensils/mold/fdf508583c0674cfe2d548b81650b9ac6bc9c81b";
     };
   };
 
