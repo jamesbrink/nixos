@@ -8,6 +8,9 @@
     nixos-unstable = {
       url = "github:nixos/nixpkgs/nixos-unstable";
     };
+    nixpkgs-ollama = {
+      url = "github:nixos/nixpkgs/nixos-unstable";
+    };
     # Pinned nixpkgs for chromaprint 1.5.1 / kvazaar 2.3.1 on aarch64-darwin.
     # Newer versions in 25.11 have test suites that get SIGKILL'd in macOS sandbox.
     # See overlays/chromaprint-darwin.nix.
@@ -117,6 +120,7 @@
       self,
       nixpkgs,
       nixos-unstable,
+      nixpkgs-ollama,
       home-manager,
       home-manager-unstable,
       agenix,
@@ -963,6 +967,11 @@
                 ai-toolkit.overlays.default
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
+                    system = "x86_64-linux";
+                    config.allowUnfree = true;
+                    overlays = [ ];
+                  };
+                  ollamaPkgs = import nixpkgs-ollama {
                     system = "x86_64-linux";
                     config.allowUnfree = true;
                     overlays = [ ];

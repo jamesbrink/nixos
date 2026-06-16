@@ -552,7 +552,7 @@
     host = "0.0.0.0";
     port = 11434;
     openFirewall = true;
-    package = pkgs.unstablePkgs.ollama-cuda;
+    package = pkgs.ollamaPkgs.ollama-cuda;
     user = "ollama";
     group = "ollama";
     home = "/storage-fast/ollama";
@@ -1105,7 +1105,7 @@
     spice-protocol
     steam
     sunshine
-    unstablePkgs.ollama-cuda
+    ollamaPkgs.ollama-cuda
     uxplay
     virt-viewer
     vulkan-tools
