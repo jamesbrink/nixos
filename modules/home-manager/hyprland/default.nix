@@ -24,11 +24,24 @@
   pkgs,
   lib,
   inputs,
+  osConfig ? { },
   ...
 }:
 
 let
   inherit (lib) attrByPath;
+
+  # Network tray applet, chosen by the host's networking backend so the right
+  # icon lands in waybar's tray. `osConfig` is the NixOS system config.
+  # `or false` guards hosts that don't import the wifi-iwd module (no local.wifi).
+  networkApplet =
+    if (osConfig.networking.networkmanager.enable or false) then
+      "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator"
+    else if (osConfig.local.wifi.enable or false) then
+      "${pkgs.iwgtk}/bin/iwgtk -i"
+    else
+      null;
+
   # Select theme - change this to switch themes
   selectedTheme = "ristretto";
 
@@ -245,7 +258,8 @@ in
         "elephant" # Walker data provider backend (must start before walker service)
         "walker --gapplication-service" # Walker launcher daemon (required for Super+Space)
       ]
-      ++ (if wallpaperPath != null then [ "${pkgs.swww}/bin/swww img ${wallpaperPath}" ] else [ ]);
+      ++ (if wallpaperPath != null then [ "${pkgs.swww}/bin/swww img ${wallpaperPath}" ] else [ ])
+      ++ lib.optional (networkApplet != null) networkApplet; # Network tray icon (iwgtk/nm-applet)
 
       bind = [
         # Applications
