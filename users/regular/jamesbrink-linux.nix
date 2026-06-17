@@ -94,7 +94,14 @@ in
             && config.networking.hostName != "n100-03"
             && config.networking.hostName != "n100-04"
           )
-          [ ../../modules/home-manager/hyprland ];
+          [
+            ../../modules/home-manager/hyprland
+            # Software KVM peer (self-gates to hal9000; no-op on other desktops).
+            # Upstream programs.lan-mouse module imported here (closure `effectiveInputs`,
+            # not a module arg) to avoid infinite recursion in imports.
+            effectiveInputs.lan-mouse.homeManagerModules.default
+            ../../modules/home-manager/lan-mouse.nix
+          ];
 
       # Make inputs available to home-manager
       _module.args.inputs = effectiveInputs;

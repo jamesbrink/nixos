@@ -361,6 +361,7 @@
         7000 # AirPlay
         7001 # AirPlay
         7011 # AirPlay control
+        4242 # lan-mouse software KVM (rides Tailscale today; LAN fallback)
         18789 # clawdbot
       ];
       interfaces = {

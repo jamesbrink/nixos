@@ -759,6 +759,28 @@
         "type": "github"
       }
     },
+    "lan-mouse": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "rust-overlay": "rust-overlay"
+      },
+      "locked": {
+        "lastModified": 1781269631,
+        "narHash": "sha256-6EqA9WfiukOymUT4FkNdMvzmFKByW0LLoI/9sv4TzBU=",
+        "owner": "feschber",
+        "repo": "lan-mouse",
+        "rev": "0d2190e787db9e482e17d4c16fb7c00ef4841bcb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "feschber",
+        "ref": "v0.11.0",
+        "repo": "lan-mouse",
+        "type": "github"
+      }
+    },
     "mold": {
       "inputs": {
         "bun2nix": "bun2nix_2",
@@ -766,7 +788,7 @@
         "devshell": "devshell_5",
         "flake-parts": "flake-parts_6",
         "nixpkgs": "nixpkgs_6",
-        "rust-overlay": "rust-overlay",
+        "rust-overlay": "rust-overlay_2",
         "treefmt-nix": "treefmt-nix_5"
       },
       "locked": {
@@ -1097,6 +1119,7 @@
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
         "invokeai": "invokeai",
+        "lan-mouse": "lan-mouse",
         "mold": "mold",
         "nix-homebrew": "nix-homebrew",
         "nixos-unstable": "nixos-unstable",
@@ -1111,6 +1134,27 @@
       }
     },
     "rust-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "lan-mouse",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1773025773,
+        "narHash": "sha256-Wik8+xApNfldpUFjPmJkPdg0RrvUPSWGIZis+A/0N1w=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "3c06fdbbd36ff60386a1e590ee0cd52dcd1892bf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "rust-overlay_2": {
       "inputs": {
         "nixpkgs": [
           "mold",

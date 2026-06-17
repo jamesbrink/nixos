@@ -56,6 +56,10 @@ in
         ../../modules/home-manager/darwin/unified-themes.nix
         ../../modules/home-manager/darwin/hammerspoon.nix
         ../../modules/home-manager/darwin/cursor-extensions.nix
+        # Software KVM peer (self-gates to halcyon). Upstream programs.lan-mouse module
+        # imported here (closure `inputs`) to avoid infinite recursion in imports.
+        inputs.lan-mouse.homeManagerModules.default
+        ../../modules/home-manager/lan-mouse.nix
       ];
 
       programs.zsh.shellAliases.cld = "claude --dangerously-skip-permissions";

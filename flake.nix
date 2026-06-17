@@ -113,6 +113,16 @@
       # the offline build pattern for newer releases.
       url = "github:utensils/mold/fdf508583c0674cfe2d548b81650b9ac6bc9c81b";
     };
+
+    lan-mouse = {
+      # Software KVM (keyboard/mouse sharing) for halcyon <-> hal9000.
+      # Pinned to v0.11.0: nixpkgs still ships 0.10.0, which predates the wlroots
+      # modifier-key emulation fix (PR #238) needed for Ctrl/Shift/Alt/Super to work
+      # on the Hyprland receiver. The flake exposes packages for all our systems
+      # (incl. aarch64-darwin) plus a home-manager module (programs.lan-mouse).
+      url = "github:feschber/lan-mouse/v0.11.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

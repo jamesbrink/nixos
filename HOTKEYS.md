@@ -4,6 +4,16 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 
 ---
 
+## Software KVM (lan-mouse) — halcyon ⇄ hal9000
+
+Shared keyboard/mouse between halcyon (Mac) and hal9000 (Hyprland, to its left). See
+`docs/lan-mouse.md`.
+
+- Push cursor off halcyon's **left** edge → control hal9000; off hal9000's **right** edge → back.
+- `A + S + D + F` (tap together) - Release capture back to the local machine.
+
+---
+
 ## macOS Window Manager (Yabai + SKHD)
 
 **Modifier:** `Cmd` (Command key)
