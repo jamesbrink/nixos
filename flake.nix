@@ -83,7 +83,10 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     comfyui-nix = {
-      url = "github:utensils/comfyui-nix";
+      # Pinned to a tagged release for reproducible deployments. Bump the tag
+      # deliberately (matches an upstream ComfyUI version bump) rather than
+      # tracking the moving default branch.
+      url = "github:utensils/comfyui-nix/v0.25.0";
     };
     invokeai = {
       url = "github:jamesbrink/InvokeAI/feature/nix-flake";
@@ -105,13 +108,16 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     mold = {
-      # Pinned to the last-good 0.9.0 revision (fdf5085). Newer mold (0.10.0, rev
-      # 11cdebc) regressed its mold-web build to a bare `bun install` that needs npm
-      # network — impossible under `sandbox = true` — so it stalls forever. This exact
-      # rev's bun-cache FOD is complete and already built in the store (mold-0.9.0
-      # 052159b), so it's a cache hit with no network. Revisit when upstream restores
-      # the offline build pattern for newer releases.
-      url = "github:utensils/mold/fdf508583c0674cfe2d548b81650b9ac6bc9c81b";
+      # Tracks main. An earlier 0.9.0 pin (fdf5085) worked around a series of
+      # sandboxed-build / packaging bugs that only surfaced building the CUDA
+      # flake on hal9000; all fixed upstream while bumping to current main:
+      #   #330 mold-web bun install hung on live npm fetch -> offline FOD + symlink backend
+      #   #332/#334/#336 build-phase execs of the binary missing libstdc++/libcuda
+      #   #338 installed binary had an empty RUNPATH -> mold.service crash-looped
+      #   #340 over-strict cuda_cudart RUNPATH assertion
+      # The #338 fix adds an autoPatchelf RUNPATH + a postFixup assertion hook, so
+      # any future RUNPATH regression now fails the build instead of at runtime.
+      url = "github:utensils/mold";
     };
 
     lan-mouse = {
