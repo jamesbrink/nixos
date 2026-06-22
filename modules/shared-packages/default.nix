@@ -50,6 +50,7 @@ in
       nvd
       rsync
       screen
+      ookla-speedtest # Official Ookla CLI (unfree); speedtest-cli below is the OSS Python client
       speedtest-cli
       tmuxinator
       # restic-browser wrapper added below with credential isolation
