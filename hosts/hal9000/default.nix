@@ -1431,6 +1431,11 @@
   # Allow mold server to access ~/AI bind mount for LoRAs and models
   systemd.services.mold.serviceConfig.ProtectHome = lib.mkForce false;
   systemd.services.mold.serviceConfig.ReadWritePaths = [ "/storage-fast/AI" ];
+  # mold dies on SIGPIPE when a client connection drops mid-write (utensils/mold
+  # upstream bug). systemd's default "clean exit" set includes SIGPIPE, so
+  # Restart=on-failure treats it as success and never restarts. Force a restart
+  # on SIGPIPE until the binary masks it. See upstream issue.
+  systemd.services.mold.serviceConfig.RestartForceExitStatus = "SIGPIPE";
 
   services.mold = {
     enable = true;
