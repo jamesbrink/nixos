@@ -23,6 +23,7 @@
 
 * {
   all: unset;
+  font-size: 22px;
 }
 
 popover {
@@ -124,7 +125,7 @@ row:selected .item-box {
 }
 
 .item-subtext {
-  font-size: 12px;
+  font-size: 16px;
   opacity: 0.5;
 }
 
@@ -177,7 +178,7 @@ row:selected .item-box {
 .keybinds {
   padding-top: 10px;
   border-top: 1px solid alpha(@border, 0.5);
-  font-size: 12px;
+  font-size: 16px;
   color: @text;
 }
 

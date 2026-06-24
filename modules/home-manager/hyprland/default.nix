@@ -64,8 +64,8 @@ let
   # Font configuration (Omarchy uses CaskaydiaMono, but JetBrainsMono is similar)
   fontFamily = "JetBrainsMono Nerd Font";
   fontSize = 12; # Default font size for terminals, editors
-  fontSizeLauncher = 18; # Walker application launcher
-  fontSizeStatusBar = 14; # Waybar status bar
+  fontSizeLauncher = 22; # Walker application launcher
+  fontSizeStatusBar = 20; # Waybar status bar
   fontSizePowerMenu = 16; # wlogout power menu
   fontSizeGtk = 10; # GTK applications default
 
@@ -276,7 +276,9 @@ in
         "$mod SHIFT, Y, exec, google-chrome-stable --new-window https://youtube.com"
 
         # Menus
-        "$mod, SPACE, exec, walker"
+        "$mod, SPACE, exec, rofi -show drun"
+        "$mod, D, exec, rofi -show drun"
+        "$mod ALT, SPACE, exec, walker"
         "$mod CTRL, E, exec, walker --modules emoji"
         "$mod, ESCAPE, exec, wlogout"
         "$mod, K, exec, show-keybindings" # Key bindings menu (Omarchy-style)
@@ -561,6 +563,34 @@ in
   # walker tracks themectl theme switches automatically.
   xdg.configFile."walker/themes/main".source = ./walker-theme;
 
+  xdg.configFile."rofi/config.rasi".text = ''
+    configuration {
+      modi: "drun,run,window";
+      show-icons: true;
+      display-drun: "Apps";
+      display-run: "Run";
+      display-window: "Windows";
+      drun-display-format: "{name}";
+      font: "${fontFamily} 20";
+    }
+
+    @theme "${pkgs.rofi}/share/rofi/themes/Arc-Dark.rasi"
+
+    window {
+      width: 38%;
+      location: center;
+      anchor: center;
+    }
+
+    element {
+      padding: 10px;
+    }
+
+    element-icon {
+      size: 32px;
+    }
+  '';
+
   # Custom scripts
   home.file.".local/bin/spawn-terminal-here" = {
     text = ''
@@ -707,6 +737,43 @@ in
       else
         ${pkgs.systemd}/bin/systemctl --user start waybar.service
       fi
+    '';
+    executable = true;
+  };
+
+  home.file.".local/bin/desktop-settings-menu" = {
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      choice=$(
+        printf '%s\n' \
+          "Audio levels" \
+          "Audio routing" \
+          "Audio effects" \
+          "WiFi" \
+          "Bluetooth" \
+          "Displays" \
+          "Appearance" \
+          "Mouse settings" \
+          "Logitech devices" \
+          "Gaming mouse" |
+          rofi -dmenu -p "Settings" 2>/dev/null || true
+      )
+
+      case "$choice" in
+        "Audio levels") exec pavucontrol ;;
+        "Audio routing") exec qpwgraph ;;
+        "Audio effects") exec easyeffects ;;
+        "WiFi") exec iwgtk ;;
+        "Bluetooth") exec blueman-manager ;;
+        "Displays") exec wdisplays ;;
+        "Appearance") exec nwg-look ;;
+        "Mouse settings") exec xfce4-mouse-settings ;;
+        "Logitech devices") exec solaar ;;
+        "Gaming mouse") exec piper ;;
+        *) exit 0 ;;
+      esac
     '';
     executable = true;
   };
@@ -1443,7 +1510,7 @@ in
       mainBar = {
         layer = "top";
         position = "top";
-        height = 34;
+        height = 52;
         spacing = 0;
 
         modules-left = [
@@ -1455,6 +1522,7 @@ in
           "custom/recording"
         ];
         modules-right = [
+          "custom/settings"
           "tray"
           "bluetooth"
           "network"
@@ -1538,6 +1606,7 @@ in
           tooltip-format-wifi = "{essid} ({frequency} GHz)\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}";
           tooltip-format-ethernet = "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}";
           tooltip-format-disconnected = "Disconnected";
+          on-click = "iwgtk";
           interval = 3;
         };
 
@@ -1591,32 +1660,41 @@ in
         };
 
         bluetooth = {
-          format = "";
+          format = "󰂯";
           format-disabled = "󰂲";
-          format-connected = "";
+          format-connected = "󰂱";
           tooltip-format = "Devices connected: {num_connections}";
-          on-click = "blueberry";
+          on-click = "blueman-manager";
         };
 
         pulseaudio = {
           format = "{icon}";
-          on-click = "\${TERMINAL} --class=Wiremix -e wiremix";
+          on-click = "pavucontrol";
+          on-click-middle = "qpwgraph";
           on-click-right = "pamixer -t";
           tooltip-format = "Playing at {volume}%";
           scroll-step = 5;
-          format-muted = "";
+          format-muted = "󰝟";
           format-icons = {
             default = [
-              ""
-              ""
-              ""
+              "󰕿"
+              "󰖀"
+              "󰕾"
             ];
           };
         };
 
+        "custom/settings" = {
+          format = "";
+          tooltip = true;
+          tooltip-format = "Desktop settings";
+          on-click = "$HOME/.local/bin/desktop-settings-menu";
+          on-click-right = "nwg-look";
+        };
+
         tray = {
-          icon-size = 12;
-          spacing = 12;
+          icon-size = 22;
+          spacing = 16;
         };
       };
     };
@@ -1683,8 +1761,9 @@ in
       #battery,
       #bluetooth,
       #pulseaudio,
+      #custom-settings,
       #tray {
-        padding: 0 10px;
+        padding: 0 12px;
         color: @foreground;
       }
 

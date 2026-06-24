@@ -263,6 +263,7 @@ in
     swww # Animated wallpaper daemon (alternative to hyprpaper)
 
     # Application launcher and bar
+    rofi # Wayland-capable application launcher
     unstablePkgs.walker # Wayland-native application launcher (Omarchy-style, themed)
     unstablePkgs.elephant # Data provider backend required by walker 2.x (used by home-manager walker config)
     waybar # Status bar
@@ -285,11 +286,19 @@ in
     networkmanagerapplet # Network manager GUI
 
     # Audio control
+    easyeffects # PipeWire effects and EQ
+    helvum # PipeWire patchbay
     pavucontrol # PulseAudio volume control
     pamixer # CLI audio mixer
+    qpwgraph # PipeWire graph/router
     swayosd # OSD for volume/brightness/caps lock
     sound-theme-freedesktop # System sound effects for volume feedback
     pulseaudio # Provides paplay command for playing sounds
+
+    # Input device configuration
+    piper # Gaming mouse settings via ratbagd
+    solaar # Logitech receiver/device settings
+    xfce.xfce4-settings # Provides xfce4-mouse-settings
 
     # Brightness control
     brightnessctl # Screen brightness
@@ -456,6 +465,7 @@ in
     };
   };
   services.blueman.enable = true;
+  services.ratbagd.enable = true;
 
   # Auto-mount removable media
   services.udisks2.enable = true;
