@@ -296,9 +296,9 @@ in
     pulseaudio # Provides paplay command for playing sounds
 
     # Input device configuration
+    input-remapper # Keyboard/mouse button remapping
     piper # Gaming mouse settings via ratbagd
     solaar # Logitech receiver/device settings
-    xfce.xfce4-settings # Provides xfce4-mouse-settings
 
     # Brightness control
     brightnessctl # Screen brightness
@@ -465,6 +465,7 @@ in
     };
   };
   services.blueman.enable = true;
+  services.input-remapper.enable = true;
   services.ratbagd.enable = true;
 
   # Auto-mount removable media

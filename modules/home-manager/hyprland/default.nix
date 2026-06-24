@@ -251,7 +251,6 @@ in
         "${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP XDG_SESSION_TYPE && ${pkgs.systemd}/bin/systemctl --user start hyprland-session.target && ${pkgs.systemd}/bin/systemctl --user restart hypridle.service xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service"
         # Waybar is now managed by systemd service with hyprland-session.target dependency
         # Mako is now managed by services.mako (see below)
-        "swayosd-server" # OSD server for volume/brightness overlays
         "wl-paste --type text --watch cliphist store" # Clipboard history for text
         "wl-paste --type image --watch cliphist store" # Clipboard history for images
         "${pkgs.swww}/bin/swww-daemon" # Wallpaper daemon
@@ -425,7 +424,7 @@ in
 
       # Touchpad gestures (3-finger swipe) - Hyprland 0.51+ syntax
       gestures = {
-        workspace_swipe_invert = false;
+        workspace_swipe_invert = true;
         workspace_swipe_distance = 300; # Lower = less distance needed to switch
         workspace_swipe_cancel_ratio = 0.15; # Higher = easier to cancel swipe (default 0.5)
         workspace_swipe_min_speed_to_force = 30; # Minimum speed to force workspace change
@@ -455,6 +454,9 @@ in
     extraConfig = ''
       # Source runtime theme if it exists (managed by themectl apply)
       source = ~/.config/omarchy/current/theme/hyprland.conf
+
+      # Source mutable pointer/touchpad preferences managed by pointer-settings.
+      source = ~/.config/hypr/pointer-settings.conf
     '';
   };
 
@@ -755,7 +757,8 @@ in
           "Bluetooth" \
           "Displays" \
           "Appearance" \
-          "Mouse settings" \
+          "Mouse & touchpad" \
+          "Mouse remapping" \
           "Logitech devices" \
           "Gaming mouse" |
           rofi -dmenu -p "Settings" 2>/dev/null || true
@@ -765,11 +768,12 @@ in
         "Audio levels") exec pavucontrol ;;
         "Audio routing") exec qpwgraph ;;
         "Audio effects") exec easyeffects ;;
-        "WiFi") exec iwgtk ;;
+        "WiFi") exec wifi-settings ;;
         "Bluetooth") exec blueman-manager ;;
         "Displays") exec wdisplays ;;
         "Appearance") exec nwg-look ;;
-        "Mouse settings") exec xfce4-mouse-settings ;;
+        "Mouse & touchpad") exec pointer-settings ;;
+        "Mouse remapping") exec input-remapper-gtk ;;
         "Logitech devices") exec solaar ;;
         "Gaming mouse") exec piper ;;
         *) exit 0 ;;
@@ -777,6 +781,190 @@ in
     '';
     executable = true;
   };
+
+  home.file.".local/bin/wifi-settings" = {
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      choice=$(
+        printf '%s\n' \
+          "Open WiFi manager" \
+          "Show WiFi devices" \
+          "Show known networks" \
+          "Open iwctl terminal" |
+          rofi -dmenu -p "WiFi" 2>/dev/null || true
+      )
+
+      case "$choice" in
+        "Open WiFi manager")
+          exec iwgtk
+          ;;
+        "Show WiFi devices")
+          alacritty --class=TUI.float -e sh -lc 'iwctl device list; printf "\nPress enter to close..."; read _'
+          ;;
+        "Show known networks")
+          alacritty --class=TUI.float -e sh -lc 'iwctl known-networks list; printf "\nPress enter to close..."; read _'
+          ;;
+        "Open iwctl terminal")
+          exec alacritty --class=TUI.float -e iwctl
+          ;;
+        *)
+          exit 0
+          ;;
+      esac
+    '';
+    executable = true;
+  };
+
+  home.file.".local/bin/pointer-settings" = {
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      CONFIG="$HOME/.config/hypr/pointer-settings.conf"
+      mkdir -p "$(dirname "$CONFIG")"
+
+      get_value() {
+        local key="$1"
+        local default="$2"
+        local value=""
+
+        if [[ -f "$CONFIG" ]]; then
+          value=$(awk -F= -v key="$key" '
+            $1 ~ key {
+              gsub(/[[:space:]]/, "", $2)
+              value=$2
+            }
+            END {
+              print value
+            }
+          ' "$CONFIG")
+        fi
+
+        if [[ -n "$value" ]]; then
+          printf '%s\n' "$value"
+        else
+          printf '%s\n' "$default"
+        fi
+      }
+
+      SENSITIVITY="$(get_value 'sensitivity' '0')"
+      ACCEL="$(get_value 'accel_profile' 'adaptive')"
+      FOLLOW="$(get_value 'follow_mouse' '1')"
+      NATURAL="$(get_value 'natural_scroll' 'true')"
+      TAP="$(get_value 'tap-to-click' 'false')"
+
+      write_config() {
+        cat > "$CONFIG" <<EOF
+      # Mutable pointer settings managed by pointer-settings.
+      input {
+        sensitivity = $SENSITIVITY
+        accel_profile = $ACCEL
+        follow_mouse = $FOLLOW
+
+        touchpad {
+          natural_scroll = $NATURAL
+          tap-to-click = $TAP
+        }
+      }
+      EOF
+
+        hyprctl keyword input:sensitivity "$SENSITIVITY" >/dev/null
+        hyprctl keyword input:accel_profile "$ACCEL" >/dev/null
+        hyprctl keyword input:follow_mouse "$FOLLOW" >/dev/null
+        hyprctl keyword input:touchpad:natural_scroll "$NATURAL" >/dev/null
+        hyprctl keyword input:touchpad:tap-to-click "$TAP" >/dev/null
+
+        notify-send "Pointer settings applied" \
+          "speed=$SENSITIVITY, accel=$ACCEL, natural_scroll=$NATURAL, tap=$TAP" \
+          -t 2500 2>/dev/null || true
+      }
+
+      show_devices() {
+        hyprctl -j devices | jq -r '
+          "Mice:",
+          (.mice[]? | "  - \(.name)"),
+          "",
+          "Touchpads:",
+          (.touchpads[]? | "  - \(.name)")
+        ' | rofi -dmenu -p "Input devices" >/dev/null || true
+      }
+
+      choice=$(
+        cat <<EOF | rofi -dmenu -p "Pointer"
+      Pointer speed: $SENSITIVITY
+      Acceleration: $ACCEL
+      Natural scrolling: $NATURAL
+      Tap to click: $TAP
+      Focus follows mouse: $FOLLOW
+      Show input devices
+      Open Logitech settings
+      Open gaming mouse settings
+      Open button remapper
+      EOF
+      )
+
+      case "$choice" in
+        "Pointer speed:"*)
+          value=$(printf '%s\n' -0.8 -0.6 -0.4 -0.2 0 0.2 0.4 0.6 0.8 1.0 | rofi -dmenu -p "Pointer speed")
+          [[ -n "$value" ]] || exit 0
+          SENSITIVITY="$value"
+          write_config
+          ;;
+        "Acceleration:"*)
+          value=$(printf '%s\n' adaptive flat | rofi -dmenu -p "Acceleration")
+          [[ -n "$value" ]] || exit 0
+          ACCEL="$value"
+          write_config
+          ;;
+        "Natural scrolling:"*)
+          if [[ "$NATURAL" == "true" ]]; then NATURAL=false; else NATURAL=true; fi
+          write_config
+          ;;
+        "Tap to click:"*)
+          if [[ "$TAP" == "true" ]]; then TAP=false; else TAP=true; fi
+          write_config
+          ;;
+        "Focus follows mouse:"*)
+          if [[ "$FOLLOW" == "1" ]]; then FOLLOW=0; else FOLLOW=1; fi
+          write_config
+          ;;
+        "Show input devices")
+          show_devices
+          ;;
+        "Open Logitech settings")
+          exec solaar
+          ;;
+        "Open gaming mouse settings")
+          exec piper
+          ;;
+        "Open button remapper")
+          exec input-remapper-gtk
+          ;;
+      esac
+    '';
+    executable = true;
+  };
+
+  home.activation.ensurePointerSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    CONFIG_FILE="${config.home.homeDirectory}/.config/hypr/pointer-settings.conf"
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+      mkdir -p "$(dirname "$CONFIG_FILE")"
+      printf '%s\n' \
+        '# Mutable pointer settings managed by pointer-settings.' \
+        'input {' \
+        '  sensitivity = 0' \
+        '  accel_profile = adaptive' \
+        '  follow_mouse = 1' \
+        '  touchpad {' \
+        '    natural_scroll = true' \
+        '    tap-to-click = false' \
+        '  }' \
+        '}' > "$CONFIG_FILE"
+      chmod 644 "$CONFIG_FILE"
+    fi
+  '';
 
   # Theme picker (Omarchy-style)
   home.file.".local/bin/theme-picker" = {
@@ -1217,6 +1405,22 @@ in
   xdg.configFile."swayosd/style.css".source =
     config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/omarchy/current/theme/swayosd.css";
 
+  systemd.user.services.swayosd = {
+    Unit = {
+      Description = "SwayOSD volume and brightness overlay";
+      After = [ "hyprland-session.target" ];
+      PartOf = [ "hyprland-session.target" ];
+    };
+
+    Service = {
+      ExecStart = "${pkgs.swayosd}/bin/swayosd-server";
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
+
+    Install.WantedBy = [ "hyprland-session.target" ];
+  };
+
   # hyprlock screen locker with runtime theme support (Omarchy-style)
   xdg.configFile."hypr/hyprlock.conf".text = ''
     # Source runtime theme colors (symlink updates without rebuild)
@@ -1606,7 +1810,7 @@ in
           tooltip-format-wifi = "{essid} ({frequency} GHz)\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}";
           tooltip-format-ethernet = "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}";
           tooltip-format-disconnected = "Disconnected";
-          on-click = "iwgtk";
+          on-click = "wifi-settings";
           interval = 3;
         };
 
