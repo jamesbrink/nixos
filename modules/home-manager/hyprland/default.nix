@@ -281,7 +281,7 @@ in
         "$mod CTRL, E, exec, walker --modules emoji"
         "$mod ALT, G, exec, games-menu"
         "$mod, ESCAPE, exec, power-menu"
-        "$mod SHIFT, ESCAPE, exec, wlogout"
+        "$mod SHIFT, ESCAPE, exec, wlogout --buttons-per-row 3 --column-spacing 24 --row-spacing 24 --margin 160"
         "$mod, COMMA, exec, desktop-control-center"
         "$mod, K, exec, show-keybindings" # Key bindings menu (Omarchy-style)
         "$mod SHIFT, SPACE, exec, toggle-waybar" # Toggle status bar (Omarchy-style)
@@ -1519,9 +1519,15 @@ in
   xdg.configFile."wlogout/layout".text = ''
     {
       "label" : "lock",
-      "action" : "swaylock",
+      "action" : "omarchy-lock-screen",
       "text" : "Lock",
       "keybind" : "l"
+    }
+    {
+      "label" : "suspend",
+      "action" : "systemctl suspend",
+      "text" : "Suspend",
+      "keybind" : "u"
     }
     {
       "label" : "logout",
@@ -1540,6 +1546,11 @@ in
       "action" : "systemctl reboot",
       "text" : "Reboot",
       "keybind" : "r"
+    }
+    {
+      "label" : "cancel",
+      "action" : "pkill wlogout",
+      "text" : "Cancel"
     }
   '';
 
@@ -1561,15 +1572,20 @@ in
       border-style: solid;
       border-width: 2px;
       border-color: ${themeConfig.wlogout.buttonBackground};
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: 30%;
       border-radius: 12px;
-      margin: 20px;
-      padding: 20px;
-      min-width: 180px;
-      min-height: 180px;
+      margin: 16px;
+      padding: 24px;
+      min-width: 220px;
+      min-height: 140px;
       transition: all 0.3s ease;
+      box-shadow: none;
+      text-shadow: none;
+    }
+
+    button label {
+      color: ${themeConfig.wlogout.textColor};
+      font-size: 56px;
+      font-weight: 700;
     }
 
     button:focus, button:active, button:hover {
@@ -1578,23 +1594,10 @@ in
       color: ${themeConfig.wlogout.textHoverColor};
       outline-style: none;
       box-shadow: 0 4px 20px ${themeConfig.wlogout.buttonHoverBackground}4d;
-      transform: scale(1.05);
     }
 
-    #lock {
-      background-image: image(url("/run/current-system/sw/share/wlogout/icons/lock.png"));
-    }
-
-    #logout {
-      background-image: image(url("/run/current-system/sw/share/wlogout/icons/logout.png"));
-    }
-
-    #shutdown {
-      background-image: image(url("/run/current-system/sw/share/wlogout/icons/shutdown.png"));
-    }
-
-    #reboot {
-      background-image: image(url("/run/current-system/sw/share/wlogout/icons/reboot.png"));
+    button:focus label, button:active label, button:hover label {
+      color: ${themeConfig.wlogout.textHoverColor};
     }
   '';
 
