@@ -220,7 +220,7 @@ in
         "opacity 1.0 1.0, initialTitle:((?i)(?:[a-z0-9-]+\\.)*youtube\\.com_/|app\\.zoom\\.us_/wc/home)"
 
         # No transparency on media windows
-        "opacity 1 1, class:^(zoom|vlc|mpv|org.kde.kdenlive|com.obsproject.Studio|com.github.PintaProject.Pinta|imv|org.gnome.NautilusPreviewer)$"
+        "opacity 1 1, class:^(zoom|vlc|mpv|Screensaver|org.kde.kdenlive|com.obsproject.Studio|com.github.PintaProject.Pinta|imv|org.gnome.NautilusPreviewer)$"
 
         # Floating windows - tag identification
         "tag +floating-window, class:(blueberry.py|Impala|Wiremix|org.gnome.NautilusPreviewer|com.gabm.satty|Omarchy|About|TUI.float)"
@@ -283,6 +283,8 @@ in
         "$mod, ESCAPE, exec, power-menu"
         "$mod SHIFT, ESCAPE, exec, wlogout --buttons-per-row 3 --column-spacing 24 --row-spacing 24 --margin 160"
         "$mod, COMMA, exec, desktop-control-center"
+        "$mod ALT, S, exec, screensaver-menu"
+        "$mod ALT SHIFT, S, exec, omarchy-launch-screensaver force random"
         "$mod, K, exec, show-keybindings" # Key bindings menu (Omarchy-style)
         "$mod SHIFT, SPACE, exec, toggle-waybar" # Toggle status bar (Omarchy-style)
 
@@ -826,6 +828,7 @@ in
           "Gaming mouse" \
           "File manager" \
           "Screenshots" \
+          "Screensavers" \
           "Power" \
           "Reload desktop" \
           "Restart Waybar" |
@@ -848,6 +851,7 @@ in
         "Gaming mouse") exec piper ;;
         "File manager") exec thunar ;;
         "Screenshots") exec screenshot-menu ;;
+        "Screensavers") exec screensaver-menu ;;
         "Power") exec power-menu ;;
         "Reload desktop") hyprctl reload; notify-send "Desktop reloaded" "Hyprland config reloaded" -t 2000 2>/dev/null || true ;;
         "Restart Waybar") systemctl --user restart waybar.service; notify-send "Waybar restarted" -t 2000 2>/dev/null || true ;;
@@ -962,6 +966,47 @@ in
         "Region screenshot") exec screenshot-direct region ;;
         "Window screenshot") exec screenshot-direct window ;;
         "Toggle recording") exec screen-record-toggle ;;
+        *) exit 0 ;;
+      esac
+    '';
+    executable = true;
+  };
+
+  home.file.".local/bin/screensaver-menu" = {
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      choice=$(
+        printf '%s\n' \
+          "Aerial video" \
+          "Aerial crop fill" \
+          "Random video" \
+          "Random crop fill" \
+          "Manage videos" \
+          "Download Apple 4K aerials" \
+          "Find native 32:9 videos" \
+          "Open videos folder" \
+          "HAL fallback" \
+          "Digital rain" \
+          "Stop screensaver" \
+          "Lock screen" |
+          rofi -dmenu -p "Screensaver" 2>/dev/null || true
+      )
+
+      case "$choice" in
+        "Aerial video") exec omarchy-launch-screensaver force video ;;
+        "Aerial crop fill") exec omarchy-launch-screensaver force aerial-crop ;;
+        "Random video") exec omarchy-launch-screensaver force random ;;
+        "Random crop fill") exec omarchy-launch-screensaver force random-crop ;;
+        "Manage videos") exec screensaver-video-manager ;;
+        "Download Apple 4K aerials") exec aerial-screensaver-download 3 4K-SDR ;;
+        "Find native 32:9 videos") exec ultrawide-screensaver-search ;;
+        "Open videos folder") mkdir -p "$HOME/Videos/Screensavers"; exec thunar "$HOME/Videos/Screensavers" ;;
+        "HAL fallback") exec omarchy-launch-screensaver force hal ;;
+        "Digital rain") exec omarchy-launch-screensaver force rain ;;
+        "Stop screensaver") exec screensaver-stop ;;
+        "Lock screen") exec omarchy-lock-screen ;;
         *) exit 0 ;;
       esac
     '';
@@ -2249,8 +2294,14 @@ in
 
   # Screensaver branding text
   xdg.configFile."omarchy/branding/screensaver.txt".text = ''
-    HAL 9000
-    Heuristically programmed ALgorithmic computer
+     __    __     ___      __        ___    ___    ___    ___
+    |  |  |  |   /   \    |  |      / _ \  / _ \  / _ \  / _ \
+    |  |__|  |  /  ^  \   |  |     | | | || | | || | | || | | |
+    |   __   | /  /_\  \  |  |     | | | || | | || | | || | | |
+    |  |  |  |/  _____  \ |  `----.| |_| || |_| || |_| || |_| |
+    |__|  |__/__/     \__\|_______| \___/  \___/  \___/  \___/
+
+        HEURISTICALLY PROGRAMMED ALGORITHMIC COMPUTER
   '';
 
   # Screensaver Alacritty configuration
@@ -2261,67 +2312,500 @@ in
     dynamic_title = false
 
     [font]
-    size = 12
+    size = 34
 
     [colors.primary]
     background = "#000000"
     foreground = "#ffffff"
   '';
 
+  # mpv bindings for fullscreen video screensavers.
+  home.file.".local/share/omarchy/default/mpv/screensaver-input.conf".text = ''
+    ESC quit
+    q quit
+    Q quit
+    SPACE quit
+    ENTER quit
+    BS quit
+    MBTN_LEFT quit
+    MBTN_RIGHT quit
+    MBTN_MID quit
+    WHEEL_UP quit
+    WHEEL_DOWN quit
+    ANY_UNICODE quit
+  '';
+
   # Hypridle idle management daemon
+  # Manual-only screensavers: keep hypridle available, but do not start
+  # any screensaver from an idle timeout.
   services.hypridle = {
     enable = true;
     settings = {
       general = { };
-      listener = [
-        {
-          timeout = 120;
-          on-timeout = "omarchy-launch-screensaver";
-        }
-      ];
+      listener = [ ];
     };
   };
 
   # Omarchy screensaver helper scripts
   home.packages = [
+    (pkgs.writeShellScriptBin "screensaver-stop" ''
+      ${pkgs.hyprland}/bin/hyprctl keyword cursor:invisible false >/dev/null 2>&1 || true
+      while read -r pid; do
+        [[ -n "$pid" ]] && kill "$pid" 2>/dev/null || true
+      done < <(${pkgs.hyprland}/bin/hyprctl clients -j | ${pkgs.jq}/bin/jq -r '.[] | select(.class == "Screensaver" or .title == "Screensaver") | .pid // empty' 2>/dev/null)
+      ${pkgs.killall}/bin/pkill -x tte 2>/dev/null || true
+      ${pkgs.killall}/bin/pkill -f "alacritty --class Screensaver" 2>/dev/null || true
+      ${pkgs.killall}/bin/pkill -f "wayland-app-id=Screensaver" 2>/dev/null || true
+    '')
+
+    (pkgs.writeShellScriptBin "video-screensaver" ''
+      mode="''${1:-random}"
+      video_dir="$HOME/Videos/Screensavers"
+      input_conf="$HOME/.local/share/omarchy/default/mpv/screensaver-input.conf"
+      source_dir="$video_dir"
+      fit_args=()
+      mkdir -p "$video_dir"
+
+      case "$mode" in
+        aerial | aerial-crop) source_dir="$video_dir/Apple-Aerial" ;;
+        native | native-crop) source_dir="$video_dir/Native-32x9" ;;
+      esac
+      case "$mode" in
+        *-crop | crop | native | native-crop) fit_args+=(--panscan=1.0) ;;
+        stretch) fit_args+=(--video-aspect-override=32:9) ;;
+      esac
+
+      if ${pkgs.procps}/bin/pgrep -f "[a]lacritty --class Screensaver|[w]ayland-app-id=Screensaver" >/dev/null; then
+        exit 0
+      fi
+
+      mapfile -d "" videos < <(
+        ${pkgs.findutils}/bin/find "$source_dir" -type f \
+          \( -iname "*.mp4" -o -iname "*.mov" -o -iname "*.mkv" -o -iname "*.webm" -o -iname "*.m4v" \) \
+          -print0 2>/dev/null | ${pkgs.coreutils}/bin/sort -z
+      )
+      if [[ ''${#videos[@]} -eq 0 && "$source_dir" != "$video_dir" ]]; then
+        mapfile -d "" videos < <(
+          ${pkgs.findutils}/bin/find "$video_dir" -type f \
+            \( -iname "*.mp4" -o -iname "*.mov" -o -iname "*.mkv" -o -iname "*.webm" -o -iname "*.m4v" \) \
+            -print0 2>/dev/null | ${pkgs.coreutils}/bin/sort -z
+        )
+      fi
+
+      if [[ ''${#videos[@]} -eq 0 ]]; then
+        ${pkgs.libnotify}/bin/notify-send "No screensaver videos yet" "Add videos to ~/Videos/Screensavers or choose Download Apple aerials." -t 5000 2>/dev/null || true
+        if command -v thunar >/dev/null 2>&1; then
+          thunar "$video_dir" >/dev/null 2>&1 &
+        fi
+        exec omarchy-launch-screensaver force hal
+      fi
+
+      playlist=$(${pkgs.coreutils}/bin/mktemp --tmpdir video-screensaver.XXXXXX.m3u)
+      cleanup() {
+        rm -f "$playlist"
+        screensaver-stop
+      }
+      trap cleanup EXIT INT TERM HUP
+
+      if [[ "$mode" == "random" || "$mode" == "video" || "$mode" == "aerial" || "$mode" == *-crop || "$mode" == "native" ]]; then
+        printf '%s\n' "''${videos[@]}" | ${pkgs.coreutils}/bin/shuf >"$playlist"
+      else
+        printf '%s\n' "''${videos[@]}" >"$playlist"
+      fi
+
+      focused=$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused == true).name')
+      initial_cursor="$(${pkgs.hyprland}/bin/hyprctl cursorpos 2>/dev/null || true)"
+
+      for monitor in $(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | .name'); do
+        ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor "$monitor" >/dev/null
+        ${pkgs.hyprland}/bin/hyprctl dispatch exec -- \
+          ${pkgs.mpv}/bin/mpv \
+            --wayland-app-id=Screensaver \
+            --title=Screensaver \
+            --fs \
+            --force-window=immediate \
+            --no-audio \
+            --loop-playlist=inf \
+            --shuffle \
+            --osc=no \
+            --osd-level=0 \
+            --cursor-autohide=always \
+            --input-conf="$input_conf" \
+            --really-quiet \
+            "''${fit_args[@]}" \
+            --playlist="$playlist" >/dev/null
+      done
+      ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor "$focused" >/dev/null
+
+      sleep 1
+      initial_count=$(${pkgs.procps}/bin/pgrep -fc "[w]ayland-app-id=Screensaver" || true)
+      while ${pkgs.procps}/bin/pgrep -f "[w]ayland-app-id=Screensaver" >/dev/null; do
+        current_cursor="$(${pkgs.hyprland}/bin/hyprctl cursorpos 2>/dev/null || true)"
+        current_count=$(${pkgs.procps}/bin/pgrep -fc "[w]ayland-app-id=Screensaver" || true)
+        if [[ -n "$initial_cursor" && "$current_cursor" != "$initial_cursor" ]]; then
+          exit 0
+        fi
+        if [[ "$initial_count" -gt 0 && "$current_count" -lt "$initial_count" ]]; then
+          exit 0
+        fi
+        sleep 0.25
+      done
+    '')
+
+    (pkgs.writeShellScriptBin "aerial-screensaver-download" ''
+      limit="''${1:-3}"
+      quality="''${2:-4K-SDR}"
+      query="''${3:-}"
+      case "$quality" in
+        4K-SDR) url_key="url-4K-SDR" ;;
+        4K-HDR) url_key="url-4K-HDR" ;;
+        1080-SDR) url_key="url-1080-SDR" ;;
+        1080-HDR) url_key="url-1080-HDR" ;;
+        1080-H264) url_key="url-1080-H264" ;;
+        *) url_key="url-4K-SDR"; quality="4K-SDR" ;;
+      esac
+      target_dir="$HOME/Videos/Screensavers/Apple-Aerial/$quality"
+      work_dir=$(${pkgs.coreutils}/bin/mktemp -d --tmpdir apple-aerial.XXXXXX)
+      archive="$work_dir/resources.tar"
+      manifest="$work_dir/entries.json"
+      mkdir -p "$target_dir"
+      trap 'rm -rf "$work_dir"' EXIT
+
+      ${pkgs.libnotify}/bin/notify-send "Downloading Apple aerials" "Saving up to $limit $quality videos to ~/Videos/Screensavers/Apple-Aerial." -t 5000 2>/dev/null || true
+
+      if ! ${pkgs.curl}/bin/curl --fail --location --silent --show-error --insecure \
+        "https://sylvan.apple.com/Aerials/resources-15.tar" \
+        --output "$archive"; then
+        ${pkgs.libnotify}/bin/notify-send "Aerial download failed" "Could not fetch Apple aerial metadata." -t 5000 2>/dev/null || true
+        exit 1
+      fi
+
+      if ! ${pkgs.gnutar}/bin/tar -xf "$archive" -C "$work_dir" entries.json; then
+        ${pkgs.libnotify}/bin/notify-send "Aerial download failed" "Could not extract Apple aerial metadata." -t 5000 2>/dev/null || true
+        exit 1
+      fi
+
+      count=0
+      query_lc=$(printf '%s' "$query" | ${pkgs.coreutils}/bin/tr '[:upper:]' '[:lower:]')
+      while IFS=$'\t' read -r label categories url; do
+        [[ -n "$url" && "$url" != "null" ]] || continue
+        haystack=$(printf '%s %s' "$label" "$categories" | ${pkgs.coreutils}/bin/tr '[:upper:]' '[:lower:]')
+        [[ -z "$query_lc" || "$haystack" == *"$query_lc"* ]] || continue
+        safe_label=$(printf '%s' "$label" | ${pkgs.coreutils}/bin/tr -cs '[:alnum:]' '-' | ${pkgs.gnused}/bin/sed 's/^-//;s/-$//')
+        file_name="$safe_label-$(${pkgs.coreutils}/bin/basename "$url")"
+        final_path="$target_dir/$file_name"
+        partial_path="$final_path.part"
+        if [[ -f "$final_path" ]]; then
+          count=$((count + 1))
+        else
+          if ${pkgs.curl}/bin/curl --fail --location --show-error --insecure --continue-at - \
+            --output "$partial_path" "$url"; then
+            mv "$partial_path" "$final_path"
+            count=$((count + 1))
+          else
+            rm -f "$partial_path"
+            continue
+          fi
+        fi
+        [[ "$count" -ge "$limit" ]] && break
+      done < <(${pkgs.jq}/bin/jq -r --arg key "$url_key" '.assets[] | [.accessibilityLabel, ((.categories // []) | join(",")), .[$key]] | @tsv' "$manifest")
+
+      ${pkgs.libnotify}/bin/notify-send "Aerial videos ready" "Downloaded/verified $count $quality videos in ~/Videos/Screensavers/Apple-Aerial." -t 5000 2>/dev/null || true
+    '')
+
+    (pkgs.writeShellScriptBin "apple-aerial-browser" ''
+      quality=$(
+        printf '%s\n' "4K-SDR" "4K-HDR" "1080-H264" "1080-SDR" "1080-HDR" |
+          rofi -dmenu -p "Apple quality" 2>/dev/null || true
+      )
+      [[ -n "$quality" ]] || exit 0
+
+      case "$quality" in
+        4K-SDR) url_key="url-4K-SDR" ;;
+        4K-HDR) url_key="url-4K-HDR" ;;
+        1080-SDR) url_key="url-1080-SDR" ;;
+        1080-HDR) url_key="url-1080-HDR" ;;
+        1080-H264) url_key="url-1080-H264" ;;
+        *) exit 0 ;;
+      esac
+
+      query=$(
+        printf '%s\n' "city" "earth" "landscape" "night" "sea" "space" "underwater" |
+          rofi -dmenu -p "Apple search" 2>/dev/null || true
+      )
+      query_lc=$(printf '%s' "$query" | ${pkgs.coreutils}/bin/tr '[:upper:]' '[:lower:]')
+
+      work_dir=$(${pkgs.coreutils}/bin/mktemp -d --tmpdir apple-aerial-browser.XXXXXX)
+      trap 'rm -rf "$work_dir"' EXIT
+      archive="$work_dir/resources.tar"
+      manifest="$work_dir/entries.json"
+
+      if ! ${pkgs.curl}/bin/curl --fail --location --silent --show-error --insecure \
+        "https://sylvan.apple.com/Aerials/resources-15.tar" \
+        --output "$archive"; then
+        ${pkgs.libnotify}/bin/notify-send "Apple aerial search failed" "Could not fetch Apple aerial metadata." -t 5000 2>/dev/null || true
+        exit 1
+      fi
+      ${pkgs.gnutar}/bin/tar -xf "$archive" -C "$work_dir" entries.json
+
+      selection=$(
+        ${pkgs.jq}/bin/jq -r --arg key "$url_key" --arg q "$query_lc" '
+          .assets[]
+          | {
+              label: .accessibilityLabel,
+              categories: ((.categories // []) | join(",")),
+              url: .[$key]
+            }
+          | select(.url != null)
+          | select($q == "" or ((.label + " " + .categories) | ascii_downcase | contains($q)))
+          | [.label, .categories, .url] | @tsv
+        ' "$manifest" |
+          ${pkgs.gnused}/bin/sed 's/\t/ | /;s/\t/ | /' |
+          rofi -dmenu -i -p "Download aerial" 2>/dev/null || true
+      )
+      [[ -n "$selection" ]] || exit 0
+
+      label=$(printf '%s' "$selection" | ${pkgs.gnused}/bin/sed 's/ | .*//')
+      exec aerial-screensaver-download 1 "$quality" "$label"
+    '')
+
+    (pkgs.writeShellScriptBin "ultrawide-screensaver-search" ''
+      target_dir="$HOME/Videos/Screensavers/Native-32x9"
+      mkdir -p "$target_dir"
+
+      download_url() {
+        local url="$1"
+        [[ -n "$url" ]] || exit 0
+        ${pkgs.libnotify}/bin/notify-send "Downloading native screensaver" "$url" -t 5000 2>/dev/null || true
+        ${pkgs.yt-dlp}/bin/yt-dlp \
+          --no-playlist \
+          --continue \
+          --restrict-filenames \
+          --merge-output-format mkv \
+          --ffmpeg-location ${pkgs.ffmpeg-full}/bin \
+          -f 'bestvideo[width>=5000][height>=1400]+bestaudio/bestvideo[height>=1440]+bestaudio/bestvideo+bestaudio/best' \
+          -o "$target_dir/%(title).180s-%(id)s.%(ext)s" \
+          "$url"
+        ${pkgs.libnotify}/bin/notify-send "Native screensaver ready" "Saved to ~/Videos/Screensavers/Native-32x9." -t 5000 2>/dev/null || true
+      }
+
+      if [[ ''${1:-} == "url" ]]; then
+        pasted=$(
+          printf '%s\n' "" |
+            rofi -dmenu -p "Video URL" 2>/dev/null || true
+        )
+        download_url "$pasted"
+        exit 0
+      fi
+
+      query=$(
+        printf '%s\n' \
+          "32:9 7680x2160 aerial drone no music" \
+          "32:9 7680x2160 nature ambient" \
+          "5120x1440 aerial drone screensaver" \
+          "super ultrawide 32:9 landscape 8K" \
+          "Paste video URL" |
+          rofi -dmenu -p "Native 32:9 search" 2>/dev/null || true
+      )
+      [[ -n "$query" ]] || exit 0
+      if [[ "$query" == "Paste video URL" ]]; then
+        exec ultrawide-screensaver-search url
+      fi
+
+      results=$(${pkgs.coreutils}/bin/mktemp --tmpdir ultrawide-results.XXXXXX)
+      trap 'rm -f "$results"' EXIT
+
+      ${pkgs.libnotify}/bin/notify-send "Searching native screensavers" "$query" -t 4000 2>/dev/null || true
+      ${pkgs.yt-dlp}/bin/yt-dlp \
+        --ignore-errors \
+        --skip-download \
+        --no-warnings \
+        --print '%(title).160s\t%(webpage_url)s\t%(width)sx%(height)s\t%(duration_string)s' \
+        "ytsearch18:$query" >"$results" 2>/dev/null || true
+
+      selection=$(
+        ${pkgs.gnused}/bin/sed '/^\t*$/d;s/\t/ | /g' "$results" |
+          rofi -dmenu -i -p "Download native" 2>/dev/null || true
+      )
+      [[ -n "$selection" ]] || exit 0
+      url=$(printf '%s' "$selection" | ${pkgs.gawk}/bin/awk -F ' \\| ' '{print $2}')
+      download_url "$url"
+    '')
+
+    (pkgs.writeShellScriptBin "screensaver-video-manager" ''
+      video_dir="$HOME/Videos/Screensavers"
+      mkdir -p "$video_dir"
+
+      choice=$(
+        printf '%s\n' \
+          "Play Apple crop fill" \
+          "Play native 32:9" \
+          "Play random crop fill" \
+          "Browse Apple aerials" \
+          "Download Apple 4K batch" \
+          "Search/download native 32:9" \
+          "Download video URL" \
+          "Delete local video" \
+          "Open videos folder" \
+          "Stop screensaver" |
+          rofi -dmenu -p "Screensaver videos" 2>/dev/null || true
+      )
+
+      case "$choice" in
+        "Play Apple crop fill") exec omarchy-launch-screensaver force aerial-crop ;;
+        "Play native 32:9") exec omarchy-launch-screensaver force native ;;
+        "Play random crop fill") exec omarchy-launch-screensaver force random-crop ;;
+        "Browse Apple aerials") exec apple-aerial-browser ;;
+        "Download Apple 4K batch") exec aerial-screensaver-download 3 4K-SDR ;;
+        "Search/download native 32:9") exec ultrawide-screensaver-search ;;
+        "Download video URL") exec ultrawide-screensaver-search url ;;
+        "Delete local video")
+          selection=$(
+            ${pkgs.findutils}/bin/find "$video_dir" -type f \
+              \( -iname "*.mp4" -o -iname "*.mov" -o -iname "*.mkv" -o -iname "*.webm" -o -iname "*.m4v" \) \
+              -print0 2>/dev/null |
+              ${pkgs.findutils}/bin/xargs -0 -r ${pkgs.coreutils}/bin/du -h |
+              rofi -dmenu -i -p "Delete video" 2>/dev/null || true
+          )
+          [[ -n "$selection" ]] || exit 0
+          path=$(printf '%s' "$selection" | ${pkgs.gnused}/bin/sed 's/^[^[:space:]]*[[:space:]]*//')
+          confirm=$(printf '%s\n' "Delete" "Cancel" | rofi -dmenu -p "Confirm delete" 2>/dev/null || true)
+          [[ "$confirm" == "Delete" ]] && rm -f -- "$path"
+          ;;
+        "Open videos folder") exec thunar "$video_dir" ;;
+        "Stop screensaver") exec screensaver-stop ;;
+        *) exit 0 ;;
+      esac
+    '')
+
     (pkgs.writeShellScriptBin "omarchy-launch-screensaver" ''
-      if ! command -v tte &>/dev/null; then
+      force=false
+      effect="video"
+      if [[ ''${1:-} == "force" ]]; then
+        force=true
+        shift
+      fi
+      if [[ -n ''${1:-} ]]; then
+        effect="$1"
+      fi
+      ${pkgs.procps}/bin/pgrep -f "[a]lacritty --class Screensaver" && exit 0
+      if [[ -f ~/.local/state/omarchy/toggles/screensaver-off ]] && [[ $force != true ]]; then
         exit 1
       fi
-      pgrep -f "alacritty --class Screensaver" && exit 0
-      if [[ -f ~/.local/state/omarchy/toggles/screensaver-off ]] && [[ $1 != "force" ]]; then
-        exit 1
-      fi
+      case "$effect" in
+        random | video | aerial | crop | random-crop | aerial-crop | native | native-crop | stretch) exec video-screensaver "$effect" ;;
+      esac
       focused=$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused == true).name')
       for m in $(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | .name'); do
         ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor $m
         ${pkgs.hyprland}/bin/hyprctl dispatch exec -- \
           ${pkgs.alacritty}/bin/alacritty --class Screensaver \
           --config-file ~/.local/share/omarchy/default/alacritty/screensaver.toml \
-          -e omarchy-cmd-screensaver
+          -e omarchy-cmd-screensaver "$effect"
       done
       ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor $focused
     '')
 
     (pkgs.writeShellScriptBin "omarchy-cmd-screensaver" ''
+      selected_effect="''${1:-hal}"
       screensaver_in_focus() {
         ${pkgs.hyprland}/bin/hyprctl activewindow -j | ${pkgs.jq}/bin/jq -e '.class == "Screensaver"' >/dev/null 2>&1
       }
+      cursor_position() {
+        ${pkgs.hyprland}/bin/hyprctl cursorpos 2>/dev/null || true
+      }
       exit_screensaver() {
         ${pkgs.hyprland}/bin/hyprctl keyword cursor:invisible false
-        ${pkgs.killall}/bin/pkill -x tte 2>/dev/null
-        ${pkgs.killall}/bin/pkill -f "alacritty --class Screensaver" 2>/dev/null
+        screensaver-stop
         exit 0
       }
       trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
       ${pkgs.hyprland}/bin/hyprctl keyword cursor:invisible true &>/dev/null
+      initial_cursor="$(cursor_position)"
+
+      wait_for_activity() {
+        while true; do
+          current_cursor="$(cursor_position)"
+          if read -rsn 1 -t 0.25 || ! screensaver_in_focus || [[ -n "$initial_cursor" && "$current_cursor" != "$initial_cursor" ]]; then
+            exit_screensaver
+          fi
+        done
+      }
+
+      center_banner() {
+        local color="''${1:-37}"
+        local y
+        y=$((($(tput lines) - 9) / 2))
+        clear
+        tput civis 2>/dev/null || true
+        tput setaf "$color" 2>/dev/null || true
+        while IFS= read -r line; do
+          tput cup "$y" $((($(tput cols) - ''${#line}) / 2))
+          printf '%s' "$line"
+          y=$((y + 1))
+        done <~/.config/omarchy/branding/screensaver.txt
+        tput sgr0 2>/dev/null || true
+      }
+
+      calm_effects=(hal pulse drift)
+      if [[ "$selected_effect" == "random" ]]; then
+        selected_effect=$(printf '%s\n' "''${calm_effects[@]}" | ${pkgs.coreutils}/bin/shuf -n1)
+      fi
+
+      if [[ "$selected_effect" == "hal" ]]; then
+        center_banner 2
+        wait_for_activity
+      fi
+
+      if [[ "$selected_effect" == "pulse" ]]; then
+        while true; do
+          for color in 2 10 15 10; do
+            center_banner "$color"
+            for _ in {1..8}; do
+              current_cursor="$(cursor_position)"
+              if read -rsn 1 -t 0.25 || ! screensaver_in_focus || [[ -n "$initial_cursor" && "$current_cursor" != "$initial_cursor" ]]; then
+                exit_screensaver
+              fi
+            done
+          done
+        done
+      fi
+
+      if [[ "$selected_effect" == "drift" ]]; then
+        while true; do
+          clear
+          tput civis 2>/dev/null || true
+          tput setaf 2 2>/dev/null || true
+          offset=$((RANDOM % 8 - 4))
+          y=$((($(tput lines) - 9) / 2 + offset))
+          while IFS= read -r line; do
+            x=$((($(tput cols) - ''${#line}) / 2 + offset))
+            tput cup "$y" "$x"
+            printf '%s' "$line"
+            y=$((y + 1))
+          done <~/.config/omarchy/branding/screensaver.txt
+          tput sgr0 2>/dev/null || true
+          for _ in {1..16}; do
+            current_cursor="$(cursor_position)"
+            if read -rsn 1 -t 0.25 || ! screensaver_in_focus || [[ -n "$initial_cursor" && "$current_cursor" != "$initial_cursor" ]]; then
+              exit_screensaver
+            fi
+          done
+        done
+      fi
+
       while true; do
-        effect=$(${pkgs.terminaltexteffects}/bin/tte 2>&1 | grep -oP '{\K[^}]+' | tr ',' ' ' | tr ' ' '\n' | sed -n '/^beams$/,$p' | sort -u | shuf -n1)
+        effect="$selected_effect"
+        if ! command -v tte &>/dev/null; then
+          center_banner 2
+          wait_for_activity
+        fi
         ${pkgs.terminaltexteffects}/bin/tte -i ~/.config/omarchy/branding/screensaver.txt \
-          --frame-rate 240 --canvas-width 0 --canvas-height $(($(tput lines) - 2)) --anchor-canvas c --anchor-text c \
+          --frame-rate 60 --canvas-width 0 --canvas-height $(($(tput lines) - 2)) --anchor-canvas c --anchor-text c \
           "$effect" &
         while pgrep -x tte >/dev/null; do
-          if read -n 1 -t 3 || ! screensaver_in_focus; then
+          current_cursor="$(cursor_position)"
+          if read -rsn 1 -t 0.25 || ! screensaver_in_focus || [[ -n "$initial_cursor" && "$current_cursor" != "$initial_cursor" ]]; then
             exit_screensaver
           fi
         done
@@ -2333,7 +2817,7 @@ in
       if pgrep -x "1password" >/dev/null; then
         1password --lock &
       fi
-      ${pkgs.killall}/bin/pkill -f "alacritty --class Screensaver"
+      screensaver-stop
     '')
 
     (pkgs.writeShellScriptBin "omarchy-toggle-screensaver" ''
