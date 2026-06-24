@@ -279,7 +279,10 @@ in
         "$mod, D, exec, rofi -show drun"
         "$mod ALT, SPACE, exec, walker"
         "$mod CTRL, E, exec, walker --modules emoji"
-        "$mod, ESCAPE, exec, wlogout"
+        "$mod ALT, G, exec, games-menu"
+        "$mod, ESCAPE, exec, power-menu"
+        "$mod SHIFT, ESCAPE, exec, wlogout"
+        "$mod, COMMA, exec, desktop-control-center"
         "$mod, K, exec, show-keybindings" # Key bindings menu (Omarchy-style)
         "$mod SHIFT, SPACE, exec, toggle-waybar" # Toggle status bar (Omarchy-style)
 
@@ -580,6 +583,34 @@ in
     mimeType = [ "x-scheme-handler/steam" ];
   };
 
+  xdg.desktopEntries.games-menu = {
+    name = "Games";
+    genericName = "Game Launcher";
+    comment = "Launch installed games";
+    exec = "games-menu";
+    icon = "applications-games";
+    terminal = false;
+    type = "Application";
+    categories = [
+      "Game"
+      "Utility"
+    ];
+  };
+
+  xdg.desktopEntries.desktop-control-center = {
+    name = "Control Center";
+    genericName = "Desktop Settings";
+    comment = "Open desktop controls";
+    exec = "desktop-control-center";
+    icon = "preferences-system";
+    terminal = false;
+    type = "Application";
+    categories = [
+      "Settings"
+      "System"
+    ];
+  };
+
   xdg.configFile."rofi/config.rasi".text = ''
     configuration {
       modi: "drun,run,window";
@@ -768,8 +799,20 @@ in
       #!/usr/bin/env bash
       set -euo pipefail
 
+      exec desktop-control-center "$@"
+    '';
+    executable = true;
+  };
+
+  home.file.".local/bin/desktop-control-center" = {
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+
       choice=$(
         printf '%s\n' \
+          "Apps" \
+          "Games" \
           "Audio levels" \
           "Audio routing" \
           "Audio effects" \
@@ -780,11 +823,18 @@ in
           "Mouse & touchpad" \
           "Mouse remapping" \
           "Logitech devices" \
-          "Gaming mouse" |
-          rofi -dmenu -p "Settings" 2>/dev/null || true
+          "Gaming mouse" \
+          "File manager" \
+          "Screenshots" \
+          "Power" \
+          "Reload desktop" \
+          "Restart Waybar" |
+          rofi -dmenu -p "Control" 2>/dev/null || true
       )
 
       case "$choice" in
+        "Apps") exec rofi -show drun ;;
+        "Games") exec games-menu ;;
         "Audio levels") exec pavucontrol ;;
         "Audio routing") exec qpwgraph ;;
         "Audio effects") exec easyeffects ;;
@@ -796,6 +846,122 @@ in
         "Mouse remapping") exec input-remapper-gtk ;;
         "Logitech devices") exec solaar ;;
         "Gaming mouse") exec piper ;;
+        "File manager") exec thunar ;;
+        "Screenshots") exec screenshot-menu ;;
+        "Power") exec power-menu ;;
+        "Reload desktop") hyprctl reload; notify-send "Desktop reloaded" "Hyprland config reloaded" -t 2000 2>/dev/null || true ;;
+        "Restart Waybar") systemctl --user restart waybar.service; notify-send "Waybar restarted" -t 2000 2>/dev/null || true ;;
+        *) exit 0 ;;
+      esac
+    '';
+    executable = true;
+  };
+
+  home.file.".local/bin/games-menu" = {
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      tmp=$(mktemp)
+      trap 'rm -f "$tmp"' EXIT
+
+      IFS=: read -r -a data_dirs <<< "''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/run/current-system/sw/share}"
+      app_dirs=("$HOME/.local/share/applications")
+      for dir in "''${data_dirs[@]}"; do
+        app_dirs+=("$dir/applications")
+      done
+
+      for dir in "''${app_dirs[@]}"; do
+        [[ -d "$dir" ]] || continue
+        while IFS= read -r -d "" file; do
+          name=$(awk -F= '/^Name=/{ print $2; exit }' "$file")
+          exec_line=$(awk -F= '/^Exec=/{ print $2; exit }' "$file")
+          categories=$(awk -F= '/^Categories=/{ print $2; exit }' "$file")
+          hidden=$(awk -F= '/^(NoDisplay|Hidden)=true/{ print "true"; exit }' "$file")
+
+          [[ -n "$name" && -n "$exec_line" ]] || continue
+          [[ "$categories" == *Game* ]] || continue
+          [[ "$hidden" != "true" ]] || continue
+          [[ "$name" != Steam\ Linux\ Runtime* ]] || continue
+          [[ "$name" != Proton* ]] || continue
+
+          printf '%s\t%s\n' "$name" "$file"
+        done < <(find "$dir" -maxdepth 1 -type f -name '*.desktop' -print0 2>/dev/null)
+      done | sort -u > "$tmp"
+
+      if [[ ! -s "$tmp" ]]; then
+        notify-send "Games" "No game launchers found" -t 2500 2>/dev/null || true
+        exit 0
+      fi
+
+      choice=$(cut -f1 "$tmp" | rofi -dmenu -i -p "Games" 2>/dev/null || true)
+      [[ -n "$choice" ]] || exit 0
+
+      desktop_file=$(awk -F '\t' -v choice="$choice" '$1 == choice { print $2; exit }' "$tmp")
+      [[ -n "$desktop_file" ]] || exit 1
+
+      exec_line=$(awk -F= '/^Exec=/{ print $2; exit }' "$desktop_file")
+      command=$(printf '%s\n' "$exec_line" | sed -E 's/[[:space:]]+%[fFuUdDnNickvm]//g; s/%%/%/g')
+
+      nohup sh -c "$command" >/dev/null 2>&1 &
+    '';
+    executable = true;
+  };
+
+  home.file.".local/bin/power-menu" = {
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      choice=$(
+        printf '%s\n' \
+          "Lock" \
+          "Suspend" \
+          "Logout Hyprland" \
+          "Reboot" \
+          "Shutdown" \
+          "Reload Hyprland" \
+          "Restart Waybar" |
+          rofi -dmenu -p "Power" 2>/dev/null || true
+      )
+
+      case "$choice" in
+        "Lock") exec omarchy-lock-screen ;;
+        "Suspend") systemctl suspend ;;
+        "Logout Hyprland") hyprctl dispatch exit ;;
+        "Reboot") systemctl reboot ;;
+        "Shutdown") systemctl poweroff ;;
+        "Reload Hyprland") hyprctl reload ;;
+        "Restart Waybar") systemctl --user restart waybar.service ;;
+        *) exit 0 ;;
+      esac
+    '';
+    executable = true;
+  };
+
+  home.file.".local/bin/screenshot-menu" = {
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      choice=$(
+        printf '%s\n' \
+          "Region annotate" \
+          "Window annotate" \
+          "Output screenshot" \
+          "Region screenshot" \
+          "Window screenshot" \
+          "Toggle recording" |
+          rofi -dmenu -p "Capture" 2>/dev/null || true
+      )
+
+      case "$choice" in
+        "Region annotate") exec screenshot-annotate region ;;
+        "Window annotate") exec screenshot-annotate window ;;
+        "Output screenshot") exec screenshot-direct output ;;
+        "Region screenshot") exec screenshot-direct region ;;
+        "Window screenshot") exec screenshot-direct window ;;
+        "Toggle recording") exec screen-record-toggle ;;
         *) exit 0 ;;
       esac
     '';
@@ -983,6 +1149,17 @@ in
         '  }' \
         '}' > "$CONFIG_FILE"
       chmod 644 "$CONFIG_FILE"
+    fi
+  '';
+
+  home.activation.hideSteamRuntimeDesktopEntries = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    APP_DIR="${config.home.homeDirectory}/.local/share/applications"
+    if [[ -d "$APP_DIR" ]]; then
+      while IFS= read -r -d "" desktop_file; do
+        if ! grep -q '^NoDisplay=true$' "$desktop_file"; then
+          printf '\nNoDisplay=true\n' >> "$desktop_file"
+        fi
+      done < <(find "$APP_DIR" -maxdepth 1 -type f \( -name 'Steam Linux Runtime*.desktop' -o -name 'Proton*.desktop' \) -print0 2>/dev/null)
     fi
   '';
 
@@ -1434,6 +1611,22 @@ in
 
     Service = {
       ExecStart = "${pkgs.swayosd}/bin/swayosd-server";
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
+
+    Install.WantedBy = [ "hyprland-session.target" ];
+  };
+
+  systemd.user.services.polkit-gnome-authentication-agent-1 = {
+    Unit = {
+      Description = "Polkit GNOME authentication agent";
+      After = [ "hyprland-session.target" ];
+      PartOf = [ "hyprland-session.target" ];
+    };
+
+    Service = {
+      ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
       Restart = "on-failure";
       RestartSec = 2;
     };
