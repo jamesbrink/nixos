@@ -565,6 +565,21 @@ in
   # walker tracks themectl theme switches automatically.
   xdg.configFile."walker/themes/main".source = ./walker-theme;
 
+  xdg.desktopEntries.steam = {
+    name = "Steam";
+    genericName = "Game Library";
+    comment = "Launch the Steam client";
+    exec = "steam %U";
+    icon = "steam";
+    terminal = false;
+    type = "Application";
+    categories = [
+      "Network"
+      "FileTransfer"
+    ];
+    mimeType = [ "x-scheme-handler/steam" ];
+  };
+
   xdg.configFile."rofi/config.rasi".text = ''
     configuration {
       modi: "drun,run,window";
@@ -573,6 +588,11 @@ in
       display-run: "Run";
       display-window: "Windows";
       drun-display-format: "{name}";
+      drun-match-fields: "name,generic,categories,keywords";
+      drun-exclude-categories: "Game";
+      matching: "fuzzy";
+      sort: true;
+      sorting-method: "fzf";
       font: "${fontFamily} 20";
     }
 
