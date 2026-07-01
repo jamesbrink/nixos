@@ -152,6 +152,7 @@ in
       parted
       signal-cli
       sysstat
+      usbutils # lsusb and friends for USB device inspection
       # GUI applications (Linux-only, macOS uses Homebrew casks)
       meld
       telegram-desktop
