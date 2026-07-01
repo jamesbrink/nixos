@@ -130,6 +130,9 @@
     "d /storage-fast 0775 root users"
     "d /mnt/storage 0775 root users"
     "d /mnt/storage20tb 0775 root users"
+    # Dropbox sync folder lives on the 20TB disk, owned by jamesbrink; bind-mounted
+    # to ~/Dropbox below so the proprietary client sees its default location.
+    "d /mnt/storage20tb/Dropbox 0755 jamesbrink users -"
     "d /export/storage20tb 0755 root root"
     "d /var/lib/libvirt/images 0775 root libvirtd"
     "d /storage-fast/vms 0775 jamesbrink libvirtd"
@@ -234,19 +237,45 @@
     options = [ "rbind" ];
   };
 
-  # New 20TB storage drive
+  # New 20TB storage drive. noatime: this disk holds many files served over
+  # NFS/Samba/Dropbox; dropping atime write-back removes a metadata write on
+  # every read. (Reserved blocks were also lowered to 1% via `tune2fs -m 1`,
+  # which persists in the superblock — reclaims ~745 GiB from root's reserve.)
   fileSystems."/mnt/storage20tb" = {
     device = "/dev/disk/by-uuid/6d016e74-3cff-4f4d-8a8a-2769e7f35d76";
     fsType = "ext4";
     options = [
       "defaults"
       "nofail"
+      "noatime"
     ];
   };
+
+  # 20TB USB archive disk (WD Elements, BOT-only bridge — no UAS available):
+  # raise read-ahead from the 128 KB default to 2 MB for sequential throughput.
+  # Re-applied on hotplug/USB reset because sysfs resets to default each time the
+  # device re-enumerates (this bridge has been observed to reset). Keyed on the
+  # drive serial so it can't match another disk if sdX letters shuffle.
+  services.udev.extraRules = ''
+    ACTION=="add|change", SUBSYSTEM=="block", KERNEL=="sd[a-z]", ENV{ID_SERIAL_SHORT}=="21J3NTGF", ATTR{queue/read_ahead_kb}="2048"
+  '';
 
   fileSystems."/export/storage20tb" = {
     device = "/mnt/storage20tb";
     options = [ "bind" ];
+  };
+
+  # Dropbox stores its sync folder at the default ~/Dropbox, which is a bind mount
+  # onto the 20TB disk. Bind (not symlink) so the client sees a real ext4 dir and
+  # doesn't refuse to run; nofail + requires-mounts-for so a missing USB disk
+  # neither blocks boot nor starts the daemon against an empty home directory.
+  fileSystems."/home/jamesbrink/Dropbox" = {
+    device = "/mnt/storage20tb/Dropbox";
+    options = [
+      "bind"
+      "nofail"
+      "x-systemd.requires-mounts-for=/mnt/storage20tb"
+    ];
   };
 
   services.nfs.server = {
@@ -1085,6 +1114,7 @@
     bottles
     bridge-utils
     distrobox
+    dropbox-cli # `dropbox` control CLI (status/puburl/exclude); daemon runs via systemd below
     websocketd
     dotnetPackages.Nuget
     exo
@@ -1409,6 +1439,35 @@
     timezone = "America/Phoenix";
     resticHostname = "hal9000";
     extraReadWritePaths = [ "/mnt/storage20tb" ];
+  };
+
+  # Dropbox daemon for jamesbrink. Runs headless as a system service (like
+  # syncthing) so it survives reboots without a login session. Its sync folder
+  # is ~/Dropbox, bind-mounted onto /mnt/storage20tb (see fileSystems above), so
+  # RequiresMountsFor gates the daemon on the 20TB disk being present.
+  #
+  # First start is UNLINKED. Fetch the one-time account-link URL with:
+  #   sudo -u jamesbrink HOME=/home/jamesbrink dropbox status
+  # (or `journalctl -u dropbox`), open it in a browser, and authenticate.
+  # The daemon (pkgs.dropbox) is referenced only by store path here because it
+  # also ships a /bin/dropbox that would collide with the dropbox-cli command.
+  systemd.services.dropbox = {
+    description = "Dropbox daemon (jamesbrink)";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    unitConfig.RequiresMountsFor = "/home/jamesbrink/Dropbox";
+    environment.HOME = "/home/jamesbrink";
+    serviceConfig = {
+      Type = "simple";
+      User = "jamesbrink";
+      Group = "users";
+      ExecStart = "${pkgs.dropbox}/bin/dropbox";
+      ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+      Restart = "on-failure";
+      RestartSec = "10s";
+      Nice = 10;
+    };
   };
 
   # Mold AI image generation — homeDir drives models, cache, and output paths
