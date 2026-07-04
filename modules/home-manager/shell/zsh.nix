@@ -290,12 +290,13 @@ in
         esac
       }
 
-      # Initialize default Claude profile (halcyon uses primary, all others use secondary)
-      # Unset ANTHROPIC_API_KEY to avoid conflicts with OAuth tokens
+      # Initialize default Claude profile. halcyon intentionally starts with NO
+      # profile (credentials unset) — run `claude-profile {primary|secondary|api}`
+      # to pick one per shell. All other hosts default to secondary.
+      # ANTHROPIC_API_KEY is unset either way to avoid conflicting with OAuth tokens.
       unset ANTHROPIC_API_KEY
-      if [[ "$(hostname -s)" == "halcyon" ]] && [[ -n "$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY" ]]; then
-        export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_PRIMARY"
-        export CLAUDE_CURRENT_PROFILE="primary"
+      if [[ "$(hostname -s)" == "halcyon" ]]; then
+        unset CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CURRENT_PROFILE
       elif [[ -n "$CLAUDE_CODE_OAUTH_TOKEN_SECONDARY" ]]; then
         export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_SECONDARY"
         export CLAUDE_CURRENT_PROFILE="secondary"
