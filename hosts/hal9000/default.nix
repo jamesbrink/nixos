@@ -1441,19 +1441,19 @@
     extraReadWritePaths = [ "/mnt/storage20tb" ];
   };
 
-  # Dropbox daemon for jamesbrink. Runs headless as a system service (like
-  # syncthing) so it survives reboots without a login session. Its sync folder
-  # is ~/Dropbox, bind-mounted onto /mnt/storage20tb (see fileSystems above), so
-  # RequiresMountsFor gates the daemon on the 20TB disk being present.
-  #
-  # First start is UNLINKED. Fetch the one-time account-link URL with:
-  #   sudo -u jamesbrink HOME=/home/jamesbrink dropbox status
-  # (or `journalctl -u dropbox`), open it in a browser, and authenticate.
-  # The daemon (pkgs.dropbox) is referenced only by store path here because it
-  # also ships a /bin/dropbox that would collide with the dropbox-cli command.
+  # Dropbox daemon for jamesbrink. Kept INSTALLED but NOT auto-started: the
+  # account is over quota (lapsed billing) so the proprietary client can't get a
+  # sync session, and the full library was rescued via rclone/Takeout instead.
+  # `wantedBy = [ ]` means neither boot nor a deploy will launch it; the unit is
+  # still defined, so `systemctl start dropbox` works if the account is ever paid
+  # up and re-linked (`sudo -u jamesbrink HOME=/home/jamesbrink dropbox status`
+  # prints the link URL). Its sync folder is ~/Dropbox, bind-mounted onto the
+  # 20TB disk (see fileSystems above); RequiresMountsFor gates it on that disk.
+  # The daemon (pkgs.dropbox) is referenced only by store path because it also
+  # ships a /bin/dropbox that would collide with the dropbox-cli command.
   systemd.services.dropbox = {
     description = "Dropbox daemon (jamesbrink)";
-    wantedBy = [ "multi-user.target" ];
+    wantedBy = [ ]; # do not auto-start; manual `systemctl start dropbox` only
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     unitConfig.RequiresMountsFor = "/home/jamesbrink/Dropbox";
