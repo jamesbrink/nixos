@@ -4,10 +4,23 @@ let
   projectCleanup = pkgs.writeShellScriptBin "project-cleanup" ''
     set -euo pipefail
 
-    TARGET="''${1:-$HOME/Projects}"
+    TARGET="$HOME/Projects"
+    INCLUDE_VENVS=0
+    for arg in "$@"; do
+      case "$arg" in
+        --venvs) INCLUDE_VENVS=1 ;;
+        -h | --help)
+          echo "Usage: project-cleanup [--venvs] [dir]"
+          echo ""
+          echo "Scans dir (default ~/Projects) for project build caches and removes them."
+          echo "  --venvs  also remove .venv/venv virtualenvs (uv recreates them quickly)"
+          exit 0
+          ;;
+        *) TARGET="$arg" ;;
+      esac
+    done
     TOTAL_FREED=0
 
-    red()    { printf '\033[0;31m%s\033[0m' "$1"; }
     green()  { printf '\033[0;32m%s\033[0m' "$1"; }
     bold()   { printf '\033[1m%s\033[0m' "$1"; }
 
@@ -31,86 +44,97 @@ let
 
     declare -a TARGETS=()
 
-    # Rust target/ directories
-    while IFS= read -r cargo_file; do
-      dir="$(dirname "$cargo_file")"
-      target_dir="$dir/target"
-      if [ -d "$target_dir" ]; then
-        size=$(get_size_bytes "$target_dir")
-        TARGETS+=("rust|$dir|$size")
-      fi
-    done < <(find "$TARGET" -maxdepth 5 -name Cargo.toml -type f 2>/dev/null)
+    add() {
+      local type=$1 path=$2 size
+      size=$(get_size_bytes "$path")
+      TARGETS+=("$type|$path|$size")
+    }
 
-    # node_modules
+    # scan TYPE NAME — find directories by name, skipping matches nested
+    # inside node_modules or virtualenvs (their parent gets removed anyway)
+    scan() {
+      local type=$1 name=$2
+      while IFS= read -r d; do
+        add "$type" "$d"
+      done < <(find "$TARGET" -maxdepth 6 -name "$name" -type d \
+        -not -path "*/node_modules/*" -not -path "*/.venv/*" -not -path "*/venv/*" \
+        2>/dev/null)
+    }
+
+    # scan_marker TYPE MARKER SUBDIR — find SUBDIR next to a marker file, so
+    # generic names like target/ or build/ only match real projects
+    scan_marker() {
+      local type=$1 marker=$2 sub=$3 dir
+      while IFS= read -r f; do
+        dir="$(dirname "$f")"
+        if [ -d "$dir/$sub" ]; then
+          add "$type" "$dir/$sub"
+        fi
+      done < <(find "$TARGET" -maxdepth 5 -name "$marker" -type f \
+        -not -path "*/node_modules/*" 2>/dev/null)
+    }
+
+    # Rust
+    scan_marker rust Cargo.toml target
+
+    # JS/TS package and framework caches
     while IFS= read -r d; do
-      size=$(get_size_bytes "$d")
-      TARGETS+=("node|$d|$size")
+      add node "$d"
     done < <(find "$TARGET" -maxdepth 5 -name node_modules -type d -not -path "*/node_modules/*/node_modules" 2>/dev/null)
-
-    # .next build caches
-    while IFS= read -r d; do
-      size=$(get_size_bytes "$d")
-      TARGETS+=("next|$d|$size")
-    done < <(find "$TARGET" -maxdepth 5 -name ".next" -type d 2>/dev/null)
-
-    # .turbo caches
-    while IFS= read -r d; do
-      size=$(get_size_bytes "$d")
-      TARGETS+=("turbo|$d|$size")
-    done < <(find "$TARGET" -maxdepth 5 -name ".turbo" -type d 2>/dev/null)
-
-    # .parcel-cache
-    while IFS= read -r d; do
-      size=$(get_size_bytes "$d")
-      TARGETS+=("parcel|$d|$size")
-    done < <(find "$TARGET" -maxdepth 5 -name ".parcel-cache" -type d 2>/dev/null)
+    for name in .next .turbo .parcel-cache .vite .nuxt .svelte-kit .astro .angular; do
+      scan js "$name"
+    done
 
     # Python caches
-    for pattern in __pycache__ .pytest_cache .mypy_cache .ruff_cache; do
-      while IFS= read -r d; do
-        size=$(get_size_bytes "$d")
-        TARGETS+=("python|$d|$size")
-      done < <(find "$TARGET" -maxdepth 6 -name "$pattern" -type d 2>/dev/null)
+    for name in __pycache__ .pytest_cache .mypy_cache .ruff_cache .tox .nox; do
+      scan python "$name"
     done
-    while IFS= read -r d; do
-      size=$(get_size_bytes "$d")
-      TARGETS+=("python|$d|$size")
-    done < <(find "$TARGET" -maxdepth 5 -name "*.egg-info" -type d 2>/dev/null)
+    scan python "*.egg-info"
+    if [ "$INCLUDE_VENVS" = 1 ]; then
+      scan venv .venv
+      scan venv venv
+    fi
 
-    # Go build cache
-    while IFS= read -r go_file; do
-      dir="$(dirname "$go_file")"
-      for sub in vendor .cache; do
-        if [ -d "$dir/$sub" ]; then
-          size=$(get_size_bytes "$dir/$sub")
-          TARGETS+=("go|$dir/$sub|$size")
-        fi
-      done
-    done < <(find "$TARGET" -maxdepth 4 -name go.mod -type f 2>/dev/null)
+    # JVM: maven target/ and gradle build/.gradle next to their build files
+    scan_marker maven pom.xml target
+    scan_marker gradle build.gradle build
+    scan_marker gradle build.gradle.kts build
+    scan_marker gradle build.gradle .gradle
+    scan_marker gradle build.gradle.kts .gradle
+
+    # Go vendored deps and local build caches
+    scan_marker go go.mod vendor
+    scan_marker go go.mod .cache
+
+    # Elixir
+    scan_marker elixir mix.exs _build
+
+    # Zig
+    for name in zig-cache .zig-cache zig-out; do
+      scan zig "$name"
+    done
+
+    # Terraform provider/module cache (re-fetched by terraform init)
+    scan terraform .terraform
 
     # .direnv holds each devShell's Nix GC root — deleting it frees only KB
     # but unroots multi-GB closures and forces slow rebuilds. Use `nix-gc`.
 
+    # Nix result symlinks: ~0 bytes themselves, but each is a GC root pinning
+    # a whole store closure — deleting them lets the next nix-gc reclaim it
+    while IFS= read -r l; do
+      TARGETS+=("nix-root|$l|0")
+    done < <(find "$TARGET" -maxdepth 5 -name "result*" -type l -lname '/nix/store/*' 2>/dev/null)
+
     # Swift .build directories (SPM)
     while IFS= read -r d; do
-      size=$(get_size_bytes "$d")
-      TARGETS+=("swift|$d|$size")
+      add swift "$d"
     done < <(find "$TARGET" -maxdepth 5 -name ".build" -type d -execdir test -e Package.swift \; -print 2>/dev/null)
 
     # Swift .swiftpm caches
-    while IFS= read -r d; do
-      size=$(get_size_bytes "$d")
-      TARGETS+=("swift|$d|$size")
-    done < <(find "$TARGET" -maxdepth 5 -name ".swiftpm" -type d 2>/dev/null)
+    scan swift .swiftpm
 
-    # Xcode DerivedData
-    XCODE_DD="$HOME/Library/Developer/Xcode/DerivedData"
-    if [ -d "$XCODE_DD" ]; then
-      size=$(get_size_bytes "$XCODE_DD")
-      if (( size > 0 )); then
-        TARGETS+=("xcode|$XCODE_DD|$size")
-      fi
-    fi
+    # Xcode DerivedData is user-level, not project-level: cache-cleanup --deep
 
     if [ ''${#TARGETS[@]} -eq 0 ]; then
       echo "No caches found."
@@ -122,19 +146,25 @@ let
 
     echo "Found ''${#SORTED[@]} cache directories:"
     echo ""
-    printf "  %-8s  %-10s  %s\n" "TYPE" "SIZE" "PATH"
-    printf "  %-8s  %-10s  %s\n" "--------" "----------" "----"
+    printf "  %-9s  %-10s  %s\n" "TYPE" "SIZE" "PATH"
+    printf "  %-9s  %-10s  %s\n" "---------" "----------" "----"
 
     for entry in "''${SORTED[@]}"; do
       IFS='|' read -r type path size <<< "$entry"
       human=$(bytes_to_human "$size")
+      if [ "$type" = "nix-root" ]; then
+        human="(root)"
+      fi
       rel="''${path#$TARGET/}"
-      printf "  %-8s  %-10s  %s\n" "$type" "$human" "$rel"
+      printf "  %-9s  %-10s  %s\n" "$type" "$human" "$rel"
       TOTAL_FREED=$((TOTAL_FREED + size))
     done
 
     echo ""
-    echo "Total reclaimable: $(bold "$(bytes_to_human $TOTAL_FREED)")"
+    echo "Total reclaimable: $(bold "$(bytes_to_human $TOTAL_FREED)") (plus whatever nix-gc frees after nix-root removal)"
+    if [ "$INCLUDE_VENVS" = 0 ]; then
+      echo "Virtualenvs skipped — rerun with --venvs to include them."
+    fi
     echo ""
 
     read -rp "Remove all? [y/N] " confirm
@@ -146,15 +176,11 @@ let
     echo ""
     for entry in "''${SORTED[@]}"; do
       IFS='|' read -r type path size <<< "$entry"
-      human=$(bytes_to_human "$size")
       rel="''${path#$TARGET/}"
 
       if [ "$type" = "rust" ]; then
         echo "  cargo clean: $rel"
-        (cd "$path" && cargo clean 2>/dev/null) || rm -rf "$path/target"
-      elif [ "$type" = "xcode" ]; then
-        echo "  rm -rf: ~/Library/Developer/Xcode/DerivedData"
-        rm -rf "$path"
+        (cd "$(dirname "$path")" && cargo clean 2>/dev/null) || rm -rf "$path"
       else
         echo "  rm -rf: $rel"
         rm -rf "$path"
@@ -163,6 +189,159 @@ let
 
     echo ""
     green "Done."; echo " Freed ~$(bytes_to_human $TOTAL_FREED)"
+    echo "Removed Nix GC roots free store space at the next nix-gc run."
+    echo ""
+  '';
+
+  cacheCleanup = pkgs.writeShellScriptBin "cache-cleanup" ''
+    set -euo pipefail
+
+    DEEP=0
+    ASSUME_YES=0
+    for arg in "$@"; do
+      case "$arg" in
+        --deep) DEEP=1 ;;
+        --yes | -y) ASSUME_YES=1 ;;
+        -h | --help)
+          echo "Usage: cache-cleanup [--deep] [--yes]"
+          echo ""
+          echo "Clears user-level tool caches. Everything in the default (safe) tier is"
+          echo "rebuilt transparently on next use — the only cost is re-downloading."
+          echo ""
+          echo "  --deep  also clear caches whose loss slows the next build or debug"
+          echo "          session (go modcache, maven, cargo registry, gradle,"
+          echo "          Xcode DerivedData / iOS DeviceSupport)"
+          echo "  --yes   skip confirmation prompt"
+          exit 0
+          ;;
+      esac
+    done
+
+    green()  { printf '\033[0;32m%s\033[0m' "$1"; }
+    bold()   { printf '\033[1m%s\033[0m' "$1"; }
+    dim()    { printf '\033[2m%s\033[0m' "$1"; }
+
+    bytes_to_human() {
+      local b=$1
+      if   (( b >= 1073741824 )); then printf "%.1fG" "$(echo "$b / 1073741824" | bc -l)"
+      elif (( b >= 1048576 ));    then printf "%.1fM" "$(echo "$b / 1048576" | bc -l)"
+      elif (( b >= 1024 ));       then printf "%.1fK" "$(echo "$b / 1024" | bc -l)"
+      else printf "%dB" "$b"
+      fi
+    }
+
+    get_size_bytes() {
+      du -sk "$1" 2>/dev/null | awk '{print $1 * 1024}'
+    }
+
+    declare -a ENTRIES=()
+
+    # add LABEL TIER METHOD PATH — skip missing/empty caches
+    add() {
+      local label=$1 tier=$2 method=$3 path=$4 size
+      [ -e "$path" ] || return 0
+      size=$(get_size_bytes "$path")
+      if (( size > 0 )); then
+        ENTRIES+=("$label|$tier|$method|$path|$size")
+      fi
+    }
+
+    echo ""
+    bold "User Cache Cleaner"; echo ""
+    echo "Scanning caches ..."
+    echo ""
+
+    # ---- safe tier: pure caches, rebuilt on demand ----
+    add "restic metadata"     safe rm "$HOME/Library/Caches/restic"
+    add "uv (Python wheels)"  safe rm "$HOME/.cache/uv"
+    add "npm"                 safe rm "$HOME/.npm/_cacache"
+    add "pip"                 safe rm "$HOME/Library/Caches/pip"
+    add "pip (xdg)"           safe rm "$HOME/.cache/pip"
+    add "pnpm store"          safe rm "$HOME/Library/pnpm/store"
+    add "pnpm store (xdg)"    safe rm "$HOME/.local/share/pnpm/store"
+    add "yarn"                safe rm "$HOME/Library/Caches/Yarn"
+    add "sccache"             safe rm "$HOME/Library/Caches/Mozilla.sccache"
+    add "cargo-xwin"          safe rm "$HOME/Library/Caches/cargo-xwin"
+    add "nix eval cache"      safe rm "$HOME/.cache/nix"
+    add "pre-commit"          safe rm "$HOME/.cache/pre-commit"
+    for d in puppeteer playwright ms-playwright playwright-browsers rod chrome-devtools-mcp; do
+      add "browsers: $d"      safe rm "$HOME/.cache/$d"
+    done
+    add "browsers: playwright (darwin)" safe rm "$HOME/Library/Caches/ms-playwright"
+    if command -v brew >/dev/null 2>&1; then
+      add "homebrew"          safe brew "$(brew --cache)"
+    fi
+    if command -v go >/dev/null 2>&1; then
+      add "go build cache"    safe rm "$(go env GOCACHE)"
+    fi
+
+    # ---- deep tier: safe to delete, but the next build/debug pays to refill ----
+    if (( DEEP )); then
+      if command -v go >/dev/null 2>&1; then
+        add "go module cache" deep gomod "$(go env GOMODCACHE)"
+      fi
+      add "maven repository"  deep rm "$HOME/.m2/repository"
+      add "cargo registry"    deep rm "$HOME/.cargo/registry"
+      add "gradle caches"     deep rm "$HOME/.gradle/caches"
+      add "Xcode DerivedData" deep rm "$HOME/Library/Developer/Xcode/DerivedData"
+      add "iOS DeviceSupport" deep rm "$HOME/Library/Developer/Xcode/iOS DeviceSupport"
+      add "CoreSimulator caches" deep rm "$HOME/Library/Developer/CoreSimulator/Caches"
+    fi
+
+    if [ ''${#ENTRIES[@]} -eq 0 ]; then
+      echo "No caches found."
+      exit 0
+    fi
+
+    IFS=$'\n' SORTED=($(for e in "''${ENTRIES[@]}"; do echo "$e"; done | sort -t'|' -k5 -rn))
+    unset IFS
+
+    TOTAL=0
+    printf "  %-6s  %-10s  %s\n" "TIER" "SIZE" "CACHE"
+    printf "  %-6s  %-10s  %s\n" "------" "----------" "-----"
+    for entry in "''${SORTED[@]}"; do
+      IFS='|' read -r label tier method path size <<< "$entry"
+      printf "  %-6s  %-10s  %s  %s\n" "$tier" "$(bytes_to_human "$size")" "$label" "$(dim "''${path/#$HOME/\~}")"
+      TOTAL=$((TOTAL + size))
+    done
+    echo ""
+    echo "Total reclaimable: $(bold "$(bytes_to_human $TOTAL)")"
+    if (( ! DEEP )); then
+      dim "Rerun with --deep to include go modcache, maven, cargo registry, gradle, Xcode caches."; echo ""
+    fi
+    echo ""
+
+    if (( ! ASSUME_YES )); then
+      read -rp "Remove all? [y/N] " confirm
+      if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo "Aborted."
+        exit 0
+      fi
+      echo ""
+    fi
+
+    for entry in "''${SORTED[@]}"; do
+      IFS='|' read -r label tier method path size <<< "$entry"
+      echo "  clearing: $label"
+      case "$method" in
+        brew)
+          brew cleanup -s --prune=all >/dev/null 2>&1 || true
+          rm -rf "$path"
+          ;;
+        gomod)
+          go clean -modcache 2>/dev/null || rm -rf "$path"
+          ;;
+        *)
+          rm -rf "$path"
+          ;;
+      esac
+    done
+
+    echo ""
+    green "Done."; echo " Freed ~$(bytes_to_human $TOTAL)"
+    echo ""
+    dim "Related: nix-gc (Nix store), project-cleanup (per-project build dirs),"; echo ""
+    dim "diskspace (APFS snapshots), xcrun simctl delete all (simulator disks)."; echo ""
     echo ""
   '';
 
@@ -320,6 +499,7 @@ in
 {
   environment.systemPackages = [
     projectCleanup
+    cacheCleanup
     diskspace
     (pkgs.writeShellScriptBin "projects-cleanup" ''
       exec ${projectCleanup}/bin/project-cleanup "$@"
