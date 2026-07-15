@@ -20,7 +20,6 @@
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix
-    ../../modules/restic-backups.nix
     ../../modules/services/samba-server.nix
     ../../modules/services/k3s.nix
     ../../users/regular/jamesbrink.nix

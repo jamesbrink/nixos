@@ -58,22 +58,6 @@ in
       # System management
       cleanup = if pkgs.stdenv.isDarwin then "nix-collect-garbage -d" else "sudo nix-collect-garbage -d";
 
-      # Restic aliases - these now use the wrapper function from restic-shell-init.nix
-      backup =
-        if pkgs.stdenv.isDarwin then
-          "restic-backup backup"
-        else
-          "sudo systemctl start restic-backups-s3-backup.service";
-      snapshots = "restic snapshots";
-      restic-check = "restic check";
-      restic-restore = "restic restore";
-      restic-mount = "restic mount";
-      restic-ls = "restic ls";
-      restic-cat = "restic cat";
-      restic-diff = "restic diff";
-      restic-stats = "restic stats";
-      restic-prune = "restic forget --prune --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --keep-yearly 2";
-
       # Utility aliases
       search = "rg -p --glob '!node_modules/*' $@";
       diff = "difft";
@@ -190,9 +174,6 @@ in
         . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
         . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
       fi
-
-      # Restic environment configuration is handled by wrapper functions
-      # See modules/restic-shell-init.nix for credential isolation implementation
 
       # Source environment files (with race condition protection)
       for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key claude-primary-token claude-secondary-token openrouter-key huggingface-token cloudflare-token; do

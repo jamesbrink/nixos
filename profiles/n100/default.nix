@@ -11,7 +11,6 @@
   imports = [
     ../../modules/n100-disko.nix
     ../../modules/nix-limits.nix
-    ../../modules/restic-backups.nix
     ../../modules/services/samba-server.nix
     ../../modules/services/k3s.nix
     ../../profiles/server/default.nix

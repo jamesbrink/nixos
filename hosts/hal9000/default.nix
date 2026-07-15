@@ -21,7 +21,6 @@
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix
-    ../../modules/restic-backups.nix
     ../../users/regular/jamesbrink.nix
     # ../../users/regular/strivedi.nix # Temporarily disabled for UID migration
     ../../profiles/desktop/hyprland.nix

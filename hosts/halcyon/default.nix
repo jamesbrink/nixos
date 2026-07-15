@@ -16,7 +16,6 @@
     # ../../profiles/darwin/tiling.nix # Tiling window manager (yabai + SketchyBar) - disabled, re-enable when needed
     ../../modules/darwin/packages.nix
     ../../modules/darwin/dock.nix
-    ../../modules/darwin/restic-backups.nix
     ../../modules/ssh-keys.nix
     ../../users/regular/jamesbrink-darwin.nix
     ../../modules/shared-packages/python.nix

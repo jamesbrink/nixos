@@ -634,28 +634,6 @@
                 help = "Run all pre-commit hooks manually";
                 command = "pre-commit run --all-files";
               }
-
-              # Backup commands
-              {
-                name = "restic-status";
-                category = "backup";
-                help = "Check Restic backup status on all hosts";
-                command = ''$PRJ_ROOT/scripts/restic-status.sh "$@"'';
-              }
-
-              {
-                name = "restic-run";
-                category = "backup";
-                help = "Manually trigger backup on a specific host";
-                command = ''$PRJ_ROOT/scripts/restic-run.sh "$@"'';
-              }
-
-              {
-                name = "restic-snapshots";
-                category = "backup";
-                help = "List snapshots for a host";
-                command = ''RESTIC_PATH="${pkgs.restic}/bin/restic" "$PRJ_ROOT/scripts/restic-snapshots.sh" "$@"'';
-              }
             ];
           };
         }
