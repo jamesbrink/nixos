@@ -128,6 +128,7 @@
       # Development
       "jetbrains-toolbox"
       "postman"
+      "supacode" # Native terminal coding agents command center
       "firefox@developer-edition"
       "ghostty"
       "sublime-text"
