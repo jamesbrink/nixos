@@ -35,15 +35,6 @@ All devshell commands (including the ones below) require `--impure` under the ho
 
 ## Architecture Overview
 
-### Flake Structure
-
-`flake.nix` defines:
-
-- **Inputs**: nixpkgs (stable 25.11), nixos-unstable, home-manager, nix-darwin, agenix, disko, plus external flakes (comfyui-nix, invokeai, ai-toolkit, zerobyte, mold, etc.)
-- **Dev shells**: Cross-platform (x86_64-linux, aarch64-darwin, x86_64-darwin) with Python 3.13, Ruff, BasedPyright, treefmt, age, and deployment helpers
-- **Host outputs**: `nixosConfigurations` (hal9000, alienware, n100-01 through n100-04) and `darwinConfigurations` (halcyon, bender)
-- **Packages**: `themectl` CLI for cross-platform theme management
-
 ### External Flake Wiring Pattern
 
 When adding an external flake to a host, three things must be wired in `flake.nix`:
@@ -53,24 +44,6 @@ When adding an external flake to a host, three things must be wired in `flake.ni
 3. Add `<flake>.overlays.default` to the host's `nixpkgs.overlays` list
 
 Then configure the service in the host's `default.nix`. See hal9000 (comfyui, invokeai, ai-toolkit, zerobyte, mold) and bender (invokeai, ai-toolkit) as reference.
-
-### Module Hierarchy
-
-```
-hosts/<hostname>/default.nix   # Thin host definitions — imports only, no inline logic
-    ↓ imports
-profiles/{desktop,server,darwin,n100}/   # Role bundles (aggregate modules)
-    ↓ imports
-modules/
-├── darwin/          # nix-darwin specifics (Dock, file sharing, yabai, skhd)
-├── home-manager/    # User programs, shells, editors, theming
-├── themes/          # Shared theme registry for Darwin + Hyprland
-│   ├── lib.nix      # Theme metadata, wallpaper refs, JSON export
-│   ├── colors/      # Per-theme TOML color definitions
-│   └── definitions/ # Per-theme Nix attribute sets
-├── services/        # Daemons (AI stack, Postgres/PostGIS, restic, netboot)
-└── netboot/         # PXE installer automation
-```
 
 ### Key Patterns
 
@@ -100,18 +73,7 @@ modules/
 
 ### PostgreSQL Replica (hal9000)
 
-Port 5432, replicating from Quantierra production via S3 WAL shipping. Use the `pg-replica` skill for status/queries.
-
-**Mode switching:**
-
-```bash
-# To read/write mode:
-ssh hal9000 "sudo systemctl stop postgresql-replica"
-ssh hal9000 "sudo rm -f /storage-fast/pg_base/standby.signal && sudo -u postgres /run/current-system/sw/bin/postgres -D /storage-fast/pg_base &"
-
-# Back to standby:
-ssh hal9000 "sudo pkill -u postgres postgres && sudo systemctl start postgresql-replica"
-```
+Port 5432, replicating from Quantierra production via S3 WAL shipping. Use the `pg-replica` skill for status, queries, and standby/read-write mode switching.
 
 ## Coding Standards
 
@@ -120,10 +82,6 @@ ssh hal9000 "sudo pkill -u postgres postgres && sudo systemctl start postgresql-
 **Bash**: `#!/usr/bin/env bash` with `set -euo pipefail`. Checked by `shellcheck` (with `-x -e SC1091,SC2029`).
 
 **Python** (`scripts/themectl/`): Type hints everywhere, Ruff for lint/format, BasedPyright for type checking, pytest for tests. Keep files under 800 lines.
-
-**treefmt** (`treefmt.toml`) runs: `nixfmt` (_.nix), `prettier` (HTML/CSS/JS/JSON/YAML), `markdownlint --fix` (_.md), `ruff format` + `ruff check --fix` (_.py), `shellcheck` (_.sh), `basedpyright` (themectl only).
-
-**Naming**: Lowercase hyphenated names for files, modules, hosts, profiles (e.g., `hosts/halcyon`, `ghostty-terminfo.nix`).
 
 **Commits**: Conventional Commits scoped to paths (e.g., `feat(hosts/halcyon): enable yabai toggle`).
 
@@ -152,15 +110,7 @@ To install hooks after cloning: `./scripts/git-hooks/install-hooks.sh`
 
 ## GitHub Actions
 
-If a workflow run stays `queued` after fixing runner labels, force-cancel it:
-
-```bash
-gh api --method POST -H "Accept: application/vnd.github+json" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  /repos/<owner>/<repo>/actions/runs/<run_id>/force-cancel
-```
-
-Confirm with `gh run view <run_id> -R <owner>/<repo> --json status,conclusion`. See `docs/github-actions.md` for full notes.
+See `docs/github-actions.md` for troubleshooting, including force-cancelling runs stuck in `queued` after runner-label fixes.
 
 ## Package Lookups
 
