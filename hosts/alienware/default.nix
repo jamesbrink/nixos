@@ -339,63 +339,6 @@
 
   # VSCode Server (commented out)
 
-  # Syncthing configuration
-  services.syncthing = {
-    enable = true;
-    user = "jamesbrink";
-    dataDir = "/home/jamesbrink/";
-    configDir = "/home/jamesbrink/.config/syncthing";
-    overrideDevices = false;
-    overrideFolders = false;
-    guiAddress = "0.0.0.0:8384";
-    settings = {
-      gui = {
-        user = "jamesbrink";
-        passwordFile = config.age.secrets."alienware-syncthing-password".path;
-      };
-      devices = {
-        "DarkStarMk6Mod1" = {
-          autoAcceptFolders = true;
-          id = "A46R3HQ-AW3ODFH-RVOAW4C-P6VFHO5-KHIBRP2-PQLRKIE-YAZTGQO-7QGPCAF";
-        };
-        "Alienware15R4" = {
-          id = "LQKOQMG-AIDPDJU-AICPMA4-UPLKWUP-PTWHUNL-IRNJIWD-GY2VU3Q-JLMG6QB";
-          autoAcceptFolders = true;
-        };
-        "N100-01" = {
-          autoAcceptFolders = true;
-          id = "HCRYHXP-QXLM4FW-SIPYBNL-IOLODXZ-PM5FX7W-3DOQ4ED-GJ5YNSK-LVUJQAA";
-        };
-        "N100-02" = {
-          autoAcceptFolders = true;
-          id = "KICZH4D-WJIVHZM-EW2CN5A-WEF44ZA-VAXR7MY-AWTQOXC-APLRSQP-TQCOBQX";
-        };
-        "N100-03" = {
-          autoAcceptFolders = true;
-          id = "WYTVEJT-WTMRX73-N3ASBH2-AAHMD5R-N3FUI3M-XXYQAVH-O6GDDU4-LUQVHAT";
-        };
-      };
-      folders = {
-        "Projects" = {
-          path = "/home/jamesbrink/Projects";
-          devices = [
-            "DarkStarMk6Mod1"
-            "Alienware15R4"
-          ];
-          label = "Projects";
-        };
-        "Documents" = {
-          path = "/home/jamesbrink/Documents";
-          devices = [
-            "DarkStarMk6Mod1"
-            "Alienware15R4"
-          ];
-          label = "Documents";
-        };
-      };
-    };
-  };
-
   # Shell configuration
 
   # SSH configuration with age secrets
@@ -416,7 +359,6 @@
     identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
       "global-ssh-authorized-keys".file = "${secretsPath}/global/ssh/authorized_keys.age";
-      "alienware-syncthing-password".file = "${secretsPath}/alienware/syncthing-password.age";
       "k3s-token".file = "${secretsPath}/alienware/k3s-token.age";
       "huggingface-token".file = "${secretsPath}/jamesbrink/huggingface-token.age";
     };
