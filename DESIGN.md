@@ -8,7 +8,7 @@
 - `modules/`: leaf functionality. Notable subtrees:
   - `modules/home-manager/`: user programs, shells, theming.
   - `modules/darwin/`: Yabai, SKHD, fuzz-launchers, system services.
-  - `modules/services/`: daemons (AI stack, Postgres/PostGIS, restic, netboot server, Windows VM helpers).
+  - `modules/services/`: daemons (AI stack, Postgres/PostGIS, netboot server, Windows VM helpers).
   - `modules/netboot/`, `modules/n100-disko.nix`, `modules/n100-network.nix`: host disk/network automation and PXE installers.
 - `users/`: user-specific Home Manager overlays.
 - `pkgs/` + `overlays/`: custom derivations and modifications to upstream packages.

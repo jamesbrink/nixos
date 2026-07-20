@@ -24,11 +24,11 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 - `modules/` – cross-host logic:
   - `darwin/` for nix-darwin specifics (Dock, file sharing, package bundles).
   - `home-manager/` for CLI/editor/shell layers.
-  - `services/` for infra components (netboot, Postgres/PostGIS, backups, AI stack, Windows VM helpers).
-  - `netboot/`, `restic-*.nix`, `ghostty-terminfo.nix`, etc., for focused features.
+  - `services/` for infra components (netboot, Postgres/PostGIS, AI stack, Windows VM helpers).
+  - `netboot/`, `ghostty-terminfo.nix`, etc., for focused features.
 - `pkgs/` and `overlays/` – custom package definitions (PixInsight, Ollama, netboot assets, helper tooling) pulled into the flake outputs.
 - `users/` – user-specific Home Manager overrides and preferences.
-- `scripts/` – deployment helpers (`deploy*`, `health-check.sh`, `rollback.sh`), Kubernetes automation (`deploy-k8s.py` for Rancher + ARC runners), restic tooling, GC, menubar toggles, hotkey automation, and full secrets lifecycle scripts (`secrets-edit.sh`, `secrets-rekey.sh`, scanners).
+- `scripts/` – deployment helpers (`deploy*`, `health-check.sh`, `rollback.sh`), Kubernetes automation (`deploy-k8s.py` for Rancher + ARC runners), GC, menubar toggles, hotkey automation, and full secrets lifecycle scripts (`secrets-edit.sh`, `secrets-rekey.sh`, scanners).
 - `k8s/` and `containers/` – Rancher/monitoring Helm values, GitHub runner containers, and supporting manifests.
 - `docs/` – scenario guides (`pixinsight-*.md`, `desktop-environment-switching.md`, `samba-setup.md`, `github-actions.md`, etc.).
 - `config/` – YAML configs consumed by scripts (e.g., hotkeys, themectl automation); `lib/hotkeys.nix` exposes the same data inside Nix.
@@ -105,7 +105,7 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 
 - Dev shell packages include `nixfmt`, `treefmt`, `prettier`, `age`, `openssh`, Python 3.13 with pytest/typer/rich, Ruff, BasedPyright, markdownlint, and other helpers so agents can lint/test without global installs.
 - Secrets hygiene: run `scan-gitleaks`, `scan-secrets --all`, or the pre-commit hooks before pushing; never store plaintext outside `secrets/`.
-- System hygiene: `restic-status`, `restic-run <host>`, `restic-snapshots <host>` handle backups; `nix-gc` cleans stores; `show-generations <host>` and `rollback <host>` make rollbacks explicit.
+- System hygiene: `nix-gc` cleans stores; `show-generations <host>` and `rollback <host>` make rollbacks explicit.
 - Rancher monitoring rollouts use `deploy-k8s rancher`, which syncs `k8s/rancher/grafana-nginx.conf` into the Grafana proxy ConfigMap and restarts Grafana automatically—verify via Rancher UI and <https://grafana.home.urandom.io>.
 - GitHub Actions troubleshooting steps live in `docs/github-actions.md`; force-cancel stuck runs before deleting them.
 

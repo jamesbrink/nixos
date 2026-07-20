@@ -27,7 +27,7 @@
 
 ## Supporting Services
 
-- **Agenix** for secrets, `restic` for backups, `tailscale`, `docker`, `podman`, and language runtimes (Go, Rust, Node, Python) provided via dev shells.
+- **Agenix** for secrets, `tailscale`, `docker`, `podman`, and language runtimes (Go, Rust, Node, Python) provided via dev shells.
 - **treefmt** orchestrates `nixfmt`, `prettier`, future Ruff/Markdownlint integration.
 
 Everything should be available inside `nix develop` so agents can lint, build, test, and package without touching the global system.
