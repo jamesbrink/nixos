@@ -25,7 +25,6 @@
     # ../../users/regular/strivedi.nix # Temporarily disabled for UID migration
     ../../profiles/desktop/hyprland.nix
     ../../profiles/keychron/default.nix
-    # ../../modules/services/ai-starter-kit/default.nix # Disabled - n8n, qdrant, pipelines
     ../../modules/services/k3s.nix
     ../../modules/services/tftp-server.nix
     ../../modules/services/netboot-configs.nix
@@ -142,7 +141,7 @@
     "d /storage-fast/ollama/.ollama 0755 ollama ollama -"
     "d /storage-fast/ollama/models 0755 ollama ollama -"
     # Root-owned so tmpfiles can safely create mold-owned subdirs (avoids unsafe path transition)
-    "d /storage-fast/AI 0755 root root -"
+    "d /mnt/storage20tb/AI 0755 root root -"
   ];
 
   fileSystems."/storage-fast" = {
@@ -167,26 +166,8 @@
     };
   };
 
-  fileSystems."/storage-fast/AI" = {
-    device = "storage-fast/AI";
-    fsType = "zfs";
-    options = [
-      "zfsutil"
-      "X-mount.mkdir"
-    ];
-  };
-
   fileSystems."/storage-fast/Steam" = {
     device = "storage-fast/Steam";
-    fsType = "zfs";
-    options = [
-      "zfsutil"
-      "X-mount.mkdir"
-    ];
-  };
-
-  fileSystems."/storage-fast/n8n" = {
-    device = "storage-fast/n8n";
     fsType = "zfs";
     options = [
       "zfsutil"
@@ -213,8 +194,11 @@
   };
 
   fileSystems."/home/jamesbrink/AI" = {
-    device = "/storage-fast/AI";
-    options = [ "bind" ];
+    device = "/mnt/storage20tb/AI";
+    options = [
+      "bind"
+      "x-systemd.requires-mounts-for=/mnt/storage20tb"
+    ];
   };
 
   fileSystems."/mnt/storage" = {
@@ -283,7 +267,7 @@
       /export                 10.70.100.0/24(rw,fsid=0,no_subtree_check) 100.64.0.0/10(rw,fsid=0,no_subtree_check)
       /export/storage-fast    10.70.100.0/24(rw,nohide,insecure,no_subtree_check,crossmnt) 100.64.0.0/10(rw,nohide,insecure,no_subtree_check,crossmnt)
       /export/storage20tb     10.70.100.0/24(rw,nohide,insecure,no_subtree_check) 100.64.0.0/10(rw,nohide,insecure,no_subtree_check)
-      /storage-fast/AI        10.70.100.0/24(rw,sync,insecure,no_subtree_check) 100.64.0.0/10(rw,sync,insecure,no_subtree_check)
+      /mnt/storage20tb/AI     10.70.100.0/24(rw,sync,insecure,no_subtree_check) 100.64.0.0/10(rw,sync,insecure,no_subtree_check)
     '';
     # Ensure NFS listens on all interfaces
     lockdPort = 4045;
@@ -613,14 +597,14 @@
   # InvokeAI service (manual start: systemctl start invokeai)
   services.invokeai = {
     enable = true;
-    dataDir = "/storage-fast/AI/InvokeAI";
+    dataDir = "/mnt/storage20tb/AI/InvokeAI";
     host = "0.0.0.0";
     port = 9090;
     openFirewall = true;
     user = "jamesbrink";
     group = "users";
     createUser = false;
-    requiresMounts = [ "storage\\x2dfast-AI.mount" ];
+    requiresMounts = [ "mnt-storage20tb.mount" ];
   };
 
   # Prevent GPU-hungry services from auto-starting — use systemctl start <service>
@@ -630,14 +614,14 @@
   # AI Toolkit training service
   services.ai-toolkit = {
     enable = true;
-    dataDir = "/storage-fast/AI/ai-toolkit";
+    dataDir = "/mnt/storage20tb/AI/ai-toolkit";
     host = "0.0.0.0";
     port = 8675;
     openFirewall = true;
     user = "jamesbrink";
     group = "users";
     createUser = false;
-    requiresMounts = [ "storage\\x2dfast-AI.mount" ];
+    requiresMounts = [ "mnt-storage20tb.mount" ];
     secrets = {
       claudeOauthTokenFile = config.age.secrets."claude-secondary".path;
       hfTokenFile = config.age.secrets."huggingface-token".path;
@@ -1301,22 +1285,6 @@
     };
   };
 
-  # services.ai-starter-kit = {
-  #   enable = true;
-  #   storagePath = "/storage-fast/n8n";
-  #   n8n = {
-  #     enable = true;
-  #     editorBaseUrl = "https://n8n.home.urandom.io";
-  #     webhookUrl = "https://n8n.home.urandom.io";
-  #   };
-  #   qdrant.enable = true;
-  #   postgres = {
-  #     user = "n8n";
-  #     password = "n8n"; # You might want to change this
-  #     database = "n8n";
-  #   };
-  # };
-
   # Enable TFTP server for N100 cluster netboot
   services.tftp-server = {
     enable = true;
@@ -1470,7 +1438,7 @@
   };
 
   # Mold AI image generation — homeDir drives models, cache, and output paths
-  environment.variables.MOLD_HOME = "/storage-fast/AI/mold";
+  environment.variables.MOLD_HOME = "/mnt/storage20tb/AI/mold";
 
   # Ensure default ACL on mold directories so CLI-created files are group-writable
   systemd.services.mold-acl = {
@@ -1482,13 +1450,13 @@
       RemainAfterExit = true;
     };
     script = ''
-      ${pkgs.acl}/bin/setfacl -R -d -m g::rwx /storage-fast/AI/mold
+      ${pkgs.acl}/bin/setfacl -R -d -m g::rwx /mnt/storage20tb/AI/mold
     '';
   };
 
   # Allow mold server to access ~/AI bind mount for LoRAs and models
   systemd.services.mold.serviceConfig.ProtectHome = lib.mkForce false;
-  systemd.services.mold.serviceConfig.ReadWritePaths = [ "/storage-fast/AI" ];
+  systemd.services.mold.serviceConfig.ReadWritePaths = [ "/mnt/storage20tb/AI" ];
   # mold dies on SIGPIPE when a client connection drops mid-write (utensils/mold
   # upstream bug). systemd's default "clean exit" set includes SIGPIPE, so
   # Restart=on-failure treats it as success and never restarts. Force a restart
@@ -1498,8 +1466,8 @@
   services.mold = {
     enable = true;
     package = inputs.mold.packages.x86_64-linux.default;
-    homeDir = "/storage-fast/AI/mold";
-    outputDir = "/storage-fast/AI/mold/output";
+    homeDir = "/mnt/storage20tb/AI/mold";
+    outputDir = "/mnt/storage20tb/AI/mold/output";
     hfTokenFile = config.age.secrets."huggingface-token".path;
     openFirewall = true;
     discord = {
