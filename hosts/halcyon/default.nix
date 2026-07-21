@@ -154,6 +154,7 @@
       # System Tools
       "iterm2"
       "jdiskreport"
+      "macs-fan-control" # Fan speed monitoring and control
       "microsoft-remote-desktop"
       "openzfs"
       "winbox"
