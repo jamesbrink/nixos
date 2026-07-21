@@ -49,7 +49,14 @@
     # GUI applications
     casks = [
       # Terminal applications
-      "alacritty"
+      # Upstream ships ad-hoc-signed, unnotarized builds; without no_quarantine
+      # Gatekeeper hard-blocks the app ("Apple could not verify...")
+      {
+        name = "alacritty";
+        args = {
+          no_quarantine = true;
+        };
+      }
 
       # Browsers
       "zen"
