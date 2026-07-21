@@ -114,6 +114,7 @@
   homebrew = {
     brews = [
       "cloudflare-wrangler"
+      "cocoapods"
       "ffmpeg"
       "imagemagick"
       "pinentry-mac"
