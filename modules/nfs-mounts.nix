@@ -55,8 +55,17 @@ let
     }
   ];
 
-  # Common NFS mount options
-  mountOptions = "noatime,noauto,x-systemd.automount,x-systemd.device-timeout=10,x-systemd.idle-timeout=600";
+  # Common NFS mount options — tuned so an unavailable server can NEVER hang
+  # activation or a boot target (see the 2026-07 hal9000 wedge):
+  #   nofail                       a failed mount doesn't fail the depending target/switch
+  #   noauto + x-systemd.automount mount lazily on first access, not at boot/switch
+  #   soft,timeo=15,retrans=3      NFS RPCs give up (~10s) instead of retrying forever
+  #                                (hard mounts to a dead host block indefinitely)
+  #   x-systemd.mount-timeout=20s  bounds the .mount unit's own start attempt
+  #   x-systemd.idle-timeout=600   unmount after 10 min idle
+  # device-timeout was removed: it only waits on a block device appearing and does
+  # nothing for a network server that never answers — it was the false safeguard here.
+  mountOptions = "noatime,nofail,noauto,soft,timeo=15,retrans=3,x-systemd.automount,x-systemd.mount-timeout=20s,x-systemd.idle-timeout=600";
 
   # Function to create systemd mount unit
   mkNfsMount = share: {

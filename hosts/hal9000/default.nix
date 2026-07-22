@@ -201,6 +201,9 @@
     ];
   };
 
+  # See modules/nfs-mounts.nix for the rationale behind these options: soft +
+  # bounded timeouts + nofail so an unavailable alienware can never hang the
+  # switch (device-timeout only guards a block device, not a dead NFS server).
   fileSystems."/mnt/storage" = {
     device = "alienware.home.urandom.io:/storage";
     fsType = "nfs";
@@ -209,8 +212,11 @@
       "noatime"
       "nofail"
       "noauto"
+      "soft"
+      "timeo=15"
+      "retrans=3"
       "x-systemd.automount"
-      "x-systemd.device-timeout=10"
+      "x-systemd.mount-timeout=20s"
       "x-systemd.idle-timeout=600"
     ];
   };
