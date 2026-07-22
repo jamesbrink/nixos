@@ -86,7 +86,7 @@
       # Pinned to a tagged release for reproducible deployments. Bump the tag
       # deliberately (matches an upstream ComfyUI version bump) rather than
       # tracking the moving default branch.
-      url = "github:utensils/comfyui-nix/v0.25.0";
+      url = "github:utensils/comfyui-nix/v0.28.2";
     };
     invokeai = {
       url = "github:jamesbrink/InvokeAI/feature/nix-flake";
