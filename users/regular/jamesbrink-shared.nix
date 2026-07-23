@@ -73,6 +73,7 @@ in
       # Claude Code aliases
       programs.zsh.shellAliases.cld = "claude --dangerously-skip-permissions";
       programs.zsh.shellAliases.cldt = "claude --dangerously-skip-permissions --channels plugin:telegram@claude-plugins-official";
+      programs.zsh.shellAliases.clds = "claude --dangerously-skip-permissions --remote-control";
 
       # Platform-specific update aliases
       programs.zsh.shellAliases.update =

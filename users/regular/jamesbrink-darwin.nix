@@ -64,6 +64,7 @@ in
 
       programs.zsh.shellAliases.cld = "claude --dangerously-skip-permissions";
       programs.zsh.shellAliases.cldt = "claude --dangerously-skip-permissions --channels plugin:telegram@claude-plugins-official";
+      programs.zsh.shellAliases.clds = "claude --dangerously-skip-permissions --remote-control";
 
       # Install missing theme extensions to VSCode and Cursor
       programs.editor.extraThemeExtensions.enable = true;
