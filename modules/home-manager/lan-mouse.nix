@@ -83,10 +83,8 @@ in
     };
   };
 
-  # Guarantee the daemon comes up with the graphical session on hal9000. The upstream
-  # module only binds WantedBy=hyprland-session.target when the HM hyprland systemd
-  # integration is enabled; this is a belt-and-suspenders fallback (no-op elsewhere).
-  systemd.user.services.lan-mouse.Install.WantedBy = lib.mkIf isHal9000 [
-    "graphical-session.target"
-  ];
+  # hal9000: keep the package + config installed but do NOT autostart the daemon
+  # (mkForce also clears the upstream module's hyprland-session.target binding).
+  # Start on demand with: systemctl --user start lan-mouse
+  systemd.user.services.lan-mouse.Install.WantedBy = lib.mkIf isHal9000 (lib.mkForce [ ]);
 }
