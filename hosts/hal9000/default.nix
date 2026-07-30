@@ -184,6 +184,18 @@
     ];
   };
 
+  # Mold model weights on NVMe (recordsize=1M, atime=off) — model load/unload
+  # churn was too slow from the 20TB HDD. Home (db/cache/jobs) and gallery
+  # output stay on /mnt/storage20tb/AI/mold.
+  fileSystems."/storage-fast/mold" = {
+    device = "storage-fast/mold";
+    fsType = "zfs";
+    options = [
+      "zfsutil"
+      "X-mount.mkdir"
+    ];
+  };
+
   fileSystems."/storage-fast/pg_base" = {
     device = "storage-fast/pg_base";
     fsType = "zfs";
@@ -1446,8 +1458,10 @@
     };
   };
 
-  # Mold AI image generation — homeDir drives models, cache, and output paths
+  # Mold AI image generation — home (db/cache/jobs) + output on the 20TB disk,
+  # model weights on NVMe (see fileSystems."/storage-fast/mold")
   environment.variables.MOLD_HOME = "/mnt/storage20tb/AI/mold";
+  environment.variables.MOLD_MODELS_DIR = "/storage-fast/mold/models";
 
   # Ensure default ACL on mold directories so CLI-created files are group-writable
   systemd.services.mold-acl = {
@@ -1460,12 +1474,17 @@
     };
     script = ''
       ${pkgs.acl}/bin/setfacl -R -d -m g::rwx /mnt/storage20tb/AI/mold
+      ${pkgs.acl}/bin/setfacl -R -d -m g::rwx /storage-fast/mold
     '';
   };
 
   # Allow mold server to access ~/AI bind mount for LoRAs and models
   systemd.services.mold.serviceConfig.ProtectHome = lib.mkForce false;
-  systemd.services.mold.serviceConfig.ReadWritePaths = [ "/mnt/storage20tb/AI" ];
+  systemd.services.mold.serviceConfig.ReadWritePaths = [
+    "/mnt/storage20tb/AI"
+    "/storage-fast/mold"
+  ];
+  systemd.services.mold.unitConfig.RequiresMountsFor = [ "/storage-fast/mold" ];
   # mold dies on SIGPIPE when a client connection drops mid-write (utensils/mold
   # upstream bug). systemd's default "clean exit" set includes SIGPIPE, so
   # Restart=on-failure treats it as success and never restarts. Force a restart
@@ -1476,6 +1495,7 @@
     enable = true;
     package = inputs.mold.packages.x86_64-linux.default;
     homeDir = "/mnt/storage20tb/AI/mold";
+    modelsDir = "/storage-fast/mold/models";
     outputDir = "/mnt/storage20tb/AI/mold/output";
     hfTokenFile = config.age.secrets."huggingface-token".path;
     openFirewall = true;
