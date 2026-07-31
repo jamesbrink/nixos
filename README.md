@@ -16,26 +16,6 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 6. Keep secrets encrypted with `secrets-edit <path>`; track recipients in `SECRETS.md` and verify via `secrets-verify`.
 7. Document major changes in `TODO.md` or module docs, and log new manual steps/secrets when touching infrastructure.
 
-### Automatic input deployments
-
-`scripts/watch-flake-deploy.sh` polls a remote flake input and deploys a host
-when the locked revision changes. It defaults to the `mold` input,
-`hal9000`, and a five-minute interval:
-
-```bash
-scripts/watch-flake-deploy.sh start
-scripts/watch-flake-deploy.sh status
-scripts/watch-flake-deploy.sh stop
-```
-
-Use `run` for a foreground process, `--once` for a single check, and
-`--dry-run` to report an available update without changing the lockfile or
-deploying. Runtime state and logs are kept under the repository's Git
-directory. On macOS, `start` installs a persistent LaunchAgent under
-`~/Library/LaunchAgents`, so the watcher starts again after login or reboot;
-`stop` unloads and removes it. Live deployments always run through
-`nix develop -c deploy <hostname>`; the watcher does not run `deploy-test`.
-
 ## Repository layout
 
 - `flake.nix`, `flake.lock` – inputs for nixpkgs (stable/unstable), nix-darwin, Home Manager, deploy-rs helpers, dev shells, overlays, and host outputs.
