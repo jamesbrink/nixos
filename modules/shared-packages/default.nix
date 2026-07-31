@@ -10,6 +10,8 @@ let
   unstable = pkgs.unstablePkgs;
 in
 {
+  imports = [ ./maintenance-tools.nix ];
+
   environment.systemPackages =
     with pkgs;
     [
