@@ -93,6 +93,7 @@ in
       # Code editors - Cursor on Linux (macOS uses Homebrew cask)
       unstable.code-cursor
       # Linux-only packages
+      efibootmgr # inspect/edit UEFI NVRAM boot entries
       virt-viewer
       below
       gcr # Provides org.gnome.keyring.SystemPrompter for libsecret
