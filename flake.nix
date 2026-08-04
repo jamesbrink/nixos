@@ -83,10 +83,9 @@
       inputs.nixpkgs.follows = "nixos-unstable";
     };
     comfyui-nix = {
-      # Pinned to a tagged release for reproducible deployments. Bump the tag
-      # deliberately (matches an upstream ComfyUI version bump) rather than
-      # tracking the moving default branch.
-      url = "github:utensils/comfyui-nix/v0.28.2";
+      # Tracks main; the lock file pins the exact rev — bump with
+      # `nix flake update comfyui-nix`.
+      url = "github:utensils/comfyui-nix";
     };
     invokeai = {
       url = "github:jamesbrink/InvokeAI/feature/nix-flake";
