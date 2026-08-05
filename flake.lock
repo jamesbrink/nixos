@@ -181,11 +181,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1785883708,
-        "narHash": "sha256-WDCfRFaLH6u0xX2IlXS6AadTGSOxdgOda/DI2DBP4eo=",
+        "lastModified": 1785968480,
+        "narHash": "sha256-sCmqCPCXjFAo2oVxswnjdiOkS6bgpNVDogsEOK9cCRA=",
         "owner": "utensils",
         "repo": "comfyui-nix",
-        "rev": "37212cce670fbea852bcce7c994a853b8a0760f5",
+        "rev": "60cf396864c09e954f23b31c4637c2bb65ebe085",
         "type": "github"
       },
       "original": {
@@ -780,11 +780,11 @@
         "treefmt-nix": "treefmt-nix_5"
       },
       "locked": {
-        "lastModified": 1785882050,
-        "narHash": "sha256-yDGIJc4ID/96NxoFw3FGkdtdu2IGdPwdGxZMAYP3ma0=",
+        "lastModified": 1785973697,
+        "narHash": "sha256-YFUE7WPPTMbtOzlK9bB7Y8JGMidQl8Nfc3khci6u5S8=",
         "owner": "utensils",
         "repo": "mold",
-        "rev": "b89a8c2a3caef6c29f84af6ccc652dc5fb8f6029",
+        "rev": "c1c14a84b2ba4079e51a86b3a777076746457b7a",
         "type": "github"
       },
       "original": {
