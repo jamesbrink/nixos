@@ -26,6 +26,7 @@ in
       cachix
       dig
       dnsutils
+      dufs # quick web file sharing: `dufs <dir>` (uploads/WebDAV via -A)
       fastfetch
       fh # FlakeHub CLI
       git-lfs
