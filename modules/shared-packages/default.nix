@@ -39,6 +39,7 @@ in
       jq
       lf
       lsof
+      miniserve # quick web file sharing: `miniserve <dir>` (uploads via -u)
       neovim-remote
       netcat
       nixfmt
