@@ -55,6 +55,9 @@ in
     {
       home.stateVersion = "25.05";
 
+      # Keep root's Home Manager CLI packages aligned with the system package set.
+      nixpkgs.overlays = [ (import ../overlays/gh.nix) ];
+
       # Root's home directory
       home.homeDirectory = if pkgs.stdenv.isDarwin then "/var/root" else "/root";
 

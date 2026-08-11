@@ -21,6 +21,9 @@ in
     {
       home.stateVersion = "25.05";
 
+      # Home Manager uses its own package set unless useGlobalPkgs is enabled.
+      nixpkgs.overlays = [ (import ../../overlays/gh.nix) ];
+
       # Import the unified shell configuration
       imports = [
         ../../modules/home-manager/shell

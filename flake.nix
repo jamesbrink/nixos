@@ -162,12 +162,14 @@
     let
       system = "x86_64-linux";
       lib = nixpkgs.lib;
+      ghOverlay = import ./overlays/gh.nix;
       pkgs = import nixpkgs {
         inherit system;
         config = {
           allowUnfree = true;
         };
         overlays = [
+          ghOverlay
           (import ./overlays/pixinsight.nix)
           (import ./overlays/gogcli.nix)
           (final: prev: {
@@ -759,6 +761,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                ghOverlay
                 (import ./overlays/pixinsight.nix)
                 (import ./overlays/gogcli.nix)
                 (final: prev: {
@@ -791,6 +794,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                ghOverlay
                 (import ./overlays/pixinsight.nix)
                 (import ./overlays/gogcli.nix)
                 (final: prev: {
@@ -823,6 +827,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                ghOverlay
                 (import ./overlays/pixinsight.nix)
                 (import ./overlays/gogcli.nix)
                 (final: prev: {
@@ -868,6 +873,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                ghOverlay
                 (import ./overlays/pixinsight.nix)
                 (import ./overlays/gogcli.nix)
                 (final: prev: {
@@ -908,6 +914,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                ghOverlay
                 (import ./overlays/pixinsight.nix)
                 (import ./overlays/gogcli.nix)
                 comfyui-nix.overlays.default
@@ -953,6 +960,7 @@
             # Use unstable packages
             {
               nixpkgs.overlays = [
+                ghOverlay
                 (import ./overlays/pixinsight.nix)
                 (import ./overlays/gogcli.nix)
                 comfyui-nix.overlays.default
@@ -1022,6 +1030,7 @@
             {
               nixpkgs.config.allowUnfree = true;
               nixpkgs.overlays = [
+                ghOverlay
                 (import ./overlays/pixinsight.nix)
                 (import ./overlays/gogcli.nix)
                 (import ./overlays/chromaprint-darwin.nix {
@@ -1072,6 +1081,7 @@
             {
               nixpkgs.config.allowUnfree = true;
               nixpkgs.overlays = [
+                ghOverlay
                 (import ./overlays/gogcli.nix)
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
