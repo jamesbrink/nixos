@@ -266,6 +266,8 @@
     docker = {
       enable = true;
       enableOnBoot = true;
+      # docker_28 is EOL/insecure as of Nov 2025 — track 29.x
+      package = pkgs.docker_29;
     };
   };
 

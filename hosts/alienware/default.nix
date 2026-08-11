@@ -421,6 +421,8 @@
     docker = {
       enable = true;
       enableOnBoot = true;
+      # docker_28 is EOL/insecure as of Nov 2025 — track 29.x
+      package = pkgs.docker_29;
       autoPrune = {
         enable = true;
         dates = "weekly";
@@ -433,7 +435,12 @@
       # NVIDIA GPU support is configured via hardware.nvidia-container-toolkit.enable = true
     };
     vmware.guest.enable = true;
-    incus.enable = true;
+    incus = {
+      # 25.11's incus-lts is v6 (unsupported, multiple unpatched CVEs) — use the
+      # `incus` package (v7) per nixpkgs' guidance.
+      enable = true;
+      package = pkgs.incus;
+    };
     vswitch.enable = true;
     libvirtd.enable = true;
   };

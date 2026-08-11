@@ -391,7 +391,6 @@
         7000 # AirPlay
         7001 # AirPlay
         7011 # AirPlay control
-        4242 # lan-mouse software KVM (rides Tailscale today; LAN fallback)
         18789 # clawdbot
       ];
       interfaces = {
@@ -710,6 +709,8 @@
     };
     docker = {
       enable = true;
+      # docker_28 is EOL/insecure as of Nov 2025 — track 29.x
+      package = pkgs.docker_29;
       autoPrune = {
         enable = true;
         dates = "weekly";
@@ -803,6 +804,12 @@
     };
     incus = {
       enable = true;
+      # The module defaults to incus-lts, but 25.11's incus-lts is v6, which is
+      # unsupported/insecure (CVE-2026-35527, -40195, -40197, -40251, -41647,
+      # -41684, -41685, -40243, -41648). nixpkgs' own guidance is to move to the
+      # `incus` package (v7) or NixOS 26.05. Also realigns the daemon with the
+      # incus 7.x CLI already in systemPackages.
+      package = pkgs.incus;
       preseed = {
         profiles = [
           {

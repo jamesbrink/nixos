@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  options,
   pkgs,
   ...
 }:
@@ -51,13 +52,31 @@
   # Once identified, we can selectively re-enable the non-problematic options
   programs.ssh = {
     enable = true;
-    # Disable default config since we define our own matchBlocks."*"
+    # Disable default config since we define our own "*" block
     enableDefaultConfig = false;
-    matchBlocks."*" = {
-      serverAliveInterval = 60;
-      serverAliveCountMax = 2;
-      compression = true;
-    };
+  }
+  # home-manager unstable (Darwin hosts) replaced `matchBlocks` with `settings`
+  # (ssh_config-cased keys); stable 25.11 (NixOS hosts) only has `matchBlocks`.
+  # Drop the else-branch once stable catches up.
+  // (
+    if options.programs.ssh ? settings then
+      {
+        settings."*" = {
+          ServerAliveInterval = 60;
+          ServerAliveCountMax = 2;
+          Compression = true;
+        };
+      }
+    else
+      {
+        matchBlocks."*" = {
+          serverAliveInterval = 60;
+          serverAliveCountMax = 2;
+          compression = true;
+        };
+      }
+  )
+  // {
 
     extraConfig = ''
       # COMMENTED OUT: SendEnv can cause issues if remote server doesn't accept these
@@ -140,9 +159,6 @@
         CheckHostIP no
         UserKnownHostsFile=/dev/null
     '';
-  }
-  // lib.optionalAttrs pkgs.stdenv.isDarwin {
-    enableDefaultConfig = false;
   };
 
   # Create SSH sockets directory

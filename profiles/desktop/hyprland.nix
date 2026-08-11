@@ -330,7 +330,9 @@ in
     inkscape-with-extensions # Vector graphics
     vlc # Media player
     slack # Team communication
-    bitwarden-desktop # Password manager
+    # 25.11 ships bitwarden-desktop against EOL electron_39 (marked insecure);
+    # unstable builds it against electron_41. Drop the prefix once stable catches up.
+    unstablePkgs.bitwarden-desktop # Password manager
     jan # Offline AI chat interface
 
     # Fonts

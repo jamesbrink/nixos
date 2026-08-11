@@ -34,7 +34,7 @@
     # Infrastructure tools
     ansible
     awscli2
-    docker
+    docker_29
     kubectl
     k3s
     terraform-lsp

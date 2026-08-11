@@ -115,7 +115,5 @@ in
       meld
       telegram-desktop
       wireshark
-      # Zen Browser (twilight version for reproducibility)
-      inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.twilight
     ];
 }

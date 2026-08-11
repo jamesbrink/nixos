@@ -59,7 +59,6 @@
       }
 
       # Browsers
-      "zen"
       "firefox"
       "google-chrome"
 
@@ -84,7 +83,6 @@
 
       # Utilities
       "aerial"
-      "bartender"
       "hammerspoon"
       "little-snitch"
       "balenaetcher"

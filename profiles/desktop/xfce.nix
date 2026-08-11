@@ -35,7 +35,9 @@
     # Core desktop applications
     alacritty
     chromium
-    bitwarden-desktop
+    # 25.11 ships bitwarden-desktop against EOL electron_39 (marked insecure);
+    # unstable builds it against electron_41. Drop the prefix once stable catches up.
+    unstablePkgs.bitwarden-desktop
     vscode
 
     # Media applications

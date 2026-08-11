@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  options,
   pkgs,
   ...
 }:
@@ -124,30 +125,58 @@ in
       enableBashIntegration = false;
     };
 
-    fzf = {
-      enable = true;
-      enableZshIntegration = true;
-      # Disable bash - fzf init uses bash 4+ features that hang macOS /bin/bash 3.2
-      enableBashIntegration = false;
-      defaultCommand = "fd --type f --hidden --follow --exclude .git";
-      defaultOptions = [
-        "--height 40%"
-        "--layout=reverse"
-        "--border"
-        "--inline-info"
-        "--color=dark"
-        "--color=fg:-1,bg:-1,hl:#5fff87,fg+:-1,bg+:-1,hl+:#ffaf5f"
-        "--color=info:#af87ff,prompt:#5fff87,pointer:#ff87d7,marker:#ff87d7,spinner:#ff87d7"
-      ];
-      fileWidgetCommand = "fd --type f --hidden --follow --exclude .git";
-      fileWidgetOptions = [
-        "--preview 'bat --style=numbers --color=always --line-range :500 {}'"
-      ];
-      changeDirWidgetCommand = "fd --type d --hidden --follow --exclude .git";
-      changeDirWidgetOptions = [
-        "--preview 'eza --tree --level=2 --color=always {}'"
-      ];
-    };
+    fzf =
+      let
+        fileWidgetCommand = "fd --type f --hidden --follow --exclude .git";
+        fileWidgetOptions = [
+          "--preview 'bat --style=numbers --color=always --line-range :500 {}'"
+        ];
+        changeDirWidgetCommand = "fd --type d --hidden --follow --exclude .git";
+        changeDirWidgetOptions = [
+          "--preview 'eza --tree --level=2 --color=always {}'"
+        ];
+      in
+      {
+        enable = true;
+        enableZshIntegration = true;
+        # Disable bash - fzf init uses bash 4+ features that hang macOS /bin/bash 3.2
+        enableBashIntegration = false;
+        defaultCommand = "fd --type f --hidden --follow --exclude .git";
+        defaultOptions = [
+          "--height 40%"
+          "--layout=reverse"
+          "--border"
+          "--inline-info"
+          "--color=dark"
+          "--color=fg:-1,bg:-1,hl:#5fff87,fg+:-1,bg+:-1,hl+:#ffaf5f"
+          "--color=info:#af87ff,prompt:#5fff87,pointer:#ff87d7,marker:#ff87d7,spinner:#ff87d7"
+        ];
+      }
+      # home-manager unstable (Darwin hosts) moved the widget settings into
+      # submodules; stable 25.11 (NixOS hosts) still only has the flat names.
+      # Drop the else-branch once stable catches up.
+      // (
+        if options.programs.fzf ? fileWidget then
+          {
+            fileWidget = {
+              command = fileWidgetCommand;
+              options = fileWidgetOptions;
+            };
+            changeDirWidget = {
+              command = changeDirWidgetCommand;
+              options = changeDirWidgetOptions;
+            };
+          }
+        else
+          {
+            inherit
+              fileWidgetCommand
+              fileWidgetOptions
+              changeDirWidgetCommand
+              changeDirWidgetOptions
+              ;
+          }
+      );
 
     bat = {
       enable = true;

@@ -147,7 +147,6 @@
       # Productivity
       "alfred"
       "keyboard-maestro"
-      "notion"
 
       # Browsers
       "microsoft-edge"

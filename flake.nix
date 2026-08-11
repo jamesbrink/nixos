@@ -42,8 +42,9 @@
       flake = false;
     };
     vscode-server = {
+      # Upstream declares only `flake-parts` as an input — no `nixpkgs` to follow.
+      # We consume `nixosModules.default`, which takes `pkgs` from the host config.
       url = "github:nix-community/nixos-vscode-server";
-      inputs.nixpkgs.follows = "nixos-unstable";
     };
     claude-desktop = {
       url = "github:k3d3/claude-desktop-linux-flake";
@@ -64,7 +65,10 @@
     };
     nix-homebrew = {
       url = "github:zhaofengli/nix-homebrew";
-      inputs.brew-src.url = "github:Homebrew/brew/6.0.12";
+      # Keep this in step with the homebrew-core/cask tap pins below: taps track
+      # the newest brew DSL (InstallSteps `run`/`overwrite:`, cask
+      # `command_wrapper`), and an older brew makes formulae "unreadable".
+      inputs.brew-src.url = "github:Homebrew/brew/6.0.17";
     };
     homebrew-bundle = {
       url = "github:homebrew/homebrew-bundle";
@@ -77,10 +81,6 @@
     homebrew-cask = {
       url = "github:homebrew/homebrew-cask";
       flake = false;
-    };
-    zen-browser = {
-      url = "github:0xc000022070/zen-browser-flake";
-      inputs.nixpkgs.follows = "nixos-unstable";
     };
     comfyui-nix = {
       # Tracks main; the lock file pins the exact rev — bump with
@@ -118,16 +118,6 @@
       # any future RUNPATH regression now fails the build instead of at runtime.
       url = "github:utensils/mold";
     };
-
-    lan-mouse = {
-      # Software KVM (keyboard/mouse sharing) for halcyon <-> hal9000.
-      # Pinned to v0.11.0: nixpkgs still ships 0.10.0, which predates the wlroots
-      # modifier-key emulation fix (PR #238) needed for Ctrl/Shift/Alt/Super to work
-      # on the Hyprland receiver. The flake exposes packages for all our systems
-      # (incl. aarch64-darwin) plus a home-manager module (programs.lan-mouse).
-      url = "github:feschber/lan-mouse/v0.11.0";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
@@ -149,7 +139,6 @@
       homebrew-bundle,
       homebrew-core,
       homebrew-cask,
-      zen-browser,
       comfyui-nix,
       invokeai,
       acris-scrapers,
