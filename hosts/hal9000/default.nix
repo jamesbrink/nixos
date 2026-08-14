@@ -1470,9 +1470,12 @@
   environment.variables.MOLD_HOME = "/mnt/storage20tb/AI/mold";
   environment.variables.MOLD_MODELS_DIR = "/storage-fast/mold/models";
 
-  # Ensure default ACL on mold directories so CLI-created files are group-writable
+  # Ensure ACLs on mold directories so files created by either the mold service
+  # or jamesbrink (CLI) stay writable by both. g::rwx alone is not enough:
+  # CLI-created files land as jamesbrink:users and mold is not in "users", so
+  # named-user entries are required. The non-default pass repairs existing files.
   systemd.services.mold-acl = {
-    description = "Set default ACL on mold directories";
+    description = "Set ACLs on mold directories";
     wantedBy = [ "multi-user.target" ];
     before = [ "mold.service" ];
     serviceConfig = {
@@ -1480,8 +1483,10 @@
       RemainAfterExit = true;
     };
     script = ''
-      ${pkgs.acl}/bin/setfacl -R -d -m g::rwx /mnt/storage20tb/AI/mold
-      ${pkgs.acl}/bin/setfacl -R -d -m g::rwx /storage-fast/mold
+      for dir in /mnt/storage20tb/AI/mold /storage-fast/mold; do
+        ${pkgs.acl}/bin/setfacl -R -d -m g::rwx,u:mold:rwx,u:jamesbrink:rwx "$dir"
+        ${pkgs.acl}/bin/setfacl -R -m u:mold:rwX,u:jamesbrink:rwX "$dir"
+      done
     '';
   };
 
