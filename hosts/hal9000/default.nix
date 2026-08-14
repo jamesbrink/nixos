@@ -1503,6 +1503,14 @@
   # on SIGPIPE until the binary masks it. See upstream issue.
   systemd.services.mold.serviceConfig.RestartForceExitStatus = "SIGPIPE";
 
+  # Binary cache for the mold flake
+  nix.settings = {
+    substituters = [ "https://mold.cachix.org" ];
+    trusted-public-keys = [
+      "mold.cachix.org-1:9HBc/bEXDdpbxMjOwpaIDpjZqBh9JYg0h5Fipm+D8m4="
+    ];
+  };
+
   services.mold = {
     enable = true;
     package = inputs.mold.packages.x86_64-linux.default;
