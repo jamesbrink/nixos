@@ -100,7 +100,12 @@ paths = [
     '''\.age$''',
     '''^result''',
     '''^result-''',
-    '''flake\.lock$'''
+    '''flake\.lock$''',
+    # Triaged 2026-08-14: installer SSH *host* key (identity, not access) — accepted risk
+    '''^modules/netboot/installer-ssh-keys\.nix$''',
+    # Triaged 2026-08-14: WEBHOOK_TOKEN_* placeholders in deleted files, never real secrets
+    '''^hosts/hal9000/postgresql-management\.md$''',
+    '''^modules/packages/postgres13-reset/default\.nix$'''
 ]
 
 # Ignore common Nix patterns
