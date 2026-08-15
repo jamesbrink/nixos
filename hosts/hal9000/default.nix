@@ -1165,11 +1165,16 @@
 
   system.stateVersion = "25.05";
 
+  # Wait for br0 specifically to be routable (DHCP lease + default route).
+  # --any let any link (e.g. enslaved enp6s0, link-local br0) satisfy
+  # network-online.target before br0 had a default route, so k3s crashlooped
+  # with "no default routes found" on every boot until its restart loop won.
+  # Naming br0 also keeps a disconnected wlan0 from ever blocking boot.
   systemd.services.systemd-networkd-wait-online = {
     serviceConfig = {
       ExecStart = [
         ""
-        "${config.systemd.package}/lib/systemd/systemd-networkd-wait-online --any"
+        "${config.systemd.package}/lib/systemd/systemd-networkd-wait-online --interface=br0:routable"
       ];
     };
   };
