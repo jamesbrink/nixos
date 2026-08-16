@@ -1507,13 +1507,6 @@
   # Restart=on-failure treats it as success and never restarts. Force a restart
   # on SIGPIPE until the binary masks it. See upstream issue.
   systemd.services.mold.serviceConfig.RestartForceExitStatus = "SIGPIPE";
-  # Queued ltx2 generations stack host RSS (observed 42 GB on this 62 GiB box)
-  # until the whole machine thrashes with no OOM kill — utensils/mold#1099.
-  # Throttle at 40G, kill+restart at 48G so a runaway generation costs one job,
-  # not the host. Swap disallowed: paging is exactly the failure mode.
-  systemd.services.mold.serviceConfig.MemoryHigh = "40G";
-  systemd.services.mold.serviceConfig.MemoryMax = "48G";
-  systemd.services.mold.serviceConfig.MemorySwapMax = "0";
 
   # Binary cache for the mold flake
   nix.settings = {
