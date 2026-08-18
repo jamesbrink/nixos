@@ -737,11 +737,11 @@
         "treefmt-nix": "treefmt-nix_5"
       },
       "locked": {
-        "lastModified": 1787027540,
-        "narHash": "sha256-OMdB1lOhnwGKh/5vMpnG9b6SNXEuiBoMzYcCcoBPJSk=",
+        "lastModified": 1787034729,
+        "narHash": "sha256-kFNB6S22j/seZnFMtFa92w20XCBQceBdsfyWLKy9uzA=",
         "owner": "utensils",
         "repo": "mold",
-        "rev": "b96b57f67cac5d45deeba72a92b2efb8c08ddb27",
+        "rev": "1c9bfa5d1cb7469dfb96aeedd612d61e9c96a46c",
         "type": "github"
       },
       "original": {
