@@ -168,17 +168,20 @@ if [ "$HOSTNAME" = "$HOST_LOWER" ]; then
       fi
     fi
 
-    # NixOS deployment - build first to show changes
+    # NixOS deployment - build first to show changes. See the remote branch
+    # below for why --no-link matters (a ./result symlink changes the flake
+    # source hash, so activation would evaluate a different closure).
     echo "Building configuration..."
-    sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake /tmp/nixos-config#"$HOST" --impure
+    SYSTEM_PATH=$(sudo NIXPKGS_ALLOW_UNFREE=1 nix --extra-experimental-features 'nix-command flakes' build --print-out-paths --no-link "/tmp/nixos-config#nixosConfigurations.\"$HOST\".config.system.build.toplevel" --impure)
     # Show package changes with nvd
     echo ""
     echo "Package changes:"
-    nvd diff /run/current-system ./result 2>/dev/null || echo "  (nvd not available or no current system to compare)"
+    nvd diff /run/current-system "$SYSTEM_PATH" 2>/dev/null || echo "  (nvd not available or no current system to compare)"
     echo ""
-    # Now switch
+    # Activate the closure we just built instead of re-evaluating the flake.
     echo "Activating configuration..."
-    sudo NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake /tmp/nixos-config#"$HOST" --verbose --impure
+    sudo nix-env --profile /nix/var/nix/profiles/system --set "$SYSTEM_PATH"
+    sudo "$SYSTEM_PATH/bin/switch-to-configuration" switch
   fi
 else
   echo "Deploying remotely to $HOST..."
@@ -231,17 +234,31 @@ else
 ENDSSH
     fi
 
-    # Build first to show changes
+    # Build first to show changes. --no-link is load-bearing: `nixos-rebuild
+    # build` drops a ./result symlink into the flake directory, which becomes
+    # part of the flake source copied to the store and changes its hash — the
+    # activation step would then evaluate a *different* closure than the one
+    # built and diffed here.
     echo "Building configuration on $HOST..."
-    ssh root@"$HOST" "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild build --flake .#$HOST$OVERRIDE_ARGS --impure"
+    SYSTEM_PATH=$(ssh root@"$HOST" "cd /tmp/nixos-config && NIXPKGS_ALLOW_UNFREE=1 nix --extra-experimental-features 'nix-command flakes' build --print-out-paths --no-link '.#nixosConfigurations.\"$HOST\".config.system.build.toplevel'$OVERRIDE_ARGS --impure" | tail -n1)
+    # Refuse to activate anything that isn't exactly one store path: remote
+    # shell init can print to stdout, and a contaminated value would update the
+    # system profile before failing the activation, leaving a split system.
+    if [[ ! "$SYSTEM_PATH" =~ ^/nix/store/[a-z0-9]{32}-.+$ ]]; then
+      echo "Error: build did not yield a single store path (got: '$SYSTEM_PATH')"
+      exit 1
+    fi
     # Show package changes with nvd
     echo ""
     echo "Package changes:"
-    ssh root@"$HOST" "nvd diff /run/current-system /tmp/nixos-config/result 2>/dev/null" || echo "  (nvd not available or no current system to compare)"
+    ssh root@"$HOST" "nvd diff /run/current-system '$SYSTEM_PATH' 2>/dev/null" || echo "  (nvd not available or no current system to compare)"
     echo ""
-    # Now switch
+    # Activate the closure we just built instead of re-evaluating the flake,
+    # which is what nixos-rebuild switch would do (~20s of duplicated work).
+    # systemd-run mirrors nixos-rebuild: it detaches activation from the SSH
+    # session so a dropped connection can't kill a half-finished switch.
     echo "Activating configuration on $HOST..."
-    ssh root@"$HOST" "NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --fast --flake /tmp/nixos-config#$HOST$OVERRIDE_ARGS --verbose --impure"
+    ssh root@"$HOST" "nix-env --profile /nix/var/nix/profiles/system --set '$SYSTEM_PATH' && systemd-run --collect --no-ask-password --pipe --quiet --service-type=exec --unit=nixos-rebuild-switch-to-configuration -E LOCALE_ARCHIVE '$SYSTEM_PATH/bin/switch-to-configuration' switch"
   fi
 fi
 
