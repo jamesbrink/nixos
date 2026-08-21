@@ -213,25 +213,29 @@
     ];
   };
 
-  # See modules/nfs-mounts.nix for the rationale behind these options: soft +
-  # bounded timeouts + nofail so an unavailable alienware can never hang the
-  # switch (device-timeout only guards a block device, not a dead NFS server).
-  fileSystems."/mnt/storage" = {
-    device = "alienware.home.urandom.io:/storage";
-    fsType = "nfs";
-    options = [
-      "rw"
-      "noatime"
-      "nofail"
-      "noauto"
-      "soft"
-      "timeo=15"
-      "retrans=3"
-      "x-systemd.automount"
-      "x-systemd.mount-timeout=20s"
-      "x-systemd.idle-timeout=600"
-    ];
-  };
+  # Disabled while alienware is offline (unreachable since ~2025-01). The
+  # options below are correct — fstab-generated, so nofail and the 20s timeout
+  # genuinely apply — but the unit still fails on every switch and lands in
+  # `systemctl --failed`. Nothing in the fleet reads /mnt/storage, so the mount
+  # is pure noise until the host is back. Re-enable by uncommenting; see the
+  # offlineServers list in modules/nfs-mounts.nix for the other alienware/n100
+  # shares parked the same way.
+  # fileSystems."/mnt/storage" = {
+  #   device = "alienware.home.urandom.io:/storage";
+  #   fsType = "nfs";
+  #   options = [
+  #     "rw"
+  #     "noatime"
+  #     "nofail"
+  #     "noauto"
+  #     "soft"
+  #     "timeo=15"
+  #     "retrans=3"
+  #     "x-systemd.automount"
+  #     "x-systemd.mount-timeout=20s"
+  #     "x-systemd.idle-timeout=600"
+  #   ];
+  # };
 
   fileSystems."/export/storage-fast" = {
     device = "/storage-fast";

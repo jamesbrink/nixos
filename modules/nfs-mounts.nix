@@ -65,7 +65,25 @@ let
   #   x-systemd.idle-timeout=600   unmount after 10 min idle
   # device-timeout was removed: it only waits on a block device appearing and does
   # nothing for a network server that never answers — it was the false safeguard here.
+  # CAVEAT: every x-systemd.* option above is an fstab-generator directive. This
+  # module writes .mount units directly, so the generator never runs and those
+  # options are inert — mount.nfs just ignores them. Only the real NFS options
+  # (soft/timeo/retrans) take effect here; the unit-level knobs must be set in
+  # mountConfig below. This is why /mnt/nfs/data stalled for systemd's default
+  # 90s and failed a switch with status 4, while /mnt/storage (declared through
+  # fileSystems, so fstab-generated) correctly picked up TimeoutSec=20s.
   mountOptions = "noatime,nofail,noauto,soft,timeo=15,retrans=3,x-systemd.automount,x-systemd.mount-timeout=20s,x-systemd.idle-timeout=600";
+
+  # Servers known to be down for an extended period. No mount or automount unit
+  # is generated for these at all, so a switch never tries to mount them and
+  # never eats the timeout. Delete a server from this list when it returns.
+  offlineServers = [
+    "alienware.home.urandom.io"
+    "n100-01.home.urandom.io"
+    "n100-02.home.urandom.io"
+    "n100-03.home.urandom.io"
+    "n100-04.home.urandom.io"
+  ];
 
   # Function to create systemd mount unit
   mkNfsMount = share: {
@@ -74,6 +92,9 @@ let
     where = share.mountPoint;
     mountConfig = {
       Options = mountOptions;
+      # The real knob behind x-systemd.mount-timeout. Without it a dead server
+      # holds the switch for systemd's 90s default instead of failing fast.
+      TimeoutSec = "20s";
     };
   };
 
@@ -86,14 +107,14 @@ let
     };
   };
 
-  # Filter out mounts where the server is the current host
+  # Drop shares exported by this host, and any server currently marked offline
   filteredShares = builtins.filter (
     share:
-    # Don't mount exports from ourselves
     let
       domain = if config.networking.domain != null then config.networking.domain else "home.urandom.io";
     in
     share.server != "${config.networking.hostName}.${domain}"
+    && !(builtins.elem share.server offlineServers)
   ) nfsShares;
 in
 {
