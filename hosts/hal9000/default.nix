@@ -1487,16 +1487,26 @@
     description = "Set ACLs on mold directories";
     wantedBy = [ "multi-user.target" ];
     before = [ "mold.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
+    # No RemainAfterExit: the unit must return to inactive so the timer
+    # below can re-trigger it (timers cannot start an already-active unit).
+    serviceConfig.Type = "oneshot";
     script = ''
       for dir in /mnt/storage20tb/AI/mold /storage-fast/mold; do
         ${pkgs.acl}/bin/setfacl -R -d -m g::rwx,u:mold:rwx,u:jamesbrink:rwx "$dir"
         ${pkgs.acl}/bin/setfacl -R -m u:mold:rwX,u:jamesbrink:rwX "$dir"
       done
     '';
+  };
+
+  # Re-run mold-acl periodically: dirs created by the CLI after boot (umask
+  # 027 -> mode 0750) clamp the ACL mask to r-x, breaking mold writes until
+  # the ACL pass repairs them (seen 2026-08-23 with a failed model pull).
+  systemd.timers.mold-acl = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "2min";
+      OnUnitActiveSec = "15min";
+    };
   };
 
   # Allow mold server to access ~/AI bind mount for LoRAs and models
