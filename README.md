@@ -79,7 +79,6 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 │   └── ...
 ├── k8s/
 │   ├── rancher/
-│   ├── quantierra-github-runners/
 │   └── ...
 ├── containers/
 │   └── github-runner-full/

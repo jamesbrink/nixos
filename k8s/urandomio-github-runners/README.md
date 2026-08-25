@@ -4,7 +4,7 @@ GitHub Actions self-hosted runner scale sets for the `urandomio` organization us
 
 ## Architecture
 
-Shares the existing ARC controller (`arc-systems` namespace) with the quantierra runners. Runner pods deploy to the `github-runners` namespace alongside quantierra runners.
+Shares the existing ARC controller (`arc-systems` namespace) with the utensils runners. Runner pods deploy to the `github-runners` namespace.
 
 ## Runner Tiers
 
@@ -80,12 +80,12 @@ gh api orgs/urandomio/actions/runners --jq '.runners[] | {name, status, busy}'
 
 ## Capacity Notes
 
-These runners share cluster resources with quantierra runners:
+The quantierra runner sets were removed from the cluster on 2026-08-25. These
+runners now share hal9000 only with the utensils tiers, which scale to zero
+when idle.
 
-- **n100 nodes**: Total 4 S-tier slots shared between quantierra-s (min 4) and urandomio-s (min 2)
-- **alienware**: M-tier slots shared between quantierra-m and urandomio-m
-
-During peak usage, topology spread constraints and overflow scheduling ensure fair distribution.
+Note that hal9000 is currently the only Ready node, so the n100 and alienware
+placements described above do not apply until those nodes return.
 
 ## Secrets
 

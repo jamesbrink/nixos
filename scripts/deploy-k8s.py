@@ -34,7 +34,7 @@ class SecretManager:
         Retrieve a secret using secrets-print command.
 
         Args:
-            secret_path: Path to secret (e.g., 'jamesbrink/github/quantierra-runner-token')
+            secret_path: Path to secret (e.g., 'jamesbrink/github/urandomio-runner-token')
 
         Returns:
             Secret value as string
@@ -321,16 +321,6 @@ class GitHubRunnersDeployer:
 
     # Organization configurations
     ORGS = {
-        "quantierra": {
-            "secret_path": "jamesbrink/github/quantierra-runner-token",
-            "runners_dir": "quantierra-github-runners",
-            "tiers": {
-                "xl": {"release": "arc-runner-set-xl", "values_file": "values-xl.yaml"},
-                "l": {"release": "arc-runner-set-l", "values_file": "values-l.yaml"},
-                "m": {"release": "arc-runner-set-m", "values_file": "values-m.yaml"},
-                "s": {"release": "arc-runner-set-s", "values_file": "values-s.yaml"},
-            },
-        },
         "urandomio": {
             "secret_path": "jamesbrink/github/urandomio-runner-token",
             "runners_dir": "urandomio-github-runners",
@@ -374,7 +364,7 @@ class GitHubRunnersDeployer:
     }
 
     def __init__(
-        self, project_root: Path, helm_deployer: HelmDeployer, org: str = "quantierra"
+        self, project_root: Path, helm_deployer: HelmDeployer, org: str = "utensils"
     ):
         self.project_root = project_root
         self.helm_deployer = helm_deployer
@@ -692,9 +682,9 @@ def main():
     )
     runners_parser.add_argument(
         "--org",
-        choices=["quantierra", "urandomio", "utensils"],
-        default="quantierra",
-        help="GitHub organization (default: quantierra)",
+        choices=["urandomio", "utensils"],
+        default="utensils",
+        help="GitHub organization (default: utensils)",
     )
     runners_parser.add_argument(
         "--tier",

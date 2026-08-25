@@ -5,8 +5,7 @@ organization, primarily to carry [`utensils/mold`](https://github.com/utensils/m
 CI, which is heavy (Rust workspace with 670+ tests, plus bun builds — 6–25 min per
 build on this hardware).
 
-Shares the ARC controller in `arc-systems` with the quantierra and urandomio
-runners. Runner pods land in the `github-runners` namespace.
+Shares the ARC controller in `arc-systems` with the urandomio runners. Runner pods land in the `github-runners` namespace.
 
 ## Runner Tiers
 
@@ -87,7 +86,7 @@ silently breaks every cache write.
 
 ## Authentication (GitHub App)
 
-Unlike quantierra/urandomio, which use classic PATs, utensils authenticates with
+Unlike urandomio, which uses a classic PAT, utensils authenticates with
 a GitHub App: the secrets do not expire, are scoped to the org, and are not tied
 to a personal account.
 

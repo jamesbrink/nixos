@@ -4,12 +4,11 @@ This tree holds every manifest or Helm chart that needs to be deployed to cluste
 
 Current layout:
 
-| Path                             | Purpose                                                                                                     |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `k8s/quantierra-github-runners/` | Home for the Quantierra GitHub Actions runner deployment (Helm values, rendered manifests, helper scripts). |
-| `k8s/urandomio-github-runners/`  | urandomio org GitHub Actions runners (S and M tiers, shares cluster with quantierra).                       |
-| `k8s/utensils-github-runners/`   | utensils org runners (L and XL tiers) for mold's CI; GitHub App auth, pinned to hal9000.                    |
-| `k8s/rancher/`                   | Rancher + monitoring Helm values, nginx proxy config, and docs for `scripts/deploy-k8s.py rancher`.         |
+| Path                            | Purpose                                                                                             |
+| ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `k8s/urandomio-github-runners/` | urandomio org GitHub Actions runners (S and M tiers).                                               |
+| `k8s/utensils-github-runners/`  | utensils org runners (L and XL tiers) for mold's CI; GitHub App auth, pinned to hal9000.            |
+| `k8s/rancher/`                  | Rancher + monitoring Helm values, nginx proxy config, and docs for `scripts/deploy-k8s.py rancher`. |
 
 Common pattern:
 

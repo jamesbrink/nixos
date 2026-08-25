@@ -106,7 +106,7 @@ The `--inject-secret` format is `SECRET_PATH:YAML_PATH` where:
 
 The GitHub runners deployment is pre-configured:
 
-- **Secret**: `jamesbrink/github/quantierra-runner-token`
+- **Secret**: `jamesbrink/github/urandomio-runner-token`
 - **Injection Path**: `githubConfigSecret.github_token`
 - **Chart**: `oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set`
 - **Version**: 0.13.0
@@ -159,7 +159,7 @@ class MyServiceDeployer:
 
 ### For GitHub Runners
 
-1. Edit `k8s/quantierra-github-runners/values-{tier}.yaml` as needed
+1. Edit `k8s/utensils-github-runners/values-{tier}.yaml` as needed
 2. Keep `githubConfigSecret.github_token: "REDACTED"` in the file
 3. Run `./scripts/deploy-k8s.py github-runners --tier {tier}`
 4. Commit changes (REDACTED placeholder stays in git)
@@ -184,13 +184,13 @@ class MyServiceDeployer:
 
 ```bash
 # Edit the values file
-vim k8s/quantierra-github-runners/values-xl.yaml
+vim k8s/utensils-github-runners/values-xl.yaml
 
 # Deploy with automatic secret injection
 ./scripts/deploy-k8s.py github-runners --tier xl
 
 # Commit changes (REDACTED stays in git)
-git add k8s/quantierra-github-runners/values-xl.yaml
+git add k8s/utensils-github-runners/values-xl.yaml
 git commit -m "feat(k8s): update XL runner resources"
 ```
 

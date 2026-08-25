@@ -85,19 +85,6 @@ Or test first:
 deploy-test <hostname>
 ```
 
-## Quantierra GitHub Runners
-
-- Secret path: `secrets/jamesbrink/github/quantierra-runner-token.age`
-  - Store a PAT with `admin:org`, `repo`, `workflow`, and `read:org`.
-  - Format: single line `GITHUB_TOKEN=<value>`.
-- Sync into Kubernetes via:
-
-  ```bash
-  ./scripts/deploy-quantierra-github-runners.sh --sync-secret
-  ```
-
-- The script creates/updates the `gha-controller-manager` secret in the `github-runners` namespace so ARC and the runner scale set can register with the `quantierra` org.
-
 ## Cert-Manager
 
 - Secret path: `secrets/global/aws/cert-credentials-secret.age`
