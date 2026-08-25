@@ -1,0 +1,39 @@
+githubConfigUrl: "https://github.com/utensils"
+githubConfigSecret:
+  github_app_id: "REDACTED"
+  github_app_installation_id: "REDACTED"
+  github_app_private_key: "REDACTED"
+
+runnerGroup: "Default"
+
+# Sized for mold's Rust workspace + bun builds, which run 6-25 min on this
+# hardware. Capped at 2 so a CI burst cannot starve the mold server, which
+# shares hal9000 and owns the GPU.
+minRunners: 0
+maxRunners: 2
+
+runnerScaleSetName: "utensils-xl"
+
+template:
+  spec:
+    nodeSelector:
+      gha-tier: selfhost-l
+    containers:
+      - name: runner
+        image: ghcr.io/jamesbrink/github-runner-full:latest
+        command: ["/home/runner/run.sh"]
+        env:
+          - name: RUNNER_LABELS
+            value: "utensils-xl,selfhost-xl"
+        resources:
+          requests:
+            cpu: "8"
+            memory: "16Gi"
+            ephemeral-storage: "40Gi"
+          limits:
+            cpu: "20"
+            memory: "40Gi"
+            ephemeral-storage: "120Gi"
+
+containerMode:
+  type: "dind"

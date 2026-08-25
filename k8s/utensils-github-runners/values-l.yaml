@@ -1,0 +1,37 @@
+githubConfigUrl: "https://github.com/utensils"
+githubConfigSecret:
+  github_app_id: "REDACTED"
+  github_app_installation_id: "REDACTED"
+  github_app_private_key: "REDACTED"
+
+runnerGroup: "Default"
+
+# Scale to zero when idle: hal9000 is the only Ready node and also runs the
+# mold server, so idle runners must not hold reservations.
+minRunners: 0
+maxRunners: 4
+
+runnerScaleSetName: "utensils-l"
+
+template:
+  spec:
+    # hal9000 is the sole Ready node and carries the selfhost-l label.
+    nodeSelector:
+      gha-tier: selfhost-l
+    containers:
+      - name: runner
+        image: ghcr.io/jamesbrink/github-runner-full:latest
+        command: ["/home/runner/run.sh"]
+        env:
+          - name: RUNNER_LABELS
+            value: "utensils-l,selfhost-l"
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+          limits:
+            cpu: "8"
+            memory: "16Gi"
+
+containerMode:
+  type: "dind"

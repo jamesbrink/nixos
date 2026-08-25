@@ -289,8 +289,17 @@ class GitHubRunnersDeployer:
     CHART = (
         "oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set"
     )
-    VERSION = "0.13.0"
+    VERSION = "0.14.2"
     NAMESPACE = "github-runners"
+
+    # The ARC controller is a separate chart/release that every runner scale
+    # set depends on. Keep its version in lockstep with VERSION above.
+    CONTROLLER_CHART = (
+        "oci://ghcr.io/actions/actions-runner-controller-charts/"
+        "gha-runner-scale-set-controller"
+    )
+    CONTROLLER_RELEASE = "arc"
+    CONTROLLER_NAMESPACE = "arc-systems"
 
     # Organization configurations
     ORGS = {
@@ -318,6 +327,32 @@ class GitHubRunnersDeployer:
                 },
             },
         },
+        # utensils authenticates with a GitHub App rather than a PAT: the
+        # secrets never expire and are not coupled to a human account.
+        "utensils": {
+            "secrets": {
+                "jamesbrink/github/utensils-app-id": (
+                    "githubConfigSecret.github_app_id"
+                ),
+                "jamesbrink/github/utensils-app-installation-id": (
+                    "githubConfigSecret.github_app_installation_id"
+                ),
+                "jamesbrink/github/utensils-app-private-key": (
+                    "githubConfigSecret.github_app_private_key"
+                ),
+            },
+            "runners_dir": "utensils-github-runners",
+            "tiers": {
+                "xl": {
+                    "release": "arc-runner-set-utensils-xl",
+                    "values_file": "values-xl.yaml",
+                },
+                "l": {
+                    "release": "arc-runner-set-utensils-l",
+                    "values_file": "values-l.yaml",
+                },
+            },
+        },
     }
 
     def __init__(
@@ -333,7 +368,14 @@ class GitHubRunnersDeployer:
             )
 
         org_config = self.ORGS[org]
-        self.secret_path = org_config["secret_path"]
+        # An org declares either a single PAT ("secret_path") or an explicit
+        # map of agenix paths to values keys ("secrets", used by App auth).
+        if "secrets" in org_config:
+            self.secrets = dict(org_config["secrets"])
+        else:
+            self.secrets = {
+                org_config["secret_path"]: "githubConfigSecret.github_token"
+            }
         self.runners_dir = project_root / "k8s" / org_config["runners_dir"]
         self.tiers = org_config["tiers"]
 
@@ -358,9 +400,7 @@ class GitHubRunnersDeployer:
             values = yaml.safe_load(f)
 
         # Inject GitHub token
-        values_with_secrets = self.helm_deployer.inject_secrets(
-            values, {self.secret_path: "githubConfigSecret.github_token"}
-        )
+        values_with_secrets = self.helm_deployer.inject_secrets(values, self.secrets)
 
         # Deploy
         return self.helm_deployer.deploy_chart(
@@ -368,6 +408,23 @@ class GitHubRunnersDeployer:
             chart=self.CHART,
             namespace=self.NAMESPACE,
             values_dict=values_with_secrets,
+            version=self.VERSION,
+            wait=True,
+            timeout="5m",
+        )
+
+    def deploy_controller(self) -> bool:
+        """Install or upgrade the shared ARC controller.
+
+        Only hal9000 is a Ready node, so the controller is pinned there;
+        without this it can land on a long-dead node and silently stop
+        reconciling while its pod still reports Running.
+        """
+        return self.helm_deployer.deploy_chart(
+            release_name=self.CONTROLLER_RELEASE,
+            chart=self.CONTROLLER_CHART,
+            namespace=self.CONTROLLER_NAMESPACE,
+            values_dict={"nodeSelector": {"gha-tier": "selfhost-l"}},
             version=self.VERSION,
             wait=True,
             timeout="5m",
@@ -617,7 +674,7 @@ def main():
     )
     runners_parser.add_argument(
         "--org",
-        choices=["quantierra", "urandomio"],
+        choices=["quantierra", "urandomio", "utensils"],
         default="quantierra",
         help="GitHub organization (default: quantierra)",
     )
@@ -625,6 +682,11 @@ def main():
         "--tier",
         default="all",
         help="Runner tier to deploy, or 'all' (default: all). Available tiers vary by org.",
+    )
+    runners_parser.add_argument(
+        "--controller",
+        action="store_true",
+        help="Install/upgrade the shared ARC controller instead of runner tiers",
     )
 
     # Helm command
@@ -687,7 +749,9 @@ def main():
             print(f"Error: {e}", file=sys.stderr)
             return 1
 
-        if args.tier == "all":
+        if args.controller:
+            success = runners_deployer.deploy_controller()
+        elif args.tier == "all":
             success = runners_deployer.deploy_all()
         else:
             success = runners_deployer.deploy_tier(args.tier)
