@@ -82,6 +82,40 @@ they never land in these values files.
 Chart version is pinned by `GitHubRunnersDeployer.VERSION` in
 `scripts/deploy-k8s.py`; the controller tracks the same version.
 
+### Running Helm from macOS currently fails
+
+`helm` on halcyon gets `403 denied` from ghcr.io when pulling the ARC charts,
+for both Helm 3.19.1 and 4.2.3, and with every credential source emptied
+(`--registry-config`, `DOCKER_CONFIG`, `HELM_REGISTRY_CONFIG`). `curl` against
+the same token endpoint from the same machine returns 200, and hal9000 pulls
+the chart fine, so this is specific to Helm's HTTP client on that host and not
+a permissions problem.
+
+Until that is understood, run the Helm step on hal9000, piping rendered values
+over stdin so no secret touches its disk:
+
+```bash
+ssh hal9000 "sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade --install \
+  arc-runner-set-utensils-xl \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set \
+  --namespace github-runners --version 0.14.2 --values - --wait --timeout 5m" \
+  < rendered-values.yaml
+```
+
+### kubectl cannot reach the cluster by its LAN name
+
+`~/.kube/config` points at `hal9000.home.urandom.io` (10.70.100.206), which no
+longer resolves to a reachable address; hal9000 is reached over Tailscale. The
+API certificate has no Tailscale SAN, but it does cover `127.0.0.1`, so tunnel
+rather than adding an SAN:
+
+```bash
+ssh -f -N -L 16443:127.0.0.1:6443 hal9000
+ssh hal9000 'sudo cat /etc/rancher/k3s/k3s.yaml' \
+  | sed 's#127.0.0.1:6443#127.0.0.1:16443#' > /tmp/kubeconfig-hal9000
+export KUBECONFIG=/tmp/kubeconfig-hal9000
+```
+
 ## Using them from a workflow
 
 Not yet wired into mold's CI. When you are ready, target the label:

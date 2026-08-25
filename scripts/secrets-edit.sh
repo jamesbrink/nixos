@@ -19,11 +19,11 @@ EOF
 SOURCE_MODE="none"
 SOURCE_FILE=""
 TEMP_SOURCE=""
-TEMP_EDITOR=""
+CP_SHIM_DIR=""
 
 cleanup() {
   [[ -n "$TEMP_SOURCE" && -f "$TEMP_SOURCE" ]] && rm -f "$TEMP_SOURCE"
-  [[ -n "$TEMP_EDITOR" && -f "$TEMP_EDITOR" ]] && rm -f "$TEMP_EDITOR"
+  [[ -n "$CP_SHIM_DIR" && -d "$CP_SHIM_DIR" ]] && rm -rf "$CP_SHIM_DIR"
 }
 trap cleanup EXIT
 
@@ -124,35 +124,50 @@ else
   exit 1
 fi
 
+# Only the interactive path needs a terminal: agenix hands stdin to $EDITOR,
+# and vim cannot run without one. The --from-file/--stdin path uses a shim
+# editor that reads no input, so forcing /dev/tty there only breaks it.
+#
+# "[ -r /dev/tty ]" is not a sufficient test: the device node exists inside
+# CI runners, cron jobs and agent shells with no controlling terminal, where
+# it passes the read test but fails to open ("Device not configured").
 AGENIX_STDIN=""
-if [ -r /dev/tty ]; then
+if [[ "$SOURCE_MODE" == "none" ]] && : < /dev/tty 2>/dev/null; then
   AGENIX_STDIN="/dev/tty"
 fi
 
 if [[ "$SOURCE_MODE" != "none" ]]; then
-  TEMP_EDITOR="$(mktemp)"
-  cat <<'EOF' > "$TEMP_EDITOR"
-#!/usr/bin/env bash
-set -euo pipefail
-if [ -z "${SECRET_SOURCE_FILE:-}" ]; then
-  echo "SECRET_SOURCE_FILE is not set" >&2
-  exit 1
-fi
-cat "$SECRET_SOURCE_FILE" > "$1"
-EOF
-  chmod +x "$TEMP_EDITOR"
+  # agenix ignores $EDITOR when stdin is not a terminal, substituting
+  # "cp -- /dev/stdin" (see its edit() function). Feeding the payload on stdin
+  # is therefore the supported non-interactive path -- an editor shim is
+  # silently discarded and the secret is written empty.
+  # GNU coreutils' cp refuses to read /dev/stdin on macOS, failing with
+  # "skipping file '/dev/stdin', as it was replaced while being copied" and
+  # leaving an encrypted *empty* file behind. BSD /bin/cp handles it, so put a
+  # shim ahead of the nix coreutils on PATH for this one call.
+  if [[ "$(uname -s)" == "Darwin" ]] && [ -x /bin/cp ]; then
+    CP_SHIM_DIR="$(mktemp -d)"
+    printf '#!/bin/sh\nexec /bin/cp "$@"\n' > "$CP_SHIM_DIR/cp"
+    chmod +x "$CP_SHIM_DIR/cp"
+  fi
+
   echo "Populating secret from ${SOURCE_FILE:-stdin}..."
-  if [ -n "$AGENIX_STDIN" ]; then
-    SECRET_SOURCE_FILE="$SOURCE_FILE" RULES=./secrets.nix EDITOR="$TEMP_EDITOR" agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE" < "$AGENIX_STDIN"
-  else
-    SECRET_SOURCE_FILE="$SOURCE_FILE" RULES=./secrets.nix EDITOR="$TEMP_EDITOR" agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE"
+  PATH="${CP_SHIM_DIR:+$CP_SHIM_DIR:}$PATH" \
+    RULES=./secrets.nix agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE" < "$SOURCE_FILE"
+
+  # An empty result is otherwise indistinguishable from success until the
+  # secret is consumed, so verify before claiming the write worked.
+  if [ -z "$(RULES=./secrets.nix agenix -d "$SECRET_FILE" -i "$IDENTITY_FILE" 2>/dev/null)" ]; then
+    echo "Error: $SECRET_FILE decrypts to an empty value; refusing to report success." >&2
+    exit 1
   fi
 else
-  if [ -n "$AGENIX_STDIN" ]; then
-    RULES=./secrets.nix EDITOR="${EDITOR:-vim}" agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE" < "$AGENIX_STDIN"
-  else
-    RULES=./secrets.nix EDITOR="${EDITOR:-vim}" agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE"
+  if [ -z "$AGENIX_STDIN" ]; then
+    echo "Error: no controlling terminal for the editor." >&2
+    echo "Use --from-file PATH or --stdin to set this secret non-interactively." >&2
+    exit 1
   fi
+  RULES=./secrets.nix EDITOR="${EDITOR:-vim}" agenix -e "$SECRET_FILE" -i "$IDENTITY_FILE" < "$AGENIX_STDIN"
 fi
 cd ..
 

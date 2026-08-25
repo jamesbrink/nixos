@@ -48,14 +48,32 @@ class SecretManager:
                 cwd=self.project_root,
             )
 
-            # Parse output - format is "GITHUB_TOKEN=value"
-            for line in result.stdout.strip().split("\n"):
-                if "=" in line and not line.startswith("#"):
-                    key, value = line.split("=", 1)
-                    if key.strip() == "GITHUB_TOKEN":
-                        return value.strip()
+            # secrets-print frames the payload between two horizontal rules:
+            #     Decrypting <file>...
+            #     \u2500\u2500\u2500...
+            #     <payload, possibly multi-line>
+            #     \u2500\u2500\u2500...
+            #     Secret decrypted successfully!
+            rule = "\u2500" * 8
+            lines = result.stdout.split("\n")
+            bounds = [i for i, line in enumerate(lines) if line.startswith(rule)]
+            if len(bounds) < 2:
+                raise ValueError(f"Unexpected secrets-print output for {secret_path}")
+            body = lines[bounds[0] + 1 : bounds[1]]
+            # Nix writes settings warnings to stdout, which land inside the
+            # fence and would otherwise corrupt the decrypted value.
+            payload = "\n".join(
+                line for line in body if not line.startswith("warning:")
+            )
 
-            raise ValueError(f"Could not parse GITHUB_TOKEN from secret: {secret_path}")
+            # Legacy secrets store a dotenv line ("GITHUB_TOKEN=ghp_..."); newer
+            # ones hold the bare value, which may be a multi-line PEM.
+            for line in payload.strip().split("\n"):
+                key, sep, value = line.partition("=")
+                if sep and key.strip() == "GITHUB_TOKEN":
+                    return value.strip()
+
+            return payload.strip("\n")
 
         except subprocess.CalledProcessError as e:
             print(f"Error retrieving secret {secret_path}: {e.stderr}", file=sys.stderr)

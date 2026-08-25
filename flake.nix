@@ -259,6 +259,11 @@
               pre-commit # For git hooks management
               python313Packages.pipx # For installing Python tools like omnara
               bun2nix.packages.${system}.default # For converting bun lockfiles to Nix expressions
+              # Pinned to nixpkgs stable, which ships Helm 3.x. Helm 4 cannot
+              # pull the ARC charts from ghcr.io anonymously (403 on the token
+              # request), which breaks `deploy-k8s.py github-runners`.
+              kubernetes-helm
+              kubectl
             ];
 
             commands = [
