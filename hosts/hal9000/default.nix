@@ -126,6 +126,20 @@
     "d /export 0755 root root"
     "d /mnt 0775 root users"
     "d /storage-fast 0775 root users"
+    # Backing store for the GitHub Actions runners in k3s. Both live on
+    # /storage-fast (ZFS) rather than the root filesystem, which is ~83% full
+    # and also carries the mold server: a runaway build tree there would trip
+    # kubelet eviction and take mold down with it.
+    #
+    # 1001:1001 is the "runner" user inside
+    # ghcr.io/jamesbrink/github-runner-full. hostPath mounts ignore fsGroup, so
+    # these must already be owned by that uid or every cache write fails.
+    "d /storage-fast/k8s-local-path 0755 root root"
+    "d /storage-fast/gha-cache 0755 1001 1001"
+    "d /storage-fast/gha-cache/cargo 0755 1001 1001"
+    "d /storage-fast/gha-cache/sccache 0755 1001 1001"
+    "d /storage-fast/gha-cache/bun 0755 1001 1001"
+    "d /storage-fast/gha-cache/tools 0755 1001 1001"
     "d /mnt/storage 0775 root users"
     "d /mnt/storage20tb 0775 root users"
     # Dropbox sync folder lives on the 20TB disk, owned by jamesbrink; bind-mounted

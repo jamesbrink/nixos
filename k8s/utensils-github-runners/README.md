@@ -36,6 +36,55 @@ Both tiers pin `nodeSelector: gha-tier=selfhost-l`, which resolves to hal9000.
 > while doing nothing, which is how the ARC controller and its listeners went
 > silently dead. Do not remove the nodeSelector until those nodes are back.
 
+## Storage and caching
+
+Runner pods get two volumes, both on `/storage-fast` (ZFS, ~780G free) rather
+than the root filesystem:
+
+| Volume | Mount | Kind | Lifetime |
+| --- | --- | --- | --- |
+| `work` | `/home/runner/_work` | per-pod PVC on `storage-fast-path` | deleted with the pod |
+| `runner-cache` | `/cache` | hostPath `/storage-fast/gha-cache` | persists across jobs |
+
+### Why not the default
+
+ARC's stock config puts `_work` in an `emptyDir`, which lands under
+`/var/lib/kubelet` on `/dev/nvme0n1p5` — the root filesystem, 83% used and
+shared with the mold server. A Rust build tree there risks kubelet eviction of
+both. `emptyDir` also means **no cache survives a job**, so every run rebuilds
+the workspace cold.
+
+k3s's built-in local-path provisioner writes to that same root filesystem, and
+re-pointing it would move Rancher's monitoring PVCs too. `storage.yaml` runs a
+second, isolated provisioner rooted at `/storage-fast/k8s-local-path` instead,
+serving the `storage-fast-path` StorageClass.
+
+### Warm caches
+
+`/cache` is shared by every runner on the node and survives job completion:
+
+| Env var | Path |
+| --- | --- |
+| `CARGO_HOME` | `/cache/cargo` |
+| `SCCACHE_DIR` | `/cache/sccache` |
+| `BUN_INSTALL_CACHE_DIR` | `/cache/bun` |
+| `RUNNER_TOOL_CACHE` | `/cache/tools` |
+
+Sharing one directory between concurrent runners is safe here: cargo takes file
+locks, bun's store is content-addressed, and sccache is designed for parallel
+clients.
+
+The directories are created with the right ownership by `systemd.tmpfiles` in
+`hosts/hal9000/default.nix`. They must be owned by **1001:1001** (`runner`
+inside the image) — hostPath mounts ignore `fsGroup`, so a root-owned directory
+silently breaks every cache write.
+
+> mold's CI currently caches through `Swatinem/rust-cache` and sccache's
+> `SCCACHE_GHA_ENABLED` backend, both of which use the GitHub-hosted cache
+> service and work on self-hosted runners without changes. The local caches
+> above help regardless, and matter more if that workflow ever drops the
+> hosted-cache actions.
+
 ## Authentication (GitHub App)
 
 Unlike quantierra/urandomio, which use classic PATs, utensils authenticates with

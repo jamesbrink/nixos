@@ -16,8 +16,34 @@ runnerScaleSetName: "utensils-xl"
 
 template:
   spec:
+    # hal9000 is the sole Ready node and carries the selfhost-l label.
     nodeSelector:
       gha-tier: selfhost-l
+
+    volumes:
+      # Per-pod volume on /storage-fast (ZFS, ~780G free), created when the pod
+      # is scheduled and deleted with it. Keeping the work tree off the root
+      # filesystem matters: root is 83% used and shared with the mold server,
+      # and filling it triggers kubelet eviction of both.
+      - name: work
+        ephemeral:
+          volumeClaimTemplate:
+            spec:
+              accessModes: ["ReadWriteOnce"]
+              storageClassName: storage-fast-path
+              resources:
+                requests:
+                  storage: 80Gi
+      # Warm caches shared by every runner on this node. Without them each
+      # ephemeral runner starts cold and the Rust workspace rebuilds from
+      # scratch every run. All of these are safe under concurrent access:
+      # cargo takes file locks, bun's store is content-addressed, and sccache
+      # is built for parallel clients.
+      - name: runner-cache
+        hostPath:
+          path: /storage-fast/gha-cache
+          type: Directory
+
     containers:
       - name: runner
         image: ghcr.io/jamesbrink/github-runner-full:latest
@@ -25,15 +51,30 @@ template:
         env:
           - name: RUNNER_LABELS
             value: "utensils-xl,selfhost-xl"
+          - name: CARGO_HOME
+            value: /cache/cargo
+          - name: SCCACHE_DIR
+            value: /cache/sccache
+          - name: BUN_INSTALL_CACHE_DIR
+            value: /cache/bun
+          - name: RUNNER_TOOL_CACHE
+            value: /cache/tools
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: runner-cache
+            mountPath: /cache
         resources:
           requests:
             cpu: "8"
             memory: "16Gi"
-            ephemeral-storage: "40Gi"
+            # The build tree lives on the PVC now, so this only covers the
+            # container's own writable layer.
+            ephemeral-storage: "4Gi"
           limits:
             cpu: "20"
             memory: "40Gi"
-            ephemeral-storage: "120Gi"
+            ephemeral-storage: "16Gi"
 
 containerMode:
   type: "dind"
