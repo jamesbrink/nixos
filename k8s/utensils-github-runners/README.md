@@ -82,24 +82,37 @@ they never land in these values files.
 Chart version is pinned by `GitHubRunnersDeployer.VERSION` in
 `scripts/deploy-k8s.py`; the controller tracks the same version.
 
-### Running Helm from macOS currently fails
+### If Helm gets `403 denied` from ghcr.io
 
-`helm` on halcyon gets `403 denied` from ghcr.io when pulling the ARC charts,
-for both Helm 3.19.1 and 4.2.3, and with every credential source emptied
-(`--registry-config`, `DOCKER_CONFIG`, `HELM_REGISTRY_CONFIG`). `curl` against
-the same token endpoint from the same machine returns 200, and hal9000 pulls
-the chart fine, so this is specific to Helm's HTTP client on that host and not
-a permissions problem.
+The ARC charts are public, so a 403 is never a permissions problem — it means
+Helm found a **stale credential** and sent it. GHCR rejects a dead token with
+403 rather than falling back to anonymous, which makes it look like access was
+denied.
 
-Until that is understood, run the Helm step on hal9000, piping rendered values
-over stdin so no secret touches its disk:
+Seen on halcyon 2026-08-25: the login keychain held a `ghcr.io` entry for the
+`quantierra` account containing a revoked classic PAT, stored months earlier by
+a manual `docker login`. Anonymous requests returned 200 while every Helm pull
+returned 403.
+
+Clearing the config files does **not** help — `--registry-config`,
+`DOCKER_CONFIG` and `HELM_REGISTRY_CONFIG` only control the `auths` map in a
+file, while the credential lives in the platform keychain and is fetched
+through `docker-credential-osxkeychain`. Helm consults that helper even with
+`credsStore` explicitly emptied.
+
+Diagnose by comparing anonymous against the stored credential:
 
 ```bash
-ssh hal9000 "sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade --install \
-  arc-runner-set-utensils-xl \
-  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set \
-  --namespace github-runners --version 0.14.2 --values - --wait --timeout 5m" \
-  < rendered-values.yaml
+URL='https://ghcr.io/token?scope=repository%3Aactions%2Factions-runner-controller-charts%2Fgha-runner-scale-set%3Apull&service=ghcr.io'
+curl -s -o /dev/null -w 'anon=%{http_code}\n' "$URL"          # expect 200
+security find-internet-password -s ghcr.io | grep '"acct"'     # who is stored
+```
+
+Fix by replacing the entry with a current token rather than deleting it:
+
+```bash
+secrets-print jamesbrink/github-token | helm registry login ghcr.io \
+  -u <github-username> --password-stdin
 ```
 
 ### kubectl cannot reach the cluster by its LAN name
