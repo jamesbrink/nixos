@@ -1393,8 +1393,10 @@
   };
 
   # K3s Kubernetes cluster with GPU support (master node)
+  # Disabled by default (2026-08-28): flip to true and deploy to bring the
+  # cluster (and the utensils/urandomio GitHub Actions runners) back up.
   services.k3s-cluster = {
-    enable = true;
+    enable = false;
     role = "server";
     users = [ "jamesbrink" ];
     admins = [ "jamesbrink" ];
