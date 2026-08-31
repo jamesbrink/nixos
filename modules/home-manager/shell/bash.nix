@@ -98,6 +98,17 @@
         fi
       fi
 
+      # --- Stale mouse-tracking guard -------------------------------------
+      # Same problem as the zsh guard: a TUI that exits without disabling
+      # mouse reporting leaves modes 1000/1002/1003 + 1006 on, and tmux with
+      # `mouse on` then forwards raw SGR mouse reports into the shell, which
+      # show up as literal "65;88;41M..." text when scrolling or dragging.
+      __reset_mouse_tracking() {
+        [[ -t 1 ]] || return 0
+        printf '\e[?1000l\e[?1002l\e[?1003l\e[?1005l\e[?1006l\e[?1015l\e[?1016l'
+      }
+      PROMPT_COMMAND="__reset_mouse_tracking''${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+
       # Ensure terminfo is available
       export TERMINFO_DIRS="$HOME/.nix-profile/share/terminfo:/usr/share/terminfo:${pkgs.ncurses}/share/terminfo"
 

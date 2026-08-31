@@ -11,27 +11,17 @@ with lib;
 let
   cfg = config.programs.ghostty-terminfo;
 
-  # Create a terminfo package for Ghostty
-  ghosttyTerminfo =
-    pkgs.runCommand "ghostty-terminfo"
-      {
-        nativeBuildInputs = [ pkgs.ncurses ];
-      }
-      ''
-        mkdir -p $out/share/terminfo
-
-        # Create xterm-ghostty terminfo entry
-        cat > ghostty.terminfo << 'EOF'
-        # Ghostty terminal emulator
-        # Based on xterm-256color with Ghostty-specific capabilities
-        xterm-ghostty|Ghostty terminal emulator,
-          use=xterm-256color,
-          # Additional capabilities can be added here as needed
-          # For now, we inherit everything from xterm-256color
-        EOF
-
-        tic -x -o $out/share/terminfo ghostty.terminfo
-      '';
+  # Ghostty's own terminfo description, straight from the upstream package.
+  #
+  # Do NOT substitute a hand-rolled `xterm-ghostty|use=xterm-256color` alias
+  # here: that silently drops the capabilities Ghostty actually advertises,
+  # most importantly the mouse ones --
+  #   kmous=\E[<   XM=\E[?1006;1000...   xm=\E[<%i%p3%d;...
+  # A terminfo entry that claims legacy X10 mouse (kmous=\E[M) while the
+  # terminal really speaks SGR (1006) makes ncurses programs enable and
+  # disable the wrong mouse modes, which is one way mouse reporting gets left
+  # switched on and starts injecting literal "65;88;41M" text at the prompt.
+  ghosttyTerminfo = pkgs.ghostty.terminfo;
 in
 {
   options.programs.ghostty-terminfo = {

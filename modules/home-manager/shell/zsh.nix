@@ -113,6 +113,25 @@ in
         fi
       fi
 
+      # --- Stale mouse-tracking guard -------------------------------------
+      # A TUI that dies without cleaning up (nvim/fzf killed, a dropped ssh
+      # link, a crashed pager) leaves DEC private modes 1000/1002/1003 + 1006
+      # enabled for that pane. With `set -g mouse on`, tmux then keeps
+      # forwarding raw SGR mouse reports (ESC [ < b;x;y M) into the pane.
+      # zle swallows the "ESC [ <" prefix as an unknown key sequence and
+      # inserts the remainder literally, so scrolling or dragging types
+      # garbage like "65;88;41M65;88;41M..." at the prompt.
+      # Clearing the modes before every prompt tells tmux (or the terminal
+      # directly) that this pane no longer wants mouse events.
+      autoload -Uz add-zsh-hook
+      __reset_mouse_tracking() {
+        [[ -t 1 ]] || return
+        # 1000 normal, 1002 button-event, 1003 any-event,
+        # 1005 utf8-ext, 1006 SGR, 1015 urxvt-ext, 1016 SGR-pixel
+        printf '\e[?1000l\e[?1002l\e[?1003l\e[?1005l\e[?1006l\e[?1015l\e[?1016l'
+      }
+      add-zsh-hook precmd __reset_mouse_tracking
+
       # Ensure terminfo is available
       export TERMINFO_DIRS="$HOME/.nix-profile/share/terminfo:/usr/share/terminfo:${pkgs.ncurses}/share/terminfo"
 
