@@ -100,6 +100,12 @@
       upgrade = true;
     };
 
+    # Declare nix-homebrew's pinned taps in the generated Brewfile so that
+    # `brew bundle --cleanup` never tries to untap them. In nix-homebrew's
+    # no-API mode, untapping homebrew/cask first uninstalls every installed
+    # cask (brew prompts y/n; answering yes once removed all 46 GUI apps).
+    taps = builtins.attrNames config.nix-homebrew.taps;
+
     # We'll manage taps, brews, and casks in separate modules
   };
 
