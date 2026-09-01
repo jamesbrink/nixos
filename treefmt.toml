@@ -19,7 +19,6 @@ excludes = [
   # Config files
   "modules/services/postgresql/pg_hba.conf",
   "modules/services/postgresql/postgresql.conf",
-  "users/regular/.ssh/config_external",
   
   # Config files
   "**/treefmt.toml",

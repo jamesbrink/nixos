@@ -18,7 +18,7 @@ let
       "./secrets";
 in
 # Only configure on Linux systems
-lib.mkIf (!pkgs.stdenv.isDarwin) {
+lib.mkIf (!pkgs.stdenv.hostPlatform.isDarwin) {
   # Configure AWS secrets for root
   age.secrets."root-aws-config" = {
     file = "${effectiveSecretsPath}/jamesbrink/aws/config.age";

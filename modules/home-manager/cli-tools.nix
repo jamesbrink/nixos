@@ -103,10 +103,10 @@ in
       erdtree # File-tree visualizer and disk usage analyzer
 
     ]
-    ++ lib.optionals (!pkgs.stdenv.isx86_64) [
+    ++ lib.optionals (!pkgs.stdenv.hostPlatform.isx86_64) [
       ncdu # Disk usage analyzer (requires zig-hook which is broken on x86_64-darwin)
     ]
-    ++ lib.optionals pkgs.stdenv.isLinux [
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       xclip # Clipboard support on Linux
     ];
 

@@ -7,7 +7,7 @@
 }:
 
 let
-  homeDir = if pkgs.stdenv.isDarwin then "/Users/jamesbrink" else "/home/jamesbrink";
+  homeDir = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/jamesbrink" else "/home/jamesbrink";
 in
 {
   # Common home-manager configuration
@@ -33,7 +33,7 @@ in
       # NOTE: On Linux, Alacritty is configured in modules/home-manager/hyprland/default.nix
       # with runtime theme support (Omarchy-style). On Darwin, the shell module provides config.
       # Only disable on Linux to avoid conflicts with Hyprland theme system.
-      programs.alacritty.enable = lib.mkIf pkgs.stdenv.isLinux (lib.mkForce false);
+      programs.alacritty.enable = lib.mkIf pkgs.stdenv.hostPlatform.isLinux (lib.mkForce false);
 
       # SSH configuration files
       home.file."${homeDir}/.ssh/config_external" = {
@@ -80,7 +80,7 @@ in
 
       # Platform-specific update aliases
       programs.zsh.shellAliases.update =
-        if pkgs.stdenv.isDarwin then
+        if pkgs.stdenv.hostPlatform.isDarwin then
           "darwin-rebuild switch --flake ~/Projects/jamesbrink/nixos#halcyon"
         else
           "sudo nixos-rebuild switch --flake /etc/nixos/#default";

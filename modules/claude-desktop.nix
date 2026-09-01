@@ -19,7 +19,7 @@ with lib;
       };
     }
     # Darwin activation
-    (mkIf pkgs.stdenv.isDarwin {
+    (mkIf pkgs.stdenv.hostPlatform.isDarwin {
       system.activationScripts.postActivation.text = mkAfter ''
         echo "Setting up Claude desktop configuration for Darwin..."
         # For Darwin - deploy to Library/Application Support/Claude
@@ -40,7 +40,7 @@ with lib;
     })
 
     # Linux activation
-    (mkIf pkgs.stdenv.isLinux {
+    (mkIf pkgs.stdenv.hostPlatform.isLinux {
       system.activationScripts.claudeDesktopConfig = {
         text = ''
           echo "Setting up Claude desktop configuration for Linux..."

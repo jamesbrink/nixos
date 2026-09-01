@@ -4,7 +4,7 @@
 # Both ffmpeg-full transitive deps; both were last working at the pinned rev.
 { nixpkgs-ffmpeg-darwin-pin }:
 final: prev:
-prev.lib.optionalAttrs prev.stdenv.isDarwin (
+prev.lib.optionalAttrs prev.stdenv.hostPlatform.isDarwin (
   let
     pinned = import nixpkgs-ffmpeg-darwin-pin {
       inherit (prev.stdenv.hostPlatform) system;

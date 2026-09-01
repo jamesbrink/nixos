@@ -25,7 +25,7 @@ in
         "tmux"
         "z"
       ]
-      ++ lib.optionals pkgs.stdenv.isLinux [
+      ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         "systemd"
       ];
       theme = "robbyrussell";
@@ -56,7 +56,11 @@ in
       gd = "git diff";
 
       # System management
-      cleanup = if pkgs.stdenv.isDarwin then "nix-collect-garbage -d" else "sudo nix-collect-garbage -d";
+      cleanup =
+        if pkgs.stdenv.hostPlatform.isDarwin then
+          "nix-collect-garbage -d"
+        else
+          "sudo nix-collect-garbage -d";
 
       # Utility aliases
       search = "rg -p --glob '!node_modules/*' $@";

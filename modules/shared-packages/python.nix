@@ -9,7 +9,7 @@
 let
   unstable = pkgs.unstablePkgs;
   pipx =
-    if pkgs.stdenv.isDarwin then
+    if pkgs.stdenv.hostPlatform.isDarwin then
       pkgs.python313Packages.pipx.overridePythonAttrs (oldAttrs: {
         disabledTests = (oldAttrs.disabledTests or [ ]) ++ [
           # packaging now normalizes direct references with spaces around "@";
@@ -52,8 +52,6 @@ let
 
       # Development utilities
       ipython
-      jupyter
-      notebook
       black # Code formatter
       mypy # Type checker
       pytest # Testing framework
@@ -129,7 +127,7 @@ in
 
       # ML/AI packages (conditional for Linux due to heavy dependencies)
     ]
-    ++ lib.optionals pkgs.stdenv.isLinux [
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       # GUI support (tkinter causes zig-hook issues on Darwin)
       python313Packages.tkinter
 

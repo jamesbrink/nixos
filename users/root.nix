@@ -20,8 +20,10 @@ in
 {
   # Root user account configuration
   users.users.root = {
-    hashedPasswordFile = lib.mkIf pkgs.stdenv.isLinux config.age.secrets."root-hashed-password".path;
-    openssh.authorizedKeys.keys = lib.mkIf pkgs.stdenv.isLinux [
+    hashedPasswordFile =
+      lib.mkIf pkgs.stdenv.hostPlatform.isLinux
+        config.age.secrets."root-hashed-password".path;
+    openssh.authorizedKeys.keys = lib.mkIf pkgs.stdenv.hostPlatform.isLinux [
       # SSH public keys for root
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL/oRSpEnuE4edzkc7VHhIhe9Y4tTTjl/9489JjC19zY jamesbrink@darkstarmk6mod1"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBQdtaj2iZIndBqpu9vlSxRFgvLxNEV2afiqqdznsrEh jamesbrink@MacBook-Pro"
@@ -37,7 +39,7 @@ in
   };
 
   # Age secret for root password (Linux only)
-  age.secrets."root-hashed-password" = lib.mkIf pkgs.stdenv.isLinux {
+  age.secrets."root-hashed-password" = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
     file = "${effectiveSecretsPath}/global/root/hashed-password.age";
     owner = "root";
     group = "root";
@@ -59,7 +61,7 @@ in
       nixpkgs.overlays = [ (import ../overlays/gh.nix) ];
 
       # Root's home directory
-      home.homeDirectory = if pkgs.stdenv.isDarwin then "/var/root" else "/root";
+      home.homeDirectory = if pkgs.stdenv.hostPlatform.isDarwin then "/var/root" else "/root";
 
       # Import the unified shell configuration
       imports = [

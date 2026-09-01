@@ -2910,7 +2910,7 @@ in
 
     # Platform-specific clipboard integration
     ${
-      if pkgs.stdenv.isDarwin then
+      if pkgs.stdenv.hostPlatform.isDarwin then
         ''
           bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"
           bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "pbcopy"

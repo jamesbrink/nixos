@@ -71,7 +71,12 @@
     clang
     # Linux VMs on macOS
     lima
-    comfyui-nix.packages.${pkgs.stdenv.hostPlatform.system}.comfyui
+    # Disabled: comfy-ui fails to build on aarch64-darwin because its ultralytics
+    # dependency runs tests/test_python.py::test_data_utils, which downloads
+    # fixtures from github.com inside the network-less Nix sandbox. Linux gets a
+    # cache hit from Hydra and never notices; darwin builds from source and fails.
+    # Tracked at https://github.com/utensils/comfyui-nix/issues/99
+    # comfyui-nix.packages.${pkgs.stdenv.hostPlatform.system}.comfyui
   ];
 
   # Set environment variables for libpostal

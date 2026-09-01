@@ -34,10 +34,10 @@
     # Add ~/.local/bin to PATH
     PATH = "$HOME/.local/bin:$PATH";
   }
-  // lib.optionalAttrs pkgs.stdenv.isDarwin {
+  // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
     NPM_CONFIG_USERCONFIG = "$HOME/.npmrc.local";
   }
-  // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
+  // lib.optionalAttrs (!pkgs.stdenv.hostPlatform.isDarwin) {
     SSH_AUTH_SOCK = "/run/user/$(id -u)/ssh-agent";
   };
 
@@ -185,10 +185,10 @@
         # - Native mode: decorations = "full", opacity = 1.0
         # Setting them here would override the user's mode preference on deploy.
       }
-      // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         option_as_alt = "Both";
       }
-      // lib.optionalAttrs pkgs.stdenv.isLinux {
+      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
         opacity = 1.0;
       };
 

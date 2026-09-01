@@ -55,7 +55,7 @@ in
     };
   };
 
-  config = mkIf (config.networking.localHosts.enable && !pkgs.stdenv.isDarwin) {
+  config = mkIf (config.networking.localHosts.enable && !pkgs.stdenv.hostPlatform.isDarwin) {
     # Linux: Use networking.extraHosts
     networking.extraHosts = lib.concatStringsSep "\n" hostsEntries;
   };

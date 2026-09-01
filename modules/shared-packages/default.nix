@@ -86,12 +86,12 @@ in
       # hits npm registry and hangs on aarch64-darwin. See utensils/mold#TBD.
       # inputs.mold.packages.${pkgs.stdenv.hostPlatform.system}.default
     ]
-    ++ lib.optionals (!pkgs.stdenv.isDarwin) [
+    ++ lib.optionals (!pkgs.stdenv.hostPlatform.isDarwin) [
       # The Darwin build for Cloudflare Wrangler can fail inside tsup with EBADF;
       # macOS hosts install the CLI through Homebrew as cloudflare-wrangler.
       wrangler
     ]
-    ++ lib.optionals pkgs.stdenv.isLinux [
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       # Code editors - Cursor on Linux (macOS uses Homebrew cask)
       unstable.code-cursor
       # Linux-only packages

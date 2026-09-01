@@ -22,7 +22,6 @@
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
-    # ../../users/regular/strivedi.nix # Temporarily disabled for UID migration
     ../../profiles/desktop/hyprland.nix
     ../../profiles/keychron/default.nix
     ../../modules/services/k3s.nix

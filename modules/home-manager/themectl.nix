@@ -43,7 +43,7 @@ in
         "darwin"
         "linux"
       ];
-      default = if pkgs.stdenv.isDarwin then "darwin" else "linux";
+      default = if pkgs.stdenv.hostPlatform.isDarwin then "darwin" else "linux";
       description = "Platform hint used by themectl for automation hooks.";
     };
 
@@ -87,7 +87,7 @@ in
   config = lib.mkIf cfg.enable {
     home.packages =
       (lib.optional (themectlPkg != null) themectlPkg)
-      ++ (lib.optional pkgs.stdenv.isDarwin pkgs.desktoppr);
+      ++ (lib.optional pkgs.stdenv.hostPlatform.isDarwin pkgs.desktoppr);
 
     xdg.configFile."themectl/themes.json" = lib.mkIf (themeData != null) {
       source = themeData;
