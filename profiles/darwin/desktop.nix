@@ -49,14 +49,13 @@
     # GUI applications
     casks = [
       # Terminal applications
-      # Upstream ships ad-hoc-signed, unnotarized builds; without no_quarantine
-      # Gatekeeper hard-blocks the app ("Apple could not verify...")
-      {
-        name = "alacritty";
-        args = {
-          no_quarantine = true;
-        };
-      }
+      # Upstream ships ad-hoc-signed, unnotarized builds that Gatekeeper
+      # hard-blocks ("Apple could not verify..."). The cask-level
+      # no_quarantine arg is gone: Homebrew 6 removed --no-quarantine
+      # entirely (Homebrew/brew#20755), so brew bundle now fails on it.
+      # Instead the quarantine xattr is stripped in postActivation below,
+      # which nix-darwin runs right after the homebrew step.
+      "alacritty"
 
       # Browsers
       "firefox"
@@ -132,6 +131,14 @@
   };
 
   # Activation script to ensure Aerial is set as the screensaver
+  # Strip Gatekeeper quarantine from casks whose upstream ships unnotarized
+  # builds (see the alacritty comment in casks above). Runs after homebrew.
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    if [ -d /Applications/Alacritty.app ]; then
+      xattr -dr com.apple.quarantine /Applications/Alacritty.app 2>/dev/null || true
+    fi
+  '';
+
   system.activationScripts.userActivation.text = ''
     echo "Setting Aerial as the default screensaver..."
 
