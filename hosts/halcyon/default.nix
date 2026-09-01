@@ -37,7 +37,7 @@
     items = [
       { path = "/System/Applications/Messages.app"; }
       { path = "/Applications/Visual Studio Code.app"; }
-      { path = "/Applications/Alacritty.app"; } # Now installed via Homebrew
+      { path = "/Applications/Nix Apps/Alacritty.app"; } # nixpkgs build; cask disabled upstream
       { path = "/Applications/Ghostty.app"; }
       { path = "/Applications/Claude.app"; }
       { path = "/Applications/Slack.app"; }
