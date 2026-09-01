@@ -51,7 +51,7 @@ Then configure the service in the host's `default.nix`. See hal9000 (comfyui, in
 
 **Profiles** aggregate modules into roles: `server` (NixOS servers), `desktop` (NixOS with GUI), `darwin` (full macOS workstation), `darwin-slim` (headless macOS), `n100` (mini-PC cluster nodes), `keychron` (keyboard config). Darwin hosts use `home-manager-unstable` (follows `nixos-unstable`); NixOS hosts use stable `home-manager` (follows `nixpkgs`).
 
-**specialArgs** passed to every host include `inputs`, `agenix`, `secretsPath`, and `hotkeysBundle`. Some hosts also get `self`, `claude-desktop`, `unstablePkgs`, and external flake inputs (e.g., `comfyui-nix`, `acris-scrapers`). These are defined per-host in `flake.nix` and available in any imported module.
+**specialArgs** passed to every host include `inputs`, `agenix`, `secretsPath`, and `hotkeysBundle`. Some hosts also get `self`, `claude-desktop`, `unstablePkgs`, and external flake inputs (e.g., `comfyui-nix`, `mold`). These are defined per-host in `flake.nix` and available in any imported module.
 
 **Overlays** (`overlays/`) provide `unstablePkgs` and custom derivations (PixInsight, gogcli). Access via `pkgs.unstablePkgs.<package>`.
 

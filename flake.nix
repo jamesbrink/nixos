@@ -93,9 +93,6 @@
     ai-toolkit = {
       url = "github:jamesbrink/ai-toolkit/refactor";
     };
-    acris-scrapers = {
-      url = "git+ssh://git@github.com/quantierra/acris-scrapers.git";
-    };
     zerobyte = {
       url = "github:utensils/zerobyte-nix";
     };
@@ -141,7 +138,6 @@
       homebrew-cask,
       comfyui-nix,
       invokeai,
-      acris-scrapers,
       ai-toolkit,
       zerobyte,
       bun2nix,
@@ -992,7 +988,6 @@
               agenix
               claude-desktop
               comfyui-nix
-              acris-scrapers
               ;
             secretsPath = "${inputs.secrets}";
             unstablePkgs = import nixos-unstable {

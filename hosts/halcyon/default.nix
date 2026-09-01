@@ -5,7 +5,6 @@
   inputs,
   secretsPath,
   comfyui-nix,
-  acris-scrapers,
   ...
 }:
 
@@ -73,7 +72,6 @@
     # Linux VMs on macOS
     lima
     comfyui-nix.packages.${pkgs.stdenv.hostPlatform.system}.comfyui
-    acris-scrapers.packages.${pkgs.stdenv.hostPlatform.system}.acris-scraper
   ];
 
   # Set environment variables for libpostal
