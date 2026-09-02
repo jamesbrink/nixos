@@ -369,6 +369,7 @@
         7100 # AirPlay screen mirroring
         7865 # Fooocus web UI
         8188 # ComfyUI web UI
+        8585 # Entropy (Tumblr likes archive)
         # Development ports
         3000
         3001
@@ -1485,6 +1486,33 @@
       ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
       Restart = "on-failure";
       RestartSec = "10s";
+      Nice = 10;
+    };
+  };
+
+  # Entropy — Tumblr likes archive (Flask gallery + gallery-dl downloader).
+  # Imperatively managed app on the storage-fast/entropy ZFS dataset: code,
+  # secrets, media and a hand-built venv (uv venv --python 3.13) all live in
+  # /storage-fast/entropy and are owned by jamesbrink. Nix only supervises it.
+  systemd.services.entropy = {
+    description = "Entropy Tumblr archive (jamesbrink)";
+    wantedBy = [ "multi-user.target" ];
+    after = [
+      "network-online.target"
+      "zfs.target"
+    ];
+    wants = [ "network-online.target" ];
+    unitConfig.ConditionPathExists = "/storage-fast/entropy/venv/bin/python";
+    path = [ pkgs.ffmpeg ]; # video thumbnails via shutil.which("ffmpeg")
+    environment.HOME = "/home/jamesbrink";
+    serviceConfig = {
+      Type = "simple";
+      User = "jamesbrink";
+      Group = "users";
+      WorkingDirectory = "/storage-fast/entropy";
+      ExecStart = "/storage-fast/entropy/venv/bin/python app.py";
+      Restart = "on-failure";
+      RestartSec = "30s";
       Nice = 10;
     };
   };
