@@ -45,6 +45,7 @@
       "uv" # Python package manager and runner (provides uvx)
       "heroku" # Heroku CLI
       "geckodriver" # WebDriver for Firefox
+      "cliclick" # Mouse/keyboard automation CLI (used by computer-use skill)
     ];
 
     # GUI applications
