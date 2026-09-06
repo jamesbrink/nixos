@@ -74,12 +74,14 @@ def _automation_disabled() -> bool:
 
 
 def _process_running(name: str) -> bool:
-    binary = shutil.which("pgrep") or "/usr/bin/pgrep"
-    result = subprocess.run(
-        [binary, "-x", name],
-        capture_output=True,
-        text=True,
-    )
+    if platform.system() == "Darwin":
+        # BSD pgrep excludes itself and its ancestors by default, so a terminal
+        # running themectl would never be "found". -a includes ancestors.
+        args = ["/usr/bin/pgrep", "-a", "-x", name]
+    else:
+        binary = shutil.which("pgrep") or "/usr/bin/pgrep"
+        args = [binary, "-x", name]
+    result = subprocess.run(args, capture_output=True, text=True)
     return result.returncode == 0
 
 
@@ -88,20 +90,59 @@ def _read_settings(path: Path) -> dict[str, Any] | None:
         raw = path.read_text()
     except FileNotFoundError:
         return None
-    cleaned = "\n".join(
-        line for line in raw.splitlines() if not line.strip().startswith("//")
-    )
-    if not cleaned.strip():
-        return {}
-    data = json.loads(cleaned)
+    data = json.loads(_strip_jsonc(raw)) if raw.strip() else {}
     if isinstance(data, dict):
         return dict(data)
     return None
 
 
+def _strip_jsonc(raw: str) -> str:
+    """Make VSCode-style JSONC (comments + trailing commas) parseable.
+
+    Scans character by character so comment markers inside strings
+    (e.g. "https://x/*") are left untouched.
+    """
+    out: list[str] = []
+    i, n = 0, len(raw)
+    while i < n:
+        ch = raw[i]
+        if ch == '"':
+            j = i + 1
+            while j < n and raw[j] != '"':
+                j += 2 if raw[j] == "\\" else 1
+            out.append(raw[i : j + 1])
+            i = j + 1
+        elif raw.startswith("//", i):
+            j = raw.find("\n", i)
+            i = n if j == -1 else j
+        elif raw.startswith("/*", i):
+            j = raw.find("*/", i + 2)
+            i = n if j == -1 else j + 2
+        else:
+            out.append(ch)
+            i += 1
+    return re.sub(r",(\s*[}\]])", r"\1", "".join(out))
+
+
 def _write_settings(path: Path, data: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+_COLOR_THEME_RE = re.compile(r'("workbench\.colorTheme"\s*:\s*)"(?:[^"\\]|\\.)*"')
+
+
+def _set_color_theme(path: Path, theme_name: str) -> None:
+    """Rewrite workbench.colorTheme in place, preserving comments/formatting."""
+    raw = path.read_text() if path.exists() else ""
+    if _COLOR_THEME_RE.search(raw):
+        path.write_text(
+            _COLOR_THEME_RE.sub(rf"\g<1>{json.dumps(theme_name)}", raw, count=1)
+        )
+        return
+    settings = _read_settings(path) or {}
+    settings["workbench.colorTheme"] = theme_name
+    _write_settings(path, settings)
 
 
 def _update_editor_settings(
@@ -117,8 +158,7 @@ def _update_editor_settings(
             continue
         if settings.get("workbench.colorTheme") == theme_name:
             continue
-        settings["workbench.colorTheme"] = theme_name
-        _write_settings(path, settings)
+        _set_color_theme(path, theme_name)
         console.print(f"[green]✓[/green] Updated {label} settings at {path}")
         changed = True
     return changed
@@ -585,13 +625,23 @@ def reload_ghostty(console: Console) -> None:
         if result.returncode == 0:
             console.print("[green]✓[/green] Reloaded Ghostty config")
             return
-    if platform.system() == "Darwin" and (
-        _process_running("ghostty") or _process_running("Ghostty")
-    ):
+    if platform.system() != "Darwin":
+        console.print("[yellow]![/yellow] Ghostty reload skipped (app not running)")
+        return
+    reloaded = False
+    # cmux embeds libghostty and reads the same config; it reloads in place.
+    cmux = shutil.which("cmux") or "/usr/local/bin/cmux"
+    if _process_running("cmux") and Path(cmux).exists():
+        result = subprocess.run([cmux, "reload-config"], capture_output=True, text=True)
+        if result.returncode == 0:
+            console.print("[green]✓[/green] Reloaded cmux (Ghostty config)")
+            reloaded = True
+    if _process_running("ghostty") or _process_running("Ghostty"):
         if _run_osascript(GHOSTTY_SCRIPT, []):
             console.print("[green]✓[/green] Reloaded Ghostty via automation")
-            return
-    console.print("[yellow]![/yellow] Ghostty reload skipped (app not running)")
+            reloaded = True
+    if not reloaded:
+        console.print("[yellow]![/yellow] Ghostty reload skipped (app not running)")
 
 
 def _ensure_extension_installed(
