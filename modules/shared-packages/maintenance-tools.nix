@@ -12,6 +12,7 @@ let
       coreutils
       findutils
       gawk
+      git
       gnused
     ]
   );
@@ -20,21 +21,32 @@ let
     set -euo pipefail
     export PATH=${runtimeDeps}:$PATH
 
-    TARGET="$HOME/Projects"
+    declare -a ROOTS=()
     INCLUDE_VENVS=0
+    DISCOVER_WORKTREES=1
     for arg in "$@"; do
       case "$arg" in
         --venvs) INCLUDE_VENVS=1 ;;
+        --no-worktrees) DISCOVER_WORKTREES=0 ;;
         -h | --help)
-          echo "Usage: project-cleanup [--venvs] [dir]"
+          echo "Usage: project-cleanup [--venvs] [--no-worktrees] [dir...]"
           echo ""
-          echo "Scans dir (default ~/Projects) for project build caches and removes them."
-          echo "  --venvs  also remove .venv/venv virtualenvs (uv recreates them quickly)"
+          echo "Scans dirs (default ~/Projects and ~/.codex/worktrees) for project build"
+          echo "caches and removes them. Linked git worktrees of any repo found are scanned"
+          echo "too, wherever they live. Worktrees themselves are never removed."
+          echo "  --venvs         also remove .venv/venv virtualenvs (uv recreates them quickly)"
+          echo "  --no-worktrees  skip 'git worktree list' discovery"
           exit 0
           ;;
-        *) TARGET="$arg" ;;
+        *) ROOTS+=("$arg") ;;
       esac
     done
+    if [ ''${#ROOTS[@]} -eq 0 ]; then
+      ROOTS+=("$HOME/Projects")
+      # Codex checks out agent worktrees under ~/.codex/worktrees/<id>/<repo>;
+      # they accumulate Rust target/ and node_modules just like ~/Projects.
+      [ -d "$HOME/.codex/worktrees" ] && ROOTS+=("$HOME/.codex/worktrees")
+    fi
     TOTAL_FREED=0
 
     green()  { printf '\033[0;32m%s\033[0m' "$1"; }
@@ -53,9 +65,34 @@ let
       du -sk "$1" 2>/dev/null | awk '{print $1 * 1024}'
     }
 
+    # under_root PATH — true if PATH is inside an already-known root
+    under_root() {
+      local p=$1 r
+      for r in "''${ROOTS[@]}"; do
+        case "$p" in "$r" | "$r"/*) return 0 ;; esac
+      done
+      return 1
+    }
+
+    # Linked worktrees (git worktree add, codex/claude agent checkouts) can live
+    # anywhere; ask each repo where its worktrees are and add the outliers.
+    if [ "$DISCOVER_WORKTREES" = 1 ]; then
+      while IFS= read -r gitdir; do
+        while IFS= read -r wt; do
+          [ -d "$wt" ] || continue
+          under_root "$wt" && continue
+          ROOTS+=("$wt")
+        done < <(git -C "$(dirname "$gitdir")" worktree list --porcelain 2>/dev/null \
+          | awk '/^worktree /{print substr($0, 10)}')
+      done < <(find "''${ROOTS[@]}" -maxdepth 4 -name .git \
+        -not -path "*/node_modules/*" 2>/dev/null)
+    fi
+
     echo ""
     bold "Project Cache Cleaner"; echo ""
-    echo "Scanning $(bold "$TARGET") ..."
+    for r in "''${ROOTS[@]}"; do
+      echo "Scanning $(bold "$r") ..."
+    done
     echo ""
 
     declare -a TARGETS=()
@@ -72,7 +109,7 @@ let
       local type=$1 name=$2
       while IFS= read -r d; do
         add "$type" "$d"
-      done < <(find "$TARGET" -maxdepth 6 -name "$name" -type d \
+      done < <(find "''${ROOTS[@]}" -maxdepth 6 -name "$name" -type d \
         -not -path "*/node_modules/*" -not -path "*/.venv/*" -not -path "*/venv/*" \
         2>/dev/null)
     }
@@ -86,7 +123,7 @@ let
         if [ -d "$dir/$sub" ]; then
           add "$type" "$dir/$sub"
         fi
-      done < <(find "$TARGET" -maxdepth 5 -name "$marker" -type f \
+      done < <(find "''${ROOTS[@]}" -maxdepth 5 -name "$marker" -type f \
         -not -path "*/node_modules/*" 2>/dev/null)
     }
 
@@ -96,7 +133,7 @@ let
     # JS/TS package and framework caches
     while IFS= read -r d; do
       add node "$d"
-    done < <(find "$TARGET" -maxdepth 5 -name node_modules -type d -not -path "*/node_modules/*/node_modules" 2>/dev/null)
+    done < <(find "''${ROOTS[@]}" -maxdepth 5 -name node_modules -type d -not -path "*/node_modules/*/node_modules" 2>/dev/null)
     for name in .next .turbo .parcel-cache .vite .nuxt .svelte-kit .astro .angular; do
       scan js "$name"
     done
@@ -140,12 +177,12 @@ let
     # a whole store closure — deleting them lets the next nix-gc reclaim it
     while IFS= read -r l; do
       TARGETS+=("nix-root|$l|0")
-    done < <(find "$TARGET" -maxdepth 5 -name "result*" -type l -lname '/nix/store/*' 2>/dev/null)
+    done < <(find "''${ROOTS[@]}" -maxdepth 5 -name "result*" -type l -lname '/nix/store/*' 2>/dev/null)
 
     # Swift .build directories (SPM)
     while IFS= read -r d; do
       add swift "$d"
-    done < <(find "$TARGET" -maxdepth 5 -name ".build" -type d -execdir test -e Package.swift \; -print 2>/dev/null)
+    done < <(find "''${ROOTS[@]}" -maxdepth 5 -name ".build" -type d -execdir test -e Package.swift \; -print 2>/dev/null)
 
     # Swift .swiftpm caches
     scan swift .swiftpm
@@ -171,7 +208,7 @@ let
       if [ "$type" = "nix-root" ]; then
         human="(root)"
       fi
-      rel="''${path#$TARGET/}"
+      rel="''${path#"$HOME"/}"
       printf "  %-9s  %-10s  %s\n" "$type" "$human" "$rel"
       TOTAL_FREED=$((TOTAL_FREED + size))
     done
@@ -192,7 +229,7 @@ let
     echo ""
     for entry in "''${SORTED[@]}"; do
       IFS='|' read -r type path size <<< "$entry"
-      rel="''${path#$TARGET/}"
+      rel="''${path#"$HOME"/}"
 
       if [ "$type" = "rust" ]; then
         echo "  cargo clean: $rel"
