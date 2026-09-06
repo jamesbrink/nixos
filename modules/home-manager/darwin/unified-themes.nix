@@ -176,7 +176,7 @@ in
       window-theme = ghostty
       window-padding-x = 14
       window-padding-y = 14
-      confirm-close-surface=false
+      confirm-close-surface = true
       resize-overlay = never
 
       # Cursor styling
