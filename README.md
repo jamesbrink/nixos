@@ -104,7 +104,7 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 
 - Dev shell packages include `nixfmt`, `treefmt`, `prettier`, `age`, `openssh`, Python 3.13 with pytest/typer/rich, Ruff, BasedPyright, markdownlint, and other helpers so agents can lint/test without global installs.
 - Secrets hygiene: run `scan-gitleaks`, `scan-secrets --all`, or the pre-commit hooks before pushing; never store plaintext outside `secrets/`.
-- System hygiene: `nix-gc` cleans stores; `show-generations <host>` and `rollback <host>` make rollbacks explicit.
+- System hygiene: `nix-gc` cleans stores; `project-cleanup` removes build caches under `~/Projects`, `~/.codex/worktrees`, and any linked git worktrees; `show-generations <host>` and `rollback <host>` make rollbacks explicit.
 - Rancher monitoring rollouts use `deploy-k8s rancher`, which syncs `k8s/rancher/grafana-nginx.conf` into the Grafana proxy ConfigMap and restarts Grafana automatically—verify via Rancher UI and <https://grafana.home.urandom.io>.
 - GitHub Actions troubleshooting steps live in `docs/github-actions.md`; force-cancel stuck runs before deleting them.
 
