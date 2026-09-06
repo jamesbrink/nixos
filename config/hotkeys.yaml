@@ -238,7 +238,7 @@ platforms:
     default_mode: bsp
     targets: [skhd, hammerspoon]
     notes: >
-      Cmd+Shift+T lives in Hammerspoon to keep theme automation + notifications
+      Theme bindings live in Hammerspoon to keep theme automation + notifications
       in one daemon. SKHD owns core tiling bindings and defer to this manifest.
     modes:
       bsp:

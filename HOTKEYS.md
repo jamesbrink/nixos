@@ -18,7 +18,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 - `Cmd+Shift+N` - Neovim (terminal)
 - `Cmd+Shift+O` - Obsidian
 - `Cmd+Shift+Y` - YouTube
-- `Cmd+Shift+T` - Theme cycling
+- `Cmd+Shift+Space` - Theme cycling, `Cmd+Shift+W` / `Cmd+Shift+Alt+W` - Next / previous wallpaper
 - `Cmd+Alt+T` - btop (system monitor)
 - `Cmd+Space` - Alternative launchers (Spotlight/Alfred/Raycast)
 
@@ -45,7 +45,7 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 
 ### Layout Management
 
-- `Cmd+Shift+Space` - Toggle between BSP tiling mode and native macOS mode
+- `Cmd+Shift+Ctrl+Space` - Toggle between BSP tiling mode and native macOS mode
 - `Cmd+R` - Rotate tree 90°
 - `Cmd+X` - Mirror tree X-axis, `Cmd+Y` - Mirror tree Y-axis
 - `Cmd+E` - Balance windows
