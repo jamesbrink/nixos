@@ -103,6 +103,12 @@
       url = "github:nix-community/bun2nix";
       inputs.nixpkgs.follows = "nixos-unstable";
     };
+    entropy = {
+      # Private repo: `github:` cannot fetch it without a token, so use SSH.
+      # Carries its own overlay via nixosModules.default, so `pkgs.entropy`
+      # resolves without a separate entry in the host's nixpkgs.overlays.
+      url = "git+ssh://git@github.com/urandomio/entropy";
+    };
     mold = {
       # Tracks main. An earlier 0.9.0 pin (fdf5085) worked around a series of
       # sandboxed-build / packaging bugs that only surfaced building the CUDA
@@ -142,6 +148,7 @@
       zerobyte,
       bun2nix,
       mold,
+      entropy,
       ...
     }@inputs:
     let
@@ -975,6 +982,7 @@
             ./hosts/hal9000/default.nix
             zerobyte.nixosModules.default
             mold.nixosModules.default
+            entropy.nixosModules.default
 
             # Use unstable packages
             {

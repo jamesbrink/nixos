@@ -1491,31 +1491,33 @@
   };
 
   # Entropy — Tumblr likes archive (Flask gallery + gallery-dl downloader).
-  # Imperatively managed app on the storage-fast/entropy ZFS dataset: code,
-  # secrets, media and a hand-built venv (uv venv --python 3.13) all live in
-  # /storage-fast/entropy and are owned by jamesbrink. Nix only supervises it.
-  systemd.services.entropy = {
-    description = "Entropy Tumblr archive (jamesbrink)";
-    wantedBy = [ "multi-user.target" ];
-    after = [
-      "network-online.target"
-      "zfs.target"
-    ];
-    wants = [ "network-online.target" ];
-    unitConfig.ConditionPathExists = "/storage-fast/entropy/venv/bin/python";
-    path = [ pkgs.ffmpeg ]; # video thumbnails via shutil.which("ffmpeg")
-    environment.HOME = "/home/jamesbrink";
-    serviceConfig = {
-      Type = "simple";
-      User = "jamesbrink";
-      Group = "users";
-      WorkingDirectory = "/storage-fast/entropy";
-      ExecStart = "/storage-fast/entropy/venv/bin/python app.py";
-      Restart = "on-failure";
-      RestartSec = "30s";
-      Nice = 10;
+  # The code now comes from the flake (inputs.entropy, wired in flake.nix); only
+  # mutable state lives on the storage-fast/entropy ZFS dataset: media, thumbs,
+  # the state DB, logs, gallery-dl config and the OAuth/Shield credentials.
+  #
+  # user/group are the historical login account rather than the module's default
+  # system user: the archive is owned jamesbrink:users, and naming an existing
+  # account also makes the module skip user/group creation.
+  #
+  # No environmentFile — the Arachnid Shield credentials already live in
+  # $ENTROPY_HOME/.env (mode 600), which arachnid.py reads directly. Ingest
+  # screening is on by default and fails CRITICAL at startup if it cannot reach
+  # Shield, rather than silently accepting unscreened media.
+  services.entropy = {
+    enable = true;
+    user = "jamesbrink";
+    group = "users";
+    stateDir = "/storage-fast/entropy";
+    openFirewall = true;
+    backup = {
+      enable = true;
+      target = "/mnt/storage20tb/tumblr-likes";
     };
   };
+
+  # stateDir is a ZFS dataset; the module only orders after network-online.
+  # (ffmpeg, gallery-dl, sqlite, rsync are already in the package's wrapper PATH.)
+  systemd.services.entropy.after = [ "zfs.target" ];
 
   # Mold AI image generation — home (db/cache/jobs) + output on the 20TB disk,
   # model weights on NVMe (see fileSystems."/storage-fast/mold")
