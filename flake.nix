@@ -703,9 +703,34 @@
             inherit system;
             config.allowUnfree = true;
           };
-          skhdConfigText = self.darwinConfigurations.halcyon.config.services.skhd.skhdConfig;
+          # Evaluate the tiling module directly rather than reading it off
+          # halcyon: `profiles/darwin/tiling.nix` is commented out there, which
+          # left skhdConfig empty and made this check unsatisfiable. The
+          # invariant belongs to the module, not to whichever host imports it.
+          skhdConfigText =
+            (darwin.lib.darwinSystem {
+              inherit system;
+              specialArgs = {
+                hotkeysBundle = hotkeysBundles.${system} or hotkeysBundles."aarch64-darwin";
+              };
+              modules = [
+                ./modules/darwin/yabai.nix
+                {
+                  system.stateVersion = 5;
+                  system.primaryUser = "jamesbrink";
+                  users.users.jamesbrink.home = "/Users/jamesbrink";
+                  nixpkgs.pkgs = pkgs;
+                }
+              ];
+            }).config.services.skhd.skhdConfig;
         in
         {
+          # skhdChord lowercases every component of a chord, then formatKey
+          # restores the case of hex keycodes -- skhd's parser only accepts
+          # them uppercase. Break either half and the affected bindings stop
+          # firing silently. cmd+0x1B / cmd+shift+0x1B are the window-resize
+          # bindings in config/hotkeys.yaml; workspace bindings use digits and
+          # never exercise this path.
           skhdHexKeycase =
             pkgs.runCommand "skhd-hex-keycase"
               {
@@ -713,16 +738,20 @@
                 passAsFile = [ "skhdConfigText" ];
               }
               ''
-                    set -euo pipefail
+                set -euo pipefail
                 if ! grep -Fq 'cmd - 0x1B :' "$skhdConfigTextPath"; then
-                  echo "expected uppercase 0x1B chord in workspace focus bindings" >&2
+                  echo "expected uppercase 0x1B chord in window resize bindings" >&2
                   exit 1
                 fi
                 if ! grep -Fq 'cmd + shift - 0x1B :' "$skhdConfigTextPath"; then
-                  echo "expected uppercase 0x1B chord in workspace move bindings" >&2
+                  echo "expected uppercase 0x1B chord in window resize bindings" >&2
                   exit 1
                 fi
-                    touch "$out"
+                if grep -Fq '0x1b' "$skhdConfigTextPath"; then
+                  echo "found lowercase hex keycode; skhd only parses 0xNN uppercase" >&2
+                  exit 1
+                fi
+                touch "$out"
               '';
         }
       );
