@@ -2,6 +2,7 @@
 {
   name = "nord";
   displayName = "Nord";
+  kind = "dark"; # drives OS appearance + editor background
 
   # GTK/Icon theme package names
   gtk = {

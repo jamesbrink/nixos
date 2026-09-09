@@ -2,6 +2,7 @@
 {
   name = "rose-pine";
   displayName = "Rose Pine Moon";
+  kind = "dark"; # drives OS appearance + editor background
 
   # GTK/Icon theme package names
   gtk = {

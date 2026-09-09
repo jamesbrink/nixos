@@ -2,6 +2,7 @@
 {
   name = "flexoki-light";
   displayName = "Flexoki Light";
+  kind = "light"; # drives OS appearance + editor background
 
   # GTK/Icon theme package names
   gtk = {

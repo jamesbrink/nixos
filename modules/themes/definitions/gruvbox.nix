@@ -2,6 +2,7 @@
 {
   name = "gruvbox";
   displayName = "Gruvbox Material";
+  kind = "dark"; # drives OS appearance + editor background
 
   # GTK/Icon theme package names
   gtk = {

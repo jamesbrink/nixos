@@ -68,6 +68,70 @@ on run argv
 end run
 """
 
+MAC_APPEARANCE_SCRIPT = """
+on run argv
+  set wantDark to (item 1 of argv) is "dark"
+  tell application "System Events"
+    tell appearance preferences
+      if dark mode is not wantDark then set dark mode to wantDark
+    end tell
+  end tell
+end run
+"""
+
+
+def _macos_is_dark() -> bool | None:
+    """Return True/False for the current macOS appearance, None if unknown."""
+    result = subprocess.run(
+        ["/usr/bin/defaults", "read", "-g", "AppleInterfaceStyle"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        return result.stdout.strip().lower() == "dark"
+    # The key is absent entirely when light mode is active.
+    if "does not exist" in (result.stderr or ""):
+        return False
+    return None
+
+
+def update_system_appearance(theme: Theme, console: Console) -> None:
+    """Switch the OS light/dark appearance to match the theme's `kind`.
+
+    macOS: System Events `appearance preferences` (same automation channel the
+    wallpaper hook uses, so no new TCC prompt). cmux's app chrome, Ghostty's
+    `window-theme = ghostty`, and every native app follow this in real time.
+    Linux: gsettings color-scheme, which GTK apps and portals honour.
+    """
+    want = "light" if theme.is_light else "dark"
+    system = platform.system()
+    if system == "Darwin":
+        if _automation_disabled():
+            return
+        current = _macos_is_dark()
+        if current is not None and current == (want == "dark"):
+            console.print(f"[cyan]-[/cyan] macOS appearance already {want}")
+            return
+        if _run_osascript(MAC_APPEARANCE_SCRIPT, [want]):
+            console.print(f"[green]✓[/green] Set macOS appearance to {want}")
+        else:
+            console.print(
+                "[yellow]![/yellow] Could not set macOS appearance "
+                "(grant Automation → System Events to your terminal)"
+            )
+        return
+    gsettings = shutil.which("gsettings")
+    if not gsettings:
+        return
+    scheme = "prefer-light" if want == "light" else "prefer-dark"
+    result = subprocess.run(
+        [gsettings, "set", "org.gnome.desktop.interface", "color-scheme", scheme],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        console.print(f"[green]✓[/green] Set GTK color-scheme to {scheme}")
+
 
 def _automation_disabled() -> bool:
     return os.environ.get("THEME_DISABLE_EDITOR_AUTOMATION", "0") == "1"
@@ -243,18 +307,16 @@ def _update_neovim_theme_file(colorscheme: str, console: Console) -> None:
         console.print(f"[green]✓[/green] Updated Neovim config to {colorscheme}")
 
 
-def _get_nvim_colorscheme_command(colorscheme: str) -> str:
+def _get_nvim_colorscheme_command(colorscheme: str, light: bool = False) -> str:
     """Generate the appropriate Lua/Vim command to set a colorscheme.
 
     Some colorscheme plugins require setup() to select variants:
     - catppuccin: needs flavour set via setup()
     - monokai-pro: needs filter set via setup()
 
-    Also sets vim background (light/dark) appropriately.
+    Also sets vim background (light/dark) from the theme's `kind`.
     """
-    # Determine if this is a light theme
-    light_themes = {"flexoki-light", "catppuccin-latte"}
-    bg = "light" if colorscheme in light_themes else "dark"
+    bg = "light" if light else "dark"
     bg_cmd = f"set background={bg}"
 
     # Catppuccin variants: catppuccin-latte, catppuccin-frappe, catppuccin-macchiato, catppuccin-mocha
@@ -271,7 +333,9 @@ def _get_nvim_colorscheme_command(colorscheme: str) -> str:
     return f"{bg_cmd} | colorscheme {colorscheme}"
 
 
-def _reload_neovim_instances(colorscheme: str, console: Console) -> None:
+def _reload_neovim_instances(
+    colorscheme: str, console: Console, light: bool = False
+) -> None:
     binary = shutil.which("nvr")
     if not binary:
         console.print("[cyan]-[/cyan] nvr not found; skipping Neovim reload")
@@ -285,7 +349,7 @@ def _reload_neovim_instances(colorscheme: str, console: Console) -> None:
         console.print("[yellow]![/yellow] Unable to query nvr servers")
         return
     names = [server.strip() for server in servers.stdout.split() if server.strip()]
-    cmd = _get_nvim_colorscheme_command(colorscheme)
+    cmd = _get_nvim_colorscheme_command(colorscheme, light)
     reloaded = 0
     for server in names:
         # Use -c to send command directly (--remote-expr with execute() doesn't work reliably)
@@ -611,37 +675,61 @@ def update_ghostty(theme: Theme, console: Console) -> None:
         console.print("[yellow]-[/yellow] No theme line found in Ghostty config")
 
 
+def reload_cmux(console: Console) -> None:
+    """Reload cmux in place (macOS only).
+
+    cmux embeds libghostty and reads ~/.config/ghostty/config for terminal
+    colors; `cmux reload-config` re-reads that file plus cmux.json and
+    refreshes every terminal surface without a restart. The app chrome
+    (sidebar, tabs) follows the macOS appearance, which
+    update_system_appearance() flips to match the theme.
+    """
+    if platform.system() != "Darwin":
+        return
+    if not _process_running("cmux"):
+        console.print("[cyan]-[/cyan] cmux not running; skipping reload")
+        return
+    binary = shutil.which("cmux") or "/usr/local/bin/cmux"
+    if not Path(binary).exists():
+        console.print("[yellow]![/yellow] cmux CLI not found; skipping reload")
+        return
+    result = subprocess.run([binary, "reload-config"], capture_output=True, text=True)
+    if result.returncode == 0:
+        console.print("[green]✓[/green] Reloaded cmux (Ghostty config + cmux.json)")
+    else:
+        console.print(
+            Panel(
+                result.stderr.strip()
+                or result.stdout.strip()
+                or "cmux reload-config failed",
+                title="cmux reload",
+                border_style="yellow",
+            )
+        )
+
+
 def reload_ghostty(console: Console) -> None:
+    """Reload the standalone Ghostty app if it is running.
+
+    Ghostty has no CLI reload action; on macOS we send its reload keystroke
+    (Cmd+Shift+,) via System Events. Linux users rely on Ghostty's own
+    config-file watcher / keybind.
+    """
     config = get_home() / ".config" / "ghostty" / "config"
     if not config.exists():
         return
-    binary = shutil.which("ghostty")
-    if binary:
-        result = subprocess.run(
-            [binary, "+reload-config"],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode == 0:
-            console.print("[green]✓[/green] Reloaded Ghostty config")
-            return
     if platform.system() != "Darwin":
-        console.print("[yellow]![/yellow] Ghostty reload skipped (app not running)")
+        console.print("[cyan]-[/cyan] Ghostty reload is manual on Linux (Ctrl+Shift+,)")
         return
-    reloaded = False
-    # cmux embeds libghostty and reads the same config; it reloads in place.
-    cmux = shutil.which("cmux") or "/usr/local/bin/cmux"
-    if _process_running("cmux") and Path(cmux).exists():
-        result = subprocess.run([cmux, "reload-config"], capture_output=True, text=True)
-        if result.returncode == 0:
-            console.print("[green]✓[/green] Reloaded cmux (Ghostty config)")
-            reloaded = True
-    if _process_running("ghostty") or _process_running("Ghostty"):
-        if _run_osascript(GHOSTTY_SCRIPT, []):
-            console.print("[green]✓[/green] Reloaded Ghostty via automation")
-            reloaded = True
-    if not reloaded:
-        console.print("[yellow]![/yellow] Ghostty reload skipped (app not running)")
+    if _automation_disabled():
+        return
+    if not (_process_running("ghostty") or _process_running("Ghostty")):
+        console.print("[cyan]-[/cyan] Ghostty not running; skipping reload")
+        return
+    if _run_osascript(GHOSTTY_SCRIPT, []):
+        console.print("[green]✓[/green] Reloaded Ghostty via automation")
+    else:
+        console.print("[yellow]![/yellow] Ghostty reload keystroke failed")
 
 
 def _ensure_extension_installed(
@@ -730,7 +818,7 @@ def _refresh_neovim(theme: Theme, cfg: ThemectlConfig, console: Console) -> None
         return
     colorscheme = theme.nvim_colorscheme or "tokyonight"
     _update_neovim_theme_file(colorscheme, console)
-    _reload_neovim_instances(colorscheme, console)
+    _reload_neovim_instances(colorscheme, console, theme.is_light)
 
 
 def update_btop(theme: Theme, console: Console) -> None:
@@ -786,7 +874,9 @@ def run_reload_hooks(theme: Theme, cfg: ThemectlConfig, console: Console) -> Non
         ("Alacritty", lambda: reload_alacritty(console)),
         ("Hyprland", lambda: reload_hyprland(console)),
         ("Wallpaper", lambda: update_wallpaper(console)),
+        ("System appearance", lambda: update_system_appearance(theme, console)),
         ("Ghostty (update)", lambda: update_ghostty(theme, console)),
+        ("cmux (reload)", lambda: reload_cmux(console)),
         ("Ghostty (reload)", lambda: reload_ghostty(console)),
         ("btop", lambda: update_btop(theme, console)),
     )

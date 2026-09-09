@@ -2,6 +2,7 @@
 {
   name = "catppuccin";
   displayName = "Catppuccin Macchiato";
+  kind = "dark"; # drives OS appearance + editor background
 
   # GTK/Icon theme package names
   gtk = {

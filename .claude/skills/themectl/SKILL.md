@@ -79,6 +79,7 @@ Each theme in `modules/themes/definitions/<name>.nix` contains:
 {
   name = "theme-name";
   displayName = "Theme Name";
+  kind = "dark"; # or "light" — drives OS light/dark mode + editor background
 
   # Terminal colors
   alacritty = { primary = { background = "#..."; foreground = "#..."; }; ... };
@@ -164,13 +165,43 @@ Current themes (check `modules/themes/definitions/`):
 - `ristretto` - Monokai coffee
 - `flexoki-light` - Warm light theme
 
+## Runtime Reload Hooks (`hooks.py`)
+
+`themectl apply` runs these in order after updating symlinks/state:
+VSCode → Cursor → Neovim → tmux → Alacritty → Hyprland → Wallpaper →
+**System appearance** → Ghostty (config rewrite) → **cmux reload** → Ghostty (app reload) → btop.
+
+- **System appearance** (`update_system_appearance`): reads `theme.is_light`
+  (from `kind`) and flips macOS light/dark via System Events
+  `appearance preferences` (skips if already matching). On Linux it sets
+  `org.gnome.desktop.interface color-scheme` when `gsettings` exists.
+- **cmux** (`reload_cmux`, macOS only): cmux embeds libghostty and reads
+  `~/.config/ghostty/config` for terminal colors; `cmux reload-config`
+  refreshes terminals in place. cmux's own chrome (sidebar/tabs) uses
+  `appearanceMode = system`, so it follows the System appearance hook. Do not
+  use `cmux themes set` — it writes an override that stops cmux reading the
+  Ghostty config themectl manages.
+  - cmux's socket defaults to `cmuxOnly` (only processes spawned inside cmux
+    may connect), which rejects themectl when launched from skhd or another
+    terminal with "Access denied". halcyon's `~/.config/cmux/cmux.json`
+    (user-owned, not Nix-managed) sets
+    `automation.socketControlMode = "password"` with a random
+    `socketPassword`; the CLI falls back to that saved password automatically,
+    so no env var is needed. cmux hot-reloads cmux.json on save.
+- **Ghostty**: there is no `ghostty +reload-config` CLI action; the app is
+  reloaded with Cmd+Shift+, via AppleScript on macOS.
+- `THEME_DISABLE_EDITOR_AUTOMATION=1` disables every AppleScript-based hook
+  (editors, wallpaper, appearance, Ghostty keystroke).
+- Automation needs the terminal app to have **Automation → System Events**
+  permission; the first run prompts for it.
+
 ## Adding a New Theme
 
 1. **Create theme definition**:
 
    ```bash
    cp modules/themes/definitions/tokyo-night.nix modules/themes/definitions/my-theme.nix
-   # Edit with your colors
+   # Edit with your colors; set kind = "light" for light palettes
    ```
 
 2. **Add wallpapers** (optional):
@@ -213,6 +244,19 @@ Current themes (check `modules/themes/definitions/`):
 - Check if extension is available in marketplace
 - For Cursor, may need to package locally (different marketplace)
 - Verify `vscode.extension` and `cursor.extension` in theme definition
+
+### macOS appearance / cmux chrome not switching
+
+- Check `kind` in the theme definition; `themectl apply` prints
+  "Set macOS appearance to light|dark" or "already <mode>"
+- If it prints "Could not set macOS appearance", grant your terminal
+  Automation → System Events in System Settings › Privacy & Security
+- cmux sidebar follows macOS appearance only while `app.appearance` is
+  `system` (check `cmux settings path` / `defaults read com.cmuxterm.app appearanceMode`)
+- Confirm no override: `cmux themes` should show `Source: ~/.config/ghostty/config`
+- "Access denied - only processes started inside cmux can connect": switch
+  `automation.socketControlMode` to `password` in `~/.config/cmux/cmux.json`
+  (see Runtime Reload Hooks above)
 
 ### Wallpaper not changing
 

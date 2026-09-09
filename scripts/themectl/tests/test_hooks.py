@@ -310,3 +310,95 @@ def test_update_wallpaper_macos_fallback_defaults(tmp_path: Path, monkeypatch) -
     output = console.export_text()
     assert "wallpaper record" in output
     assert "Dock" in output
+
+
+def _theme(slug: str, kind: str | None) -> Theme:
+    return Theme(
+        name=slug,
+        slug=slug,
+        display_name=slug,
+        wallpapers=[],
+        raw={"name": slug, "kind": kind},
+        kind=kind,
+    )
+
+
+def test_theme_is_light_prefers_kind_then_slug() -> None:
+    assert _theme("flexoki-light", "light").is_light is True
+    assert _theme("tokyo-night", "dark").is_light is False
+    # Legacy metadata without `kind` falls back to slug heuristics.
+    assert _theme("catppuccin-latte", None).is_light is True
+    assert _theme("gruvbox", None).is_light is False
+
+
+def test_nvim_colorscheme_command_uses_light_flag() -> None:
+    from themectl.hooks import _get_nvim_colorscheme_command
+
+    assert "set background=light" in _get_nvim_colorscheme_command(
+        "flexoki-light", True
+    )
+    assert "set background=dark" in _get_nvim_colorscheme_command(
+        "flexoki-light", False
+    )
+    assert "background='light'" in _get_nvim_colorscheme_command(
+        "catppuccin-latte", True
+    )
+
+
+def test_update_system_appearance_macos_flips_when_needed(monkeypatch) -> None:
+    from themectl import hooks
+
+    calls: list[list[str]] = []
+    monkeypatch.setattr(hooks.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(hooks, "_macos_is_dark", lambda: True)
+    monkeypatch.setattr(
+        hooks, "_run_osascript", lambda script, args: calls.append(args) or True
+    )
+
+    console = _console()
+    hooks.update_system_appearance(_theme("flexoki-light", "light"), console)
+    assert calls == [["light"]]
+    assert "Set macOS appearance to light" in console.export_text()
+
+    calls.clear()
+    hooks.update_system_appearance(_theme("tokyo-night", "dark"), console)
+    assert calls == []
+    assert "already dark" in console.export_text()
+
+
+def test_update_system_appearance_respects_automation_kill_switch(
+    monkeypatch,
+) -> None:
+    from themectl import hooks
+
+    monkeypatch.setattr(hooks.platform, "system", lambda: "Darwin")
+    monkeypatch.setenv("THEME_DISABLE_EDITOR_AUTOMATION", "1")
+    monkeypatch.setattr(
+        hooks, "_run_osascript", lambda *_: (_ for _ in ()).throw(AssertionError())
+    )
+    hooks.update_system_appearance(_theme("flexoki-light", "light"), _console())
+
+
+def test_reload_cmux_invokes_cli_when_running(monkeypatch, tmp_path: Path) -> None:
+    from themectl import hooks
+
+    fake_cmux = tmp_path / "cmux"
+    fake_cmux.write_text("#!/bin/sh\nexit 0\n")
+    fake_cmux.chmod(0o755)
+    monkeypatch.setattr(hooks.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(hooks, "_process_running", lambda name: name == "cmux")
+    monkeypatch.setattr(hooks.shutil, "which", lambda name: str(fake_cmux))
+
+    console = _console()
+    hooks.reload_cmux(console)
+    assert "Reloaded cmux" in console.export_text()
+
+
+def test_reload_cmux_is_noop_off_macos(monkeypatch) -> None:
+    from themectl import hooks
+
+    monkeypatch.setattr(hooks.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(
+        hooks, "_process_running", lambda *_: (_ for _ in ()).throw(AssertionError())
+    )
+    hooks.reload_cmux(_console())

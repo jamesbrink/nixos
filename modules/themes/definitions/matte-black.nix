@@ -2,6 +2,7 @@
 {
   name = "matte-black";
   displayName = "Matte Black";
+  kind = "dark"; # drives OS appearance + editor background
 
   # GTK/Icon theme package names (resolved by main module)
   gtk = {

@@ -24,6 +24,17 @@ class Theme:
         return {}
 
     @property
+    def is_light(self) -> bool:
+        """True for light themes.
+
+        `kind` comes from the Nix definition (`kind = "light" | "dark"`). Older
+        metadata exports have no `kind`, so fall back to a slug heuristic.
+        """
+        if self.kind:
+            return self.kind.lower() == "light"
+        return "light" in self.slug or "latte" in self.slug
+
+    @property
     def nvim_colorscheme(self) -> str | None:
         return self.section("nvim").get("colorscheme")
 
