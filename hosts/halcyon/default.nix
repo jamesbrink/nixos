@@ -19,7 +19,20 @@
     ../../users/regular/jamesbrink-darwin.nix
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops-darwin.nix
+    ../../modules/services/claude-remote-control.nix
   ];
+
+  # Standing Remote Control servers so the Claude app can start sessions here.
+  # ~/Projects itself is not a trusted workspace yet; ~/Projects/jamesbrink is.
+  services.claude-remote-control = {
+    enable = true;
+    servers.projects = {
+      directory = "/Users/jamesbrink/Projects/jamesbrink";
+      name = "halcyon-projects";
+      spawn = "same-dir";
+      permissionMode = "acceptEdits";
+    };
+  };
 
   # Home-manager configuration
   home-manager.backupFileExtension = "backup";

@@ -32,6 +32,7 @@
     ../../modules/services/samba-server.nix
     ../../modules/services/internal-dns
     ../../modules/services/postgresql-replica
+    ../../modules/services/claude-remote-control.nix
     # ../../modules/services/netboot-server.nix  # Replaced by tftp-server.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
@@ -535,6 +536,18 @@
       "time.google.com"
       "pool.ntp.org"
     ];
+  };
+
+  # Standing Remote Control servers so the Claude app can start sessions here.
+  # ~/Projects itself is not a trusted workspace yet; ~/Projects/jamesbrink is.
+  services.claude-remote-control = {
+    enable = true;
+    servers.projects = {
+      directory = "/home/jamesbrink/Projects/jamesbrink";
+      name = "hal9000-projects";
+      spawn = "same-dir";
+      permissionMode = "acceptEdits";
+    };
   };
 
   systemd.user.services.rustdesk = {
