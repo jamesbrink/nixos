@@ -76,6 +76,7 @@
       "github"
       "orbstack"
       "visual-studio-code"
+      "zed" # nixpkgs zed-editor builds from source on darwin; too slow
 
       # Media
       "vlc"

@@ -65,7 +65,6 @@ in
       wget
       wireguard-tools
       yarn
-      zed-editor
       zellij
       # Additional development and utility tools
       act
@@ -94,6 +93,7 @@ in
     ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       # Code editors - Cursor on Linux (macOS uses Homebrew cask)
       unstable.code-cursor
+      zed-editor # macOS uses the Homebrew cask: the nix build compiles from source and is too slow
       # Linux-only packages
       efibootmgr # inspect/edit UEFI NVRAM boot entries
       virt-viewer
