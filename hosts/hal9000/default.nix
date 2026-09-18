@@ -1610,6 +1610,9 @@
     outputDir = "/mnt/storage20tb/AI/mold/output";
     hfTokenFile = config.age.secrets."huggingface-token".path;
     openFirewall = true;
+    # Evict models parked in CPU RAM after 5 idle minutes (default 30).
+    # The GPU-resident model is never evicted by this.
+    environment.MOLD_CACHE_IDLE_TTL_SECS = "300";
     discord = {
       enable = true;
       tokenFile = config.age.secrets."mold-discord-token".path;
