@@ -61,6 +61,7 @@
 
   # Homebrew packages for OpenClaw
   homebrew.taps = [
+    "openclaw/tap" # Peekaboo's current home; steipete/tap stopped at 4.3.0
     "steipete/tap"
     "openhue/cli"
     "yakitrak/yakitrak"
@@ -68,7 +69,7 @@
 
   homebrew.brews = [
     # OpenClaw macOS skills
-    "steipete/tap/peekaboo" # macOS UI automation
+    "openclaw/tap/peekaboo" # macOS UI automation
     "steipete/tap/gifgrep" # GIF search
     "steipete/tap/imsg" # iMessage CLI (requires Full Disk Access)
     "steipete/tap/camsnap" # IP camera snapshots
@@ -80,6 +81,26 @@
     # Productivity
     "yakitrak/yakitrak/obsidian-cli" # Obsidian vault
   ];
+
+  # Peekaboo's Bridge daemon, started by launchd inside the GUI session.
+  # macOS grants Screen Recording to the RESPONSIBLE process: a daemon that an SSH
+  # session auto-spawns is attributed to sshd, which has no such grant, so captures
+  # driven over SSH fail. Started here it is attributed to the peekaboo binary,
+  # which holds the grants, and SSH/MCP clients reuse it over its bridge socket.
+  launchd.user.agents.peekaboo-daemon = {
+    serviceConfig = {
+      ProgramArguments = [
+        "/opt/homebrew/bin/peekaboo"
+        "daemon"
+        "run"
+      ];
+      KeepAlive = true;
+      RunAtLoad = true;
+      LimitLoadToSessionType = "Aqua";
+      StandardOutPath = "/tmp/peekaboo-daemon.log";
+      StandardErrorPath = "/tmp/peekaboo-daemon.log";
+    };
+  };
 
   homebrew.casks = [
     "bitwarden" # Password manager
