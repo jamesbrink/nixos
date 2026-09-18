@@ -84,8 +84,9 @@ in
       # Increase file descriptor limit for Nix operations (especially on macOS)
       ulimit -n 10240 2>/dev/null || true
 
-      # Add ~/.local/bin for pipx and ~/.claude/local for Claude CLI
-      export PATH="$HOME/.local/bin:$HOME/.claude/local:$PATH"
+      # Add ~/.local/bin for pipx, ~/.claude/local for Claude CLI, and
+      # ~/.bun/bin for globally installed bun binaries (bun add -g)
+      export PATH="$HOME/.bun/bin:$HOME/.local/bin:$HOME/.claude/local:$PATH"
 
       # Disable Nix hyperlinks in error messages (prevents underlined text)
       export NIX_DONT_HYPERLINK=1
