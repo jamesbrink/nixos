@@ -26,4 +26,4 @@
 
 - Agents edit modules/profiles, run `format` (treefmt), `nix flake check`, and host-specific builds.
 - Deployments flow through `scripts/deploy*` to keep remote hosts in sync.
-- TODO-driven planning (`TODO.md`) documents active tasks, with these core docs serving as orientation for humans and automation.
+- Core docs serve as orientation for humans and automation; active work is tracked in issues and commit history.

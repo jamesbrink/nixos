@@ -14,7 +14,7 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 4. Build the desired target: `build <host>` (auto-detects NixOS vs Darwin).
 5. Deploy via `deploy-test <host>` → `deploy <host>` (or `deploy-local <host>`); follow with `health-check <host>` and `show-generations <host>`.
 6. Keep secrets encrypted with `secrets-edit <path>`; track recipients in `SECRETS.md` and verify via `secrets-verify`.
-7. Document major changes in `TODO.md` or module docs, and log new manual steps/secrets when touching infrastructure.
+7. Document major changes in module docs, and log new manual steps/secrets when touching infrastructure.
 
 ## Repository layout
 
@@ -33,7 +33,7 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 - `docs/` – scenario guides (`pixinsight-*.md`, `desktop-environment-switching.md`, `samba-setup.md`, `github-actions.md`, etc.).
 - `config/` – YAML configs consumed by scripts (e.g., hotkeys, themectl automation); `lib/hotkeys.nix` exposes the same data inside Nix.
 - `secrets/` – Agenix-encrypted material with recipients/instructions cataloged in `SECRETS.md`.
-- Top-level references: `VISION.md`, `DESIGN.md`, `TECH_STACK.md`, `STANDARDS.md`, `AGENTS.md`, `CLAUDE.md`, `HOTKEYS.md`, and `TODO.md` capture architecture, collaboration norms, tech choices, style guides, and backlog items.
+- Top-level references: `VISION.md`, `DESIGN.md`, `TECH_STACK.md`, `STANDARDS.md`, `AGENTS.md`, `CLAUDE.md`, and `HOTKEYS.md` capture architecture, collaboration norms, tech choices, and style guides.
 
 ### Tree view
 
@@ -96,7 +96,6 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 ├── STANDARDS.md
 ├── TECH_STACK.md
 ├── VISION.md
-├── TODO.md
 └── README.md
 ```
 
@@ -112,8 +111,8 @@ This public flake keeps every personal and lab host—NixOS and macOS—on the s
 
 - Follow `STANDARDS.md` for Nix, Bash, and soon Python (`scripts/themectl/`).
 - Use Conventional Commits scoped to touched paths (`feat(hosts/halcyon): enable yabai toggle`).
-- Anytime a host or module changes, update related docs, secrets metadata, and TODOs so future rebuilds stay reproducible.
+- Anytime a host or module changes, update related docs and secrets metadata so future rebuilds stay reproducible.
 
-Questions or new ideas? Start by reading `VISION.md` for context, scan `TODO.md`, and add updates or scripts instead of ad-hoc manual tweaks. The entire fleet should rebuild from these files alone.
+Questions or new ideas? Start by reading `VISION.md` for context, then add updates or scripts instead of ad-hoc manual tweaks. The entire fleet should rebuild from these files alone.
 
 Licensed under the MIT License — see `LICENSE`.

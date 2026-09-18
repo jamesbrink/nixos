@@ -15,7 +15,7 @@
 
 ## Documentation
 
-- Markdown follows `markdownlint` (soon wired into treefmt). Keep sections short, use sentence-case headings, and update `README.md`, `TODO.md`, or per-module docs alongside code.
+- Markdown follows `markdownlint` (soon wired into treefmt). Keep sections short, use sentence-case headings, and update `README.md` or per-module docs alongside code.
 - Core docs (`VISION.md`, `TECH_STACK.md`, `DESIGN.md`, `STANDARDS.md`) must stay in sync with major architectural changes.
 
 ## Python (`scripts/themectl/`)

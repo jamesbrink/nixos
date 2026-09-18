@@ -57,4 +57,3 @@ Always refer to `README.md` for an overview, then consult:
 - `AGENTS.md` covers collaboration with AI agents (Claude, GitHub Copilot, etc.).
 - `CLAUDE.md` documents Claude usage, experiment notes, and emerging patterns.
 - `HOTKEYS.md` catalogs custom keybindings and their rationale.
-- `TODO.md` tracks active tasks and backlog items.

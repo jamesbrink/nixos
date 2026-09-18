@@ -123,6 +123,5 @@ Use the `mcp__nixos__nix` MCP tool as the **first choice** for checking package 
 - `TECH_STACK.md` — supported platforms, languages, tooling
 - `STANDARDS.md` — testing, documentation, language-specific requirements
 - `HOTKEYS.md` — keybinding reference (Yabai, Hyprland, tmux, Neovim)
-- `TODO.md` — active tasks and backlog
 - `SECRETS.md` — secrets lifecycle and Kubernetes integration
 - `mikrotik-terraform/README.md` — network infrastructure management
