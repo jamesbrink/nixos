@@ -106,8 +106,10 @@
     mode = "0600";
   };
 
+  # bender has its own OpenRouter key; every other host uses the shared
+  # jamesbrink/openrouter-key.age
   age.secrets."openrouter-key" = {
-    file = "${secretsPath}/jamesbrink/openrouter-key.age";
+    file = "${secretsPath}/bender/openrouter-key.age";
     owner = "jamesbrink";
     group = "staff";
     mode = "0600";
