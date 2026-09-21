@@ -3,6 +3,7 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }:
 
@@ -22,7 +23,10 @@ in
       home.stateVersion = "25.05";
 
       # Home Manager uses its own package set unless useGlobalPkgs is enabled.
-      nixpkgs.overlays = [ (import ../../overlays/gh.nix) ];
+      nixpkgs.overlays = [
+        (import ../../overlays/gh.nix)
+        (import ../../overlays/git-xet.nix inputs)
+      ];
 
       # Import the unified shell configuration
       imports = [
@@ -60,6 +64,7 @@ in
         fish
         go
         powershell
+        git-xet # Hugging Face Xet transfer agent for Git LFS
       ];
 
       manual = {
@@ -71,6 +76,23 @@ in
       programs.git.settings.user = {
         name = "James Brink";
         email = "brink.james@gmail.com";
+      };
+
+      # Git LFS + the Hugging Face Xet transfer agent.
+      # `git lfs install` / `git xet install` cannot be run by hand here: the
+      # global git config is a read-only symlink into the Nix store, so the
+      # filter and the custom transfer agent are declared instead.
+      programs.git.lfs.enable = true;
+
+      programs.git.settings.lfs.concurrenttransfers = 8;
+
+      # `settings` is two levels deep (section -> key -> value), so the git
+      # subsection is spelled in the section name: [lfs "customtransfer.xet"].
+      # Absolute store path so git-lfs finds the agent regardless of PATH order.
+      programs.git.settings."lfs.customtransfer.xet" = {
+        path = "${pkgs.git-xet}/bin/git-xet";
+        args = "transfer";
+        concurrent = true;
       };
 
       # Claude Code aliases
