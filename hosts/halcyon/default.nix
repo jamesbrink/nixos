@@ -84,6 +84,17 @@
     clang
     # Linux VMs on macOS
     lima
+    # Paperclip launchd service (managed CLI in ~/.local/bin) is kept off at login.
+    # `service start` re-enables start-on-login, so disable it again right after.
+    (writeShellScriptBin "paperclip-up" ''
+      set -euo pipefail
+      "$HOME/.local/bin/paperclipai" service start
+      /bin/launchctl disable "gui/$(id -u)/ing.paperclip.paperclipai"
+    '')
+    (writeShellScriptBin "paperclip-down" ''
+      set -euo pipefail
+      "$HOME/.local/bin/paperclipai" service stop
+    '')
     # Disabled: comfy-ui fails to build on aarch64-darwin because its ultralytics
     # dependency runs tests/test_python.py::test_data_utils, which downloads
     # fixtures from github.com inside the network-less Nix sandbox. Linux gets a
