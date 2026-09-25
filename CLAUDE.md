@@ -71,9 +71,9 @@ Then configure the service in the host's `default.nix`. See hal9000 (comfyui, in
 - Rewrites configs for Alacritty, Ghostty, VSCode, Neovim, tmux, btop
 - Drives yabai BSP/native mode toggle on macOS
 
-### PostgreSQL Replica (hal9000)
+### PostgreSQL 17 (hal9000)
 
-Port 5432, replicating from Quantierra production via S3 WAL shipping. Use the `pg-replica` skill for status, queries, and standby/read-write mode switching.
+Plain upstream `services.postgresql` for misc dev work: port 5432, trust auth from localhost/LAN/Tailscale, data on the `storage-fast/postgresql` ZFS dataset at `/var/lib/postgresql`. Connect with `psql -h hal9000` (superuser `jamesbrink` or `postgres`).
 
 ## Coding Standards
 

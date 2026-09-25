@@ -31,7 +31,6 @@
     ../../modules/services/windows11-vm.nix
     ../../modules/services/samba-server.nix
     ../../modules/services/internal-dns
-    ../../modules/services/postgresql-replica
     ../../modules/services/claude-remote-control.nix
     # ../../modules/services/netboot-server.nix  # Replaced by tftp-server.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
@@ -210,8 +209,8 @@
     ];
   };
 
-  fileSystems."/storage-fast/pg_base" = {
-    device = "storage-fast/pg_base";
+  fileSystems."/var/lib/postgresql" = {
+    device = "storage-fast/postgresql";
     fsType = "zfs";
     options = [
       "zfsutil"
@@ -359,7 +358,7 @@
         139 # NetBIOS Session Service
         445 # SMB/CIFS
         3389
-        5432 # PostgreSQL 17 read replica
+        5432 # PostgreSQL
         5900 # SPICE for VMs
         5901 # Additional SPICE ports
         5902
@@ -424,7 +423,7 @@
             4046 # NFS mountd
             4047 # NFS statd
             3389
-            5432 # PostgreSQL 17 read replica
+            5432 # PostgreSQL
             7000 # AirPlay
             7001 # AirPlay
             7100 # AirPlay screen mirroring
@@ -1165,7 +1164,6 @@
     nvidia-vaapi-driver
     nvtopPackages.nvidia
     OVMF
-    pgbackrest
     pgweb
     podman
     podman-compose
@@ -1233,73 +1231,6 @@
     authKeyFile = "${config.age.secrets."hal9000-tailscale".path}";
   };
 
-  # webhook service configuration for PostgreSQL 17 replica management
-  environment.etc."webhook/hooks.json".text = ''
-    [
-      {
-        "id": "postgres-rollback",
-        "trigger-rule": {
-          "or": [
-            {
-              "match": {
-                "type": "value",
-                "value": "WEBHOOK_TOKEN_RESET",
-                "parameter": {
-                  "source": "header",
-                  "name": "X-Webhook-Token"
-                }
-              }
-            },
-            {
-              "match": {
-                "type": "value",
-                "value": "WEBHOOK_TOKEN_RESET17",
-                "parameter": {
-                  "source": "header",
-                  "name": "X-Webhook-Token"
-                }
-              }
-            },
-            {
-              "match": {
-                "type": "value",
-                "value": "WEBHOOK_TOKEN_ACTIVE",
-                "parameter": {
-                  "source": "header",
-                  "name": "X-Webhook-Token"
-                }
-              }
-            }
-          ]
-        },
-        "pass-arguments-to-command": [
-          {
-            "source": "header",
-            "name": "X-Webhook-Token"
-          }
-        ],
-        "command-working-directory": "/",
-        "execute-command": "/run/current-system/sw/bin/webhook-postgres-reset",
-        "response-message": "PostgreSQL 17 replica operation completed",
-        "include-command-output-in-response": true
-      }
-    ]
-  '';
-
-  systemd.services.webhook = {
-    description = "Webhook Server";
-    after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "simple";
-      User = "root";
-      Group = "root";
-      ExecStart = "${pkgs.webhook}/bin/webhook -hooks /etc/webhook/hooks.json -verbose";
-      Restart = "always";
-      RestartSec = "10s";
-    };
-  };
-
   # pgweb service configuration
   systemd.services.pgweb = {
     description = "pgweb PostgreSQL database browser";
@@ -1308,12 +1239,11 @@
     environment = {
       PGHOST = "127.0.0.1";
       PGUSER = "postgres";
-      PGPASSWORD = "postgres";
-      PGDATABASE = "nyc_real_estate_dev";
+      PGDATABASE = "postgres";
     };
     serviceConfig = {
       Type = "simple";
-      ExecStart = "${pkgs.pgweb}/bin/pgweb --bind=0.0.0.0 --listen=8081 --host=127.0.0.1 --port=5432 --user=postgres --pass=postgres --db=nyc_real_estate_dev --skip-open --sessions";
+      ExecStart = "${pkgs.pgweb}/bin/pgweb --bind=0.0.0.0 --listen=8081 --host=127.0.0.1 --port=5432 --user=postgres --db=postgres --skip-open --sessions";
       Restart = "always";
       RestartSec = "5s";
       User = "jamesbrink";
@@ -1619,20 +1549,28 @@
     };
   };
 
-  # PostgreSQL 17 read replica from Quantierra production
-  services.postgresql-replica = {
+  # Plain PostgreSQL 17 for misc dev work, on the storage-fast/postgresql ZFS
+  # dataset. Trust auth from localhost, the LAN and Tailscale only.
+  services.postgresql = {
     enable = true;
-    dataDir = "/storage-fast/pg_base";
-    archiveDir = "/mnt/storage20tb/quantierra/wal";
-    zfsDataset = "storage-fast/pg_base";
-    port = 5432;
-    awsProfile = "quantierra";
-    s3Bucket = "s3://quantierra-backups/postgresql-archive/";
-    walSyncSchedule = "*-*-* 03:00:00"; # Daily at 3 AM
-    snapshotSchedule = "*-*-1,4,7,10,13,16,19,22,25,28,31 04:00:00"; # Every 3 days at 4 AM
-    extraConfig = ''
-      ignore_invalid_pages = off
+    package = pkgs.postgresql_17;
+    enableTCPIP = true;
+    authentication = lib.mkForce ''
+      # TYPE  DATABASE  USER  ADDRESS         METHOD
+      local   all       all                   trust
+      host    all       all   127.0.0.1/32    trust
+      host    all       all   ::1/128         trust
+      host    all       all   10.70.100.0/24  trust
+      host    all       all   100.64.0.0/10   trust
     '';
+    ensureDatabases = [ "jamesbrink" ];
+    ensureUsers = [
+      {
+        name = "jamesbrink";
+        ensureDBOwnership = true;
+        ensureClauses.superuser = true;
+      }
+    ];
   };
 
   # Samba server configuration - sharing same paths as NFS

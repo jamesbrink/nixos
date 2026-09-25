@@ -3,64 +3,8 @@
   <head>
     <title>ZFS Monitor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              "pg-blue": "#336791",
-            },
-          },
-        },
-      };
-    </script>
   </head>
   <body class="bg-gray-50">
-    <!-- Progress Modal -->
-    <div
-      id="progressModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50"
-    >
-      <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-900" id="modalTitle">
-            PostgreSQL Reset
-          </h3>
-          <button
-            onclick="closeModal()"
-            class="text-gray-500 hover:text-gray-700"
-          >
-            <svg
-              class="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-        <div class="mb-4">
-          <p id="modalMessage" class="text-gray-600"></p>
-        </div>
-        <div class="relative pt-1">
-          <div
-            class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200"
-          >
-            <div
-              id="progressBar"
-              class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500 w-0 transition-all duration-300"
-            ></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="container mx-auto px-4 py-8 max-w-5xl h-screen">
       <div class="bg-white rounded-lg shadow-lg p-6 h-full">
         <div class="flex justify-between items-center mb-6">
@@ -101,11 +45,6 @@
                 >
                   Referenced
                 </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody
@@ -118,90 +57,11 @@
     </div>
 
     <script>
-      const DATASETS_TO_SHOW = [
-        "/storage-fast",
-        "/storage-fast/pg_base",
-        "/storage-fast/pg_archive",
-      ];
-
-      function showModal(title, message, progress = 0) {
-        document.getElementById("modalTitle").textContent = title;
-        document.getElementById("modalMessage").textContent = message;
-        document.getElementById("progressBar").style.width = `${progress}%`;
-        document.getElementById("progressModal").classList.remove("hidden");
-      }
-
-      function closeModal() {
-        document.getElementById("progressModal").classList.add("hidden");
-      }
-
-      function resetDatabase(action) {
-        const token = action === "reset" ? "reset17" : "active";
-        const actionName = action === "reset" ? "Reset" : "Activate";
-        const xhr = new XMLHttpRequest();
-        xhr.open(
-          "POST",
-          "https://webhook.home.urandom.io/hooks/postgres-rollback",
-          true,
-        );
-        xhr.setRequestHeader("X-Webhook-Token", token);
-
-        showModal(
-          `PostgreSQL 17 ${actionName}`,
-          `Initiating database ${action}...`,
-          0,
-        );
-
-        xhr.onload = function () {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            showModal(
-              `PostgreSQL 17 ${actionName}`,
-              `PostgreSQL 17 ${action} completed successfully`,
-              100,
-            );
-            setTimeout(closeModal, 3000);
-          } else {
-            showModal(
-              `PostgreSQL 17 ${actionName}`,
-              `Failed to ${action} PostgreSQL 17`,
-              0,
-            );
-            setTimeout(closeModal, 3000);
-          }
-        };
-
-        xhr.onerror = function () {
-          showModal(
-            `PostgreSQL 17 ${actionName}`,
-            `Failed to ${action} PostgreSQL 17`,
-            0,
-          );
-          setTimeout(closeModal, 3000);
-        };
-
-        xhr.send();
-      }
-
-      function getResetButton(dataset) {
-        if (dataset === "/storage-fast/pg_base") {
-          return `<button type="button" onclick="resetDatabase('reset');"
-                    class="bg-pg-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
-                    Reset to Snapshot
-                </button>
-                <button type="button" onclick="resetDatabase('activate');"
-                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                    Activate Dev Mode
-                </button>`;
-        }
-        return "";
-      }
+      const DATASETS_TO_SHOW = ["/storage-fast", "/var/lib/postgresql"];
 
       function formatDatasetName(name) {
-        if (name === "/storage-fast/pg_base") {
-          return name + " (PostgreSQL 17 Replica)";
-        }
-        if (name === "/storage-fast/pg_archive") {
-          return name + " (WAL Archive)";
+        if (name === "/var/lib/postgresql") {
+          return name + " (PostgreSQL 17)";
         }
         return name;
       }
@@ -241,9 +101,6 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${used || "N/A"}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${avail || "N/A"}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${referenced || "N/A"}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        ${getResetButton(path)}
-                                    </td>
                                 </tr>`;
               }
             });
