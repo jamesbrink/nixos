@@ -167,6 +167,16 @@
     ];
   };
 
+  # Bound shutdown time. Units with KillMode=process (docker, libvirtd, incus,
+  # lxcfs, nix-daemon) leave children behind that systemd-shutdown waits on for
+  # DefaultTimeoutStopSec after the journal is gone; the reboot watchdog
+  # hard-resets if the final phase (unmount/zpool sync) wedges. Units with an
+  # explicit TimeoutStopSec (postgresql, mold, entropy) keep theirs.
+  systemd.settings.Manager = {
+    DefaultTimeoutStopSec = "30s";
+    RebootWatchdogSec = "3min";
+  };
+
   services.zfs = {
     autoScrub.enable = true;
     trim.enable = true;
@@ -179,44 +189,13 @@
     };
   };
 
-  fileSystems."/storage-fast/Steam" = {
-    device = "storage-fast/Steam";
-    fsType = "zfs";
-    options = [
-      "zfsutil"
-      "X-mount.mkdir"
-    ];
-  };
-
-  fileSystems."/storage-fast/ollama" = {
-    device = "storage-fast/ollama";
-    fsType = "zfs";
-    options = [
-      "zfsutil"
-      "X-mount.mkdir"
-    ];
-  };
-
-  # Mold model weights on NVMe (recordsize=1M, atime=off) — model load/unload
-  # churn was too slow from the 20TB HDD. Home (db/cache/jobs) and gallery
-  # output stay on /mnt/storage20tb/AI/mold.
-  fileSystems."/storage-fast/mold" = {
-    device = "storage-fast/mold";
-    fsType = "zfs";
-    options = [
-      "zfsutil"
-      "X-mount.mkdir"
-    ];
-  };
-
-  fileSystems."/var/lib/postgresql" = {
-    device = "storage-fast/postgresql";
-    fsType = "zfs";
-    options = [
-      "zfsutil"
-      "X-mount.mkdir"
-    ];
-  };
+  # Child datasets (Steam, ollama, mold, postgresql, entropy, k3s, benchmark)
+  # are mounted by zfs-mount.service from their native `mountpoint` property.
+  # Do NOT also declare them in fileSystems: the fstab mount units and
+  # `zfs mount -a` race for the same mountpoints at boot, the loser gets
+  # "mountpoint or dataset is busy", and a failed fstab unit drops the box into
+  # emergency mode (2026-09-26). Services that need one order after
+  # zfs-mount.service instead (see mold and postgresql below).
 
   fileSystems."/home/jamesbrink/AI" = {
     device = "/mnt/storage20tb/AI";
@@ -252,7 +231,11 @@
 
   fileSystems."/export/storage-fast" = {
     device = "/storage-fast";
-    options = [ "rbind" ];
+    options = [
+      "rbind"
+      # Bind after the child datasets are mounted so the export sees them.
+      "x-systemd.after=zfs-mount.service"
+    ];
   };
 
   # New 20TB storage drive. noatime: this disk holds many files served over
@@ -1517,7 +1500,10 @@
     "/mnt/storage20tb/AI"
     "/storage-fast/mold"
   ];
-  systemd.services.mold.unitConfig.RequiresMountsFor = [ "/storage-fast/mold" ];
+  # storage-fast/mold is mounted by zfs-mount.service (no fstab unit).
+  systemd.services.mold.requires = [ "zfs-mount.service" ];
+  systemd.services.mold.after = [ "zfs-mount.service" ];
+  systemd.services.mold.unitConfig.AssertPathIsMountPoint = "/storage-fast/mold";
   # mold dies on SIGPIPE when a client connection drops mid-write (utensils/mold
   # upstream bug). systemd's default "clean exit" set includes SIGPIPE, so
   # Restart=on-failure treats it as success and never restarts. Force a restart
@@ -1571,6 +1557,15 @@
         ensureClauses.superuser = true;
       }
     ];
+  };
+
+  # storage-fast/postgresql is mounted by zfs-mount.service (no fstab unit).
+  # The assert keeps postgres from initdb-ing a fresh cluster on the root fs if
+  # the dataset ever fails to mount.
+  systemd.services.postgresql = {
+    requires = [ "zfs-mount.service" ];
+    after = [ "zfs-mount.service" ];
+    unitConfig.AssertPathIsMountPoint = "/var/lib/postgresql";
   };
 
   # Samba server configuration - sharing same paths as NFS
