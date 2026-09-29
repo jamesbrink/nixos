@@ -623,6 +623,14 @@
   #   VRAM: 128K ctx = 13.0 GB, 256K ctx = 18.0 GB (f16 KV at 256K OOMs).
   #   Serving 256K only; deep agent contexts (30-78K each x8) drop decode to
   #   ~14 t/s per stream, and long prefills stall every stream while they run.
+  # Bonsai MTP (2026-09-28): PQ2_0+MTP bundle with --spec-draft-n-max 1 vs
+  # PTQ1_0 without speculation, 256K q8_0 KV, code/prose prompts:
+  #   1 stream 112/102 vs 94/94 t/s; 4 concurrent 67/64 vs 38 t/s per stream
+  #   (MTP sidesteps the slow batch 3-7 kernel path); 8 concurrent 354/324 vs
+  #   277 t/s aggregate; at 60K depth x4 per-stream 15-18 vs 10-14 t/s.
+  #   Draft acceptance 65-87%. n-max 2 was faster still (130 t/s single) but
+  #   only fits at a 192K q8_0 pool, which overflowed at 4 x 60K contexts.
+  #   q4_0 KV matched q8_0 speed (109/102 t/s single, 357/334 at 8).
   services.llama-swap = {
     enable = true;
     # Stable's v165 panicked under concurrent agent load ("sync: WaitGroup is
@@ -635,11 +643,11 @@
     settings = {
       healthCheckTimeout = 300;
       macros = {
-        # -np 8 -kvu: concurrent requests share one KV pool; --cache-ram
-        # parks idle slots' prompt cache in host RAM when the pool overflows
-        # (~38 KB/token at q8_0, so 16 GB holds ~430K tokens of agent history).
+        # -kvu: concurrent requests share one KV pool (slot count per model);
+        # --cache-ram parks idle slots' prompt cache in host RAM when the pool
+        # overflows (~38 KB/token at q8_0, 16 GB holds ~430K tokens).
         "prism-server" =
-          "${lib.getExe' pkgs.llama-cpp-prism "llama-server"} --port \${PORT} --host 127.0.0.1 -ngl 99 -fa on --jinja -lm none -np 8 -kvu --cache-ram 16384";
+          "${lib.getExe' pkgs.llama-cpp-prism "llama-server"} --port \${PORT} --host 127.0.0.1 -ngl 99 -fa on --jinja -lm none -kvu --cache-ram 16384";
         "models" = "/storage-fast/llm/models";
       };
       # A single Bonsai entry on purpose: two context variants of one model
@@ -648,21 +656,57 @@
       # token histories and decode fell to ~2 t/s, 2026-09-28).
       models."bonsai-2-27b-256k" = {
         ttl = 1800;
+        # llama-swap answers 429 past 10 in-flight requests by default; let
+        # extra agent requests queue in llama-server instead.
+        concurrencyLimit = 64;
         aliases = [
           "bonsai"
           "bonsai-2-27b"
         ];
         cmd = builtins.concatStringsSep " " [
           "\${prism-server}"
-          "-m \${models}/Ternary-Bonsai-2-27B/Ternary-Bonsai-2-27B-PTQ1_0.gguf"
+          # Official PQ2_0 + one community-trained MTP layer
+          # (ProCreations/Ternary-Bonsai-2-27B-MTP; all 851 official tensors
+          # verified byte-identical, only blk.64 added). Drafts are verified
+          # by the main model, so output quality is unchanged.
+          "-m \${models}/Ternary-Bonsai-2-27B-MTP/Ternary-Bonsai-2-27B-PQ2_0-MTP-Q8_0.gguf"
+          "--spec-type draft-mtp --spec-draft-n-max 1"
           "--mmproj \${models}/Ternary-Bonsai-2-27B/Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf"
           # Qwen-VL grounding needs >=1024 image tokens (model KNOWN_ISSUES).
           "--image-min-tokens 1024"
-          "-c 262144 -ctk q8_0 -ctv q8_0"
+          # The unified pool is shared by all 8 slots and requests fail with
+          # "Context size has been exceeded" when agents' combined context
+          # overflows it (70 failures at 256K on 2026-09-28). q4_0 KV fits a
+          # 320K pool in 19.8 GB (2 GB headroom); 384K = 21.6 GB was too tight.
+          "-c 327680 -ctk q4_0 -ctv q4_0 -np 8"
           # Reasoning counts against the output limit; small caps return
           # empty answers. Clients can still send max_tokens/reasoning_effort.
           "-n 32768"
           "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.05"
+        ];
+      };
+      # Qwen3.8-27B does not fit beside Bonsai, so requesting it swaps Bonsai
+      # out (and back on the next Bonsai request), dropping prompt caches both
+      # ways. Short ttl hands the GPU back quickly. Measured on the 4090
+      # (UD-Q4_K_M, q8_0 KV, prism-87268f7): 50 t/s single stream without
+      # speculation; MTP draft (Q4_0, 3 tokens) gives 120-129 t/s on code and
+      # 93 t/s on prose (acceptance ~80% / ~50%). The Q8_0 MTP draft and
+      # DFlash OOM at 64K; DFlash matched MTP at 32K. 4 slots + vision, or
+      # 128K ctx, do not fit: 64K x 2 slots + mmproj = 21.3 GB of ~21.9 free.
+      models."qwen3.8-27b" = {
+        ttl = 600;
+        concurrencyLimit = 64;
+        aliases = [ "qwen" ];
+        cmd = builtins.concatStringsSep " " [
+          "\${prism-server}"
+          "-m \${models}/Qwen3.8-27B/Qwen3.8-27B-UD-Q4_K_M.gguf"
+          "--spec-type draft-mtp --spec-draft-n-max 3"
+          "-md \${models}/Qwen3.8-27B/MTP/mtp-Qwen3.8-27B-Q4_0.gguf"
+          "--mmproj \${models}/Qwen3.8-27B/mmproj-Qwen3.8-27B-Q8_0.gguf"
+          "--image-min-tokens 1024"
+          "-c 65536 -ctk q8_0 -ctv q8_0 -np 2"
+          "-n 32768"
+          "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
         ];
       };
     };
