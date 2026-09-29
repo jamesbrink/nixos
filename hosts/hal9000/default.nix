@@ -621,43 +621,47 @@
   #   8 slots on a unified KV pool: 98 t/s single stream, 330 t/s aggregate
   #   at 8 concurrent; every slot may use the full context.
   #   VRAM: 128K ctx = 13.0 GB, 256K ctx = 18.0 GB (f16 KV at 256K OOMs).
-  services.llama-swap =
-    let
-      bonsai = ctx: {
+  #   Serving 256K only; deep agent contexts (30-78K each x8) drop decode to
+  #   ~14 t/s per stream, and long prefills stall every stream while they run.
+  services.llama-swap = {
+    enable = true;
+    port = 8080;
+    openFirewall = true;
+    settings = {
+      healthCheckTimeout = 300;
+      macros = {
+        # -np 8 -kvu: concurrent requests share one KV pool; --cache-ram
+        # parks idle slots' prompt cache in host RAM when the pool overflows
+        # (~38 KB/token at q8_0, so 16 GB holds ~430K tokens of agent history).
+        "prism-server" =
+          "${lib.getExe' pkgs.llama-cpp-prism "llama-server"} --port \${PORT} --host 127.0.0.1 -ngl 99 -fa on --jinja -lm none -np 8 -kvu --cache-ram 16384";
+        "models" = "/storage-fast/llm/models";
+      };
+      # A single Bonsai entry on purpose: two context variants of one model
+      # made llama-swap swap between them when clients mixed names, and each
+      # swap drops every slot's prompt cache (agents then re-prefill 70K+
+      # token histories and decode fell to ~2 t/s, 2026-09-28).
+      models."bonsai-2-27b-256k" = {
         ttl = 1800;
+        aliases = [
+          "bonsai"
+          "bonsai-2-27b"
+        ];
         cmd = builtins.concatStringsSep " " [
           "\${prism-server}"
           "-m \${models}/Ternary-Bonsai-2-27B/Ternary-Bonsai-2-27B-PTQ1_0.gguf"
           "--mmproj \${models}/Ternary-Bonsai-2-27B/Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf"
-          "-c ${toString ctx} -ctk q8_0 -ctv q8_0"
+          # Qwen-VL grounding needs >=1024 image tokens (model KNOWN_ISSUES).
+          "--image-min-tokens 1024"
+          "-c 262144 -ctk q8_0 -ctv q8_0"
           # Reasoning counts against the output limit; small caps return
           # empty answers. Clients can still send max_tokens/reasoning_effort.
           "-n 32768"
           "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.05"
         ];
       };
-    in
-    {
-      enable = true;
-      port = 8080;
-      openFirewall = true;
-      settings = {
-        healthCheckTimeout = 300;
-        macros = {
-          # -np 8 -kvu: concurrent requests share one KV pool; --cache-ram
-          # keeps idle slots' prompt cache in host RAM between turns.
-          "prism-server" =
-            "${lib.getExe' pkgs.llama-cpp-prism "llama-server"} --port \${PORT} --host 127.0.0.1 -ngl 99 -fa on --jinja -lm none -np 8 -kvu --cache-ram 8192";
-          "models" = "/storage-fast/llm/models";
-        };
-        models = {
-          "bonsai-2-27b" = bonsai 131072 // {
-            aliases = [ "bonsai" ];
-          };
-          "bonsai-2-27b-256k" = bonsai 262144;
-        };
-      };
     };
+  };
   systemd.services.llama-swap = {
     after = [ "zfs-mount.service" ];
     serviceConfig = {
