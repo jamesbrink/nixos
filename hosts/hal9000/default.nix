@@ -650,19 +650,15 @@
           "${lib.getExe' pkgs.llama-cpp-prism "llama-server"} --port \${PORT} --host 127.0.0.1 -ngl 99 -fa on --jinja -lm none -kvu --cache-ram 16384";
         "models" = "/storage-fast/llm/models";
       };
-      # A single Bonsai entry on purpose: two context variants of one model
-      # made llama-swap swap between them when clients mixed names, and each
-      # swap drops every slot's prompt cache (agents then re-prefill 70K+
-      # token histories and decode fell to ~2 t/s, 2026-09-28).
-      models."bonsai-2-27b-256k" = {
+      # One entry per model and no aliases: two variants of one model made
+      # llama-swap swap between them when clients mixed names, and each swap
+      # drops every slot's prompt cache (agents then re-prefill 70K+ token
+      # histories and decode fell to ~2 t/s, 2026-09-28).
+      models."bonsai-2-27b" = {
         ttl = 1800;
         # llama-swap answers 429 past 10 in-flight requests by default; let
         # extra agent requests queue in llama-server instead.
         concurrencyLimit = 64;
-        aliases = [
-          "bonsai"
-          "bonsai-2-27b"
-        ];
         cmd = builtins.concatStringsSep " " [
           "\${prism-server}"
           # Official PQ2_0 + one community-trained MTP layer
@@ -696,7 +692,6 @@
       models."qwen3.8-27b" = {
         ttl = 600;
         concurrencyLimit = 64;
-        aliases = [ "qwen" ];
         cmd = builtins.concatStringsSep " " [
           "\${prism-server}"
           "-m \${models}/Qwen3.8-27B/Qwen3.8-27B-UD-Q4_K_M.gguf"
