@@ -11,6 +11,12 @@
     nixpkgs-ollama = {
       url = "github:nixos/nixpkgs/nixos-unstable";
     };
+    # PrismML llama.cpp fork with ternary (Bonsai 2) kernels; source only,
+    # packaged by overlays/llama-cpp-prism.nix.
+    llama-cpp-prism = {
+      url = "github:PrismML-Eng/llama.cpp/prism";
+      flake = false;
+    };
     # Pinned nixpkgs for chromaprint 1.5.1 / kvazaar 2.3.1 on aarch64-darwin.
     # Newer versions in 25.11 have test suites that get SIGKILL'd in macOS sandbox.
     # See overlays/chromaprint-darwin.nix.
@@ -993,6 +999,10 @@
                 comfyui-nix.overlays.default
                 invokeai.overlays.default
                 ai-toolkit.overlays.default
+                (import ./overlays/llama-cpp-prism.nix {
+                  inherit nixpkgs;
+                  src = inputs.llama-cpp-prism;
+                })
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "x86_64-linux";

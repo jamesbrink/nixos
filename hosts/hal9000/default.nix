@@ -605,6 +605,68 @@
     };
   };
 
+  # llama-swap: one OpenAI-compatible endpoint (:8080/v1) that starts the
+  # llama-server for whichever model a request names and unloads it after
+  # `ttl` idle seconds, so LLMs share the 4090 with ComfyUI/InvokeAI/mold.
+  # Only one model is resident at a time (no groups); requesting another swaps.
+  # Each model pins its own binary: Bonsai needs the PrismML fork
+  # (overlays/llama-cpp-prism.nix) until its ternary kernels land upstream;
+  # future stock-GGUF models can use pkgs.llama-cpp the same way.
+  # GGUFs live on storage-fast/llm (recordsize=1M). `-lm none` (no mmap)
+  # reads weights straight into VRAM instead of pinning a copy in ARC.
+  #
+  # Bonsai sizing, measured on the 4090 (2026-09-28, prism-87268f7):
+  #   PTQ1_0 beats PQ2_0 on Ada: tg 98.5 vs 91.9 t/s, pp ~3500 t/s for both.
+  #   q8_0 KV costs nothing vs f16 (80 t/s tg at 32K depth) and halves KV.
+  #   8 slots on a unified KV pool: 98 t/s single stream, 330 t/s aggregate
+  #   at 8 concurrent; every slot may use the full context.
+  #   VRAM: 128K ctx = 13.0 GB, 256K ctx = 18.0 GB (f16 KV at 256K OOMs).
+  services.llama-swap =
+    let
+      bonsai = ctx: {
+        ttl = 1800;
+        cmd = builtins.concatStringsSep " " [
+          "\${prism-server}"
+          "-m \${models}/Ternary-Bonsai-2-27B/Ternary-Bonsai-2-27B-PTQ1_0.gguf"
+          "--mmproj \${models}/Ternary-Bonsai-2-27B/Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf"
+          "-c ${toString ctx} -ctk q8_0 -ctv q8_0"
+          # Reasoning counts against the output limit; small caps return
+          # empty answers. Clients can still send max_tokens/reasoning_effort.
+          "-n 32768"
+          "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.05"
+        ];
+      };
+    in
+    {
+      enable = true;
+      port = 8080;
+      openFirewall = true;
+      settings = {
+        healthCheckTimeout = 300;
+        macros = {
+          # -np 8 -kvu: concurrent requests share one KV pool; --cache-ram
+          # keeps idle slots' prompt cache in host RAM between turns.
+          "prism-server" =
+            "${lib.getExe' pkgs.llama-cpp-prism "llama-server"} --port \${PORT} --host 127.0.0.1 -ngl 99 -fa on --jinja -lm none -np 8 -kvu --cache-ram 8192";
+          "models" = "/storage-fast/llm/models";
+        };
+        models = {
+          "bonsai-2-27b" = bonsai 131072 // {
+            aliases = [ "bonsai" ];
+          };
+          "bonsai-2-27b-256k" = bonsai 262144;
+        };
+      };
+    };
+  systemd.services.llama-swap = {
+    after = [ "zfs-mount.service" ];
+    serviceConfig = {
+      # CUDA's driver maps W+X pages and reads /proc/driver/nvidia.
+      MemoryDenyWriteExecute = lib.mkForce false;
+      ProcSubset = lib.mkForce "all";
+    };
+  };
+
   # ComfyUI service (manual start: systemctl start comfyui)
   services.comfyui = {
     enable = true;
@@ -1040,6 +1102,9 @@
       finegrained = false;
     };
     open = false;
+    # Keep the driver initialised between CUDA clients so llama-swap/ollama
+    # model loads skip GPU re-init after the last client exits.
+    nvidiaPersistenced = true;
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
     prime.sync.enable = false;

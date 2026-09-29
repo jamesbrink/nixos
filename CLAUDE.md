@@ -75,6 +75,10 @@ Then configure the service in the host's `default.nix`. See hal9000 (comfyui, in
 
 Plain upstream `services.postgresql` for misc dev work: port 5432, trust auth from localhost/LAN/Tailscale, data on the `storage-fast/postgresql` ZFS dataset at `/var/lib/postgresql`. Connect with `psql -h hal9000` (superuser `jamesbrink` or `postgres`).
 
+### LLM serving (hal9000)
+
+`services.llama-swap` on port 8080 is the OpenAI-compatible endpoint (`http://hal9000:8080/v1`): it launches a `llama-server` per requested model and unloads after `ttl`. GGUFs live on the `storage-fast/llm` dataset (`/storage-fast/llm/models`, recordsize=1M). Ternary Bonsai 2 models need the PrismML llama.cpp fork (`overlays/llama-cpp-prism.nix`, input `llama-cpp-prism`, built for sm_89 only); stock GGUFs can use `pkgs.llama-cpp`. Add a model by adding an entry under `services.llama-swap.settings.models`. Measured sizing notes live in the comment above the service in `hosts/hal9000/default.nix`.
+
 ## Coding Standards
 
 **Nix**: Two-space indentation, sorted attribute sets, formatted by `nixfmt`. Prefer upstream modules before writing custom logic.

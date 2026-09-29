@@ -726,6 +726,23 @@
         "type": "github"
       }
     },
+    "llama-cpp-prism": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790578947,
+        "narHash": "sha256-3qDZ003zQTG2BJWAKPixbhIgyZcRmzXJN60qAAPAoAI=",
+        "owner": "PrismML-Eng",
+        "repo": "llama.cpp",
+        "rev": "87268f775d74cf8f7ffc6c22a95684aa55995533",
+        "type": "github"
+      },
+      "original": {
+        "owner": "PrismML-Eng",
+        "ref": "prism",
+        "repo": "llama.cpp",
+        "type": "github"
+      }
+    },
     "mold": {
       "inputs": {
         "bun2nix": "bun2nix_2",
@@ -1078,6 +1095,7 @@
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
         "invokeai": "invokeai",
+        "llama-cpp-prism": "llama-cpp-prism",
         "mold": "mold",
         "nix-homebrew": "nix-homebrew",
         "nixos-unstable": "nixos-unstable",
