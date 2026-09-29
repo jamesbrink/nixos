@@ -625,6 +625,11 @@
   #   ~14 t/s per stream, and long prefills stall every stream while they run.
   services.llama-swap = {
     enable = true;
+    # Stable's v165 panicked under concurrent agent load ("sync: WaitGroup is
+    # reused before previous Wait has returned" in Process.start, 2026-09-28);
+    # upstream fixed several proxy.Process races/panics after it (#349, #363,
+    # #378, #677). Same --listen/--config CLI.
+    package = pkgs.unstablePkgs.llama-swap;
     port = 8080;
     openFirewall = true;
     settings = {
