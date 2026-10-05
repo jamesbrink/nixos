@@ -81,7 +81,7 @@ Plain upstream `services.postgresql` for misc dev work: port 5432, trust auth fr
 
 ### Orca Flash Next shared endpoint (hal9000)
 
-`services.strata-orca` adds `orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs` to the existing llama-swap `:8080/v1` endpoint. llama-swap owns the Strata child, loopback backend, readiness, exclusive model switching, idle unload and process-tree cleanup; there is no independent service. See [docs/strata-orca.md](docs/strata-orca.md) for pinned IQ3_XXS provenance, provisioning, RAM/GPU guards, tests and benchmark commands. Model downloads currently return HF 403 for this account; real deployment/inference/benchmark remain pending access and reviewed resource preparation. `strata-orca-provision` defaults to a plan and supports a root-readable HF token file without exposing credentials.
+`services.strata-orca` adds `orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs` to the existing llama-swap `:8080/v1` endpoint. llama-swap owns the Strata child, loopback backend, readiness, exclusive model switching, idle unload and process-tree cleanup; there is no independent service. See [docs/strata-orca.md](docs/strata-orca.md) for pinned IQ3_XXS provenance, provisioning, RAM/GPU guards, tests and benchmark commands. Publisher access is granted and authenticated provisioning is underway. HAL9000 explicitly selects bounded mmap with a 24 GiB expert budget, 8 GiB headroom and 36 GiB available-memory guard; full resident mode retains its 56 GiB guard. Real inference and phased tuning remain pending completed provisioning and reviewed activation. `strata-orca-provision` defaults to a plan and supports a root-readable HF token file without exposing credentials.
 
 ## Coding Standards
 

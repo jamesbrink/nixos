@@ -9,6 +9,8 @@ let
   package = pkgs.callPackage ../../../pkgs/strata.nix { };
   shard = "${cfg.dataDir}/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf";
   modelId = "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs";
+  bounded = cfg.memoryMode == "bounded-mmap";
+  minimumAvailableGiB = if bounded then cfg.residentBudgetGiB + cfg.residentHeadroomGiB + 4 else 56;
   serverConfig = pkgs.writeText "strata-orca.json" (
     builtins.toJSON {
       exe = "${package}/bin/strata";
@@ -35,7 +37,16 @@ let
         "32768"
         "--kv"
         "int8"
+      ]
+      ++ lib.optionals bounded [
+        "--mmap-experts"
+        "--resident-budget-gib"
+        (toString cfg.residentBudgetGiB)
       ];
+      memory_mode = cfg.memoryMode;
+      resident_budget_gib = if bounded then cfg.residentBudgetGiB else null;
+      resident_headroom_gib = if bounded then cfg.residentHeadroomGiB else null;
+      minimum_available_gib = minimumAvailableGiB;
       cwd = cfg.dataDir;
       tokenizer = "${cfg.dataDir}/pack/tokenizer";
       model_name = modelId;
@@ -55,8 +66,8 @@ let
     ];
     text = ''
       available=$(awk '/MemAvailable:/ {print $2}' /proc/meminfo)
-      if [ "$available" -lt 58720256 ]; then
-        echo "Orca requires at least 56 GiB MemAvailable before startup; found $available KiB." >&2
+      if [ "$available" -lt ${toString (minimumAvailableGiB * 1048576)} ]; then
+        echo "Orca ${cfg.memoryMode} requires at least ${toString minimumAvailableGiB} GiB MemAvailable before startup; found $available KiB." >&2
         exit 1
       fi
       gpu_pids=$(nvidia-smi --query-compute-apps=pid --format=csv,noheader)
@@ -68,6 +79,7 @@ let
       test -s '${cfg.dataDir}/mtp/rt/draft_vocab.bin'
       test -s '${shard}'
       # exec preserves llama-swap's process group; the Strata engine inherits it.
+      ${lib.optionalString bounded "export STRATA_RESIDENT_HEADROOM_GIB=${toString cfg.residentHeadroomGiB}"}
       export LD_LIBRARY_PATH="/run/opengl-driver/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
       exec ${package}/bin/strata-server --engine strata --config ${serverConfig} --host 127.0.0.1 --port ${toString cfg.port}
     '';
@@ -76,6 +88,24 @@ in
 {
   options.services.strata-orca = {
     enable = lib.mkEnableOption "on-demand Orca backend managed by llama-swap";
+    memoryMode = lib.mkOption {
+      type = lib.types.enum [
+        "resident"
+        "bounded-mmap"
+      ];
+      default = "resident";
+      description = "Full resident arena or explicitly budgeted source-supported mmap experts; bounded mode requires real inference validation";
+    };
+    residentBudgetGiB = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 24;
+      description = "Expert resident budget in bounded-mmap mode; uncached experts remain disk-backed";
+    };
+    residentHeadroomGiB = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 8;
+      description = "RAM reserved from expert allocation in bounded-mmap mode; preflight additionally reserves 4 GiB for runtime buffers";
+    };
     dataDir = lib.mkOption {
       type = lib.types.str;
       default = "/storage-fast/llm/strata-orca";

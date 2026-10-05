@@ -8,6 +8,7 @@ Uses the shared endpoint for requests; loopback backend status supplies engine t
 import argparse
 import datetime
 import json
+import re
 import statistics
 import subprocess
 import threading
@@ -63,7 +64,95 @@ def validate_trial(record, before, after, began_wall):
     record["valid_measurement"] = True
 
 
+def allocation_evidence(log, mode="bounded-mmap"):
+    if mode == "resident":
+        arena = re.findall(r"expert arena: ([^\n]+)", log)
+        loaded = re.findall(
+            r"strata generate: loaded ([0-9.]+) GiB at ([0-9.]+) GiB/s", log
+        )
+        if not arena or not loaded:
+            raise RuntimeError("Resident startup log lacks arena/load evidence")
+        return {
+            "actual_expert_resident_gib": float(loaded[-1][0]),
+            "arena_load_gib_s": float(loaded[-1][1]),
+            "arena_description": arena[-1],
+            "fallback_warnings": [],
+        }
+    if mode != "bounded-mmap":
+        raise RuntimeError("Unknown allocation mode")
+    resident = re.findall(r"resident RAM mode: ([0-9.]+) GiB of experts in RAM", log)
+    fallback = [
+        line
+        for line in log.splitlines()
+        if "WARNING:" in line
+        and (
+            "resident RAM mode does not fit" in line
+            or "RAM budget (--resident-budget-gib) cannot be kept" in line
+        )
+    ]
+    if not resident and not fallback:
+        raise RuntimeError(
+            "Startup log lacks actual resident allocation or explicit mmap fallback"
+        )
+    return {
+        "actual_expert_resident_gib": float(resident[-1]) if resident else 0.0,
+        "fallback_warnings": fallback,
+        "configured_budget_is_upper_bound": True,
+    }
+
+
+def runtime_configuration(path):
+    config = json.loads(Path(path).read_text())
+    native = config["args"]
+    bounded = "--mmap-experts" in native
+    mode = "bounded-mmap" if bounded else "resident"
+    budget = (
+        float(native[native.index("--resident-budget-gib") + 1])
+        if "--resident-budget-gib" in native
+        else None
+    )
+    if config.get("memory_mode") != mode or (
+        bounded and config.get("resident_budget_gib") != budget
+    ):
+        raise RuntimeError("Deployed memory metadata does not match native arguments")
+    return {
+        "mode": mode,
+        "resident_budget_gib": budget,
+        "resident_headroom_gib": config.get("resident_headroom_gib"),
+        "minimum_available_gib": config.get("minimum_available_gib"),
+        "native_args": native,
+        "context": int(native[native.index("--max-context") + 1])
+        if "--max-context" in native
+        else 4096,
+        "kv": native[native.index("--kv") + 1] if "--kv" in native else "fp16",
+        "prefill": native[native.index("--prefill") + 1]
+        if "--prefill" in native
+        else None,
+        "spec_window": int(native[native.index("--spec") + 1])
+        if "--spec" in native
+        else 0,
+        "expert_cache": native[native.index("--expert-cache") + 1]
+        if "--expert-cache" in native
+        else None,
+        "suffix_draft": int(native[native.index("--suffix-draft") + 1])
+        if "--suffix-draft" in native
+        else 3,
+        "mtp_max_t": int(native[native.index("--mtp-max-t") + 1])
+        if "--mtp-max-t" in native
+        else 0,
+        "mtp_window": int(native[native.index("--mtp-window") + 1])
+        if "--mtp-window" in native
+        else 32768,
+        "spec_min_p": float(native[native.index("--spec-min-p") + 1])
+        if "--spec-min-p" in native
+        else 0.0,
+        "log": config["log"],
+    }
+
+
 def run(args):
+    runtime_config = runtime_configuration(args.config)
+    log_path = Path(runtime_config["log"])
     report = {
         "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "model": MODEL,
@@ -72,12 +161,13 @@ def run(args):
         "runtime": "Strata 0.1.39 6f32ec070f23ced9f50e704d854d775da52591ab",
         "model_revision": "e43d00f4e2b8b40b89f75e9adeb1045ac34c8acc",
         "quant": "IQ3_XXS",
-        "context": 32768,
-        "kv": "int8",
-        "prefill": 512,
-        "spec": 4,
-        "resident_mode": "upstream-validated resident arena",
+        "context": runtime_config["context"],
+        "kv": runtime_config["kv"],
+        "prefill": runtime_config["prefill"],
+        "spec": runtime_config["spec_window"],
+        "memory_configuration": runtime_config,
         "system": str(Path("/run/current-system").resolve()),
+        "cold_policy": args.cold_policy,
         "trials": [],
         "samples": [],
         "notes": [
@@ -85,6 +175,7 @@ def run(args):
             "Cold engine starts do not imply a cold OS/ZFS disk cache.",
             "First token may be reasoning; answer latency is measured separately.",
             "Engine decode rates include generated reasoning tokens.",
+            "Warm engine does not imply warm prefix; cache_n records actual prefix reuse.",
         ],
     }
     stop = threading.Event()
@@ -148,32 +239,49 @@ def run(args):
         except Exception as exc:
             report["telemetry_error"] = type(exc).__name__ + ": " + str(exc)
 
+    expected = {}
     prompts = {
         "code": "Write a correct Python function that merges two sorted integer lists in linear time. Include two short tests.",
         "prose": "Explain how a seed grows into a plant to a curious ten-year-old in three clear paragraphs.",
-        "context_8k_chars": (
-            "Field note: rain supplies water, leaves collect sunlight, and roots take minerals from soil.\n"
-            * 90
-        )
-        + "\nSummarize the field notes in three sentences.",
-        "context_64k_chars": (
-            "Field note: rain supplies water, leaves collect sunlight, and roots take minerals from soil.\n"
-            * 700
-        )
-        + "\nSummarize the field notes in three sentences.",
     }
+    for label, count in [
+        ("context_varied_short", 90),
+        ("context_varied_long", args.long_records),
+    ]:
+        facts = {
+            f"entry_{i:05d}": f"code_{(i * 7919 + 104729) % 999983:06d}_{i:04x}"
+            for i in range(count)
+        }
+        lines = [
+            f"Record {key}: unique_code={value}; owner=team_{(i * 17) % 101}; cycle={2000 + i}; priority={(i * 13) % 97}."
+            for i, (key, value) in enumerate(facts.items())
+        ]
+        wanted = [list(facts)[i] for i in (0, count // 4, count // 2, count - 1)]
+        expected[label] = {key: facts[key] for key in wanted}
+        prompts[label] = (
+            "\n".join(lines)
+            + "\nReturn ONLY a JSON object mapping each requested record ID to its exact unique_code. Requested IDs: "
+            + ", ".join(wanted)
+        )
+    if args.workloads:
+        chosen = args.workloads.split(",")
+        if any(label not in prompts for label in chosen):
+            raise ValueError("Unknown workload selection")
+        prompts = {label: prompts[label] for label in chosen}
     # Persist even a failed trial: never replace a failure with invented measurements.
     thread = threading.Thread(target=sample, daemon=True)
     thread.start()
     try:
-        for label, prompt in prompts.items():
-            with fetch(args.api + "/api/models/unload/" + MODEL, {}) as response:
-                response.read()
+        for workload_index, (label, prompt) in enumerate(prompts.items()):
+            cold_workload = args.cold_policy == "per-workload" or workload_index == 0
+            if cold_workload:
+                with fetch(args.api + "/api/models/unload/" + MODEL, {}) as response:
+                    response.read()
             for trial in range(args.trials):
                 record = {
                     "workload": label,
                     "trial": trial + 1,
-                    "cold_engine": trial == 0,
+                    "cold_engine": trial == 0 and cold_workload,
                     "prompt_chars": len(prompt),
                     "prompt": prompt,
                     "first_token_s": None,
@@ -182,8 +290,9 @@ def run(args):
                     "reasoning_text": "",
                 }
                 report["trials"].append(record)
+                log_offset = log_path.stat().st_size if log_path.exists() else 0
                 before = None
-                if trial != 0:
+                if not record["cold_engine"]:
                     with fetch(args.backend + "/v1/status") as response:
                         before = json.load(response)
                 began_wall = time.time()
@@ -230,6 +339,20 @@ def run(args):
                     after = json.load(response)
                 record["status_before"] = before
                 record["status_after"] = after
+                if record["cold_engine"]:
+                    with log_path.open("rb") as log:
+                        if log_path.stat().st_size < log_offset:
+                            log_offset = 0
+                        log.seek(log_offset)
+                        raw_log = log.read(1048577)
+                    if len(raw_log) > 1048576:
+                        raise RuntimeError(
+                            "Startup allocation log exceeded evidence limit"
+                        )
+                    record["runtime_allocation_log"] = raw_log.decode(errors="replace")
+                    record["runtime_allocation"] = allocation_evidence(
+                        record["runtime_allocation_log"], runtime_config["mode"]
+                    )
                 validate_trial(record, before, after, began_wall)
                 usage = (record.get("response") or {}).get("usage") or {}
                 output = usage.get("output_tokens")
@@ -243,6 +366,20 @@ def run(args):
                     if output is not None and reasoning is not None
                     else None
                 )
+                if label in expected:
+                    record["expected_retrieval"] = expected[label]
+                    answer = record["output_text"].strip()
+                    answer = (
+                        answer.removeprefix("```json")
+                        .removeprefix("```")
+                        .removesuffix("```")
+                        .strip()
+                    )
+                    try:
+                        retrieved = json.loads(answer)
+                    except ValueError:
+                        retrieved = None
+                    record["retrieval_correct"] = retrieved == expected[label]
                 record["request_tokens_per_s"] = (
                     output / record["wall_s"] if output is not None else None
                 )
@@ -313,6 +450,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--api", default="http://127.0.0.1:8080")
     parser.add_argument("--backend", default="http://127.0.0.1:8081")
+    parser.add_argument(
+        "--cold-policy",
+        choices=["per-workload", "once"],
+        default="per-workload",
+        help="once avoids repeated cold starts during screening",
+    )
     parser.add_argument("--trials", type=int, default=3)
+    parser.add_argument(
+        "--long-records",
+        type=int,
+        default=280,
+        help="Identical varied retrieval depth across screening candidates; increase for long-context finalists",
+    )
+    parser.add_argument(
+        "--workloads",
+        help="Comma-separated code,prose,context_varied_short,context_varied_long",
+    )
+    parser.add_argument("--config", default="/etc/strata-orca.json")
     parser.add_argument("--output", required=True)
     run(parser.parse_args())

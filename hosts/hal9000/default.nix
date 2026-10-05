@@ -592,7 +592,13 @@
   # };
 
   # Orca runs as an on-demand child of the existing llama-swap endpoint.
-  services.strata-orca.enable = true;
+  services.strata-orca = {
+    enable = true;
+    # 64 GiB host: keep expert allocation bounded; require 36 GiB available.
+    memoryMode = "bounded-mmap";
+    residentBudgetGiB = 24;
+    residentHeadroomGiB = 8;
+  };
 
   services.ollama = {
     enable = true;

@@ -48,19 +48,27 @@ Read-only inspection on 2026-10-05 found:
 
 The upstream-validated resident IQ3_XXS expert arena alone needs approximately
 49.8 GiB RAM. The current **available** memory is insufficient for that mode.
-The launcher therefore refuses startup below **56 GiB MemAvailable** or while
-another GPU compute process is resident. It never stops independent services
-automatically, and does not reject an idle Ollama or its own llama-swap parent.
-A planned maintenance window or additional RAM is required before this default
-can start. Total installed RAM is not the same as available RAM.
+The module preserves a full `resident` option with a **56 GiB MemAvailable**
+guard. HAL9000 explicitly selects source-supported **`bounded-mmap`**: native
+`--mmap-experts --resident-budget-gib 24`, with
+`STRATA_RESIDENT_HEADROOM_GIB=8`. Its **36 GiB MemAvailable** startup guard covers
+the 24 GiB expert budget, 8 GiB allocation headroom and 4 GiB for other runtime
+buffers. Both modes refuse startup while another GPU compute process is resident;
+the launcher never stops independent services automatically.
 
-Strata also has `--mmap-experts` with `--resident-budget-gib N` and automatic
-`--resident-experts` modes. These can trade disk I/O for less resident RAM, but
-this integration retains the Orca-specific validated resident configuration.
-Testing a bounded disk-mapped variant on HAL9000 would be a separate inference
-experiment; it does not establish the screenshot's advertised throughput.
-A smaller Orca 27B would be a different model, not equivalent to Flash Next.
-No substitution has been made merely to claim that this large model fits.
+The pinned native IQ loader retains the same quantized expert bytes and supports
+budgeted residency for this pack: hot experts are held in RAM, uncached experts
+are read from the immutable GGUF shards through the OS cache. This is an explicit,
+independently source-reviewed configuration for the 64 GiB host, **not an
+upstream Orca benchmark result**. Real inference and measured performance must
+validate it. The configured budget is an upper bound: allocation can be smaller,
+or fail over to mmap-only operation. Benchmark artifacts require and preserve
+the actual startup allocation/fallback marker; they cannot present configured
+budget as measured resident memory.
+
+The full resident mode remains available via
+`services.strata-orca.memoryMode = "resident"`. Budget and headroom are explicit
+positive-GiB options, and the bounded preflight follows their sum plus 4 GiB.
 
 ## Shared endpoint and lifecycle
 
@@ -84,7 +92,7 @@ It waits for the previous process to stop before starting the next. The launcher
 checks actual GPU compute PIDs after that stop, and never refuses simply because
 its parent llama-swap service is active. It does not stop Mold, Ollama, or desktop
 services automatically. Independent GPU workloads must release their resources
-before loading Orca. The 56 GiB available-RAM guard remains in force.
+before loading Orca. The selected 36 GiB available-RAM guard remains in force.
 
 The launcher ends with `exec`; Strata's native child inherits llama-swap's POSIX
 process group. v249 sends SIGTERM to that group and escalates to SIGKILL on
@@ -122,11 +130,13 @@ to a plan without downloads or mutations:
 strata-orca-provision --dry-run
 ```
 
-The immutable Orca shard URL currently requires access approval. On 2026-10-05,
+The immutable Orca shard URL requires publisher access approval. Earlier on 2026-10-05,
 unauthenticated requests returned HTTP 401; HAL9000's existing Hugging Face token
-returned **HTTP 403, account not in the authorized list**. The token can access
-the pinned original Qwen MTP head. Request access to the exact Orca model from
-its publisher before claiming a runnable deployment or benchmark.
+returned **HTTP 403, account not in the authorized list**. Access was subsequently
+granted by the user and authenticated pinned-shard requests succeeded; provisioning
+is now in progress. The token can access
+the pinned original Qwen MTP head. Access is now resolved; completed hash-verified provisioning and real inference
+are still prerequisites before claiming a runnable deployment or benchmark.
 
 Provisioning accepts `STRATA_HF_TOKEN_FILE`; curl reads a temporary mode-0600
 header file, and the MTP helper reads the token file without placing credentials
@@ -177,27 +187,30 @@ actual v249 binary. It verifies three-model listing, exact ID forwarding,
 eager readiness, SSE, Bonsai/Orca/Qwen exclusive switches, forced native-child
 cleanup, TTL unloading, reloading, and llama-swap shutdown. Authentication has
 three offline regression checks for missing tokens, host scoping, and redirects.
-Four benchmark evidence checks reject failed/truncated streams and stale or
+Eight benchmark evidence/plan checks reject failed/truncated streams and stale or
 concurrent timing evidence. Output-limit incomplete responses are labeled;
 telemetry failures mark a benchmark incomplete. Independent Codex peer review
 verified lifecycle, recipe, authentication and benchmark evidence against pinned
-upstream sources, independently reran all seven offline checks, and found no
+upstream sources, independently reran the authentication and benchmark checks, and found no
 remaining material code issues after the benchmark corrections.
 
-A runnable real deployment and benchmark remain blocked by the publisher's
-Orca access restriction. The user authorized deployment after independent Codex
+A runnable real deployment and benchmark require completed authenticated
+provisioning, reviewed activation and a successful live memory preflight. The user authorized deployment after independent Codex
 review, and temporary Mold/graphical-session stop during benchmarking. The
 original state must be recorded and restored; SSH/access and unrelated services
 must remain intact. Read-only inspection found approximately **16 GiB ZFS ARC**
 (`c_max = 17179869184`), so freeing Mold/desktop alone may not satisfy the RAM
 guard. Any temporary ARC cap must be reviewed, measured, and restored as well.
-Do not disable the guard or silently switch to an unvalidated mmap configuration.
+HAL9000 explicitly selects the reviewed bounded mmap mode above. A temporary ARC
+change is unnecessary if its 36 GiB preflight is already satisfied. Do not disable
+the guard.
 
 The benchmark runner is prepared, not a completed measurement:
 
 ```sh
 python3 scripts/test-strata-llama-swap.py /run/current-system/sw/bin/llama-swap
 python3 scripts/test-benchmark-strata-orca.py
+python3 scripts/test-strata-memory-modes.py
 python3 scripts/benchmark-strata-orca.py \
   --output docs/benchmarks/orca-20261005.json
 ```
@@ -205,16 +218,83 @@ python3 scripts/benchmark-strata-orca.py \
 Run the latter on HAL9000 only after verified model provisioning and reviewed
 activation. It sends benign code/prose and two longer prompts through the shared
 Responses API, three trials each, recording cold-engine vs warm-prefix trials,
-actual prompt/output/reasoning counts, time to first token and answer, request
+deployed memory mode/budget and measured allocation/fallback, actual prompt/output/reasoning counts, time to first token and answer, request
 wall time, Strata engine prompt/decode timing and MTP acceptance, native RSS,
 available RAM, and VRAM. First observed backend readiness approximates load
 latency separately from prompt processing. Cold engine does not mean cold disk
 cache. Exact context depth comes from usage, not the prompt's character label.
 Concurrency is deliberately excluded from throughput claims because Strata runs
 one sequence. Save model-switch/UAT logs and restored service state alongside
-the artifact. No real benchmark numbers have been obtained while access is blocked.
+the artifact. No real benchmark numbers have yet been obtained.
 
 Upstream reports a single short 77.7 token/s decode result on an RTX 5090 with
 128 GB RAM. That is not a HAL9000 measurement. The screenshot's legal-score and
 12 GB VRAM claims are anecdotal and do not establish accuracy or total memory
 requirements. No local inference benchmark is claimed.
+
+## Performance tuning, after provisioning and first successful inference
+
+The pinned native IQ **server requires MTP and `--spec >= 2`**; its guards reject
+MTP-off and spec 1. An off/on claim would be misleading for this runtime. `--spec T`
+is the verify-window size, permitting at most **T−1 draft tokens**. Screen windows
+2/3/4/6 with `--suffix-draft 0`, fixed `--spec-min-p 0.5` and matching
+`--mtp-max-t T`, then compare suffix 0 against suffix 3 separately. The default
+suffix 3 can extend the overall verify window by two (cap 8); keep this distinct
+from the MTP window and report engine draft acceptance.
+
+Generate one-factor candidate files without starting anything:
+
+```sh
+python3 scripts/plan-strata-orca-tuning.py --config /etc/strata-orca.json \
+  --phase mtp --output /storage-fast/llm/strata-orca/tuning/mtp
+```
+
+Carry the selected candidate into `--config` for subsequent phases. Screen MTP
+first, then prefill 512/1024/2048, capacities 16K/32K/64K, and suffix separately.
+Keep INT8 KV, budget 24 and auto GPU cache initially. Higher capacities allocate
+more KV/state at the expense of GPU expert cache; the MTP window stays at most
+32768 in these candidates. Use identical varied retrieval prompts across capacity
+comparisons; only later use `--long-records 700` for deeper 32K/64K finalists.
+Actual usage tokens, not character count, establish tested depth.
+
+Optional RAM 24/28/32 GiB candidates require startup guards 36/40/44 GiB, respectively.
+Skip infeasible budgets rather than lowering the guard. Optional GPU-cache caps
+are 75%/50% of **measured auto expert slots** (`--phase gpu-cache --auto-cache-slots N`),
+not GiB. Parser-supported KV variants are fp16/int8/q4_0/k8v4; only int8 has the Orca
+recipe's evidence. Reduced-KV candidates require answer/retrieval-quality review
+alongside speed and memory; fp16 may leave insufficient 4090 VRAM.
+
+For each candidate, use the existing llama-swap service and endpoint with an
+explicit **temporary runtime configuration**, preserving a copy of its baseline
+configuration and unit command. Place candidate files and the child launcher in
+the existing private model-data directory, accessible to the service's group.
+Clone the generated llama-swap YAML and change only this model's `cmd` to an
+absolute Python interpreter plus `run-strata-orca-candidate.py CANDIDATE.json`.
+Keep the same model ID, proxy 8081, group/exclusivity and readiness/unload timeouts.
+A temporary systemd runtime override can point llama-swap's existing command at
+that YAML. Record and restore the original command after screening. Inspect its
+actual unit flags before constructing the override; do not guess them.
+
+The candidate launcher enforces the candidate's dynamic RAM guard and empty GPU
+compute list, exports the reviewed 8 GiB headroom, and **execs** the same packaged
+server in llama-swap's process group. Use supported unload before switching;
+verify no child/GPU resources remain. This temporary change is within authorized
+testing, not a permanent winner configuration. Do not run a competing independent
+inference server or alter production configuration files in place.
+
+Screen one trial each of code/prose/varied long retrieval with one cold start per
+candidate (`--cold-policy once`), then repeat the best
+stable finalists three times with cold and warm trials:
+
+```sh
+python3 scripts/benchmark-strata-orca.py --config CANDIDATE.json --trials 1 --cold-policy once \
+  --workloads code,prose,context_varied_long --output candidate-screen.json
+```
+
+The benchmark reads actual candidate flags, headroom and mode; it requires a
+cold-start allocation/fallback log and records exact retrieval answers and
+correctness. Select a stable finalist using latency, prompt/decode throughput,
+correct retrieval, draft acceptance, RAM/VRAM and startup/switch cost. Record
+failures and skip reasons. Commit and independently review the winning permanent
+settings, restore baseline testing overrides, deploy that reviewed winner, then
+verify shared-endpoint lifecycle and existing-model operation again.
