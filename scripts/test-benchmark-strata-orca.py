@@ -40,6 +40,40 @@ class EvidenceTests(unittest.TestCase):
         benchmark.validate_trial(self.record, self.before, self.after, 100.5)
         self.assertTrue(self.record["valid_measurement"])
 
+    def test_reasoning_wrap_two_native_phases(self):
+        log = "strata serve: prompt 72 tokens = 0 reused + 72 read in 2805 ms (25.7 tok/s), 65 generated in 2632 ms (24.7 tok/s), drafts accepted 39 of 50, 1 checkpoints\nstrata serve: prompt 154 tokens = 136 reused + 18 read in 548 ms (32.9 tok/s), 191 generated in 18389 ms (10.4 tok/s), drafts accepted 134 of 156, 1 checkpoints"
+        phases = benchmark.native_phases(log)
+        record = {
+            "terminal_type": "response.completed",
+            "response": {
+                "status": "completed",
+                "usage": {"input_tokens": 72, "output_tokens": 273},
+            },
+            "native_phases": phases,
+        }
+        after = copy.deepcopy(self.after)
+        after["last_timings"].update(
+            cache_n=136, prompt_n=0, predicted_n=273, predicted_ms=18389.1
+        )
+        benchmark.validate_trial(record, self.before, after, 100.5)
+        accounting = record["native_accounting"]
+        self.assertEqual(accounting["native_generated_tokens_all_phases"], 256)
+        self.assertEqual(accounting["initial_cached_input_tokens"], 0)
+        self.assertEqual(accounting["api_minus_native_output_tokens"], 17)
+        self.assertAlmostEqual(
+            accounting["native_all_phases_tokens_s"], 256 / 21.021, places=6
+        )
+        cancelled = benchmark.native_phases(
+            log.replace("72 read in", "72 of 72 read in")
+        )
+        self.assertEqual(cancelled[0]["requested_fresh_prompt_tokens"], 72)
+        self.assertAlmostEqual(
+            accounting["last_phase_native_tokens_s"], 191 / 18.389, places=6
+        )
+        after["last_timings"]["cache_n"] = 135
+        with self.assertRaises(RuntimeError):
+            benchmark.validate_trial(record, self.before, after, 100.5)
+
     def test_explicit_output_limit(self):
         self.record["terminal_type"] = "response.incomplete"
         self.record["response"].update(

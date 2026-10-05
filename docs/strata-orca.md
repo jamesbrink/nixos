@@ -331,3 +331,40 @@ unknown engines, aggregate VRAM, the free-memory boundary and invalid measuremen
 ```sh
 python3 scripts/test-strata-gpu-guard.py
 ```
+
+## Native phase accounting and finalist quality gates
+
+The 64-token reasoning budget can cause two native calls: reasoning, then a
+server-injected wrap-up followed by the answer. API usage counts the injected
+text, while the pinned wrapper's `last_timings` combines total API `predicted_n`
+with the **last native phase's** cache and decode clock. Its cache can therefore
+exceed the original input count. Never divide total API output by that last clock,
+or interpret the continuation cache as initial-prefix reuse.
+
+The runner now parses each request's native log phases, validates original input
+against the first phase and final cache/clock against fresh wrapper status, and
+retains all counters. It reports all-phase native throughput, last-phase native
+throughput, API output/reasoning/answer counts and request-wall rates separately.
+Native counts can include cancellation/drain overrun; API-minus-native counts
+are not automatically all injected text. Cold log windows select the latest
+native-start marker; warm windows read only bytes appended for that request.
+
+Compare saved artifacts locally without touching inference:
+
+```sh
+python3 scripts/compare-strata-orca-benchmarks.py candidate-a.json candidate-b.json   --output comparison.json
+```
+
+The helper groups identical prompt sets/model/runtime and separates cold-engine,
+warm-engine/fresh-prefix, partial-prefix and fully-cached-prefix trials using
+**initial native phase** evidence. Automatic gates reject failed/incomplete
+measurements, truncated/missing answers, incorrect or untested retrieval,
+unexpected allocation fallback, missing allocation evidence and resource warnings.
+Code functionality and prose correctness still require explicit human review;
+passing retrieval does not prove general answer quality.
+
+Prefer repeatably lower answer/request latency without material regressions on
+other representative workloads; native throughput and draft acceptance explain
+those timings. Require at least three finalist trials, no OOM/stalls, measured
+RAM/VRAM headroom, and verified cold start/model switching/desktop behavior before
+selecting permanent settings. A single screening trial only identifies a shortlist.

@@ -7,6 +7,7 @@ Uses the shared endpoint for requests; loopback backend status supplies engine t
 
 import argparse
 import datetime
+import hashlib
 import json
 import re
 import statistics
@@ -26,6 +27,66 @@ def fetch(url, data=None):
         headers={"Content-Type": "application/json"},
     )
     return urllib.request.urlopen(req, timeout=900)
+
+
+def native_phases(log):
+    pattern = r"strata serve: prompt (\d+) tokens = (\d+) reused \+ (\d+)(?: of (\d+))? read in ([0-9.]+) ms \([0-9.]+ tok/s\), (\d+) generated in ([0-9.]+) ms \([0-9.]+ tok/s\), drafts accepted (\d+) of (\d+)"
+    return [
+        {
+            "prompt_tokens": int(p),
+            "cache_n": int(c),
+            "fresh_prompt_tokens": int(f),
+            "requested_fresh_prompt_tokens": int(requested or f),
+            "prompt_ms": float(pm),
+            "native_generated_tokens": int(g),
+            "decode_ms": float(dm),
+            "draft_accepted": int(a),
+            "draft_offered": int(d),
+        }
+        for p, c, f, requested, pm, g, dm, a, d in re.findall(pattern, log)
+    ]
+
+
+def validate_native_accounting(record, usage, timings):
+    phases = record.get("native_phases")
+    if not phases:
+        return timings.get("prompt_n", -1) + timings.get("cache_n", -1) == usage.get(
+            "input_tokens"
+        )
+    first, last = phases[0], phases[-1]
+    if (
+        first["prompt_tokens"] != usage.get("input_tokens")
+        or any(
+            p["prompt_tokens"] != p["cache_n"] + p["requested_fresh_prompt_tokens"]
+            for p in phases
+        )
+        or last["cache_n"] != timings.get("cache_n")
+        or abs(last["decode_ms"] - timings.get("predicted_ms", -999)) > 2
+    ):
+        return False
+    record["native_accounting"] = {
+        "phase_count": len(phases),
+        "native_generated_tokens_all_phases": sum(
+            p["native_generated_tokens"] for p in phases
+        ),
+        "native_decode_ms_all_phases": sum(p["decode_ms"] for p in phases),
+        "native_prompt_ms_all_phases": sum(p["prompt_ms"] for p in phases),
+        "fresh_prompt_tokens_all_phases": sum(p["fresh_prompt_tokens"] for p in phases),
+        "initial_cached_input_tokens": first["cache_n"],
+        "last_phase_native_generated_tokens": last["native_generated_tokens"],
+        "last_phase_native_tokens_s": last["native_generated_tokens"]
+        / (last["decode_ms"] / 1000)
+        if last["decode_ms"]
+        else None,
+        "native_all_phases_tokens_s": sum(p["native_generated_tokens"] for p in phases)
+        / (sum(p["decode_ms"] for p in phases) / 1000)
+        if sum(p["decode_ms"] for p in phases)
+        else None,
+        "api_minus_native_output_tokens": usage.get("output_tokens", 0)
+        - sum(p["native_generated_tokens"] for p in phases),
+        "note": "API usage includes injected reasoning-wrap tokens; native counts may include cancellation/drain overrun. Wrapper status exposes final native phase clock/cache with total API predicted_n; these counters must not be divided as though one phase.",
+    }
+    return True
 
 
 def validate_trial(record, before, after, began_wall):
@@ -56,8 +117,7 @@ def validate_trial(record, before, after, began_wall):
         or activity.get("last_request_at", 0) < int(began_wall)
         or timings.get("at", 0) < int(began_wall)
         or timings.get("predicted_n") != usage.get("output_tokens")
-        or timings.get("prompt_n", -1) + timings.get("cache_n", -1)
-        != usage.get("input_tokens")
+        or not validate_native_accounting(record, usage, timings)
     ):
         raise RuntimeError("Engine timings cannot be attributed to this request")
     record["engine_timings"] = timings
@@ -102,7 +162,8 @@ def allocation_evidence(log, mode="bounded-mmap"):
 
 
 def runtime_configuration(path):
-    config = json.loads(Path(path).read_text())
+    config_bytes = Path(path).read_bytes()
+    config = json.loads(config_bytes)
     native = config["args"]
     bounded = "--mmap-experts" in native
     mode = "bounded-mmap" if bounded else "resident"
@@ -116,6 +177,7 @@ def runtime_configuration(path):
     ):
         raise RuntimeError("Deployed memory metadata does not match native arguments")
     return {
+        "config_sha256": hashlib.sha256(config_bytes).hexdigest(),
         "backend_port": config["port"],
         "mode": mode,
         "resident_budget_gib": budget,
@@ -168,6 +230,10 @@ def run(args):
         args.backend = "http://127.0.0.1:" + str(runtime_config["backend_port"])
     log_path = Path(runtime_config["log"])
     report = {
+        "benchmark_script_sha256": hashlib.sha256(
+            Path(__file__).read_bytes()
+        ).hexdigest(),
+        "runtime_config_sha256": runtime_config["config_sha256"],
         "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "model": MODEL,
         "api": args.api,
@@ -182,13 +248,18 @@ def run(args):
         "memory_configuration": runtime_config,
         "system": str(Path("/run/current-system").resolve()),
         "cold_policy": args.cold_policy,
+        "generation_controls": {
+            "max_output_tokens": 384,
+            "reasoning_budget_tokens": 64,
+            "temperature": 0,
+        },
         "trials": [],
         "samples": [],
         "notes": [
             "One sequence, no concurrency throughput claim.",
             "Cold engine starts do not imply a cold OS/ZFS disk cache.",
             "First token may be reasoning; answer latency is measured separately.",
-            "Engine decode rates include generated reasoning tokens.",
+            "Native phase rates exclude injected reasoning wrap; last-phase rate may cover only post-wrap output. API output counts include injected tokens.",
             "Warm engine does not imply warm prefix; cache_n records actual prefix reuse.",
         ],
     }
@@ -353,19 +424,33 @@ def run(args):
                     after = json.load(response)
                 record["status_before"] = before
                 record["status_after"] = after
-                if record["cold_engine"]:
-                    with log_path.open("rb") as log:
-                        if log_path.stat().st_size < log_offset:
-                            log_offset = 0
+                with log_path.open("rb") as log:
+                    size = log_path.stat().st_size
+                    if record["cold_engine"]:
+                        log.seek(max(0, size - 1048576))
+                        raw_log = log.read()
+                        marker = raw_log.rfind(b"strata generate: native pack:")
+                        if marker < 0:
+                            raise RuntimeError(
+                                "Cold log lacks a current native-start marker"
+                            )
+                        raw_log = raw_log[marker:]
+                    else:
+                        if size < log_offset:
+                            raise RuntimeError("Warm native log unexpectedly truncated")
                         log.seek(log_offset)
                         raw_log = log.read(1048577)
-                    if len(raw_log) > 1048576:
-                        raise RuntimeError(
-                            "Startup allocation log exceeded evidence limit"
-                        )
-                    record["runtime_allocation_log"] = raw_log.decode(errors="replace")
+                if len(raw_log) > 1048576:
+                    raise RuntimeError("Request native log exceeded evidence limit")
+                request_log = raw_log.decode(errors="replace")
+                record["native_request_log"] = request_log
+                record["native_phases"] = native_phases(request_log)
+                if not record["native_phases"]:
+                    raise RuntimeError("Request log lacks native phase accounting")
+                if record["cold_engine"]:
+                    record["runtime_allocation_log"] = request_log
                     record["runtime_allocation"] = allocation_evidence(
-                        record["runtime_allocation_log"], runtime_config["mode"]
+                        request_log, runtime_config["mode"]
                     )
                 validate_trial(record, before, after, began_wall)
                 usage = (record.get("response") or {}).get("usage") or {}
@@ -394,6 +479,11 @@ def run(args):
                     except ValueError:
                         retrieved = None
                     record["retrieval_correct"] = retrieved == expected[label]
+                record["api_answer_tokens_per_response_wall_s"] = (
+                    record["answer_tokens"] / record["wall_s"]
+                    if record["answer_tokens"] is not None
+                    else None
+                )
                 record["request_tokens_per_s"] = (
                     output / record["wall_s"] if output is not None else None
                 )
@@ -425,23 +515,36 @@ def run(args):
         report["benchmark_complete"] = not report.get("error") and not report.get(
             "telemetry_error"
         )
-        report["decode_summary_by_workload_tokens_s"] = {}
-        for workload in prompts:
-            rates = [
-                (t.get("engine_timings") or {}).get("predicted_per_second")
-                for t in report["trials"]
-                if t["workload"] == workload and t.get("valid_measurement")
-            ]
-            rates = [rate for rate in rates if rate is not None]
-            report["decode_summary_by_workload_tokens_s"][workload] = (
-                {
-                    "median": statistics.median(rates),
-                    "min": min(rates),
-                    "max": max(rates),
-                }
-                if rates
-                else None
-            )
+        report["decode_summary_note"] = (
+            "Wrapper rates describe the last native phase; reasoning-budget wraps can make this only the post-wrap phase. See native_accounting for all-phase rates and request_tokens_per_s for API wall rate."
+        )
+        for summary_name, field in [
+            (
+                "native_all_phases_summary_by_workload_tokens_s",
+                "native_all_phases_tokens_s",
+            ),
+            (
+                "last_native_phase_summary_by_workload_tokens_s",
+                "last_phase_native_tokens_s",
+            ),
+        ]:
+            report[summary_name] = {}
+            for workload in prompts:
+                rates = [
+                    (t.get("native_accounting") or {}).get(field)
+                    for t in report["trials"]
+                    if t["workload"] == workload and t.get("valid_measurement")
+                ]
+                rates = [rate for rate in rates if rate is not None]
+                report[summary_name][workload] = (
+                    {
+                        "median": statistics.median(rates),
+                        "min": min(rates),
+                        "max": max(rates),
+                    }
+                    if rates
+                    else None
+                )
         if report["samples"]:
             report["memory_summary"] = {
                 "minimum_available_kib": min(
