@@ -603,6 +603,17 @@
     memoryMode = "bounded-mmap";
     residentBudgetGiB = 24;
     residentHeadroomGiB = 8;
+    # Matched 2026-10-05 local trials; retain native PCIe bandwidth probing.
+    contextTokens = 32768;
+    prefillTokens = 2048;
+    kvType = "fp16";
+    specWindow = 4;
+    mtpMaxT = 4;
+    suffixDraft = 0;
+    mtpWindowTokens = 32768;
+    poolWorkers = 23;
+    poolAffinity = "all";
+    pcieFraction = null;
   };
 
   services.ollama = {

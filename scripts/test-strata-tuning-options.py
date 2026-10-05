@@ -23,6 +23,7 @@ let
   check = name: value: options.${name}.type.check value;
 in {
   inherit defaults;
+  selectedHost = json base;
   baseline = json (host defaults);
   candidate = json (host valid);
   small = json (host small);
@@ -69,6 +70,18 @@ def flags(config):
 
 
 baseline, candidate, small = (result[key] for key in ("baseline", "candidate", "small"))
+selected = result["selectedHost"]
+h = flags(selected)
+assert h["--max-context"] == h["--mtp-window"] == "32768"
+assert h["--prefill"] == "2048" and h["--kv"] == "fp16"
+assert h["--spec"] == h["--mtp-max-t"] == "4" and h["--suffix-draft"] == "0"
+assert h["--pool-workers"] == "23" and h["--pool-affinity"] == "all"
+assert "--pcie-frac" not in h
+assert selected["memory_mode"] == "bounded-mmap"
+assert selected["resident_budget_gib"] == 24
+assert selected["resident_headroom_gib"] == 8
+assert selected["minimum_available_gib"] == 36
+assert h["--vram-reserve-mib"] == "2048"
 b = flags(baseline)
 assert b["--max-context"] == "32768" and b["--mtp-window"] == "32768"
 assert b["--prefill"] == "512" and b["--kv"] == "int8"
@@ -84,7 +97,7 @@ assert float(c["--pcie-frac"]) == 0.75
 s = flags(small)
 assert s["--max-context"] == s["--mtp-window"] == "16384"
 assert s["--kv"] == "q4_0" and float(s["--pcie-frac"]) == 0
-for config in (baseline, candidate, small):
+for config in (baseline, candidate, small, selected):
     for key in (
         "memory_mode",
         "resident_budget_gib",
