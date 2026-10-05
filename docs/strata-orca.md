@@ -53,8 +53,8 @@ guard. HAL9000 explicitly selects source-supported **`bounded-mmap`**: native
 `--mmap-experts --resident-budget-gib 24`, with
 `STRATA_RESIDENT_HEADROOM_GIB=8`. Its **36 GiB MemAvailable** startup guard covers
 the 24 GiB expert budget, 8 GiB allocation headroom and 4 GiB for other runtime
-buffers. Both modes refuse startup while another GPU compute process is resident;
-the launcher never stops independent services automatically.
+buffers. Both modes apply the reviewed desktop/GPU startup guard below; the launcher
+never stops independent services automatically.
 
 The pinned native IQ loader retains the same quantized expert bytes and supports
 budgeted residency for this pack: hot experts are held in RAM, uncached experts
@@ -268,15 +268,16 @@ For each candidate, use the existing llama-swap service and endpoint with an
 explicit **temporary runtime configuration**, preserving a copy of its baseline
 configuration and unit command. Place candidate files and the child launcher in
 the existing private model-data directory, accessible to the service's group.
-Clone the generated llama-swap YAML and change only this model's `cmd` to an
+Copy `strata-gpu-guard.py` beside the candidate child launcher. Clone the
+generated llama-swap YAML and change only this model's `cmd` to an
 absolute Python interpreter plus `run-strata-orca-candidate.py CANDIDATE.json`.
 Keep the same model ID, proxy 8081, group/exclusivity and readiness/unload timeouts.
 A temporary systemd runtime override can point llama-swap's existing command at
 that YAML. Record and restore the original command after screening. Inspect its
 actual unit flags before constructing the override; do not guess them.
 
-The candidate launcher enforces the candidate's dynamic RAM guard and empty GPU
-compute list, exports the reviewed 8 GiB headroom, and **execs** the same packaged
+The candidate launcher enforces the candidate's dynamic RAM guard and reviewed GPU
+startup policy, exports the reviewed 8 GiB headroom, and **execs** the same packaged
 server in llama-swap's process group. Use supported unload before switching;
 verify no child/GPU resources remain. This temporary change is within authorized
 testing, not a permanent winner configuration. Do not run a competing independent
@@ -298,3 +299,34 @@ correct retrieval, draft acceptance, RAM/VRAM and startup/switch cost. Record
 failures and skip reasons. Commit and independently review the winning permanent
 settings, restore baseline testing overrides, deploy that reviewed winner, then
 verify shared-endpoint lifecycle and existing-model operation again.
+
+## Desktop coexistence and GPU startup policy
+
+The module's desktop compute allowlist defaults to **empty**, so unreviewed hosts
+retain zero-compute-client startup. HAL9000 explicitly allows only executable
+basename `walker` (observed 268 MiB), with an **aggregate 512 MiB limit** across all
+allowed compute PIDs and an actual **20,480 MiB free-VRAM floor** on GPU0. Unknown
+compute names, other LLM servers, and Mold/Python compute processes are refused
+regardless of current utilization. Missing/N/A PID or memory measurements fail
+closed. Graphics allocations are covered by the measured free-VRAM floor.
+
+Native `--vram-reserve-mib 2048` holds two GiB out of auto expert-cache sizing after
+model/session/MTP allocations and prevents the pinned engine from automatically
+reducing the reserve toward 300 MiB. This is a reviewed starting policy, not proof
+of desktop responsiveness; restored-graphics trials must measure remaining VRAM
+and representative desktop activity. The candidate launcher uses the same shared
+guard and cannot lower the reserve/free floor or expand the reviewed allowlist.
+Benchmarks record the explicit reserve and startup policy alongside resource use.
+
+The startup check cannot predict future allocations. **Concurrent Mold generation
+and Orca inference are unsupported** without GPU dispatch coordination. Mold must
+release its GPU context before Orca starts if it has allocated compute memory;
+restarting Mold may release it, but this must be verified live. Idle 0% GPU usage
+is insufficient evidence. This change adds no Mold queue hooks or automatic stops.
+
+Five focused guard tests cover allowed small desktop clients, strict defaults,
+unknown engines, aggregate VRAM, the free-memory boundary and invalid measurements:
+
+```sh
+python3 scripts/test-strata-gpu-guard.py
+```

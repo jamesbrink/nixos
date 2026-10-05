@@ -11,17 +11,22 @@ let
     modules = [ ({ lib, ... }: { services.strata-orca.memoryMode = lib.mkForce "resident"; }) ];
   };
   json = host: builtins.fromJSON (builtins.unsafeDiscardStringContext host.config.environment.etc."strata-orca.json".source.text);
-in { bounded = json base; resident = json resident; }
+in { bounded = json base; resident = json resident; defaultAllowlist = base.options.services.strata-orca.allowedDesktopComputeProcesses.default; }
 """
 result = json.loads(
     subprocess.check_output(
         ["nix", "eval", "--impure", "--json", "--expr", expression], text=True
     )
 )
+assert result.pop("defaultAllowlist") == []
 for mode, config in result.items():
     args = config["args"]
     assert config["model_name"] == "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs"
     assert config["host"] == "127.0.0.1" and config["port"] == 8081
+    assert config["allowed_desktop_compute_processes"] == ["walker"]
+    assert config["maximum_desktop_compute_mib"] == 512
+    assert config["minimum_free_vram_mib"] == 20480
+    assert args[args.index("--vram-reserve-mib") + 1] == "2048"
     if mode == "bounded":
         assert config["memory_mode"] == "bounded-mmap"
         assert args[args.index("--resident-budget-gib") + 1] == "24"

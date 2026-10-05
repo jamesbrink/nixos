@@ -595,6 +595,10 @@
   services.strata-orca = {
     enable = true;
     # 64 GiB host: keep expert allocation bounded; require 36 GiB available.
+    allowedDesktopComputeProcesses = [ "walker" ];
+    maximumDesktopComputeMiB = 512;
+    minimumFreeVRAMMiB = 20480;
+    vramReserveMiB = 2048;
     memoryMode = "bounded-mmap";
     residentBudgetGiB = 24;
     residentHeadroomGiB = 8;

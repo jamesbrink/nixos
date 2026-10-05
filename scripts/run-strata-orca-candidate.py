@@ -8,7 +8,7 @@ The same endpoint/lifecycle manages it. Does not stop other GPU processes.
 import argparse
 import json
 import os
-import subprocess
+import importlib.util
 from pathlib import Path
 
 
@@ -52,18 +52,26 @@ available = next(
 )
 if available < minimum * 1048576:
     raise SystemExit(f"Candidate needs {minimum} GiB available; found {available} KiB")
-gpu = subprocess.check_output(
-    [
-        "/run/current-system/sw/bin/nvidia-smi",
-        "--query-compute-apps=pid",
-        "--format=csv,noheader",
-    ],
-    text=True,
-).strip()
-if gpu:
-    raise SystemExit(
-        "Refusing candidate while another GPU compute process is resident: " + gpu
-    )
+guard_spec = importlib.util.spec_from_file_location(
+    "gpu_guard", Path(__file__).with_name("strata-gpu-guard.py")
+)
+guard = importlib.util.module_from_spec(guard_spec)
+guard_spec.loader.exec_module(guard)
+require(
+    config.get("maximum_desktop_compute_mib", 513) <= 512,
+    "Candidate exceeds desktop compute cap",
+)
+require(
+    config.get("minimum_free_vram_mib", 0) >= 20480,
+    "Candidate lowers reviewed free-VRAM floor",
+)
+require(
+    set(config.get("allowed_desktop_compute_processes", [])) <= {"walker"},
+    "Candidate extends reviewed desktop allowlist",
+)
+reserve = int(native[native.index("--vram-reserve-mib") + 1])
+require(reserve >= 2048, "Candidate lowers explicit native VRAM reserve")
+guard.check(config, "/run/current-system/sw/bin/nvidia-smi")
 for path in (
     Path(config["cwd"]) / "pack/native_experts.txt",
     Path(config["cwd"]) / "mtp/rt/draft_vocab.bin",

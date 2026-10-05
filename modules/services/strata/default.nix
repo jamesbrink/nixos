@@ -35,6 +35,8 @@ let
         "${cfg.dataDir}/mtp/rt"
         "--max-context"
         "32768"
+        "--vram-reserve-mib"
+        (toString cfg.vramReserveMiB)
         "--kv"
         "int8"
       ]
@@ -43,6 +45,9 @@ let
         "--resident-budget-gib"
         (toString cfg.residentBudgetGiB)
       ];
+      allowed_desktop_compute_processes = cfg.allowedDesktopComputeProcesses;
+      maximum_desktop_compute_mib = cfg.maximumDesktopComputeMiB;
+      minimum_free_vram_mib = cfg.minimumFreeVRAMMiB;
       memory_mode = cfg.memoryMode;
       resident_budget_gib = if bounded then cfg.residentBudgetGiB else null;
       resident_headroom_gib = if bounded then cfg.residentHeadroomGiB else null;
@@ -70,11 +75,7 @@ let
         echo "Orca ${cfg.memoryMode} requires at least ${toString minimumAvailableGiB} GiB MemAvailable before startup; found $available KiB." >&2
         exit 1
       fi
-      gpu_pids=$(nvidia-smi --query-compute-apps=pid --format=csv,noheader)
-      if [ -n "$gpu_pids" ]; then
-        echo "Refusing startup while another GPU compute process is resident: $gpu_pids" >&2
-        exit 1
-      fi
+      ${pkgs.python3}/bin/python3 ${../../../scripts/strata-gpu-guard.py} --config ${serverConfig} --nvidia-smi ${config.hardware.nvidia.package}/bin/nvidia-smi
       test -s '${cfg.dataDir}/pack/native_experts.txt'
       test -s '${cfg.dataDir}/mtp/rt/draft_vocab.bin'
       test -s '${shard}'
@@ -88,6 +89,26 @@ in
 {
   options.services.strata-orca = {
     enable = lib.mkEnableOption "on-demand Orca backend managed by llama-swap";
+    allowedDesktopComputeProcesses = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Explicit executable basenames allowed as small desktop CUDA clients; all other compute processes are refused";
+    };
+    maximumDesktopComputeMiB = lib.mkOption {
+      type = lib.types.ints.unsigned;
+      default = 512;
+      description = "Aggregate VRAM ceiling for all allowlisted desktop compute processes";
+    };
+    minimumFreeVRAMMiB = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 20480;
+      description = "Minimum actual free VRAM on GPU0 before loading Orca";
+    };
+    vramReserveMiB = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 2048;
+      description = "Explicit native expert-cache reserve; prevents upstream automatic reserve reduction";
+    };
     memoryMode = lib.mkOption {
       type = lib.types.enum [
         "resident"

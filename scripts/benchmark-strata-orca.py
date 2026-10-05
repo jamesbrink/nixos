@@ -146,6 +146,17 @@ def runtime_configuration(path):
         "spec_min_p": float(native[native.index("--spec-min-p") + 1])
         if "--spec-min-p" in native
         else 0.0,
+        "vram_reserve_mib": int(native[native.index("--vram-reserve-mib") + 1])
+        if "--vram-reserve-mib" in native
+        else 700,
+        "gpu_startup_policy": {
+            key: config.get(key)
+            for key in (
+                "allowed_desktop_compute_processes",
+                "maximum_desktop_compute_mib",
+                "minimum_free_vram_mib",
+            )
+        },
         "log": config["log"],
     }
 
