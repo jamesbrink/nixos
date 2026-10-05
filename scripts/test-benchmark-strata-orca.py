@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Offline benchmark evidence checks, including stale/failed-stream regressions."""
 
+import argparse
 import copy
+from types import SimpleNamespace
 import importlib.util
 import json
 import tempfile
@@ -105,6 +107,58 @@ class EvidenceTests(unittest.TestCase):
             mutate(after)
             with self.assertRaises(RuntimeError):
                 benchmark.validate_trial(self.record, self.before, after, 100.5)
+
+
+class HotRequestTests(unittest.TestCase):
+    def test_hot_policy_never_unloads(self):
+        for policy in ("once", "per-workload"):
+            args = SimpleNamespace(keep_loaded=True, cold_policy=policy)
+            self.assertFalse(benchmark.cold_workload(args, 0))
+            self.assertFalse(benchmark.cold_workload(args, 1))
+        args = SimpleNamespace(keep_loaded=False, cold_policy="once")
+        self.assertTrue(benchmark.cold_workload(args, 0))
+        self.assertFalse(benchmark.cold_workload(args, 1))
+
+    def test_requires_loaded_idle_exact_model_and_counter(self):
+        status = {
+            "loaded": True,
+            "model": benchmark.MODEL,
+            "activity": {"requests": 0, "in_flight": 0},
+        }
+        benchmark.require_loaded(status)
+        status["context"] = {"native": 32768}
+        benchmark.require_loaded(status, 32768)
+        with self.assertRaises(RuntimeError):
+            benchmark.require_loaded(status, 65536)
+        for field, value in (("loaded", False), ("model", "another-model")):
+            wrong = copy.deepcopy(status)
+            wrong[field] = value
+            with self.assertRaises(RuntimeError):
+                benchmark.require_loaded(wrong)
+        for field, value in (
+            ("requests", None),
+            ("requests", True),
+            ("requests", -1),
+            ("in_flight", 1),
+        ):
+            wrong = copy.deepcopy(status)
+            wrong["activity"][field] = value
+            with self.assertRaises(RuntimeError):
+                benchmark.require_loaded(wrong)
+
+    def test_pcie_payload_preserves_reasoning_budget(self):
+        for fraction in (0, 0.35, 0.55, 0.75, 1):
+            tuning = {"pcie_frac": benchmark.pcie_fraction(str(fraction))}
+            payload = benchmark.request_payload("code", tuning)
+            self.assertEqual(payload["strata_tune"], tuning)
+            self.assertEqual(payload["reasoning_budget_tokens"], 64)
+            self.assertEqual(payload["model"], benchmark.MODEL)
+            self.assertEqual(payload["max_output_tokens"], 384)
+            self.assertIsNot(payload["strata_tune"], tuning)
+        self.assertNotIn("strata_tune", benchmark.request_payload("code", {}))
+        for value in ("-0.1", "1.1", "nan", "inf", "-inf"):
+            with self.assertRaises(argparse.ArgumentTypeError):
+                benchmark.pcie_fraction(value)
 
 
 class MemoryConfigurationTests(unittest.TestCase):

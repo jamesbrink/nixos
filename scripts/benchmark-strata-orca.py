@@ -224,11 +224,59 @@ def runtime_configuration(path):
     }
 
 
+def pcie_fraction(value):
+    value = float(value)
+    if not 0 <= value <= 1:
+        raise argparse.ArgumentTypeError(
+            "PCIe fraction must be finite and between 0 and 1"
+        )
+    return value
+
+
+def require_loaded(status, expected_context=None):
+    activity = status.get("activity") or {}
+    requests = activity.get("requests")
+    if (
+        status.get("loaded") is not True
+        or status.get("model") != MODEL
+        or activity.get("in_flight") != 0
+        or not isinstance(requests, int)
+        or isinstance(requests, bool)
+        or requests < 0
+        or (
+            expected_context is not None
+            and (status.get("context") or {}).get("native") != expected_context
+        )
+    ):
+        raise RuntimeError(
+            "Hot benchmark requires the exact already-loaded idle engine and request counter"
+        )
+
+
+def cold_workload(args, index):
+    return not args.keep_loaded and (args.cold_policy == "per-workload" or index == 0)
+
+
+def request_payload(prompt, tuning):
+    payload = {
+        "model": MODEL,
+        "input": prompt,
+        "stream": True,
+        "temperature": 0,
+        "max_output_tokens": 384,
+        "reasoning_budget_tokens": 64,
+    }
+    if tuning:
+        payload["strata_tune"] = dict(tuning)
+    return payload
+
+
 def run(args):
     runtime_config = runtime_configuration(args.config)
     if args.backend is None:
         args.backend = "http://127.0.0.1:" + str(runtime_config["backend_port"])
     log_path = Path(runtime_config["log"])
+    tuning = {} if args.pcie_fraction is None else {"pcie_frac": args.pcie_fraction}
     report = {
         "benchmark_script_sha256": hashlib.sha256(
             Path(__file__).read_bytes()
@@ -247,7 +295,8 @@ def run(args):
         "spec": runtime_config["spec_window"],
         "memory_configuration": runtime_config,
         "system": str(Path("/run/current-system").resolve()),
-        "cold_policy": args.cold_policy,
+        "cold_policy": "keep-loaded" if args.keep_loaded else args.cold_policy,
+        "request_tuning": tuning,
         "generation_controls": {
             "max_output_tokens": 384,
             "reasoning_budget_tokens": 64,
@@ -358,15 +407,16 @@ def run(args):
     thread.start()
     try:
         for workload_index, (label, prompt) in enumerate(prompts.items()):
-            cold_workload = args.cold_policy == "per-workload" or workload_index == 0
-            if cold_workload:
+            is_cold = cold_workload(args, workload_index)
+            if is_cold:
                 with fetch(args.api + "/api/models/unload/" + MODEL, {}) as response:
                     response.read()
             for trial in range(args.trials):
                 record = {
                     "workload": label,
                     "trial": trial + 1,
-                    "cold_engine": trial == 0 and cold_workload,
+                    "cold_engine": trial == 0 and is_cold,
+                    "request_tuning": dict(tuning),
                     "prompt_chars": len(prompt),
                     "prompt": prompt,
                     "first_token_s": None,
@@ -380,17 +430,11 @@ def run(args):
                 if not record["cold_engine"]:
                     with fetch(args.backend + "/v1/status") as response:
                         before = json.load(response)
+                    require_loaded(before, runtime_config["context"])
                 began_wall = time.time()
                 began = time.monotonic()
                 active_trial[:] = [record, began]
-                payload = {
-                    "model": MODEL,
-                    "input": prompt,
-                    "stream": True,
-                    "temperature": 0,
-                    "max_output_tokens": 384,
-                    "reasoning_budget_tokens": 64,
-                }
+                payload = request_payload(prompt, tuning)
                 with fetch(args.api + "/v1/responses", payload) as response:
                     for raw in response:
                         if not raw.startswith(b"data: "):
@@ -574,6 +618,16 @@ if __name__ == "__main__":
         choices=["per-workload", "once"],
         default="per-workload",
         help="once avoids repeated cold starts during screening",
+    )
+    parser.add_argument(
+        "--keep-loaded",
+        action="store_true",
+        help="Never unload; require the exact idle engine to be already loaded before every request",
+    )
+    parser.add_argument(
+        "--pcie-fraction",
+        type=pcie_fraction,
+        help="Request-only strata_tune PCIe fraction (0..1), applied to every native reasoning/answer phase",
     )
     parser.add_argument("--trials", type=int, default=3)
     parser.add_argument(

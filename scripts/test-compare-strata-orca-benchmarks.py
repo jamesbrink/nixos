@@ -84,6 +84,13 @@ class ComparisonTests(unittest.TestCase):
         self.assertFalse(result["automatic_quality_gates_pass"])
         self.assertTrue(result["resource_warning_lines"])
 
+    def test_tuning_is_visible_without_changing_prompt_group(self):
+        before = compare.summarize(self.report, "a")
+        self.report["request_tuning"] = {"pcie_frac": 0.75}
+        after = compare.summarize(self.report, "b")
+        self.assertEqual(before["comparison_group"], after["comparison_group"])
+        self.assertEqual(after["request_tuning"], {"pcie_frac": 0.75})
+
     def test_prompt_groups_must_match(self):
         first = compare.summarize(self.report, "a")["comparison_group"]
         self.report["trials"][0]["prompt"] = "different facts"

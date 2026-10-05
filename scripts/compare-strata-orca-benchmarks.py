@@ -178,6 +178,7 @@ def summarize(report, filename):
         "file": filename,
         "comparison_group": signature,
         "generation_controls": controls,
+        "request_tuning": report.get("request_tuning", {}),
         "automatic_quality_gates_pass": not failures,
         "gate_failures": sorted(set(failures)),
         "manual_code_prose_review_required": any(
