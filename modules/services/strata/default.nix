@@ -75,7 +75,7 @@ let
         echo "Orca ${cfg.memoryMode} requires at least ${toString minimumAvailableGiB} GiB MemAvailable before startup; found $available KiB." >&2
         exit 1
       fi
-      ${pkgs.python3}/bin/python3 ${../../../scripts/strata-gpu-guard.py} --config ${serverConfig} --nvidia-smi ${config.hardware.nvidia.package}/bin/nvidia-smi
+      ${pkgs.python3}/bin/python3 ${../../../scripts/strata-gpu-guard.py} --config ${serverConfig} --nvidia-smi ${lib.getBin config.hardware.nvidia.package}/bin/nvidia-smi
       test -s '${cfg.dataDir}/pack/native_experts.txt'
       test -s '${cfg.dataDir}/mtp/rt/draft_vocab.bin'
       test -s '${shard}'
@@ -147,7 +147,7 @@ in
     };
     port = lib.mkOption {
       type = lib.types.port;
-      default = 8081;
+      default = 18081;
       description = "Loopback API port; separate from llama-swap on 8080";
     };
   };

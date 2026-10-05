@@ -27,8 +27,8 @@ require(
     "Only bounded tuning candidates are allowed",
 )
 require(
-    config["host"] == "127.0.0.1" and config["port"] == 8081,
-    "Candidate must use loopback8081",
+    config["host"] == "127.0.0.1" and config["port"] == 18081,
+    "Candidate must use loopback18081",
 )
 native = config["args"]
 budget = float(native[native.index("--resident-budget-gib") + 1])
@@ -94,6 +94,6 @@ os.execv(
         "--host",
         "127.0.0.1",
         "--port",
-        "8081",
+        "18081",
     ],
 )

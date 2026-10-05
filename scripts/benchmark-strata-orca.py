@@ -116,6 +116,7 @@ def runtime_configuration(path):
     ):
         raise RuntimeError("Deployed memory metadata does not match native arguments")
     return {
+        "backend_port": config["port"],
         "mode": mode,
         "resident_budget_gib": budget,
         "resident_headroom_gib": config.get("resident_headroom_gib"),
@@ -163,6 +164,8 @@ def runtime_configuration(path):
 
 def run(args):
     runtime_config = runtime_configuration(args.config)
+    if args.backend is None:
+        args.backend = "http://127.0.0.1:" + str(runtime_config["backend_port"])
     log_path = Path(runtime_config["log"])
     report = {
         "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -460,7 +463,9 @@ def run(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--api", default="http://127.0.0.1:8080")
-    parser.add_argument("--backend", default="http://127.0.0.1:8081")
+    parser.add_argument(
+        "--backend", help="Defaults to the actual runtime-config loopback port"
+    )
     parser.add_argument(
         "--cold-policy",
         choices=["per-workload", "once"],

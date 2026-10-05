@@ -85,6 +85,7 @@ class MemoryConfigurationTests(unittest.TestCase):
                     "memory_mode": "bounded-mmap" if bounded else "resident",
                     "resident_budget_gib": 24 if bounded else None,
                     "log": "/tmp/strata.log",
+                    "port": 18081,
                 }
                 path.write_text(json.dumps(config))
                 self.assertEqual(

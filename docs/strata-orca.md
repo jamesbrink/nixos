@@ -81,7 +81,8 @@ with `services.strata-orca.allowedHosts`, without disabling the Host guard.
 
 The existing pinned llama-swap v249 (commit
 `f94c94ac61a142f15a4d156015bfb8c0511b3bbb`) starts the Orca launcher as a managed
-child, proxies it at `127.0.0.1:8081`, and polls `/health`. Strata is eager within
+child, proxies it at `127.0.0.1:18081`, and polls `/health`. Port 8081 is already
+owned by HAL9000's pgweb service and is preserved. Strata is eager within
 that child: its HTTP listener appears only after engine initialization. The
 configurable `services.strata-orca.readinessTimeout` defaults to 900 seconds,
 covering cold initialization. Do not enable Strata's separate lazy/idle-unload
@@ -271,7 +272,7 @@ the existing private model-data directory, accessible to the service's group.
 Copy `strata-gpu-guard.py` beside the candidate child launcher. Clone the
 generated llama-swap YAML and change only this model's `cmd` to an
 absolute Python interpreter plus `run-strata-orca-candidate.py CANDIDATE.json`.
-Keep the same model ID, proxy 8081, group/exclusivity and readiness/unload timeouts.
+Keep the same model ID, proxy 18081, group/exclusivity and readiness/unload timeouts.
 A temporary systemd runtime override can point llama-swap's existing command at
 that YAML. Record and restore the original command after screening. Inspect its
 actual unit flags before constructing the override; do not guess them.
