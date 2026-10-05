@@ -79,9 +79,9 @@ Plain upstream `services.postgresql` for misc dev work: port 5432, trust auth fr
 
 `services.llama-swap` on port 8080 is the OpenAI-compatible endpoint (`http://hal9000:8080/v1`): it launches a `llama-server` per requested model and unloads after `ttl`. GGUFs live on the `storage-fast/llm` dataset (`/storage-fast/llm/models`, recordsize=1M). Ternary Bonsai 2 models need the PrismML llama.cpp fork (`overlays/llama-cpp-prism.nix`, input `llama-cpp-prism`, built for sm_89 only); stock GGUFs can use `pkgs.llama-cpp`. Models (no aliases): `bonsai-2-27b` (PQ2_0 + MTP bundle, 320K q4_0 KV pool shared by 8 slots, 262K per conversation) and `qwen3.8-27b` (UD-Q4_K_M + MTP draft, 64K, 2 slots). Only one fits the 4090 at a time, so switching models reloads and drops prompt caches. Both use MTP speculative decoding (`--spec-type draft-mtp`). Add a model by adding an entry under `services.llama-swap.settings.models`. Measured sizing notes live in the comment above the service in `hosts/hal9000/default.nix`.
 
-### Orca Flash Next preparation (hal9000)
+### Orca Flash Next shared endpoint (hal9000)
 
-`services.strata-orca` installs a pinned Strata runtime and manual loopback unit on port 8081, with no auto-start or llama-swap routing. The selected Orca IQ3_XXS compatibility workflow and resource requirements are in [docs/strata-orca.md](docs/strata-orca.md). Current available RAM is insufficient for the validated resident mode; startup guards prevent unsafe coexistence. `strata-orca-provision` defaults to a dry-run plan. This preparation has not been activated.
+`services.strata-orca` adds `orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs` to the existing llama-swap `:8080/v1` endpoint. llama-swap owns the Strata child, loopback backend, readiness, exclusive model switching, idle unload and process-tree cleanup; there is no independent service. See [docs/strata-orca.md](docs/strata-orca.md) for pinned IQ3_XXS provenance, provisioning, RAM/GPU guards, tests and benchmark commands. Model downloads currently return HF 403 for this account; real deployment/inference/benchmark remain pending access and reviewed resource preparation. `strata-orca-provision` defaults to a plan and supports a root-readable HF token file without exposing credentials.
 
 ## Coding Standards
 

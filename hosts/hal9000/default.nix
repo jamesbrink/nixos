@@ -591,7 +591,7 @@
   #   source = "${pkgs.sunshine}/bin/sunshine";
   # };
 
-  # Prepared only: manual loopback backend, no wantedBy or llama-swap routing.
+  # Orca runs as an on-demand child of the existing llama-swap endpoint.
   services.strata-orca.enable = true;
 
   services.ollama = {

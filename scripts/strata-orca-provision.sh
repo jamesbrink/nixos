@@ -24,17 +24,25 @@ case "${1:---dry-run}" in
 esac
 
 : "${STRATA_SHARE:?Use the Nix-packaged strata-orca-provision command}"
+curl_auth=()
+auth_header=""
+if [ -n "${STRATA_HF_TOKEN_FILE:-}" ]; then
+  auth_header=$(mktemp)
+  trap 'rm -f "$auth_header"' EXIT
+  printf 'Authorization: Bearer %s\n' "$(cat "$STRATA_HF_TOKEN_FILE")" > "$auth_header"
+  curl_auth=(--header "@$auth_header")
+fi
 mkdir -p "$DATA_DIR/models" "$DATA_DIR/mtp"
 cd "$DATA_DIR"
 # Require the immutable draft revision to exist before mtp_fetch's fallback logic.
-curl --fail --silent --show-error --location \
+curl "${curl_auth[@]}" --fail --silent --show-error --location \
   "https://huggingface.co/Qwen/Qwen3.8-Flash-Next/resolve/$MTP_REVISION/model.safetensors.index.json" \
   --output mtp/pinned-index.json
 
 fetch_shard() {
   local name=$1 hash=$2
   if ! [ -f "models/$name" ]; then
-    curl --fail --show-error --location --retry 3 --continue-at - \
+    curl "${curl_auth[@]}" --fail --show-error --location --retry 3 --continue-at - \
       "$BASE/$name" --output "models/$name.partial"
     echo "$hash  models/$name.partial" | sha256sum --check --status
     mv "models/$name.partial" "models/$name"

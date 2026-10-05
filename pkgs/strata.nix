@@ -38,7 +38,10 @@ cudaPackages.backendStdenv.mkDerivation {
   version = "0.1.39-6f32ec0";
   src = source;
   # psutil can return None when no block devices are visible in a sandbox.
-  patches = [ ./strata/telemetry-no-disk-counters.patch ];
+  patches = [
+    ./strata/telemetry-no-disk-counters.patch
+    ./strata/huggingface-token-file.patch
+  ];
   nativeBuildInputs = [
     cmake
     ninja
@@ -71,6 +74,7 @@ cudaPackages.backendStdenv.mkDerivation {
     export PYTHONDONTWRITEBYTECODE=1
     ${python}/bin/python -m unittest discover -s tools -p test_iq_pack.py
     ${python}/bin/python -m unittest serve.test_server
+    ${python}/bin/python ${./strata/test-mtp-auth.py}
     cd "$NIX_BUILD_TOP/source/build"
     runHook postCheck
   '';
