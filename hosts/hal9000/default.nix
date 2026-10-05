@@ -8,6 +8,15 @@
   ...
 }@args:
 {
+  assertions = [
+    {
+      assertion =
+        config.age.secrets != { }
+        && lib.all (secret: builtins.pathExists secret.file) (builtins.attrValues config.age.secrets);
+      message = "HAL9000 encrypted activation inputs are missing; stage the pinned secrets submodule before building.";
+    }
+  ];
+
   disabledModules = [
     "services/misc/ollama.nix"
   ];
