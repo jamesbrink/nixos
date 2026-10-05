@@ -79,6 +79,10 @@ Plain upstream `services.postgresql` for misc dev work: port 5432, trust auth fr
 
 `services.llama-swap` on port 8080 is the OpenAI-compatible endpoint (`http://hal9000:8080/v1`): it launches a `llama-server` per requested model and unloads after `ttl`. GGUFs live on the `storage-fast/llm` dataset (`/storage-fast/llm/models`, recordsize=1M). Ternary Bonsai 2 models need the PrismML llama.cpp fork (`overlays/llama-cpp-prism.nix`, input `llama-cpp-prism`, built for sm_89 only); stock GGUFs can use `pkgs.llama-cpp`. Models (no aliases): `bonsai-2-27b` (PQ2_0 + MTP bundle, 320K q4_0 KV pool shared by 8 slots, 262K per conversation) and `qwen3.8-27b` (UD-Q4_K_M + MTP draft, 64K, 2 slots). Only one fits the 4090 at a time, so switching models reloads and drops prompt caches. Both use MTP speculative decoding (`--spec-type draft-mtp`). Add a model by adding an entry under `services.llama-swap.settings.models`. Measured sizing notes live in the comment above the service in `hosts/hal9000/default.nix`.
 
+### Orca Flash Next preparation (hal9000)
+
+`services.strata-orca` installs a pinned Strata runtime and manual loopback unit on port 8081, with no auto-start or llama-swap routing. The selected Orca IQ3_XXS compatibility workflow and resource requirements are in [docs/strata-orca.md](docs/strata-orca.md). Current available RAM is insufficient for the validated resident mode; startup guards prevent unsafe coexistence. `strata-orca-provision` defaults to a dry-run plan. This preparation has not been activated.
+
 ## Coding Standards
 
 **Nix**: Two-space indentation, sorted attribute sets, formatted by `nixfmt`. Prefer upstream modules before writing custom logic.

@@ -1,0 +1,12 @@
+diff --git a/serve/telemetry.py b/serve/telemetry.py
+--- a/serve/telemetry.py
++++ b/serve/telemetry.py
+@@ -302,6 +302,8 @@ class Telemetry:
+             c = self.ps.disk_io_counters()
+         except (OSError, RuntimeError):
+             return None, None
++        if c is None:  # no block devices visible (e.g. the Nix build sandbox)
++            return None, None
+         t = time.time()
+         prev, self._disk_prev = self._disk_prev, (t, c.read_bytes, c.write_bytes)
+         if prev is None or t <= prev[0]:

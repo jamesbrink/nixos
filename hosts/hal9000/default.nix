@@ -24,6 +24,7 @@
     ../../users/regular/jamesbrink.nix
     ../../profiles/desktop/hyprland.nix
     ../../profiles/keychron/default.nix
+    ../../modules/services/strata
     ../../modules/services/k3s.nix
     ../../modules/services/tftp-server.nix
     ../../modules/services/netboot-configs.nix
@@ -589,6 +590,9 @@
   #   capabilities = "cap_sys_admin+p";
   #   source = "${pkgs.sunshine}/bin/sunshine";
   # };
+
+  # Prepared only: manual loopback backend, no wantedBy or llama-swap routing.
+  services.strata-orca.enable = true;
 
   services.ollama = {
     enable = true;
