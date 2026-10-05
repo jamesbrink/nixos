@@ -26,19 +26,35 @@ let
         "--expert-cache"
         "auto"
         "--prefill"
-        "512"
+        (toString cfg.prefillTokens)
         "--spec"
-        "4"
+        (toString cfg.specWindow)
         "--spec-min-p"
         "0.5"
         "--mtp"
         "${cfg.dataDir}/mtp/rt"
         "--max-context"
-        "32768"
+        (toString cfg.contextTokens)
+        "--mtp-window"
+        (toString (lib.min cfg.contextTokens cfg.mtpWindowTokens))
+        "--mtp-max-t"
+        (toString cfg.mtpMaxT)
+        "--suffix-draft"
+        (toString cfg.suffixDraft)
+        "--pool-affinity"
+        cfg.poolAffinity
         "--vram-reserve-mib"
         (toString cfg.vramReserveMiB)
         "--kv"
-        "int8"
+        cfg.kvType
+      ]
+      ++ lib.optionals (cfg.poolWorkers != null) [
+        "--pool-workers"
+        (toString cfg.poolWorkers)
+      ]
+      ++ lib.optionals (cfg.pcieFraction != null) [
+        "--pcie-frac"
+        (toString cfg.pcieFraction)
       ]
       ++ lib.optionals bounded [
         "--mmap-experts"
@@ -89,6 +105,69 @@ in
 {
   options.services.strata-orca = {
     enable = lib.mkEnableOption "on-demand Orca backend managed by llama-swap";
+    contextTokens = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 32768;
+      description = "Native maximum context tokens; select only a resource-validated size";
+    };
+    prefillTokens = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 512;
+      description = "Native prompt prefill chunk size in tokens";
+    };
+    kvType = lib.mkOption {
+      type = lib.types.enum [
+        "fp16"
+        "int8"
+        "q4_0"
+        "k8v4"
+      ];
+      default = "int8";
+      description = "Source-supported KV storage format; quantized formats require quality validation";
+    };
+    specWindow = lib.mkOption {
+      type = lib.types.ints.between 2 8;
+      default = 4;
+      description = "Verification window T, allowing at most T-1 MTP draft tokens; this native pack requires MTP";
+    };
+    mtpMaxT = lib.mkOption {
+      type = lib.types.ints.between 0 8;
+      default = 0;
+      description = "MTP verification-window cap; zero uses specWindow, longer windows can use suffix drafts";
+    };
+    suffixDraft = lib.mkOption {
+      type = lib.types.ints.unsigned;
+      default = 3;
+      description = "Prompt suffix lookup threshold; zero disables suffix drafting";
+    };
+    mtpWindowTokens = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 32768;
+      description = "MTP context window, capped at contextTokens in generated arguments";
+    };
+    poolWorkers = lib.mkOption {
+      type = lib.types.nullOr lib.types.ints.positive;
+      default = null;
+      description = "Explicit CPU expert worker count; null preserves upstream automatic sizing";
+    };
+    poolAffinity = lib.mkOption {
+      type = lib.types.enum [
+        "auto"
+        "p-cores"
+        "all"
+      ];
+      default = "auto";
+      description = "Native CPU worker placement policy; Linux P/E detection requires cpu_capacity, absent on HAL";
+    };
+    pcieFraction = lib.mkOption {
+      type = lib.types.nullOr (
+        lib.types.addCheck (lib.types.either lib.types.int lib.types.float) (
+          value: value >= 0 && value <= 1
+        )
+      );
+      default = null;
+      description = "PCIe share of GPU-cache misses routed to GPU; null preserves native bandwidth probing";
+    };
     allowedDesktopComputeProcesses = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
