@@ -1,0 +1,18 @@
+diff --git a/.devops/nix/package.nix b/.devops/nix/package.nix
+index c74931718..c452816b7 100644
+--- a/.devops/nix/package.nix
++++ b/.devops/nix/package.nix
+@@ -82,12 +82,3 @@ let
+-  # apple_sdk is supposed to choose sane defaults, no need to handle isAarch64
+-  # separately
+-  darwinBuildInputs =
+-    with darwin.apple_sdk.frameworks;
+-    [
+-      Accelerate
+-      CoreVideo
+-      CoreGraphics
+-    ]
+-    ++ optionals useMetalKit [ MetalKit ];
++  darwinBuildInputs = [ ];
+ 
+   cudaBuildInputs = with cudaPackages; [

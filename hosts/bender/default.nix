@@ -13,6 +13,7 @@
     ./hardware.nix
     ../../profiles/darwin-slim # Minimal darwin profile
     ../../modules/darwin/maintenance-tools.nix
+    ../../modules/services/bonsai2-darwin.nix
     ../../modules/ssh-keys.nix
     ../../users/regular/jamesbrink-darwin-slim.nix
   ];
@@ -30,6 +31,13 @@
   # OpenClaw dependencies
   # Point mold CLI at hal9000's inference server
   environment.variables.MOLD_HOST = "http://hal9000.home.urandom.io:7680";
+
+  # Bonsai 2 runs behind llama-swap so its unified-memory allocation is released
+  # after idle periods. The base M4's 16 GB tier uses one 16K Metal slot.
+  services.bonsai2 = {
+    enable = true;
+    host = "0.0.0.0";
+  };
 
   # Core runtime (nodejs, pnpm, bun) comes from shared-packages
   # Channel integrations use API libraries (no native clients needed for Discord/Telegram/Slack/WhatsApp)

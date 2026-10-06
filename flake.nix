@@ -1119,6 +1119,10 @@
               nixpkgs.overlays = [
                 ghOverlay
                 (import ./overlays/gogcli.nix)
+                (import ./overlays/llama-cpp-prism.nix {
+                  inherit nixpkgs;
+                  src = inputs.llama-cpp-prism;
+                })
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
                     system = "aarch64-darwin";
