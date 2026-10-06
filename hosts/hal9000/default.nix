@@ -34,6 +34,7 @@
     ../../profiles/desktop/hyprland.nix
     ../../profiles/keychron/default.nix
     ../../modules/services/strata
+    ../../modules/services/orca-q4
     ../../modules/services/k3s.nix
     ../../modules/services/tftp-server.nix
     ../../modules/services/netboot-configs.nix
@@ -638,6 +639,11 @@
     poolAffinity = "all";
     pcieFraction = null;
   };
+
+  # Exact recommended Q4_K_M, alongside IQ3_XXS. Shares contextTokens above.
+  # Separate Strata pack/tokenizer; matching original MTP is shared read-only.
+  # Its mmap weights remain on the root SSD; switching unloads the prior model.
+  services.orca-q4.enable = true;
 
   services.ollama = {
     enable = true;

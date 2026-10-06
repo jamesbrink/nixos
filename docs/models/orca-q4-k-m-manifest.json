@@ -1,0 +1,35 @@
+{
+  "revision": "e43d00f4e2b8b40b89f75e9adeb1045ac34c8acc",
+  "files": [
+    {
+      "rfilename": "Qwen3.8-Flash-Next-Uncensored-Q4_K_M-00001-of-00003.gguf",
+      "blobId": "cbaf0859b718a4744afb7af0d3c594d820103fd0",
+      "size": 44598509600,
+      "lfs": {
+        "sha256": "fa6b8ea03042a47575c039b84af57e0169e0f1ceab539ab9edba08937bb237ef",
+        "size": 44598509600,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.8-Flash-Next-Uncensored-Q4_K_M-00002-of-00003.gguf",
+      "blobId": "1b7b175cf91b3ae6fc14bc511fc21a775469e54b",
+      "size": 44693535520,
+      "lfs": {
+        "sha256": "6fb88b39f4b6e15d8acac6172faf65fcc2503703375440eb71d557161ed20df8",
+        "size": 44693535520,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.8-Flash-Next-Uncensored-Q4_K_M-00003-of-00003.gguf",
+      "blobId": "b0bb10f5359998902193830667523c29023c36b4",
+      "size": 29858677824,
+      "lfs": {
+        "sha256": "f2fc849eb4c14ac58253cc326f057b2f606f394004c1172e6c61c56dd0b0a075",
+        "size": 29858677824,
+        "pointerSize": 136
+      }
+    }
+  ]
+}

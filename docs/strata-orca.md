@@ -5,6 +5,47 @@ Strata, alongside the existing Bonsai/Qwen llama-swap stack. It is an explicit
 local compatibility workflow, not a replacement with the aligned GSQ-RCO weights
 in Strata's installer menu. No upstream installer or host driver changes are used.
 
+## Additional Q4_K_M selection
+
+The recommended publisher Q4_K_M is a separate selection,
+`orcarouter-qwen3.8-flash-next-uncensored-q4_k_m`, alongside the unchanged
+IQ3_XXS model ID. It uses `/var/lib/strata-orca-q4_k_m` on the root MP600 SSD,
+its own compatibility pack/tokenizer/log, and private Strata port 18082.
+Both inherit the same 65536 target context, 32768 MTP window, FP16 KV,
+2048 prefill, 23 expert workers, spec4, 24GiB expert residency, RAM/GPU guards,
+exclusive llama-swap selection, and 600-second idle unload. The verified
+original-model MTP runtime is shared from `/var/lib/strata-orca/mtp/rt`.
+Only one variant can be resident; changing selection reloads it and drops
+its prompt cache. OMP uses `orca-q4` for Q4 and `orca` for existing IQ3,
+with 65536 context and 8192 maximum output for both.
+
+The three immutable shards at publisher revision
+`e43d00f4e2b8b40b89f75e9adeb1045ac34c8acc` total **119,150,722,944 bytes**
+(119.15GB, about 111GiB), around 40% more than the existing IQ3 weights.
+The model card's ~110GB estimate is not the exact pinned artifact size.
+See the [pinned shard sizes and SHA256 manifest](models/orca-q4-k-m-manifest.json).
+Q4*K_M is a mixed quantization: all 48 expert gate/up matrices are Q4_K,
+while down matrices are Q5_0 or Q8_0, and the PLE table is Q5_0. These actual
+GGUF formats are supported by the pinned Strata kernel dispatch and PLE
+reader. Do not infer compatibility from the generic quantization name alone:
+Q4_K or Q6_K \_down* kernels are absent in this engine, but these shards do not
+use them. Preparation keeps expert precision unchanged; `--compat-bf16`
+expands only the required small projections, as with IQ3. Higher precision
+and file size do not establish improved answer quality or speed without tests.
+
+`strata-orca-q4-provision` defaults to a plan. To reproduce provisioning:
+
+```sh
+sudo env STRATA_HF_TOKEN_FILE=/run/agenix/huggingface-token strata-orca-q4-provision --provision
+sudo chown -R strata-orca:strata-orca /var/lib/strata-orca-q4_k_m
+sudo chmod 0770 /var/lib/strata-orca-q4_k_m
+```
+
+This verifies each pinned SHA256 and makes the quantization's own native
+pack/tokenizer. It requires the existing IQ3 MTP runtime for serving, and does
+not activate NixOS. The declarations are in `modules/services/orca-q4` and
+HAL's enable flag; the primary `contextTokens` setting controls both variants.
+
 ## Root SSD relocation (deployed)
 
 The HAL9000 configuration selects `services.strata-orca.dataDir = "/var/lib/strata-orca"`.
