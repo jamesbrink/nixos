@@ -10,8 +10,10 @@ in Strata's installer menu. No upstream installer or host driver changes are use
 The HAL9000 configuration selects `services.strata-orca.dataDir = "/var/lib/strata-orca"`.
 This is on the root ext4 filesystem, `/dev/nvme0n1p5`, backed by the
 2TB Corsair Force MP600. The previous `/storage-fast/llm/strata-orca` directory
-is on the Crucial P3 4TB NVMe and ZFS; it is retained for rollback and its
-historical benchmark artifacts remain there. Only Orca was relocated. All 54 copied files (93,678,695,108 bytes) passed
+is on the Crucial P3 4TB NVMe and ZFS. After the user confirmed the SSD move,
+the redundant `models`, `pack`, and `mtp` directories were removed on
+2026-10-05 (about 88GiB of duplicate data). Historical benchmark artifacts
+and the old log remain there. Only Orca was relocated. All 54 copied files (93,678,695,108 bytes) passed
 SHA-256 comparison; both GGUF shards matched their pinned publisher hashes.
 The root SSD retained approximately 211GiB free after the copy.
 
@@ -38,8 +40,9 @@ Verify copied file hashes, then deploy. The module derives the native model,
 pack, MTP, tokenizer, working directory, log and service write permissions from
 this setting. No symlink back to storage-fast is needed. Future provisioning
 must use `STRATA_ORCA_DATA_DIR=/var/lib/strata-orca`; changing the configuration
-does not itself copy or download weights. To roll back, select the previous
-system generation or restore the old `dataDir` and redeploy.
+does not itself copy or download weights. Before rolling back to a generation
+that uses the old directory, restore the model/pack/MTP data to that path
+first; those redundant runtime assets have been removed.
 
 The root SSD is faster-rated, but actual inference performance on it must be
 measured. Earlier benchmark results describe the original ZFS location and

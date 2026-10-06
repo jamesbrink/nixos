@@ -607,7 +607,7 @@
     # Keep weights, native pack, tokenizer and MTP together on this SSD.
     # To relocate later: copy and verify the complete dataDir first, then
     # change this path and deploy. The module derives all runtime paths.
-    # Original storage-fast copy is retained for rollback; speedup not benchmarked.
+    # Old storage-fast weights were removed; historical reports remain there.
     dataDir = "/var/lib/strata-orca";
     # 64 GiB host: keep expert allocation bounded; require 36 GiB available.
     port = 18081;
