@@ -24,11 +24,11 @@ The three immutable shards at publisher revision
 (119.15GB, about 111GiB), around 40% more than the existing IQ3 weights.
 The model card's ~110GB estimate is not the exact pinned artifact size.
 See the [pinned shard sizes and SHA256 manifest](models/orca-q4-k-m-manifest.json).
-Q4*K_M is a mixed quantization: all 48 expert gate/up matrices are Q4_K,
+`Q4_K_M` is a mixed quantization: all 48 expert gate/up matrices are Q4_K,
 while down matrices are Q5_0 or Q8_0, and the PLE table is Q5_0. These actual
 GGUF formats are supported by the pinned Strata kernel dispatch and PLE
 reader. Do not infer compatibility from the generic quantization name alone:
-Q4_K or Q6_K \_down* kernels are absent in this engine, but these shards do not
+Q4_K or Q6_K down kernels are absent in this engine, but these shards do not
 use them. Preparation keeps expert precision unchanged; `--compat-bf16`
 expands only the required small projections, as with IQ3. Higher precision
 and file size do not establish improved answer quality or speed without tests.
@@ -45,6 +45,40 @@ This verifies each pinned SHA256 and makes the quantization's own native
 pack/tokenizer. It requires the existing IQ3 MTP runtime for serving, and does
 not activate NixOS. The declarations are in `modules/services/orca-q4` and
 HAL's enable flag; the primary `contextTokens` setting controls both variants.
+
+### Q4 deployment acceptance (2026-10-05)
+
+Deployed source `9d9dfdef88e0129fefb4c5b7da6314c957b3c732` as generation 1316,
+with system/profile pointing to
+`/nix/store/887q2fya29bykad3rjbbrk2r1nz1vcbv-nixos-system-hal9000-25.11.20260630.b6018f8`.
+All three publisher SHA256 hashes passed. All three mapped GGUF paths were
+verified on the root SSD. The model-isolation/tuning test, system build,
+dry activation, and 23 encrypted-input/runtime metadata checks passed.
+llama-swap, Mold, display-manager, Ollama and pgweb remained active after
+activation. The root filesystem has about 98GiB free (94% used); allow
+headroom before adding more weights. The default provisioning helper now
+checks remaining download space plus 8GiB before transferring.
+
+The shared API returned HTTP 200 and `77` for 7 times 11 in **70.023s**,
+including first model startup. Native timing: 27 prompt tokens at 7.0 tok/s,
+3 generated tokens at 3.9 tok/s, and 3/3 accepted draft tokens. The subsequent
+real local OMP `orca-q4` invocation also returned `77`: 474 prompt tokens at
+39.6 tok/s, 3 generated tokens at 7.1 tok/s, and 3/3 accepted drafts.
+These very short replies are smoke checks, not statistically useful decoding
+benchmarks or a matched comparison with IQ3. Download/hash/pack operations
+influenced filesystem cache; neither request is an SSD cold-cache benchmark.
+64K is configured and reported by the backend; a full 64K prompt was not tested
+in this acceptance run. Startup confirmed 4640 GPU expert slots (14.13GiB),
+24GiB page-locked RAM experts, and 1731MiB free VRAM after loading.
+See [machine-readable acceptance evidence](benchmarks/orca-q4-deployment-20261005.json).
+
+Local OMP now has a separate `orca-q4` role with the same 65536 context,
+8192 output cap, reasoning/effort and tool compatibility as `orca`. Both
+existing Orca and Bonsai/Qwen selections remain. Restart an existing OMP
+session to refresh its configuration, then use `omp --model orca-q4`.
+Use `omp --model orca` to return to IQ3. Selecting another model unloads the
+previous backend; the normal 600-second idle unload applies to Q4 too.
+Private local config backups were taken; credentials are not stored here.
 
 ## Root SSD relocation (deployed)
 
