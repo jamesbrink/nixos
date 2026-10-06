@@ -29,8 +29,8 @@ let
     "--jinja"
     "--ctx-size ${toString cfg.contextTokens}"
     "--parallel 1"
-    "--cache-type-k f16"
-    "--cache-type-v f16"
+    "--cache-type-k q8_0"
+    "--cache-type-v q8_0"
     "--image-min-tokens 1024"
     "--image-max-tokens 1024"
     "--predict 16384"
@@ -91,8 +91,8 @@ in
 
     contextTokens = lib.mkOption {
       type = lib.types.ints.between 1024 262144;
-      default = 16384;
-      description = "Single-slot context capacity. The default is PrismML's safe tier for 16 GB Macs.";
+      default = 32768;
+      description = "Single-slot context capacity. The default pairs 32K context with Q8 KV on 16 GB Macs.";
     };
 
     ttlSeconds = lib.mkOption {
