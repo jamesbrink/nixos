@@ -5,12 +5,52 @@ Strata, alongside the existing Bonsai/Qwen llama-swap stack. It is an explicit
 local compatibility workflow, not a replacement with the aligned GSQ-RCO weights
 in Strata's installer menu. No upstream installer or host driver changes are used.
 
+## Root SSD relocation (deployed)
+
+The HAL9000 configuration selects `services.strata-orca.dataDir = "/var/lib/strata-orca"`.
+This is on the root ext4 filesystem, `/dev/nvme0n1p5`, backed by the
+2TB Corsair Force MP600. The previous `/storage-fast/llm/strata-orca` directory
+is on the Crucial P3 4TB NVMe and ZFS; it is retained for rollback and its
+historical benchmark artifacts remain there. Only Orca was relocated. All 54 copied files (93,678,695,108 bytes) passed
+SHA-256 comparison; both GGUF shards matched their pinned publisher hashes.
+The root SSD retained approximately 211GiB free after the copy.
+
+Activated on 2026-10-05 from base `main` revision `0fd606b` plus the local
+uncommitted host override, using a full staging tree with pinned submodules.
+The active system and system profile are
+`/nix/store/xq4139azfc5nmp97585b55c55x6gdzaw-nixos-system-hal9000-25.11.20260630.b6018f8`.
+The build, flake evaluation, dry activation, and all 23 encrypted-input/runtime
+metadata checks passed. Only llama-swap and tmpfiles setup restarted; the five
+previously checked services remained active. Activation preceded committing
+the override, at the user's request. The user subsequently confirmed much
+faster responses and requested keeping this location and committing/pushing
+the configuration. This is user-observed performance, not a matched benchmark.
+The real shared-endpoint request returned `77` with HTTP 200 in 70.688s,
+including model startup. The engine's mapped GGUF files were verified on
+the root SSD, and the backend reported 65536 context. This was an engine-cold
+acceptance check with filesystem caches affected by copying/hashing, not a
+matched performance comparison against the previous drive. Orca was left
+loaded for user testing. See [root SSD acceptance evidence](benchmarks/orca-root-ssd-deployment-20261005.json).
+
+Copy the model shards, compatibility pack/tokenizer, and complete MTP directory
+with ownership and permissions preserved before activating a new `dataDir`.
+Verify copied file hashes, then deploy. The module derives the native model,
+pack, MTP, tokenizer, working directory, log and service write permissions from
+this setting. No symlink back to storage-fast is needed. Future provisioning
+must use `STRATA_ORCA_DATA_DIR=/var/lib/strata-orca`; changing the configuration
+does not itself copy or download weights. To roll back, select the previous
+system generation or restore the old `dataDir` and redeploy.
+
+The root SSD is faster-rated, but actual inference performance on it must be
+measured. Earlier benchmark results describe the original ZFS location and
+must not be presented as measurements of the new storage configuration.
+
 ## Deployed 64K context and client settings
 
 HAL9000 now selects `services.strata-orca.contextTokens = 65536` in
-`hosts/hal9000/default.nix`. It was activated on 2026-10-05 from committed
-`main` revision `d41b56e`, preserving the newer Mold update. The running system
-and profile both point to
+`hosts/hal9000/default.nix`. The initial 64K configuration was activated on 2026-10-05 from committed
+`main` revision `d41b56e`, preserving the newer Mold update. That deployment's system
+and profile pointed to
 `/nix/store/8c3pbks0wi6grpxzmabch75lql1zmwd0-nixos-system-hal9000-25.11.20260630.b6018f8`.
 All 23 encrypted activation inputs and runtime secret metadata checks passed.
 Dry activation restarted only llama-swap; Mold's unit was unchanged. The real
@@ -193,9 +233,9 @@ After tools/account creation, an administrator can provision with the existing
 root-readable agenix token and then normalize ownership:
 
 ```sh
-sudo env STRATA_HF_TOKEN_FILE=/run/agenix/huggingface-token strata-orca-provision --provision
-sudo chown -R strata-orca:strata-orca /storage-fast/llm/strata-orca
-sudo chmod 0770 /storage-fast/llm/strata-orca
+sudo env STRATA_ORCA_DATA_DIR=/var/lib/strata-orca STRATA_HF_TOKEN_FILE=/run/agenix/huggingface-token strata-orca-provision --provision
+sudo chown -R strata-orca:strata-orca /var/lib/strata-orca
+sudo chmod 0770 /var/lib/strata-orca
 ```
 
 This downloads the immutable IQ3_XXS shards, verifies SHA256, makes the model's
