@@ -1,0 +1,3 @@
+# Preserve byte-identical benchmark evidence and its recorded SHA256.
+docs/benchmarks/orca-20261005/raw/**
+docs/benchmarks/orca-20261005/evidence/**

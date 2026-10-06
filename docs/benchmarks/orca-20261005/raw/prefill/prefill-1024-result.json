@@ -1,0 +1,2443 @@
+{
+  "benchmark_script_sha256": "8fe93875f9f9377f62e0241a3971fbfda35f54ca732c16029c5b0d7a61072a2f",
+  "runtime_config_sha256": "e30d0993fa3b075e6905b1d3feb0a86bfa842a4651c3f4d82982d6eefedb4d7c",
+  "timestamp_utc": "2026-10-05T22:21:58.658622+00:00",
+  "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+  "api": "http://127.0.0.1:8080",
+  "backend_status": "http://127.0.0.1:18081",
+  "runtime": "Strata 0.1.39 6f32ec070f23ced9f50e704d854d775da52591ab",
+  "model_revision": "e43d00f4e2b8b40b89f75e9adeb1045ac34c8acc",
+  "quant": "IQ3_XXS",
+  "context": 32768,
+  "kv": "int8",
+  "prefill": "1024",
+  "spec": 4,
+  "memory_configuration": {
+    "config_sha256": "e30d0993fa3b075e6905b1d3feb0a86bfa842a4651c3f4d82982d6eefedb4d7c",
+    "backend_port": 18081,
+    "mode": "bounded-mmap",
+    "resident_budget_gib": 24.0,
+    "resident_headroom_gib": 8,
+    "minimum_available_gib": 36.0,
+    "native_args": [
+      "--pack",
+      "/storage-fast/llm/strata-orca/pack",
+      "--native",
+      "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+      "--ple-gguf",
+      "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+      "--expert-profile",
+      "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+      "--expert-cache",
+      "auto",
+      "--prefill",
+      "1024",
+      "--spec",
+      "4",
+      "--spec-min-p",
+      "0.5",
+      "--mtp",
+      "/storage-fast/llm/strata-orca/mtp/rt",
+      "--max-context",
+      "32768",
+      "--vram-reserve-mib",
+      "2048",
+      "--kv",
+      "int8",
+      "--mmap-experts",
+      "--resident-budget-gib",
+      "24",
+      "--mtp-max-t",
+      "4",
+      "--suffix-draft",
+      "0"
+    ],
+    "context": 32768,
+    "kv": "int8",
+    "prefill": "1024",
+    "spec_window": 4,
+    "expert_cache": "auto",
+    "suffix_draft": 0,
+    "mtp_max_t": 4,
+    "mtp_window": 32768,
+    "spec_min_p": 0.5,
+    "vram_reserve_mib": 2048,
+    "gpu_startup_policy": {
+      "allowed_desktop_compute_processes": [
+        "walker"
+      ],
+      "maximum_desktop_compute_mib": 512,
+      "minimum_free_vram_mib": 20480
+    },
+    "log": "/storage-fast/llm/strata-orca/strata.log"
+  },
+  "system": "/nix/store/f9adjl9fipy8ha2dl9fg9ds599p2fl9l-nixos-system-hal9000-25.11.20260630.b6018f8",
+  "cold_policy": "once",
+  "generation_controls": {
+    "max_output_tokens": 384,
+    "reasoning_budget_tokens": 64,
+    "temperature": 0
+  },
+  "trials": [
+    {
+      "workload": "context_varied_long",
+      "trial": 1,
+      "cold_engine": true,
+      "prompt_chars": 25293,
+      "prompt": "Record entry_00000: unique_code=code_104729_0000; owner=team_0; cycle=2000; priority=0.\nRecord entry_00001: unique_code=code_112648_0001; owner=team_17; cycle=2001; priority=13.\nRecord entry_00002: unique_code=code_120567_0002; owner=team_34; cycle=2002; priority=26.\nRecord entry_00003: unique_code=code_128486_0003; owner=team_51; cycle=2003; priority=39.\nRecord entry_00004: unique_code=code_136405_0004; owner=team_68; cycle=2004; priority=52.\nRecord entry_00005: unique_code=code_144324_0005; owner=team_85; cycle=2005; priority=65.\nRecord entry_00006: unique_code=code_152243_0006; owner=team_1; cycle=2006; priority=78.\nRecord entry_00007: unique_code=code_160162_0007; owner=team_18; cycle=2007; priority=91.\nRecord entry_00008: unique_code=code_168081_0008; owner=team_35; cycle=2008; priority=7.\nRecord entry_00009: unique_code=code_176000_0009; owner=team_52; cycle=2009; priority=20.\nRecord entry_00010: unique_code=code_183919_000a; owner=team_69; cycle=2010; priority=33.\nRecord entry_00011: unique_code=code_191838_000b; owner=team_86; cycle=2011; priority=46.\nRecord entry_00012: unique_code=code_199757_000c; owner=team_2; cycle=2012; priority=59.\nRecord entry_00013: unique_code=code_207676_000d; owner=team_19; cycle=2013; priority=72.\nRecord entry_00014: unique_code=code_215595_000e; owner=team_36; cycle=2014; priority=85.\nRecord entry_00015: unique_code=code_223514_000f; owner=team_53; cycle=2015; priority=1.\nRecord entry_00016: unique_code=code_231433_0010; owner=team_70; cycle=2016; priority=14.\nRecord entry_00017: unique_code=code_239352_0011; owner=team_87; cycle=2017; priority=27.\nRecord entry_00018: unique_code=code_247271_0012; owner=team_3; cycle=2018; priority=40.\nRecord entry_00019: unique_code=code_255190_0013; owner=team_20; cycle=2019; priority=53.\nRecord entry_00020: unique_code=code_263109_0014; owner=team_37; cycle=2020; priority=66.\nRecord entry_00021: unique_code=code_271028_0015; owner=team_54; cycle=2021; priority=79.\nRecord entry_00022: unique_code=code_278947_0016; owner=team_71; cycle=2022; priority=92.\nRecord entry_00023: unique_code=code_286866_0017; owner=team_88; cycle=2023; priority=8.\nRecord entry_00024: unique_code=code_294785_0018; owner=team_4; cycle=2024; priority=21.\nRecord entry_00025: unique_code=code_302704_0019; owner=team_21; cycle=2025; priority=34.\nRecord entry_00026: unique_code=code_310623_001a; owner=team_38; cycle=2026; priority=47.\nRecord entry_00027: unique_code=code_318542_001b; owner=team_55; cycle=2027; priority=60.\nRecord entry_00028: unique_code=code_326461_001c; owner=team_72; cycle=2028; priority=73.\nRecord entry_00029: unique_code=code_334380_001d; owner=team_89; cycle=2029; priority=86.\nRecord entry_00030: unique_code=code_342299_001e; owner=team_5; cycle=2030; priority=2.\nRecord entry_00031: unique_code=code_350218_001f; owner=team_22; cycle=2031; priority=15.\nRecord entry_00032: unique_code=code_358137_0020; owner=team_39; cycle=2032; priority=28.\nRecord entry_00033: unique_code=code_366056_0021; owner=team_56; cycle=2033; priority=41.\nRecord entry_00034: unique_code=code_373975_0022; owner=team_73; cycle=2034; priority=54.\nRecord entry_00035: unique_code=code_381894_0023; owner=team_90; cycle=2035; priority=67.\nRecord entry_00036: unique_code=code_389813_0024; owner=team_6; cycle=2036; priority=80.\nRecord entry_00037: unique_code=code_397732_0025; owner=team_23; cycle=2037; priority=93.\nRecord entry_00038: unique_code=code_405651_0026; owner=team_40; cycle=2038; priority=9.\nRecord entry_00039: unique_code=code_413570_0027; owner=team_57; cycle=2039; priority=22.\nRecord entry_00040: unique_code=code_421489_0028; owner=team_74; cycle=2040; priority=35.\nRecord entry_00041: unique_code=code_429408_0029; owner=team_91; cycle=2041; priority=48.\nRecord entry_00042: unique_code=code_437327_002a; owner=team_7; cycle=2042; priority=61.\nRecord entry_00043: unique_code=code_445246_002b; owner=team_24; cycle=2043; priority=74.\nRecord entry_00044: unique_code=code_453165_002c; owner=team_41; cycle=2044; priority=87.\nRecord entry_00045: unique_code=code_461084_002d; owner=team_58; cycle=2045; priority=3.\nRecord entry_00046: unique_code=code_469003_002e; owner=team_75; cycle=2046; priority=16.\nRecord entry_00047: unique_code=code_476922_002f; owner=team_92; cycle=2047; priority=29.\nRecord entry_00048: unique_code=code_484841_0030; owner=team_8; cycle=2048; priority=42.\nRecord entry_00049: unique_code=code_492760_0031; owner=team_25; cycle=2049; priority=55.\nRecord entry_00050: unique_code=code_500679_0032; owner=team_42; cycle=2050; priority=68.\nRecord entry_00051: unique_code=code_508598_0033; owner=team_59; cycle=2051; priority=81.\nRecord entry_00052: unique_code=code_516517_0034; owner=team_76; cycle=2052; priority=94.\nRecord entry_00053: unique_code=code_524436_0035; owner=team_93; cycle=2053; priority=10.\nRecord entry_00054: unique_code=code_532355_0036; owner=team_9; cycle=2054; priority=23.\nRecord entry_00055: unique_code=code_540274_0037; owner=team_26; cycle=2055; priority=36.\nRecord entry_00056: unique_code=code_548193_0038; owner=team_43; cycle=2056; priority=49.\nRecord entry_00057: unique_code=code_556112_0039; owner=team_60; cycle=2057; priority=62.\nRecord entry_00058: unique_code=code_564031_003a; owner=team_77; cycle=2058; priority=75.\nRecord entry_00059: unique_code=code_571950_003b; owner=team_94; cycle=2059; priority=88.\nRecord entry_00060: unique_code=code_579869_003c; owner=team_10; cycle=2060; priority=4.\nRecord entry_00061: unique_code=code_587788_003d; owner=team_27; cycle=2061; priority=17.\nRecord entry_00062: unique_code=code_595707_003e; owner=team_44; cycle=2062; priority=30.\nRecord entry_00063: unique_code=code_603626_003f; owner=team_61; cycle=2063; priority=43.\nRecord entry_00064: unique_code=code_611545_0040; owner=team_78; cycle=2064; priority=56.\nRecord entry_00065: unique_code=code_619464_0041; owner=team_95; cycle=2065; priority=69.\nRecord entry_00066: unique_code=code_627383_0042; owner=team_11; cycle=2066; priority=82.\nRecord entry_00067: unique_code=code_635302_0043; owner=team_28; cycle=2067; priority=95.\nRecord entry_00068: unique_code=code_643221_0044; owner=team_45; cycle=2068; priority=11.\nRecord entry_00069: unique_code=code_651140_0045; owner=team_62; cycle=2069; priority=24.\nRecord entry_00070: unique_code=code_659059_0046; owner=team_79; cycle=2070; priority=37.\nRecord entry_00071: unique_code=code_666978_0047; owner=team_96; cycle=2071; priority=50.\nRecord entry_00072: unique_code=code_674897_0048; owner=team_12; cycle=2072; priority=63.\nRecord entry_00073: unique_code=code_682816_0049; owner=team_29; cycle=2073; priority=76.\nRecord entry_00074: unique_code=code_690735_004a; owner=team_46; cycle=2074; priority=89.\nRecord entry_00075: unique_code=code_698654_004b; owner=team_63; cycle=2075; priority=5.\nRecord entry_00076: unique_code=code_706573_004c; owner=team_80; cycle=2076; priority=18.\nRecord entry_00077: unique_code=code_714492_004d; owner=team_97; cycle=2077; priority=31.\nRecord entry_00078: unique_code=code_722411_004e; owner=team_13; cycle=2078; priority=44.\nRecord entry_00079: unique_code=code_730330_004f; owner=team_30; cycle=2079; priority=57.\nRecord entry_00080: unique_code=code_738249_0050; owner=team_47; cycle=2080; priority=70.\nRecord entry_00081: unique_code=code_746168_0051; owner=team_64; cycle=2081; priority=83.\nRecord entry_00082: unique_code=code_754087_0052; owner=team_81; cycle=2082; priority=96.\nRecord entry_00083: unique_code=code_762006_0053; owner=team_98; cycle=2083; priority=12.\nRecord entry_00084: unique_code=code_769925_0054; owner=team_14; cycle=2084; priority=25.\nRecord entry_00085: unique_code=code_777844_0055; owner=team_31; cycle=2085; priority=38.\nRecord entry_00086: unique_code=code_785763_0056; owner=team_48; cycle=2086; priority=51.\nRecord entry_00087: unique_code=code_793682_0057; owner=team_65; cycle=2087; priority=64.\nRecord entry_00088: unique_code=code_801601_0058; owner=team_82; cycle=2088; priority=77.\nRecord entry_00089: unique_code=code_809520_0059; owner=team_99; cycle=2089; priority=90.\nRecord entry_00090: unique_code=code_817439_005a; owner=team_15; cycle=2090; priority=6.\nRecord entry_00091: unique_code=code_825358_005b; owner=team_32; cycle=2091; priority=19.\nRecord entry_00092: unique_code=code_833277_005c; owner=team_49; cycle=2092; priority=32.\nRecord entry_00093: unique_code=code_841196_005d; owner=team_66; cycle=2093; priority=45.\nRecord entry_00094: unique_code=code_849115_005e; owner=team_83; cycle=2094; priority=58.\nRecord entry_00095: unique_code=code_857034_005f; owner=team_100; cycle=2095; priority=71.\nRecord entry_00096: unique_code=code_864953_0060; owner=team_16; cycle=2096; priority=84.\nRecord entry_00097: unique_code=code_872872_0061; owner=team_33; cycle=2097; priority=0.\nRecord entry_00098: unique_code=code_880791_0062; owner=team_50; cycle=2098; priority=13.\nRecord entry_00099: unique_code=code_888710_0063; owner=team_67; cycle=2099; priority=26.\nRecord entry_00100: unique_code=code_896629_0064; owner=team_84; cycle=2100; priority=39.\nRecord entry_00101: unique_code=code_904548_0065; owner=team_0; cycle=2101; priority=52.\nRecord entry_00102: unique_code=code_912467_0066; owner=team_17; cycle=2102; priority=65.\nRecord entry_00103: unique_code=code_920386_0067; owner=team_34; cycle=2103; priority=78.\nRecord entry_00104: unique_code=code_928305_0068; owner=team_51; cycle=2104; priority=91.\nRecord entry_00105: unique_code=code_936224_0069; owner=team_68; cycle=2105; priority=7.\nRecord entry_00106: unique_code=code_944143_006a; owner=team_85; cycle=2106; priority=20.\nRecord entry_00107: unique_code=code_952062_006b; owner=team_1; cycle=2107; priority=33.\nRecord entry_00108: unique_code=code_959981_006c; owner=team_18; cycle=2108; priority=46.\nRecord entry_00109: unique_code=code_967900_006d; owner=team_35; cycle=2109; priority=59.\nRecord entry_00110: unique_code=code_975819_006e; owner=team_52; cycle=2110; priority=72.\nRecord entry_00111: unique_code=code_983738_006f; owner=team_69; cycle=2111; priority=85.\nRecord entry_00112: unique_code=code_991657_0070; owner=team_86; cycle=2112; priority=1.\nRecord entry_00113: unique_code=code_999576_0071; owner=team_2; cycle=2113; priority=14.\nRecord entry_00114: unique_code=code_007512_0072; owner=team_19; cycle=2114; priority=27.\nRecord entry_00115: unique_code=code_015431_0073; owner=team_36; cycle=2115; priority=40.\nRecord entry_00116: unique_code=code_023350_0074; owner=team_53; cycle=2116; priority=53.\nRecord entry_00117: unique_code=code_031269_0075; owner=team_70; cycle=2117; priority=66.\nRecord entry_00118: unique_code=code_039188_0076; owner=team_87; cycle=2118; priority=79.\nRecord entry_00119: unique_code=code_047107_0077; owner=team_3; cycle=2119; priority=92.\nRecord entry_00120: unique_code=code_055026_0078; owner=team_20; cycle=2120; priority=8.\nRecord entry_00121: unique_code=code_062945_0079; owner=team_37; cycle=2121; priority=21.\nRecord entry_00122: unique_code=code_070864_007a; owner=team_54; cycle=2122; priority=34.\nRecord entry_00123: unique_code=code_078783_007b; owner=team_71; cycle=2123; priority=47.\nRecord entry_00124: unique_code=code_086702_007c; owner=team_88; cycle=2124; priority=60.\nRecord entry_00125: unique_code=code_094621_007d; owner=team_4; cycle=2125; priority=73.\nRecord entry_00126: unique_code=code_102540_007e; owner=team_21; cycle=2126; priority=86.\nRecord entry_00127: unique_code=code_110459_007f; owner=team_38; cycle=2127; priority=2.\nRecord entry_00128: unique_code=code_118378_0080; owner=team_55; cycle=2128; priority=15.\nRecord entry_00129: unique_code=code_126297_0081; owner=team_72; cycle=2129; priority=28.\nRecord entry_00130: unique_code=code_134216_0082; owner=team_89; cycle=2130; priority=41.\nRecord entry_00131: unique_code=code_142135_0083; owner=team_5; cycle=2131; priority=54.\nRecord entry_00132: unique_code=code_150054_0084; owner=team_22; cycle=2132; priority=67.\nRecord entry_00133: unique_code=code_157973_0085; owner=team_39; cycle=2133; priority=80.\nRecord entry_00134: unique_code=code_165892_0086; owner=team_56; cycle=2134; priority=93.\nRecord entry_00135: unique_code=code_173811_0087; owner=team_73; cycle=2135; priority=9.\nRecord entry_00136: unique_code=code_181730_0088; owner=team_90; cycle=2136; priority=22.\nRecord entry_00137: unique_code=code_189649_0089; owner=team_6; cycle=2137; priority=35.\nRecord entry_00138: unique_code=code_197568_008a; owner=team_23; cycle=2138; priority=48.\nRecord entry_00139: unique_code=code_205487_008b; owner=team_40; cycle=2139; priority=61.\nRecord entry_00140: unique_code=code_213406_008c; owner=team_57; cycle=2140; priority=74.\nRecord entry_00141: unique_code=code_221325_008d; owner=team_74; cycle=2141; priority=87.\nRecord entry_00142: unique_code=code_229244_008e; owner=team_91; cycle=2142; priority=3.\nRecord entry_00143: unique_code=code_237163_008f; owner=team_7; cycle=2143; priority=16.\nRecord entry_00144: unique_code=code_245082_0090; owner=team_24; cycle=2144; priority=29.\nRecord entry_00145: unique_code=code_253001_0091; owner=team_41; cycle=2145; priority=42.\nRecord entry_00146: unique_code=code_260920_0092; owner=team_58; cycle=2146; priority=55.\nRecord entry_00147: unique_code=code_268839_0093; owner=team_75; cycle=2147; priority=68.\nRecord entry_00148: unique_code=code_276758_0094; owner=team_92; cycle=2148; priority=81.\nRecord entry_00149: unique_code=code_284677_0095; owner=team_8; cycle=2149; priority=94.\nRecord entry_00150: unique_code=code_292596_0096; owner=team_25; cycle=2150; priority=10.\nRecord entry_00151: unique_code=code_300515_0097; owner=team_42; cycle=2151; priority=23.\nRecord entry_00152: unique_code=code_308434_0098; owner=team_59; cycle=2152; priority=36.\nRecord entry_00153: unique_code=code_316353_0099; owner=team_76; cycle=2153; priority=49.\nRecord entry_00154: unique_code=code_324272_009a; owner=team_93; cycle=2154; priority=62.\nRecord entry_00155: unique_code=code_332191_009b; owner=team_9; cycle=2155; priority=75.\nRecord entry_00156: unique_code=code_340110_009c; owner=team_26; cycle=2156; priority=88.\nRecord entry_00157: unique_code=code_348029_009d; owner=team_43; cycle=2157; priority=4.\nRecord entry_00158: unique_code=code_355948_009e; owner=team_60; cycle=2158; priority=17.\nRecord entry_00159: unique_code=code_363867_009f; owner=team_77; cycle=2159; priority=30.\nRecord entry_00160: unique_code=code_371786_00a0; owner=team_94; cycle=2160; priority=43.\nRecord entry_00161: unique_code=code_379705_00a1; owner=team_10; cycle=2161; priority=56.\nRecord entry_00162: unique_code=code_387624_00a2; owner=team_27; cycle=2162; priority=69.\nRecord entry_00163: unique_code=code_395543_00a3; owner=team_44; cycle=2163; priority=82.\nRecord entry_00164: unique_code=code_403462_00a4; owner=team_61; cycle=2164; priority=95.\nRecord entry_00165: unique_code=code_411381_00a5; owner=team_78; cycle=2165; priority=11.\nRecord entry_00166: unique_code=code_419300_00a6; owner=team_95; cycle=2166; priority=24.\nRecord entry_00167: unique_code=code_427219_00a7; owner=team_11; cycle=2167; priority=37.\nRecord entry_00168: unique_code=code_435138_00a8; owner=team_28; cycle=2168; priority=50.\nRecord entry_00169: unique_code=code_443057_00a9; owner=team_45; cycle=2169; priority=63.\nRecord entry_00170: unique_code=code_450976_00aa; owner=team_62; cycle=2170; priority=76.\nRecord entry_00171: unique_code=code_458895_00ab; owner=team_79; cycle=2171; priority=89.\nRecord entry_00172: unique_code=code_466814_00ac; owner=team_96; cycle=2172; priority=5.\nRecord entry_00173: unique_code=code_474733_00ad; owner=team_12; cycle=2173; priority=18.\nRecord entry_00174: unique_code=code_482652_00ae; owner=team_29; cycle=2174; priority=31.\nRecord entry_00175: unique_code=code_490571_00af; owner=team_46; cycle=2175; priority=44.\nRecord entry_00176: unique_code=code_498490_00b0; owner=team_63; cycle=2176; priority=57.\nRecord entry_00177: unique_code=code_506409_00b1; owner=team_80; cycle=2177; priority=70.\nRecord entry_00178: unique_code=code_514328_00b2; owner=team_97; cycle=2178; priority=83.\nRecord entry_00179: unique_code=code_522247_00b3; owner=team_13; cycle=2179; priority=96.\nRecord entry_00180: unique_code=code_530166_00b4; owner=team_30; cycle=2180; priority=12.\nRecord entry_00181: unique_code=code_538085_00b5; owner=team_47; cycle=2181; priority=25.\nRecord entry_00182: unique_code=code_546004_00b6; owner=team_64; cycle=2182; priority=38.\nRecord entry_00183: unique_code=code_553923_00b7; owner=team_81; cycle=2183; priority=51.\nRecord entry_00184: unique_code=code_561842_00b8; owner=team_98; cycle=2184; priority=64.\nRecord entry_00185: unique_code=code_569761_00b9; owner=team_14; cycle=2185; priority=77.\nRecord entry_00186: unique_code=code_577680_00ba; owner=team_31; cycle=2186; priority=90.\nRecord entry_00187: unique_code=code_585599_00bb; owner=team_48; cycle=2187; priority=6.\nRecord entry_00188: unique_code=code_593518_00bc; owner=team_65; cycle=2188; priority=19.\nRecord entry_00189: unique_code=code_601437_00bd; owner=team_82; cycle=2189; priority=32.\nRecord entry_00190: unique_code=code_609356_00be; owner=team_99; cycle=2190; priority=45.\nRecord entry_00191: unique_code=code_617275_00bf; owner=team_15; cycle=2191; priority=58.\nRecord entry_00192: unique_code=code_625194_00c0; owner=team_32; cycle=2192; priority=71.\nRecord entry_00193: unique_code=code_633113_00c1; owner=team_49; cycle=2193; priority=84.\nRecord entry_00194: unique_code=code_641032_00c2; owner=team_66; cycle=2194; priority=0.\nRecord entry_00195: unique_code=code_648951_00c3; owner=team_83; cycle=2195; priority=13.\nRecord entry_00196: unique_code=code_656870_00c4; owner=team_100; cycle=2196; priority=26.\nRecord entry_00197: unique_code=code_664789_00c5; owner=team_16; cycle=2197; priority=39.\nRecord entry_00198: unique_code=code_672708_00c6; owner=team_33; cycle=2198; priority=52.\nRecord entry_00199: unique_code=code_680627_00c7; owner=team_50; cycle=2199; priority=65.\nRecord entry_00200: unique_code=code_688546_00c8; owner=team_67; cycle=2200; priority=78.\nRecord entry_00201: unique_code=code_696465_00c9; owner=team_84; cycle=2201; priority=91.\nRecord entry_00202: unique_code=code_704384_00ca; owner=team_0; cycle=2202; priority=7.\nRecord entry_00203: unique_code=code_712303_00cb; owner=team_17; cycle=2203; priority=20.\nRecord entry_00204: unique_code=code_720222_00cc; owner=team_34; cycle=2204; priority=33.\nRecord entry_00205: unique_code=code_728141_00cd; owner=team_51; cycle=2205; priority=46.\nRecord entry_00206: unique_code=code_736060_00ce; owner=team_68; cycle=2206; priority=59.\nRecord entry_00207: unique_code=code_743979_00cf; owner=team_85; cycle=2207; priority=72.\nRecord entry_00208: unique_code=code_751898_00d0; owner=team_1; cycle=2208; priority=85.\nRecord entry_00209: unique_code=code_759817_00d1; owner=team_18; cycle=2209; priority=1.\nRecord entry_00210: unique_code=code_767736_00d2; owner=team_35; cycle=2210; priority=14.\nRecord entry_00211: unique_code=code_775655_00d3; owner=team_52; cycle=2211; priority=27.\nRecord entry_00212: unique_code=code_783574_00d4; owner=team_69; cycle=2212; priority=40.\nRecord entry_00213: unique_code=code_791493_00d5; owner=team_86; cycle=2213; priority=53.\nRecord entry_00214: unique_code=code_799412_00d6; owner=team_2; cycle=2214; priority=66.\nRecord entry_00215: unique_code=code_807331_00d7; owner=team_19; cycle=2215; priority=79.\nRecord entry_00216: unique_code=code_815250_00d8; owner=team_36; cycle=2216; priority=92.\nRecord entry_00217: unique_code=code_823169_00d9; owner=team_53; cycle=2217; priority=8.\nRecord entry_00218: unique_code=code_831088_00da; owner=team_70; cycle=2218; priority=21.\nRecord entry_00219: unique_code=code_839007_00db; owner=team_87; cycle=2219; priority=34.\nRecord entry_00220: unique_code=code_846926_00dc; owner=team_3; cycle=2220; priority=47.\nRecord entry_00221: unique_code=code_854845_00dd; owner=team_20; cycle=2221; priority=60.\nRecord entry_00222: unique_code=code_862764_00de; owner=team_37; cycle=2222; priority=73.\nRecord entry_00223: unique_code=code_870683_00df; owner=team_54; cycle=2223; priority=86.\nRecord entry_00224: unique_code=code_878602_00e0; owner=team_71; cycle=2224; priority=2.\nRecord entry_00225: unique_code=code_886521_00e1; owner=team_88; cycle=2225; priority=15.\nRecord entry_00226: unique_code=code_894440_00e2; owner=team_4; cycle=2226; priority=28.\nRecord entry_00227: unique_code=code_902359_00e3; owner=team_21; cycle=2227; priority=41.\nRecord entry_00228: unique_code=code_910278_00e4; owner=team_38; cycle=2228; priority=54.\nRecord entry_00229: unique_code=code_918197_00e5; owner=team_55; cycle=2229; priority=67.\nRecord entry_00230: unique_code=code_926116_00e6; owner=team_72; cycle=2230; priority=80.\nRecord entry_00231: unique_code=code_934035_00e7; owner=team_89; cycle=2231; priority=93.\nRecord entry_00232: unique_code=code_941954_00e8; owner=team_5; cycle=2232; priority=9.\nRecord entry_00233: unique_code=code_949873_00e9; owner=team_22; cycle=2233; priority=22.\nRecord entry_00234: unique_code=code_957792_00ea; owner=team_39; cycle=2234; priority=35.\nRecord entry_00235: unique_code=code_965711_00eb; owner=team_56; cycle=2235; priority=48.\nRecord entry_00236: unique_code=code_973630_00ec; owner=team_73; cycle=2236; priority=61.\nRecord entry_00237: unique_code=code_981549_00ed; owner=team_90; cycle=2237; priority=74.\nRecord entry_00238: unique_code=code_989468_00ee; owner=team_6; cycle=2238; priority=87.\nRecord entry_00239: unique_code=code_997387_00ef; owner=team_23; cycle=2239; priority=3.\nRecord entry_00240: unique_code=code_005323_00f0; owner=team_40; cycle=2240; priority=16.\nRecord entry_00241: unique_code=code_013242_00f1; owner=team_57; cycle=2241; priority=29.\nRecord entry_00242: unique_code=code_021161_00f2; owner=team_74; cycle=2242; priority=42.\nRecord entry_00243: unique_code=code_029080_00f3; owner=team_91; cycle=2243; priority=55.\nRecord entry_00244: unique_code=code_036999_00f4; owner=team_7; cycle=2244; priority=68.\nRecord entry_00245: unique_code=code_044918_00f5; owner=team_24; cycle=2245; priority=81.\nRecord entry_00246: unique_code=code_052837_00f6; owner=team_41; cycle=2246; priority=94.\nRecord entry_00247: unique_code=code_060756_00f7; owner=team_58; cycle=2247; priority=10.\nRecord entry_00248: unique_code=code_068675_00f8; owner=team_75; cycle=2248; priority=23.\nRecord entry_00249: unique_code=code_076594_00f9; owner=team_92; cycle=2249; priority=36.\nRecord entry_00250: unique_code=code_084513_00fa; owner=team_8; cycle=2250; priority=49.\nRecord entry_00251: unique_code=code_092432_00fb; owner=team_25; cycle=2251; priority=62.\nRecord entry_00252: unique_code=code_100351_00fc; owner=team_42; cycle=2252; priority=75.\nRecord entry_00253: unique_code=code_108270_00fd; owner=team_59; cycle=2253; priority=88.\nRecord entry_00254: unique_code=code_116189_00fe; owner=team_76; cycle=2254; priority=4.\nRecord entry_00255: unique_code=code_124108_00ff; owner=team_93; cycle=2255; priority=17.\nRecord entry_00256: unique_code=code_132027_0100; owner=team_9; cycle=2256; priority=30.\nRecord entry_00257: unique_code=code_139946_0101; owner=team_26; cycle=2257; priority=43.\nRecord entry_00258: unique_code=code_147865_0102; owner=team_43; cycle=2258; priority=56.\nRecord entry_00259: unique_code=code_155784_0103; owner=team_60; cycle=2259; priority=69.\nRecord entry_00260: unique_code=code_163703_0104; owner=team_77; cycle=2260; priority=82.\nRecord entry_00261: unique_code=code_171622_0105; owner=team_94; cycle=2261; priority=95.\nRecord entry_00262: unique_code=code_179541_0106; owner=team_10; cycle=2262; priority=11.\nRecord entry_00263: unique_code=code_187460_0107; owner=team_27; cycle=2263; priority=24.\nRecord entry_00264: unique_code=code_195379_0108; owner=team_44; cycle=2264; priority=37.\nRecord entry_00265: unique_code=code_203298_0109; owner=team_61; cycle=2265; priority=50.\nRecord entry_00266: unique_code=code_211217_010a; owner=team_78; cycle=2266; priority=63.\nRecord entry_00267: unique_code=code_219136_010b; owner=team_95; cycle=2267; priority=76.\nRecord entry_00268: unique_code=code_227055_010c; owner=team_11; cycle=2268; priority=89.\nRecord entry_00269: unique_code=code_234974_010d; owner=team_28; cycle=2269; priority=5.\nRecord entry_00270: unique_code=code_242893_010e; owner=team_45; cycle=2270; priority=18.\nRecord entry_00271: unique_code=code_250812_010f; owner=team_62; cycle=2271; priority=31.\nRecord entry_00272: unique_code=code_258731_0110; owner=team_79; cycle=2272; priority=44.\nRecord entry_00273: unique_code=code_266650_0111; owner=team_96; cycle=2273; priority=57.\nRecord entry_00274: unique_code=code_274569_0112; owner=team_12; cycle=2274; priority=70.\nRecord entry_00275: unique_code=code_282488_0113; owner=team_29; cycle=2275; priority=83.\nRecord entry_00276: unique_code=code_290407_0114; owner=team_46; cycle=2276; priority=96.\nRecord entry_00277: unique_code=code_298326_0115; owner=team_63; cycle=2277; priority=12.\nRecord entry_00278: unique_code=code_306245_0116; owner=team_80; cycle=2278; priority=25.\nRecord entry_00279: unique_code=code_314164_0117; owner=team_97; cycle=2279; priority=38.\nReturn ONLY a JSON object mapping each requested record ID to its exact unique_code. Requested IDs: entry_00000, entry_00070, entry_00140, entry_00279",
+      "first_token_s": 112.03700232109986,
+      "first_answer_s": 113.96618466603104,
+      "output_text": "{\n  \"entry_00000\": \"code_104729_0000\",\n  \"entry_00070\": \"code_659059_0046\",\n  \"entry_00140\": \"code_213406_008c\",\n  \"entry_00279\": \"code_314164_0117\"\n}",
+      "reasoning_text": "We need answer user's request. Need parse data. User provided records with unique_code. Requested IDs: entry_00000, entry_00070, entry_00140, entry_00279. Need return ONLY JSON object mapping each requested record ID\n\nI have thought about this long enough; time to give my answer.\n",
+      "engine_ready_s": 69.24811949499417,
+      "terminal_type": "response.completed",
+      "response": {
+        "id": "resp_dddeb08b83164deaba57892016f040ef",
+        "object": "response",
+        "created_at": 1791238988,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 384,
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "output": [
+          {
+            "id": "rs_b7d8500870b944b69f0c376a365dc078",
+            "type": "reasoning",
+            "status": "completed",
+            "summary": [],
+            "content": [
+              {
+                "type": "reasoning_text",
+                "text": "We need answer user's request. Need parse data. User provided records with unique_code. Requested IDs: entry_00000, entry_00070, entry_00140, entry_00279. Need return ONLY JSON object mapping each requested record ID\n\nI have thought about this long enough; time to give my answer.\n"
+              }
+            ]
+          },
+          {
+            "id": "msg_2481688ab97c4e6dbc69cfb6831ce1bd",
+            "type": "message",
+            "status": "completed",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "{\n  \"entry_00000\": \"code_104729_0000\",\n  \"entry_00070\": \"code_659059_0046\",\n  \"entry_00140\": \"code_213406_008c\",\n  \"entry_00279\": \"code_314164_0117\"\n}",
+                "annotations": [],
+                "logprobs": []
+              }
+            ]
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "store": false,
+        "temperature": 0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": null,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 12890,
+          "input_tokens_details": {
+            "cached_tokens": 12890
+          },
+          "output_tokens": 190,
+          "output_tokens_details": {
+            "reasoning_tokens": 81
+          },
+          "total_tokens": 13080
+        },
+        "user": null,
+        "metadata": {},
+        "completed_at": 1791239035
+      },
+      "wall_s": 116.78121652104892,
+      "status_before": null,
+      "status_after": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791238987,
+        "uptime_s": 47,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 1,
+          "in_flight": 0,
+          "last_request_at": 1791239035
+        },
+        "last_timings": {
+          "cache_n": 12954,
+          "prompt_n": 0,
+          "prompt_ms": 441.8,
+          "prompt_per_token_ms": null,
+          "prompt_per_second": null,
+          "predicted_n": 190,
+          "predicted_ms": 2720.7,
+          "predicted_per_token_ms": 25.192,
+          "predicted_per_second": 39.7,
+          "draft_n": 81,
+          "draft_n_accepted": 81,
+          "at": 1791239035
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791239035,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 100,
+            "temp_c": 41,
+            "power_w": 121.563
+          },
+          "ram": {
+            "used_gib": 39.6,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "native_request_log": "strata generate: native pack: /storage-fast/llm/strata-orca/pack experts (largest blob 2.18 MB), token embedding IQ3_S in mapped host memory (260 MiB)\nstrata generate: 1466 MiB of weights loaded from /storage-fast/llm/strata-orca/pack (302 canonical tensors skipped: served natively)\nstrata generate: 300 native projection matrices, 1225.20 MiB of weights\nstrata generate: the SSD is kept awake while rows are read: one page of the table after 100 ms without a read, until 60 s after the last request (STRATA_SSD_KEEPALIVE=0 turns it off)\nstrata generate: profile /nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin: 24576 ranked pairs, built for 24576 slots\nstrata generate: PLE on, table 320001536 rows of /storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf\nstrata mtp: draft layer loaded, 838 MiB of VRAM (experts 675, dense 111), files read in 0.38 s (2061 MiB/s)\nstrata generate: experimental native Q5_K head, 437043200 bytes\nstrata generate: GPU 0: NVIDIA GeForce RTX 4090, compute capability 8.9\nstrata generate: experts via mmap (--mmap-experts; the GGUF shards in place, no experts.bin)\nstrata generate: the file tier reads through the file cache (through the file cache (not Windows))\nstrata generate: expert cache auto: 18.50 GiB free, 2048 MiB reserved (+182 MiB for the draft head) -> 8052 slots\nstrata generate: expert cache 8052 slots, 16.32 GiB of VRAM; policy is\nstrata generate: the GPU computes the experts in the cache; it rounds differently from the CPU,\n                 so a reply can differ slightly from a run without the cache (same quality:\n                 bench/results/2026-09-27-cache-parity).\n                 PROFILE, ranked by routing frequency, no eviction.\nstrata generate: pre-filled 8052 of 8052 slots from the profile; slot 0 verified\nstrata generate: routing-aware prefetch of the file tier on (the next layer's router)\nstrata generate: R4 hit path ON - resident experts are computed on the GPU\nstrata generate: 23 expert-pool workers + the host thread\nstrata generate: session is up (engine 0.1.39)\nstrata generate: token graph hit path: 8052 resident experts, decided on the device\nFileExpertSource: RAM budget 24.00 GiB: 11842 of the 33.49 GiB of experts the GPU cache does not hold, by profile rank; the rest are read from the files\nFileExpertSource: allocating 24.00 GiB page-locked cache complement\nFileExpertSource: copied cache complement through layer 8/48 (5.61 GiB)\nFileExpertSource: copied cache complement through layer 16/48 (8.56 GiB)\nFileExpertSource: copied cache complement through layer 24/48 (12.07 GiB)\nFileExpertSource: copied cache complement through layer 32/48 (17.46 GiB)\nFileExpertSource: copied cache complement through layer 40/48 (20.85 GiB)\nFileExpertSource: copied cache complement through layer 48/48 (24.00 GiB)\nFileExpertSource: mapped pinned cache complement ready: resident 24.00 GiB, pinned 24.00 GiB; page-locked and mapped\nstrata generate: resident RAM mode: 24.00 GiB of experts in RAM (page-locked), 8052 in the GPU cache; adaptive swaps exchange them with the GPU cache (no file reads)\nstrata serve: the prompt path borrows 357 CUDA0 cache slots (0.72 GiB)\nstrata hc: CUDA0: the hyper-connection read runs as staged (the norm per token and stream, the down projection's activations staged ahead by cp.async); checked bit for bit against the plain read on this card (STRATA_HC_SPLIT=1 or 0 for the earlier ones)\nstrata verify: window up to 4 tokens, 55.6 MiB of device buffers\nstrata mtp: draft head over 106299 tokens (178.4 MiB)\nstrata serve: 1750 MiB of VRAM free with everything loaded\nstrata verify: captured the 4-token window (upload no error, sync no error)\nstrata verify: captured the 1-token window (upload no error, sync no error)\nstrata verify: captured the 3-token window (upload no error, sync no error)\nstrata verify: captured the 2-token window (upload no error, sync no error)\nstrata serve: prompt 12890 tokens = 0 reused + 12890 read in 42516 ms (303.2 tok/s), 65 generated in 1487 ms (43.7 tok/s), drafts accepted 41 of 50, 1 checkpoints\nstrata serve: decode expert cache hit rate: 79.8% (25661 hits / 32167 lookups); 3353 more read by the GPU over PCIe or from another GPU (9.4% of all 35520 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 420 exchanged with the VRAM tier, 1498 blob reads from the file\nstrata serve: expert tiers: GPU 25661 hits this request; since the start RAM 157466 blobs, files 1498 blobs 157912.3 MB read (the GGUF in place)\nstrata serve: prompt 12972 tokens = 12954 reused + 18 read in 442 ms (40.7 tok/s), 108 generated in 2721 ms (39.7 tok/s), drafts accepted 81 of 81, 1 checkpoints\nstrata serve: decode expert cache hit rate: 64.6% (28886 hits / 44729 lookups); 7591 more read by the GPU over PCIe or from another GPU (14.5% of all 52320 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 912 exchanged with the VRAM tier, 7091 blob reads from the file\nstrata serve: expert tiers: GPU 28886 hits this request; since the start RAM 171956 blobs, files 7091 blobs 166934.0 MB read (the GGUF in place)\n",
+      "native_phases": [
+        {
+          "prompt_tokens": 12890,
+          "cache_n": 0,
+          "fresh_prompt_tokens": 12890,
+          "requested_fresh_prompt_tokens": 12890,
+          "prompt_ms": 42516.0,
+          "native_generated_tokens": 65,
+          "decode_ms": 1487.0,
+          "draft_accepted": 41,
+          "draft_offered": 50
+        },
+        {
+          "prompt_tokens": 12972,
+          "cache_n": 12954,
+          "fresh_prompt_tokens": 18,
+          "requested_fresh_prompt_tokens": 18,
+          "prompt_ms": 442.0,
+          "native_generated_tokens": 108,
+          "decode_ms": 2721.0,
+          "draft_accepted": 81,
+          "draft_offered": 81
+        }
+      ],
+      "runtime_allocation_log": "strata generate: native pack: /storage-fast/llm/strata-orca/pack experts (largest blob 2.18 MB), token embedding IQ3_S in mapped host memory (260 MiB)\nstrata generate: 1466 MiB of weights loaded from /storage-fast/llm/strata-orca/pack (302 canonical tensors skipped: served natively)\nstrata generate: 300 native projection matrices, 1225.20 MiB of weights\nstrata generate: the SSD is kept awake while rows are read: one page of the table after 100 ms without a read, until 60 s after the last request (STRATA_SSD_KEEPALIVE=0 turns it off)\nstrata generate: profile /nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin: 24576 ranked pairs, built for 24576 slots\nstrata generate: PLE on, table 320001536 rows of /storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf\nstrata mtp: draft layer loaded, 838 MiB of VRAM (experts 675, dense 111), files read in 0.38 s (2061 MiB/s)\nstrata generate: experimental native Q5_K head, 437043200 bytes\nstrata generate: GPU 0: NVIDIA GeForce RTX 4090, compute capability 8.9\nstrata generate: experts via mmap (--mmap-experts; the GGUF shards in place, no experts.bin)\nstrata generate: the file tier reads through the file cache (through the file cache (not Windows))\nstrata generate: expert cache auto: 18.50 GiB free, 2048 MiB reserved (+182 MiB for the draft head) -> 8052 slots\nstrata generate: expert cache 8052 slots, 16.32 GiB of VRAM; policy is\nstrata generate: the GPU computes the experts in the cache; it rounds differently from the CPU,\n                 so a reply can differ slightly from a run without the cache (same quality:\n                 bench/results/2026-09-27-cache-parity).\n                 PROFILE, ranked by routing frequency, no eviction.\nstrata generate: pre-filled 8052 of 8052 slots from the profile; slot 0 verified\nstrata generate: routing-aware prefetch of the file tier on (the next layer's router)\nstrata generate: R4 hit path ON - resident experts are computed on the GPU\nstrata generate: 23 expert-pool workers + the host thread\nstrata generate: session is up (engine 0.1.39)\nstrata generate: token graph hit path: 8052 resident experts, decided on the device\nFileExpertSource: RAM budget 24.00 GiB: 11842 of the 33.49 GiB of experts the GPU cache does not hold, by profile rank; the rest are read from the files\nFileExpertSource: allocating 24.00 GiB page-locked cache complement\nFileExpertSource: copied cache complement through layer 8/48 (5.61 GiB)\nFileExpertSource: copied cache complement through layer 16/48 (8.56 GiB)\nFileExpertSource: copied cache complement through layer 24/48 (12.07 GiB)\nFileExpertSource: copied cache complement through layer 32/48 (17.46 GiB)\nFileExpertSource: copied cache complement through layer 40/48 (20.85 GiB)\nFileExpertSource: copied cache complement through layer 48/48 (24.00 GiB)\nFileExpertSource: mapped pinned cache complement ready: resident 24.00 GiB, pinned 24.00 GiB; page-locked and mapped\nstrata generate: resident RAM mode: 24.00 GiB of experts in RAM (page-locked), 8052 in the GPU cache; adaptive swaps exchange them with the GPU cache (no file reads)\nstrata serve: the prompt path borrows 357 CUDA0 cache slots (0.72 GiB)\nstrata hc: CUDA0: the hyper-connection read runs as staged (the norm per token and stream, the down projection's activations staged ahead by cp.async); checked bit for bit against the plain read on this card (STRATA_HC_SPLIT=1 or 0 for the earlier ones)\nstrata verify: window up to 4 tokens, 55.6 MiB of device buffers\nstrata mtp: draft head over 106299 tokens (178.4 MiB)\nstrata serve: 1750 MiB of VRAM free with everything loaded\nstrata verify: captured the 4-token window (upload no error, sync no error)\nstrata verify: captured the 1-token window (upload no error, sync no error)\nstrata verify: captured the 3-token window (upload no error, sync no error)\nstrata verify: captured the 2-token window (upload no error, sync no error)\nstrata serve: prompt 12890 tokens = 0 reused + 12890 read in 42516 ms (303.2 tok/s), 65 generated in 1487 ms (43.7 tok/s), drafts accepted 41 of 50, 1 checkpoints\nstrata serve: decode expert cache hit rate: 79.8% (25661 hits / 32167 lookups); 3353 more read by the GPU over PCIe or from another GPU (9.4% of all 35520 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 420 exchanged with the VRAM tier, 1498 blob reads from the file\nstrata serve: expert tiers: GPU 25661 hits this request; since the start RAM 157466 blobs, files 1498 blobs 157912.3 MB read (the GGUF in place)\nstrata serve: prompt 12972 tokens = 12954 reused + 18 read in 442 ms (40.7 tok/s), 108 generated in 2721 ms (39.7 tok/s), drafts accepted 81 of 81, 1 checkpoints\nstrata serve: decode expert cache hit rate: 64.6% (28886 hits / 44729 lookups); 7591 more read by the GPU over PCIe or from another GPU (14.5% of all 52320 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 912 exchanged with the VRAM tier, 7091 blob reads from the file\nstrata serve: expert tiers: GPU 28886 hits this request; since the start RAM 171956 blobs, files 7091 blobs 166934.0 MB read (the GGUF in place)\n",
+      "runtime_allocation": {
+        "actual_expert_resident_gib": 24.0,
+        "fallback_warnings": [],
+        "configured_budget_is_upper_bound": true
+      },
+      "status": "completed",
+      "native_accounting": {
+        "phase_count": 2,
+        "native_generated_tokens_all_phases": 173,
+        "native_decode_ms_all_phases": 4208.0,
+        "native_prompt_ms_all_phases": 42958.0,
+        "fresh_prompt_tokens_all_phases": 12908,
+        "initial_cached_input_tokens": 0,
+        "last_phase_native_generated_tokens": 108,
+        "last_phase_native_tokens_s": 39.691289966923925,
+        "native_all_phases_tokens_s": 41.11216730038023,
+        "api_minus_native_output_tokens": 17,
+        "note": "API usage includes injected reasoning-wrap tokens; native counts may include cancellation/drain overrun. Wrapper status exposes final native phase clock/cache with total API predicted_n; these counters must not be divided as though one phase."
+      },
+      "engine_timings": {
+        "cache_n": 12954,
+        "prompt_n": 0,
+        "prompt_ms": 441.8,
+        "prompt_per_token_ms": null,
+        "prompt_per_second": null,
+        "predicted_n": 190,
+        "predicted_ms": 2720.7,
+        "predicted_per_token_ms": 25.192,
+        "predicted_per_second": 39.7,
+        "draft_n": 81,
+        "draft_n_accepted": 81,
+        "at": 1791239035
+      },
+      "valid_measurement": true,
+      "output_tokens": 190,
+      "reasoning_tokens": 81,
+      "answer_tokens": 109,
+      "expected_retrieval": {
+        "entry_00000": "code_104729_0000",
+        "entry_00070": "code_659059_0046",
+        "entry_00140": "code_213406_008c",
+        "entry_00279": "code_314164_0117"
+      },
+      "retrieval_correct": true,
+      "api_answer_tokens_per_response_wall_s": 0.9333692801560565,
+      "request_tokens_per_s": 1.6269739745839518
+    },
+    {
+      "workload": "context_varied_long",
+      "trial": 2,
+      "cold_engine": false,
+      "prompt_chars": 25293,
+      "prompt": "Record entry_00000: unique_code=code_104729_0000; owner=team_0; cycle=2000; priority=0.\nRecord entry_00001: unique_code=code_112648_0001; owner=team_17; cycle=2001; priority=13.\nRecord entry_00002: unique_code=code_120567_0002; owner=team_34; cycle=2002; priority=26.\nRecord entry_00003: unique_code=code_128486_0003; owner=team_51; cycle=2003; priority=39.\nRecord entry_00004: unique_code=code_136405_0004; owner=team_68; cycle=2004; priority=52.\nRecord entry_00005: unique_code=code_144324_0005; owner=team_85; cycle=2005; priority=65.\nRecord entry_00006: unique_code=code_152243_0006; owner=team_1; cycle=2006; priority=78.\nRecord entry_00007: unique_code=code_160162_0007; owner=team_18; cycle=2007; priority=91.\nRecord entry_00008: unique_code=code_168081_0008; owner=team_35; cycle=2008; priority=7.\nRecord entry_00009: unique_code=code_176000_0009; owner=team_52; cycle=2009; priority=20.\nRecord entry_00010: unique_code=code_183919_000a; owner=team_69; cycle=2010; priority=33.\nRecord entry_00011: unique_code=code_191838_000b; owner=team_86; cycle=2011; priority=46.\nRecord entry_00012: unique_code=code_199757_000c; owner=team_2; cycle=2012; priority=59.\nRecord entry_00013: unique_code=code_207676_000d; owner=team_19; cycle=2013; priority=72.\nRecord entry_00014: unique_code=code_215595_000e; owner=team_36; cycle=2014; priority=85.\nRecord entry_00015: unique_code=code_223514_000f; owner=team_53; cycle=2015; priority=1.\nRecord entry_00016: unique_code=code_231433_0010; owner=team_70; cycle=2016; priority=14.\nRecord entry_00017: unique_code=code_239352_0011; owner=team_87; cycle=2017; priority=27.\nRecord entry_00018: unique_code=code_247271_0012; owner=team_3; cycle=2018; priority=40.\nRecord entry_00019: unique_code=code_255190_0013; owner=team_20; cycle=2019; priority=53.\nRecord entry_00020: unique_code=code_263109_0014; owner=team_37; cycle=2020; priority=66.\nRecord entry_00021: unique_code=code_271028_0015; owner=team_54; cycle=2021; priority=79.\nRecord entry_00022: unique_code=code_278947_0016; owner=team_71; cycle=2022; priority=92.\nRecord entry_00023: unique_code=code_286866_0017; owner=team_88; cycle=2023; priority=8.\nRecord entry_00024: unique_code=code_294785_0018; owner=team_4; cycle=2024; priority=21.\nRecord entry_00025: unique_code=code_302704_0019; owner=team_21; cycle=2025; priority=34.\nRecord entry_00026: unique_code=code_310623_001a; owner=team_38; cycle=2026; priority=47.\nRecord entry_00027: unique_code=code_318542_001b; owner=team_55; cycle=2027; priority=60.\nRecord entry_00028: unique_code=code_326461_001c; owner=team_72; cycle=2028; priority=73.\nRecord entry_00029: unique_code=code_334380_001d; owner=team_89; cycle=2029; priority=86.\nRecord entry_00030: unique_code=code_342299_001e; owner=team_5; cycle=2030; priority=2.\nRecord entry_00031: unique_code=code_350218_001f; owner=team_22; cycle=2031; priority=15.\nRecord entry_00032: unique_code=code_358137_0020; owner=team_39; cycle=2032; priority=28.\nRecord entry_00033: unique_code=code_366056_0021; owner=team_56; cycle=2033; priority=41.\nRecord entry_00034: unique_code=code_373975_0022; owner=team_73; cycle=2034; priority=54.\nRecord entry_00035: unique_code=code_381894_0023; owner=team_90; cycle=2035; priority=67.\nRecord entry_00036: unique_code=code_389813_0024; owner=team_6; cycle=2036; priority=80.\nRecord entry_00037: unique_code=code_397732_0025; owner=team_23; cycle=2037; priority=93.\nRecord entry_00038: unique_code=code_405651_0026; owner=team_40; cycle=2038; priority=9.\nRecord entry_00039: unique_code=code_413570_0027; owner=team_57; cycle=2039; priority=22.\nRecord entry_00040: unique_code=code_421489_0028; owner=team_74; cycle=2040; priority=35.\nRecord entry_00041: unique_code=code_429408_0029; owner=team_91; cycle=2041; priority=48.\nRecord entry_00042: unique_code=code_437327_002a; owner=team_7; cycle=2042; priority=61.\nRecord entry_00043: unique_code=code_445246_002b; owner=team_24; cycle=2043; priority=74.\nRecord entry_00044: unique_code=code_453165_002c; owner=team_41; cycle=2044; priority=87.\nRecord entry_00045: unique_code=code_461084_002d; owner=team_58; cycle=2045; priority=3.\nRecord entry_00046: unique_code=code_469003_002e; owner=team_75; cycle=2046; priority=16.\nRecord entry_00047: unique_code=code_476922_002f; owner=team_92; cycle=2047; priority=29.\nRecord entry_00048: unique_code=code_484841_0030; owner=team_8; cycle=2048; priority=42.\nRecord entry_00049: unique_code=code_492760_0031; owner=team_25; cycle=2049; priority=55.\nRecord entry_00050: unique_code=code_500679_0032; owner=team_42; cycle=2050; priority=68.\nRecord entry_00051: unique_code=code_508598_0033; owner=team_59; cycle=2051; priority=81.\nRecord entry_00052: unique_code=code_516517_0034; owner=team_76; cycle=2052; priority=94.\nRecord entry_00053: unique_code=code_524436_0035; owner=team_93; cycle=2053; priority=10.\nRecord entry_00054: unique_code=code_532355_0036; owner=team_9; cycle=2054; priority=23.\nRecord entry_00055: unique_code=code_540274_0037; owner=team_26; cycle=2055; priority=36.\nRecord entry_00056: unique_code=code_548193_0038; owner=team_43; cycle=2056; priority=49.\nRecord entry_00057: unique_code=code_556112_0039; owner=team_60; cycle=2057; priority=62.\nRecord entry_00058: unique_code=code_564031_003a; owner=team_77; cycle=2058; priority=75.\nRecord entry_00059: unique_code=code_571950_003b; owner=team_94; cycle=2059; priority=88.\nRecord entry_00060: unique_code=code_579869_003c; owner=team_10; cycle=2060; priority=4.\nRecord entry_00061: unique_code=code_587788_003d; owner=team_27; cycle=2061; priority=17.\nRecord entry_00062: unique_code=code_595707_003e; owner=team_44; cycle=2062; priority=30.\nRecord entry_00063: unique_code=code_603626_003f; owner=team_61; cycle=2063; priority=43.\nRecord entry_00064: unique_code=code_611545_0040; owner=team_78; cycle=2064; priority=56.\nRecord entry_00065: unique_code=code_619464_0041; owner=team_95; cycle=2065; priority=69.\nRecord entry_00066: unique_code=code_627383_0042; owner=team_11; cycle=2066; priority=82.\nRecord entry_00067: unique_code=code_635302_0043; owner=team_28; cycle=2067; priority=95.\nRecord entry_00068: unique_code=code_643221_0044; owner=team_45; cycle=2068; priority=11.\nRecord entry_00069: unique_code=code_651140_0045; owner=team_62; cycle=2069; priority=24.\nRecord entry_00070: unique_code=code_659059_0046; owner=team_79; cycle=2070; priority=37.\nRecord entry_00071: unique_code=code_666978_0047; owner=team_96; cycle=2071; priority=50.\nRecord entry_00072: unique_code=code_674897_0048; owner=team_12; cycle=2072; priority=63.\nRecord entry_00073: unique_code=code_682816_0049; owner=team_29; cycle=2073; priority=76.\nRecord entry_00074: unique_code=code_690735_004a; owner=team_46; cycle=2074; priority=89.\nRecord entry_00075: unique_code=code_698654_004b; owner=team_63; cycle=2075; priority=5.\nRecord entry_00076: unique_code=code_706573_004c; owner=team_80; cycle=2076; priority=18.\nRecord entry_00077: unique_code=code_714492_004d; owner=team_97; cycle=2077; priority=31.\nRecord entry_00078: unique_code=code_722411_004e; owner=team_13; cycle=2078; priority=44.\nRecord entry_00079: unique_code=code_730330_004f; owner=team_30; cycle=2079; priority=57.\nRecord entry_00080: unique_code=code_738249_0050; owner=team_47; cycle=2080; priority=70.\nRecord entry_00081: unique_code=code_746168_0051; owner=team_64; cycle=2081; priority=83.\nRecord entry_00082: unique_code=code_754087_0052; owner=team_81; cycle=2082; priority=96.\nRecord entry_00083: unique_code=code_762006_0053; owner=team_98; cycle=2083; priority=12.\nRecord entry_00084: unique_code=code_769925_0054; owner=team_14; cycle=2084; priority=25.\nRecord entry_00085: unique_code=code_777844_0055; owner=team_31; cycle=2085; priority=38.\nRecord entry_00086: unique_code=code_785763_0056; owner=team_48; cycle=2086; priority=51.\nRecord entry_00087: unique_code=code_793682_0057; owner=team_65; cycle=2087; priority=64.\nRecord entry_00088: unique_code=code_801601_0058; owner=team_82; cycle=2088; priority=77.\nRecord entry_00089: unique_code=code_809520_0059; owner=team_99; cycle=2089; priority=90.\nRecord entry_00090: unique_code=code_817439_005a; owner=team_15; cycle=2090; priority=6.\nRecord entry_00091: unique_code=code_825358_005b; owner=team_32; cycle=2091; priority=19.\nRecord entry_00092: unique_code=code_833277_005c; owner=team_49; cycle=2092; priority=32.\nRecord entry_00093: unique_code=code_841196_005d; owner=team_66; cycle=2093; priority=45.\nRecord entry_00094: unique_code=code_849115_005e; owner=team_83; cycle=2094; priority=58.\nRecord entry_00095: unique_code=code_857034_005f; owner=team_100; cycle=2095; priority=71.\nRecord entry_00096: unique_code=code_864953_0060; owner=team_16; cycle=2096; priority=84.\nRecord entry_00097: unique_code=code_872872_0061; owner=team_33; cycle=2097; priority=0.\nRecord entry_00098: unique_code=code_880791_0062; owner=team_50; cycle=2098; priority=13.\nRecord entry_00099: unique_code=code_888710_0063; owner=team_67; cycle=2099; priority=26.\nRecord entry_00100: unique_code=code_896629_0064; owner=team_84; cycle=2100; priority=39.\nRecord entry_00101: unique_code=code_904548_0065; owner=team_0; cycle=2101; priority=52.\nRecord entry_00102: unique_code=code_912467_0066; owner=team_17; cycle=2102; priority=65.\nRecord entry_00103: unique_code=code_920386_0067; owner=team_34; cycle=2103; priority=78.\nRecord entry_00104: unique_code=code_928305_0068; owner=team_51; cycle=2104; priority=91.\nRecord entry_00105: unique_code=code_936224_0069; owner=team_68; cycle=2105; priority=7.\nRecord entry_00106: unique_code=code_944143_006a; owner=team_85; cycle=2106; priority=20.\nRecord entry_00107: unique_code=code_952062_006b; owner=team_1; cycle=2107; priority=33.\nRecord entry_00108: unique_code=code_959981_006c; owner=team_18; cycle=2108; priority=46.\nRecord entry_00109: unique_code=code_967900_006d; owner=team_35; cycle=2109; priority=59.\nRecord entry_00110: unique_code=code_975819_006e; owner=team_52; cycle=2110; priority=72.\nRecord entry_00111: unique_code=code_983738_006f; owner=team_69; cycle=2111; priority=85.\nRecord entry_00112: unique_code=code_991657_0070; owner=team_86; cycle=2112; priority=1.\nRecord entry_00113: unique_code=code_999576_0071; owner=team_2; cycle=2113; priority=14.\nRecord entry_00114: unique_code=code_007512_0072; owner=team_19; cycle=2114; priority=27.\nRecord entry_00115: unique_code=code_015431_0073; owner=team_36; cycle=2115; priority=40.\nRecord entry_00116: unique_code=code_023350_0074; owner=team_53; cycle=2116; priority=53.\nRecord entry_00117: unique_code=code_031269_0075; owner=team_70; cycle=2117; priority=66.\nRecord entry_00118: unique_code=code_039188_0076; owner=team_87; cycle=2118; priority=79.\nRecord entry_00119: unique_code=code_047107_0077; owner=team_3; cycle=2119; priority=92.\nRecord entry_00120: unique_code=code_055026_0078; owner=team_20; cycle=2120; priority=8.\nRecord entry_00121: unique_code=code_062945_0079; owner=team_37; cycle=2121; priority=21.\nRecord entry_00122: unique_code=code_070864_007a; owner=team_54; cycle=2122; priority=34.\nRecord entry_00123: unique_code=code_078783_007b; owner=team_71; cycle=2123; priority=47.\nRecord entry_00124: unique_code=code_086702_007c; owner=team_88; cycle=2124; priority=60.\nRecord entry_00125: unique_code=code_094621_007d; owner=team_4; cycle=2125; priority=73.\nRecord entry_00126: unique_code=code_102540_007e; owner=team_21; cycle=2126; priority=86.\nRecord entry_00127: unique_code=code_110459_007f; owner=team_38; cycle=2127; priority=2.\nRecord entry_00128: unique_code=code_118378_0080; owner=team_55; cycle=2128; priority=15.\nRecord entry_00129: unique_code=code_126297_0081; owner=team_72; cycle=2129; priority=28.\nRecord entry_00130: unique_code=code_134216_0082; owner=team_89; cycle=2130; priority=41.\nRecord entry_00131: unique_code=code_142135_0083; owner=team_5; cycle=2131; priority=54.\nRecord entry_00132: unique_code=code_150054_0084; owner=team_22; cycle=2132; priority=67.\nRecord entry_00133: unique_code=code_157973_0085; owner=team_39; cycle=2133; priority=80.\nRecord entry_00134: unique_code=code_165892_0086; owner=team_56; cycle=2134; priority=93.\nRecord entry_00135: unique_code=code_173811_0087; owner=team_73; cycle=2135; priority=9.\nRecord entry_00136: unique_code=code_181730_0088; owner=team_90; cycle=2136; priority=22.\nRecord entry_00137: unique_code=code_189649_0089; owner=team_6; cycle=2137; priority=35.\nRecord entry_00138: unique_code=code_197568_008a; owner=team_23; cycle=2138; priority=48.\nRecord entry_00139: unique_code=code_205487_008b; owner=team_40; cycle=2139; priority=61.\nRecord entry_00140: unique_code=code_213406_008c; owner=team_57; cycle=2140; priority=74.\nRecord entry_00141: unique_code=code_221325_008d; owner=team_74; cycle=2141; priority=87.\nRecord entry_00142: unique_code=code_229244_008e; owner=team_91; cycle=2142; priority=3.\nRecord entry_00143: unique_code=code_237163_008f; owner=team_7; cycle=2143; priority=16.\nRecord entry_00144: unique_code=code_245082_0090; owner=team_24; cycle=2144; priority=29.\nRecord entry_00145: unique_code=code_253001_0091; owner=team_41; cycle=2145; priority=42.\nRecord entry_00146: unique_code=code_260920_0092; owner=team_58; cycle=2146; priority=55.\nRecord entry_00147: unique_code=code_268839_0093; owner=team_75; cycle=2147; priority=68.\nRecord entry_00148: unique_code=code_276758_0094; owner=team_92; cycle=2148; priority=81.\nRecord entry_00149: unique_code=code_284677_0095; owner=team_8; cycle=2149; priority=94.\nRecord entry_00150: unique_code=code_292596_0096; owner=team_25; cycle=2150; priority=10.\nRecord entry_00151: unique_code=code_300515_0097; owner=team_42; cycle=2151; priority=23.\nRecord entry_00152: unique_code=code_308434_0098; owner=team_59; cycle=2152; priority=36.\nRecord entry_00153: unique_code=code_316353_0099; owner=team_76; cycle=2153; priority=49.\nRecord entry_00154: unique_code=code_324272_009a; owner=team_93; cycle=2154; priority=62.\nRecord entry_00155: unique_code=code_332191_009b; owner=team_9; cycle=2155; priority=75.\nRecord entry_00156: unique_code=code_340110_009c; owner=team_26; cycle=2156; priority=88.\nRecord entry_00157: unique_code=code_348029_009d; owner=team_43; cycle=2157; priority=4.\nRecord entry_00158: unique_code=code_355948_009e; owner=team_60; cycle=2158; priority=17.\nRecord entry_00159: unique_code=code_363867_009f; owner=team_77; cycle=2159; priority=30.\nRecord entry_00160: unique_code=code_371786_00a0; owner=team_94; cycle=2160; priority=43.\nRecord entry_00161: unique_code=code_379705_00a1; owner=team_10; cycle=2161; priority=56.\nRecord entry_00162: unique_code=code_387624_00a2; owner=team_27; cycle=2162; priority=69.\nRecord entry_00163: unique_code=code_395543_00a3; owner=team_44; cycle=2163; priority=82.\nRecord entry_00164: unique_code=code_403462_00a4; owner=team_61; cycle=2164; priority=95.\nRecord entry_00165: unique_code=code_411381_00a5; owner=team_78; cycle=2165; priority=11.\nRecord entry_00166: unique_code=code_419300_00a6; owner=team_95; cycle=2166; priority=24.\nRecord entry_00167: unique_code=code_427219_00a7; owner=team_11; cycle=2167; priority=37.\nRecord entry_00168: unique_code=code_435138_00a8; owner=team_28; cycle=2168; priority=50.\nRecord entry_00169: unique_code=code_443057_00a9; owner=team_45; cycle=2169; priority=63.\nRecord entry_00170: unique_code=code_450976_00aa; owner=team_62; cycle=2170; priority=76.\nRecord entry_00171: unique_code=code_458895_00ab; owner=team_79; cycle=2171; priority=89.\nRecord entry_00172: unique_code=code_466814_00ac; owner=team_96; cycle=2172; priority=5.\nRecord entry_00173: unique_code=code_474733_00ad; owner=team_12; cycle=2173; priority=18.\nRecord entry_00174: unique_code=code_482652_00ae; owner=team_29; cycle=2174; priority=31.\nRecord entry_00175: unique_code=code_490571_00af; owner=team_46; cycle=2175; priority=44.\nRecord entry_00176: unique_code=code_498490_00b0; owner=team_63; cycle=2176; priority=57.\nRecord entry_00177: unique_code=code_506409_00b1; owner=team_80; cycle=2177; priority=70.\nRecord entry_00178: unique_code=code_514328_00b2; owner=team_97; cycle=2178; priority=83.\nRecord entry_00179: unique_code=code_522247_00b3; owner=team_13; cycle=2179; priority=96.\nRecord entry_00180: unique_code=code_530166_00b4; owner=team_30; cycle=2180; priority=12.\nRecord entry_00181: unique_code=code_538085_00b5; owner=team_47; cycle=2181; priority=25.\nRecord entry_00182: unique_code=code_546004_00b6; owner=team_64; cycle=2182; priority=38.\nRecord entry_00183: unique_code=code_553923_00b7; owner=team_81; cycle=2183; priority=51.\nRecord entry_00184: unique_code=code_561842_00b8; owner=team_98; cycle=2184; priority=64.\nRecord entry_00185: unique_code=code_569761_00b9; owner=team_14; cycle=2185; priority=77.\nRecord entry_00186: unique_code=code_577680_00ba; owner=team_31; cycle=2186; priority=90.\nRecord entry_00187: unique_code=code_585599_00bb; owner=team_48; cycle=2187; priority=6.\nRecord entry_00188: unique_code=code_593518_00bc; owner=team_65; cycle=2188; priority=19.\nRecord entry_00189: unique_code=code_601437_00bd; owner=team_82; cycle=2189; priority=32.\nRecord entry_00190: unique_code=code_609356_00be; owner=team_99; cycle=2190; priority=45.\nRecord entry_00191: unique_code=code_617275_00bf; owner=team_15; cycle=2191; priority=58.\nRecord entry_00192: unique_code=code_625194_00c0; owner=team_32; cycle=2192; priority=71.\nRecord entry_00193: unique_code=code_633113_00c1; owner=team_49; cycle=2193; priority=84.\nRecord entry_00194: unique_code=code_641032_00c2; owner=team_66; cycle=2194; priority=0.\nRecord entry_00195: unique_code=code_648951_00c3; owner=team_83; cycle=2195; priority=13.\nRecord entry_00196: unique_code=code_656870_00c4; owner=team_100; cycle=2196; priority=26.\nRecord entry_00197: unique_code=code_664789_00c5; owner=team_16; cycle=2197; priority=39.\nRecord entry_00198: unique_code=code_672708_00c6; owner=team_33; cycle=2198; priority=52.\nRecord entry_00199: unique_code=code_680627_00c7; owner=team_50; cycle=2199; priority=65.\nRecord entry_00200: unique_code=code_688546_00c8; owner=team_67; cycle=2200; priority=78.\nRecord entry_00201: unique_code=code_696465_00c9; owner=team_84; cycle=2201; priority=91.\nRecord entry_00202: unique_code=code_704384_00ca; owner=team_0; cycle=2202; priority=7.\nRecord entry_00203: unique_code=code_712303_00cb; owner=team_17; cycle=2203; priority=20.\nRecord entry_00204: unique_code=code_720222_00cc; owner=team_34; cycle=2204; priority=33.\nRecord entry_00205: unique_code=code_728141_00cd; owner=team_51; cycle=2205; priority=46.\nRecord entry_00206: unique_code=code_736060_00ce; owner=team_68; cycle=2206; priority=59.\nRecord entry_00207: unique_code=code_743979_00cf; owner=team_85; cycle=2207; priority=72.\nRecord entry_00208: unique_code=code_751898_00d0; owner=team_1; cycle=2208; priority=85.\nRecord entry_00209: unique_code=code_759817_00d1; owner=team_18; cycle=2209; priority=1.\nRecord entry_00210: unique_code=code_767736_00d2; owner=team_35; cycle=2210; priority=14.\nRecord entry_00211: unique_code=code_775655_00d3; owner=team_52; cycle=2211; priority=27.\nRecord entry_00212: unique_code=code_783574_00d4; owner=team_69; cycle=2212; priority=40.\nRecord entry_00213: unique_code=code_791493_00d5; owner=team_86; cycle=2213; priority=53.\nRecord entry_00214: unique_code=code_799412_00d6; owner=team_2; cycle=2214; priority=66.\nRecord entry_00215: unique_code=code_807331_00d7; owner=team_19; cycle=2215; priority=79.\nRecord entry_00216: unique_code=code_815250_00d8; owner=team_36; cycle=2216; priority=92.\nRecord entry_00217: unique_code=code_823169_00d9; owner=team_53; cycle=2217; priority=8.\nRecord entry_00218: unique_code=code_831088_00da; owner=team_70; cycle=2218; priority=21.\nRecord entry_00219: unique_code=code_839007_00db; owner=team_87; cycle=2219; priority=34.\nRecord entry_00220: unique_code=code_846926_00dc; owner=team_3; cycle=2220; priority=47.\nRecord entry_00221: unique_code=code_854845_00dd; owner=team_20; cycle=2221; priority=60.\nRecord entry_00222: unique_code=code_862764_00de; owner=team_37; cycle=2222; priority=73.\nRecord entry_00223: unique_code=code_870683_00df; owner=team_54; cycle=2223; priority=86.\nRecord entry_00224: unique_code=code_878602_00e0; owner=team_71; cycle=2224; priority=2.\nRecord entry_00225: unique_code=code_886521_00e1; owner=team_88; cycle=2225; priority=15.\nRecord entry_00226: unique_code=code_894440_00e2; owner=team_4; cycle=2226; priority=28.\nRecord entry_00227: unique_code=code_902359_00e3; owner=team_21; cycle=2227; priority=41.\nRecord entry_00228: unique_code=code_910278_00e4; owner=team_38; cycle=2228; priority=54.\nRecord entry_00229: unique_code=code_918197_00e5; owner=team_55; cycle=2229; priority=67.\nRecord entry_00230: unique_code=code_926116_00e6; owner=team_72; cycle=2230; priority=80.\nRecord entry_00231: unique_code=code_934035_00e7; owner=team_89; cycle=2231; priority=93.\nRecord entry_00232: unique_code=code_941954_00e8; owner=team_5; cycle=2232; priority=9.\nRecord entry_00233: unique_code=code_949873_00e9; owner=team_22; cycle=2233; priority=22.\nRecord entry_00234: unique_code=code_957792_00ea; owner=team_39; cycle=2234; priority=35.\nRecord entry_00235: unique_code=code_965711_00eb; owner=team_56; cycle=2235; priority=48.\nRecord entry_00236: unique_code=code_973630_00ec; owner=team_73; cycle=2236; priority=61.\nRecord entry_00237: unique_code=code_981549_00ed; owner=team_90; cycle=2237; priority=74.\nRecord entry_00238: unique_code=code_989468_00ee; owner=team_6; cycle=2238; priority=87.\nRecord entry_00239: unique_code=code_997387_00ef; owner=team_23; cycle=2239; priority=3.\nRecord entry_00240: unique_code=code_005323_00f0; owner=team_40; cycle=2240; priority=16.\nRecord entry_00241: unique_code=code_013242_00f1; owner=team_57; cycle=2241; priority=29.\nRecord entry_00242: unique_code=code_021161_00f2; owner=team_74; cycle=2242; priority=42.\nRecord entry_00243: unique_code=code_029080_00f3; owner=team_91; cycle=2243; priority=55.\nRecord entry_00244: unique_code=code_036999_00f4; owner=team_7; cycle=2244; priority=68.\nRecord entry_00245: unique_code=code_044918_00f5; owner=team_24; cycle=2245; priority=81.\nRecord entry_00246: unique_code=code_052837_00f6; owner=team_41; cycle=2246; priority=94.\nRecord entry_00247: unique_code=code_060756_00f7; owner=team_58; cycle=2247; priority=10.\nRecord entry_00248: unique_code=code_068675_00f8; owner=team_75; cycle=2248; priority=23.\nRecord entry_00249: unique_code=code_076594_00f9; owner=team_92; cycle=2249; priority=36.\nRecord entry_00250: unique_code=code_084513_00fa; owner=team_8; cycle=2250; priority=49.\nRecord entry_00251: unique_code=code_092432_00fb; owner=team_25; cycle=2251; priority=62.\nRecord entry_00252: unique_code=code_100351_00fc; owner=team_42; cycle=2252; priority=75.\nRecord entry_00253: unique_code=code_108270_00fd; owner=team_59; cycle=2253; priority=88.\nRecord entry_00254: unique_code=code_116189_00fe; owner=team_76; cycle=2254; priority=4.\nRecord entry_00255: unique_code=code_124108_00ff; owner=team_93; cycle=2255; priority=17.\nRecord entry_00256: unique_code=code_132027_0100; owner=team_9; cycle=2256; priority=30.\nRecord entry_00257: unique_code=code_139946_0101; owner=team_26; cycle=2257; priority=43.\nRecord entry_00258: unique_code=code_147865_0102; owner=team_43; cycle=2258; priority=56.\nRecord entry_00259: unique_code=code_155784_0103; owner=team_60; cycle=2259; priority=69.\nRecord entry_00260: unique_code=code_163703_0104; owner=team_77; cycle=2260; priority=82.\nRecord entry_00261: unique_code=code_171622_0105; owner=team_94; cycle=2261; priority=95.\nRecord entry_00262: unique_code=code_179541_0106; owner=team_10; cycle=2262; priority=11.\nRecord entry_00263: unique_code=code_187460_0107; owner=team_27; cycle=2263; priority=24.\nRecord entry_00264: unique_code=code_195379_0108; owner=team_44; cycle=2264; priority=37.\nRecord entry_00265: unique_code=code_203298_0109; owner=team_61; cycle=2265; priority=50.\nRecord entry_00266: unique_code=code_211217_010a; owner=team_78; cycle=2266; priority=63.\nRecord entry_00267: unique_code=code_219136_010b; owner=team_95; cycle=2267; priority=76.\nRecord entry_00268: unique_code=code_227055_010c; owner=team_11; cycle=2268; priority=89.\nRecord entry_00269: unique_code=code_234974_010d; owner=team_28; cycle=2269; priority=5.\nRecord entry_00270: unique_code=code_242893_010e; owner=team_45; cycle=2270; priority=18.\nRecord entry_00271: unique_code=code_250812_010f; owner=team_62; cycle=2271; priority=31.\nRecord entry_00272: unique_code=code_258731_0110; owner=team_79; cycle=2272; priority=44.\nRecord entry_00273: unique_code=code_266650_0111; owner=team_96; cycle=2273; priority=57.\nRecord entry_00274: unique_code=code_274569_0112; owner=team_12; cycle=2274; priority=70.\nRecord entry_00275: unique_code=code_282488_0113; owner=team_29; cycle=2275; priority=83.\nRecord entry_00276: unique_code=code_290407_0114; owner=team_46; cycle=2276; priority=96.\nRecord entry_00277: unique_code=code_298326_0115; owner=team_63; cycle=2277; priority=12.\nRecord entry_00278: unique_code=code_306245_0116; owner=team_80; cycle=2278; priority=25.\nRecord entry_00279: unique_code=code_314164_0117; owner=team_97; cycle=2279; priority=38.\nReturn ONLY a JSON object mapping each requested record ID to its exact unique_code. Requested IDs: entry_00000, entry_00070, entry_00140, entry_00279",
+      "first_token_s": 0.13340507505927235,
+      "first_answer_s": 1.5983028730843216,
+      "output_text": "{\n  \"entry_00000\": \"code_104729_0000\",\n  \"entry_00070\": \"code_659059_0046\",\n  \"entry_00140\": \"code_213406_008c\",\n  \"entry_00279\": \"code_314164_0117\"\n}",
+      "reasoning_text": "We need answer user's request. User provided records and asks: Return ONLY a JSON object mapping each requested record ID to its exact unique_code. Requested IDs: entry_00000, entry_00070, entry_00140, entry_00279\n\nI have thought about this long enough; time to give my answer.\n",
+      "terminal_type": "response.completed",
+      "response": {
+        "id": "resp_555402f8585c4221958b24cbba324df9",
+        "object": "response",
+        "created_at": 1791239035,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 384,
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "output": [
+          {
+            "id": "rs_8cc79b83f1df4a528332dd9bbcb7223a",
+            "type": "reasoning",
+            "status": "completed",
+            "summary": [],
+            "content": [
+              {
+                "type": "reasoning_text",
+                "text": "We need answer user's request. User provided records and asks: Return ONLY a JSON object mapping each requested record ID to its exact unique_code. Requested IDs: entry_00000, entry_00070, entry_00140, entry_00279\n\nI have thought about this long enough; time to give my answer.\n"
+              }
+            ]
+          },
+          {
+            "id": "msg_d8350b20c461488dad79585329340d0e",
+            "type": "message",
+            "status": "completed",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "{\n  \"entry_00000\": \"code_104729_0000\",\n  \"entry_00070\": \"code_659059_0046\",\n  \"entry_00140\": \"code_213406_008c\",\n  \"entry_00279\": \"code_314164_0117\"\n}",
+                "annotations": [],
+                "logprobs": []
+              }
+            ]
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "store": false,
+        "temperature": 0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": null,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 12890,
+          "input_tokens_details": {
+            "cached_tokens": 12890
+          },
+          "output_tokens": 190,
+          "output_tokens_details": {
+            "reasoning_tokens": 81
+          },
+          "total_tokens": 13080
+        },
+        "user": null,
+        "metadata": {},
+        "completed_at": 1791239038
+      },
+      "wall_s": 3.1060953700216487,
+      "status_before": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791238987,
+        "uptime_s": 47,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 1,
+          "in_flight": 0,
+          "last_request_at": 1791239035
+        },
+        "last_timings": {
+          "cache_n": 12954,
+          "prompt_n": 0,
+          "prompt_ms": 441.8,
+          "prompt_per_token_ms": null,
+          "prompt_per_second": null,
+          "predicted_n": 190,
+          "predicted_ms": 2720.7,
+          "predicted_per_token_ms": 25.192,
+          "predicted_per_second": 39.7,
+          "draft_n": 81,
+          "draft_n_accepted": 81,
+          "at": 1791239035
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791239035,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 100,
+            "temp_c": 41,
+            "power_w": 121.563
+          },
+          "ram": {
+            "used_gib": 39.6,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "status_after": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791238987,
+        "uptime_s": 50,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 2,
+          "in_flight": 0,
+          "last_request_at": 1791239038
+        },
+        "last_timings": {
+          "cache_n": 12953,
+          "prompt_n": 0,
+          "prompt_ms": 207.3,
+          "prompt_per_token_ms": null,
+          "prompt_per_second": null,
+          "predicted_n": 190,
+          "predicted_ms": 1488.1,
+          "predicted_per_token_ms": 13.779,
+          "predicted_per_second": 72.6,
+          "draft_n": 81,
+          "draft_n_accepted": 81,
+          "at": 1791239038
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791239038,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 100,
+            "temp_c": 44,
+            "power_w": 153.54
+          },
+          "ram": {
+            "used_gib": 39.6,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "native_request_log": "strata serve: prompt 12890 tokens = 12885 reused + 5 read in 51 ms (97.8 tok/s), 64 generated in 1255 ms (51.0 tok/s), drafts accepted 45 of 51, 1 checkpoints\nstrata serve: decode expert cache hit rate: 89.7% (28513 hits / 31793 lookups); 1807 more read by the GPU over PCIe or from another GPU (5.4% of all 33600 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 1283 exchanged with the VRAM tier, 7963 blob reads from the file\nstrata serve: expert tiers: GPU 28513 hits this request; since the start RAM 176267 blobs, files 7963 blobs 167854.5 MB read (the GGUF in place)\nstrata serve: prompt 12972 tokens = 12953 reused + 19 read in 207 ms (91.6 tok/s), 108 generated in 1488 ms (72.6 tok/s), drafts accepted 81 of 81, 1 checkpoints\nstrata serve: decode expert cache hit rate: 82.0% (39596 hits / 48310 lookups); 4010 more read by the GPU over PCIe or from another GPU (7.7% of all 52320 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 1765 exchanged with the VRAM tier, 11387 blob reads from the file\nstrata serve: expert tiers: GPU 39596 hits this request; since the start RAM 185317 blobs, files 11387 blobs 173216.1 MB read (the GGUF in place)\n",
+      "native_phases": [
+        {
+          "prompt_tokens": 12890,
+          "cache_n": 12885,
+          "fresh_prompt_tokens": 5,
+          "requested_fresh_prompt_tokens": 5,
+          "prompt_ms": 51.0,
+          "native_generated_tokens": 64,
+          "decode_ms": 1255.0,
+          "draft_accepted": 45,
+          "draft_offered": 51
+        },
+        {
+          "prompt_tokens": 12972,
+          "cache_n": 12953,
+          "fresh_prompt_tokens": 19,
+          "requested_fresh_prompt_tokens": 19,
+          "prompt_ms": 207.0,
+          "native_generated_tokens": 108,
+          "decode_ms": 1488.0,
+          "draft_accepted": 81,
+          "draft_offered": 81
+        }
+      ],
+      "status": "completed",
+      "native_accounting": {
+        "phase_count": 2,
+        "native_generated_tokens_all_phases": 172,
+        "native_decode_ms_all_phases": 2743.0,
+        "native_prompt_ms_all_phases": 258.0,
+        "fresh_prompt_tokens_all_phases": 24,
+        "initial_cached_input_tokens": 12885,
+        "last_phase_native_generated_tokens": 108,
+        "last_phase_native_tokens_s": 72.58064516129032,
+        "native_all_phases_tokens_s": 62.70506744440394,
+        "api_minus_native_output_tokens": 18,
+        "note": "API usage includes injected reasoning-wrap tokens; native counts may include cancellation/drain overrun. Wrapper status exposes final native phase clock/cache with total API predicted_n; these counters must not be divided as though one phase."
+      },
+      "engine_timings": {
+        "cache_n": 12953,
+        "prompt_n": 0,
+        "prompt_ms": 207.3,
+        "prompt_per_token_ms": null,
+        "prompt_per_second": null,
+        "predicted_n": 190,
+        "predicted_ms": 1488.1,
+        "predicted_per_token_ms": 13.779,
+        "predicted_per_second": 72.6,
+        "draft_n": 81,
+        "draft_n_accepted": 81,
+        "at": 1791239038
+      },
+      "valid_measurement": true,
+      "output_tokens": 190,
+      "reasoning_tokens": 81,
+      "answer_tokens": 109,
+      "expected_retrieval": {
+        "entry_00000": "code_104729_0000",
+        "entry_00070": "code_659059_0046",
+        "entry_00140": "code_213406_008c",
+        "entry_00279": "code_314164_0117"
+      },
+      "retrieval_correct": true,
+      "api_answer_tokens_per_response_wall_s": 35.09229016340226,
+      "request_tokens_per_s": 61.17004707382045
+    }
+  ],
+  "samples": [
+    {
+      "elapsed_s": 0.041464625974185765,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 47507180,
+      "SwapFree_kib": 30366540,
+      "native_rss_kib": 0,
+      "gpu_csv_mib_percent": "17, 24564, 0"
+    },
+    {
+      "elapsed_s": 0.5699314119992778,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 47263224,
+      "SwapFree_kib": 30367052,
+      "native_rss_kib": 0,
+      "gpu_csv_mib_percent": "17, 24564, 0"
+    },
+    {
+      "elapsed_s": 1.0952486790483817,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 46700588,
+      "SwapFree_kib": 30367052,
+      "native_rss_kib": 619352,
+      "gpu_csv_mib_percent": "730, 24564, 9"
+    },
+    {
+      "elapsed_s": 1.6239618980325758,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 45710192,
+      "SwapFree_kib": 30371660,
+      "native_rss_kib": 649456,
+      "gpu_csv_mib_percent": "1942, 24564, 9"
+    },
+    {
+      "elapsed_s": 2.1495095000136644,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 44584604,
+      "SwapFree_kib": 30371660,
+      "native_rss_kib": 735284,
+      "gpu_csv_mib_percent": "2062, 24564, 4"
+    },
+    {
+      "elapsed_s": 2.674932555994019,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 43894692,
+      "SwapFree_kib": 30371660,
+      "native_rss_kib": 752056,
+      "gpu_csv_mib_percent": "2488, 24564, 4"
+    },
+    {
+      "elapsed_s": 3.203700322075747,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 43491508,
+      "SwapFree_kib": 30372172,
+      "native_rss_kib": 1081384,
+      "gpu_csv_mib_percent": "2846, 24564, 3"
+    },
+    {
+      "elapsed_s": 3.7361994630191475,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 43108372,
+      "SwapFree_kib": 30372172,
+      "native_rss_kib": 1408032,
+      "gpu_csv_mib_percent": "3196, 24564, 3"
+    },
+    {
+      "elapsed_s": 4.264814888010733,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 43131704,
+      "SwapFree_kib": 30372172,
+      "native_rss_kib": 793688,
+      "gpu_csv_mib_percent": "4664, 24564, 12"
+    },
+    {
+      "elapsed_s": 4.792891353019513,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 43302776,
+      "SwapFree_kib": 30372428,
+      "native_rss_kib": 785064,
+      "gpu_csv_mib_percent": "21848, 24564, 38"
+    },
+    {
+      "elapsed_s": 5.336261476040818,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42916464,
+      "SwapFree_kib": 30372940,
+      "native_rss_kib": 1177932,
+      "gpu_csv_mib_percent": "21848, 24564, 1"
+    },
+    {
+      "elapsed_s": 5.872415031073615,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42848892,
+      "SwapFree_kib": 30373452,
+      "native_rss_kib": 1509244,
+      "gpu_csv_mib_percent": "21848, 24564, 1"
+    },
+    {
+      "elapsed_s": 6.425233394023962,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42770536,
+      "SwapFree_kib": 30373708,
+      "native_rss_kib": 1894176,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 6.96117448003497,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42614740,
+      "SwapFree_kib": 30373964,
+      "native_rss_kib": 2132500,
+      "gpu_csv_mib_percent": "21848, 24564, 1"
+    },
+    {
+      "elapsed_s": 7.49188786407467,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42475680,
+      "SwapFree_kib": 30375756,
+      "native_rss_kib": 2337756,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 8.023929208051413,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42662376,
+      "SwapFree_kib": 30375756,
+      "native_rss_kib": 2556928,
+      "gpu_csv_mib_percent": "21848, 24564, 1"
+    },
+    {
+      "elapsed_s": 8.559701696969569,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42613184,
+      "SwapFree_kib": 30376780,
+      "native_rss_kib": 2746332,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 9.087709360057488,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42695756,
+      "SwapFree_kib": 30377036,
+      "native_rss_kib": 2995644,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 9.618124681990594,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42822616,
+      "SwapFree_kib": 30377036,
+      "native_rss_kib": 3250552,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 10.157531613018364,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42731920,
+      "SwapFree_kib": 30377036,
+      "native_rss_kib": 3469484,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 10.690472270012833,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42509712,
+      "SwapFree_kib": 30377036,
+      "native_rss_kib": 3720512,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 11.224635104066692,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42749952,
+      "SwapFree_kib": 30377036,
+      "native_rss_kib": 3953532,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 11.756459192023613,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42554732,
+      "SwapFree_kib": 30377036,
+      "native_rss_kib": 4182596,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 12.290222718031146,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42856320,
+      "SwapFree_kib": 30377036,
+      "native_rss_kib": 4448600,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 12.817955462029204,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42803860,
+      "SwapFree_kib": 30377292,
+      "native_rss_kib": 4723032,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 13.34561101498548,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42805776,
+      "SwapFree_kib": 30377292,
+      "native_rss_kib": 4988316,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 13.874660735018551,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42853664,
+      "SwapFree_kib": 30377292,
+      "native_rss_kib": 5257788,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 14.400781975011341,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42831280,
+      "SwapFree_kib": 30377292,
+      "native_rss_kib": 5500732,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 14.927785855019465,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42617412,
+      "SwapFree_kib": 30377292,
+      "native_rss_kib": 5734236,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 15.454410606995225,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 43058056,
+      "SwapFree_kib": 30377548,
+      "native_rss_kib": 5975496,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 15.980578626971692,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42527928,
+      "SwapFree_kib": 30377548,
+      "native_rss_kib": 6199620,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 16.51423385599628,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42747188,
+      "SwapFree_kib": 30377548,
+      "native_rss_kib": 6437296,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 17.04896757507231,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42698304,
+      "SwapFree_kib": 30377804,
+      "native_rss_kib": 6628968,
+      "gpu_csv_mib_percent": "21848, 24564, 1"
+    },
+    {
+      "elapsed_s": 17.581384172081016,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42834864,
+      "SwapFree_kib": 30377804,
+      "native_rss_kib": 6893464,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 18.10915330797434,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42709112,
+      "SwapFree_kib": 30377804,
+      "native_rss_kib": 7100628,
+      "gpu_csv_mib_percent": "21848, 24564, 1"
+    },
+    {
+      "elapsed_s": 18.64426974102389,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42544408,
+      "SwapFree_kib": 30378060,
+      "native_rss_kib": 7271956,
+      "gpu_csv_mib_percent": "21848, 24564, 1"
+    },
+    {
+      "elapsed_s": 19.188600779976696,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42796636,
+      "SwapFree_kib": 30378228,
+      "native_rss_kib": 7456108,
+      "gpu_csv_mib_percent": "21848, 24564, 1"
+    },
+    {
+      "elapsed_s": 19.71572590607684,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42760928,
+      "SwapFree_kib": 30378228,
+      "native_rss_kib": 7656344,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 20.259215155034326,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42577144,
+      "SwapFree_kib": 30378228,
+      "native_rss_kib": 7912964,
+      "gpu_csv_mib_percent": "21848, 24564, 1"
+    },
+    {
+      "elapsed_s": 20.789189849048853,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42461012,
+      "SwapFree_kib": 30378228,
+      "native_rss_kib": 8146228,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 21.32837271306198,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42649216,
+      "SwapFree_kib": 30378484,
+      "native_rss_kib": 8406192,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 21.856672113062814,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42534220,
+      "SwapFree_kib": 30378740,
+      "native_rss_kib": 8630268,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 22.385266419965774,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42803808,
+      "SwapFree_kib": 30382420,
+      "native_rss_kib": 8882344,
+      "gpu_csv_mib_percent": "21848, 24564, 3"
+    },
+    {
+      "elapsed_s": 22.91532744606957,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42490008,
+      "SwapFree_kib": 30386708,
+      "native_rss_kib": 9142208,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 23.44715314300265,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42766784,
+      "SwapFree_kib": 30386964,
+      "native_rss_kib": 9401108,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 23.975951989996247,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42597732,
+      "SwapFree_kib": 30387220,
+      "native_rss_kib": 9663756,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 24.517487548990175,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42789944,
+      "SwapFree_kib": 30387220,
+      "native_rss_kib": 9861128,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 25.057835143990815,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42712532,
+      "SwapFree_kib": 30387476,
+      "native_rss_kib": 10068440,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 25.58926795097068,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42351888,
+      "SwapFree_kib": 30387476,
+      "native_rss_kib": 10271948,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 26.11852485802956,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42473004,
+      "SwapFree_kib": 30387732,
+      "native_rss_kib": 10452064,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 26.649380507995375,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42677972,
+      "SwapFree_kib": 30387732,
+      "native_rss_kib": 10712416,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 27.179512634058483,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42705636,
+      "SwapFree_kib": 30387732,
+      "native_rss_kib": 11014236,
+      "gpu_csv_mib_percent": "21848, 24564, 3"
+    },
+    {
+      "elapsed_s": 27.71348488004878,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42683000,
+      "SwapFree_kib": 30387732,
+      "native_rss_kib": 11302944,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 28.241528058075346,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42689824,
+      "SwapFree_kib": 30387732,
+      "native_rss_kib": 11592252,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 28.769019794999622,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42656880,
+      "SwapFree_kib": 30388244,
+      "native_rss_kib": 11893420,
+      "gpu_csv_mib_percent": "21848, 24564, 3"
+    },
+    {
+      "elapsed_s": 29.29473395005334,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42702276,
+      "SwapFree_kib": 30388244,
+      "native_rss_kib": 12189228,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 29.821170279057696,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42583368,
+      "SwapFree_kib": 30388500,
+      "native_rss_kib": 12468308,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 30.34991288103629,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42686972,
+      "SwapFree_kib": 30388500,
+      "native_rss_kib": 12754828,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 30.876601295080036,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42712672,
+      "SwapFree_kib": 30388756,
+      "native_rss_kib": 13054540,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 31.4040511950152,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42648384,
+      "SwapFree_kib": 30389524,
+      "native_rss_kib": 13347304,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 31.92918097600341,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42715160,
+      "SwapFree_kib": 30389524,
+      "native_rss_kib": 13641120,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 32.45467623602599,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42664500,
+      "SwapFree_kib": 30389524,
+      "native_rss_kib": 13937816,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 32.98394536599517,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42782616,
+      "SwapFree_kib": 30389780,
+      "native_rss_kib": 14246284,
+      "gpu_csv_mib_percent": "21848, 24564, 3"
+    },
+    {
+      "elapsed_s": 33.51603754400276,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42667192,
+      "SwapFree_kib": 30390292,
+      "native_rss_kib": 14538972,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 34.058095981017686,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42688816,
+      "SwapFree_kib": 30390292,
+      "native_rss_kib": 14842716,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 34.59542897599749,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42695240,
+      "SwapFree_kib": 30390292,
+      "native_rss_kib": 15153880,
+      "gpu_csv_mib_percent": "21848, 24564, 3"
+    },
+    {
+      "elapsed_s": 35.12501240405254,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42757308,
+      "SwapFree_kib": 30390292,
+      "native_rss_kib": 15433672,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 35.651109118014574,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42685624,
+      "SwapFree_kib": 30390548,
+      "native_rss_kib": 15713892,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 36.176896493998356,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42669712,
+      "SwapFree_kib": 30390548,
+      "native_rss_kib": 16017784,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 36.70342618704308,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42573936,
+      "SwapFree_kib": 30390548,
+      "native_rss_kib": 16332800,
+      "gpu_csv_mib_percent": "21848, 24564, 3"
+    },
+    {
+      "elapsed_s": 37.23750265396666,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42671920,
+      "SwapFree_kib": 30390548,
+      "native_rss_kib": 16633652,
+      "gpu_csv_mib_percent": "21848, 24564, 3"
+    },
+    {
+      "elapsed_s": 37.76397949201055,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42666324,
+      "SwapFree_kib": 30390548,
+      "native_rss_kib": 16928960,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 38.29288498603273,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42739340,
+      "SwapFree_kib": 30390548,
+      "native_rss_kib": 17234588,
+      "gpu_csv_mib_percent": "21848, 24564, 3"
+    },
+    {
+      "elapsed_s": 38.82162846100982,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42741504,
+      "SwapFree_kib": 30390548,
+      "native_rss_kib": 17528744,
+      "gpu_csv_mib_percent": "21848, 24564, 3"
+    },
+    {
+      "elapsed_s": 39.350912676076405,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42691376,
+      "SwapFree_kib": 30390548,
+      "native_rss_kib": 17819620,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 39.88969092699699,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42647004,
+      "SwapFree_kib": 30390548,
+      "native_rss_kib": 18114812,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 40.417589248972945,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 42609896,
+      "SwapFree_kib": 30390804,
+      "native_rss_kib": 18406884,
+      "gpu_csv_mib_percent": "21848, 24564, 2"
+    },
+    {
+      "elapsed_s": 40.94905497599393,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 41545472,
+      "SwapFree_kib": 30390804,
+      "native_rss_kib": 20176696,
+      "gpu_csv_mib_percent": "21848, 24564, 0"
+    },
+    {
+      "elapsed_s": 41.4887234660564,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 38022380,
+      "SwapFree_kib": 30391572,
+      "native_rss_kib": 23706012,
+      "gpu_csv_mib_percent": "21848, 24564, 0"
+    },
+    {
+      "elapsed_s": 42.01469862903468,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 35483148,
+      "SwapFree_kib": 30391572,
+      "native_rss_kib": 26941156,
+      "gpu_csv_mib_percent": "21848, 24564, 0"
+    },
+    {
+      "elapsed_s": 42.545248290058225,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 33809848,
+      "SwapFree_kib": 30391316,
+      "native_rss_kib": 30137856,
+      "gpu_csv_mib_percent": "21848, 24564, 0"
+    },
+    {
+      "elapsed_s": 43.07221546105575,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 31569612,
+      "SwapFree_kib": 30390548,
+      "native_rss_kib": 32740312,
+      "gpu_csv_mib_percent": "21848, 24564, 0"
+    },
+    {
+      "elapsed_s": 43.603493288042955,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28348068,
+      "SwapFree_kib": 30390292,
+      "native_rss_kib": 35990532,
+      "gpu_csv_mib_percent": "21848, 24564, 0"
+    },
+    {
+      "elapsed_s": 44.12850093701854,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 24924280,
+      "SwapFree_kib": 30390292,
+      "native_rss_kib": 38955412,
+      "gpu_csv_mib_percent": "21848, 24564, 0"
+    },
+    {
+      "elapsed_s": 44.65787070803344,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21890708,
+      "SwapFree_kib": 30389780,
+      "native_rss_kib": 41980884,
+      "gpu_csv_mib_percent": "21848, 24564, 0"
+    },
+    {
+      "elapsed_s": 45.309264174080454,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 20150716,
+      "SwapFree_kib": 30389012,
+      "native_rss_kib": 43947148,
+      "gpu_csv_mib_percent": "21848, 24564, 0"
+    },
+    {
+      "elapsed_s": 45.836381413042545,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 20843236,
+      "SwapFree_kib": 30389268,
+      "native_rss_kib": 44407932,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 46.36376963602379,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 20792340,
+      "SwapFree_kib": 30405780,
+      "native_rss_kib": 44998504,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 46.89699085406028,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21251768,
+      "SwapFree_kib": 30405780,
+      "native_rss_kib": 45612856,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 47.43843670305796,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21281296,
+      "SwapFree_kib": 30406036,
+      "native_rss_kib": 46221348,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 47.971559419995174,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 20535768,
+      "SwapFree_kib": 30406292,
+      "native_rss_kib": 46539276,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 48.501377384061925,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 19713696,
+      "SwapFree_kib": 30406036,
+      "native_rss_kib": 45704348,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 49.038614680059254,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 18922468,
+      "SwapFree_kib": 30406036,
+      "native_rss_kib": 44859560,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 49.57561299903318,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 18021328,
+      "SwapFree_kib": 30405524,
+      "native_rss_kib": 43986556,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 50.10245573404245,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17152196,
+      "SwapFree_kib": 30405780,
+      "native_rss_kib": 42878484,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 50.630140451015905,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17299664,
+      "SwapFree_kib": 30405268,
+      "native_rss_kib": 42605672,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 51.1700644280063,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17074844,
+      "SwapFree_kib": 30405268,
+      "native_rss_kib": 42743144,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 51.69880410504993,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17195788,
+      "SwapFree_kib": 30405524,
+      "native_rss_kib": 42876976,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 52.23930122202728,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17142680,
+      "SwapFree_kib": 30405268,
+      "native_rss_kib": 42980924,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 52.78161245305091,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16988356,
+      "SwapFree_kib": 30405268,
+      "native_rss_kib": 42817864,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 53.31934491102584,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17333484,
+      "SwapFree_kib": 30404756,
+      "native_rss_kib": 42726132,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 53.851324834045954,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17271548,
+      "SwapFree_kib": 30404500,
+      "native_rss_kib": 42860048,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 54.37927796598524,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17104616,
+      "SwapFree_kib": 30403988,
+      "native_rss_kib": 43033624,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 54.922746628988534,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17132572,
+      "SwapFree_kib": 30404500,
+      "native_rss_kib": 43011328,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 55.451267905998975,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17081144,
+      "SwapFree_kib": 30404500,
+      "native_rss_kib": 42929756,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 55.98912329901941,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17348132,
+      "SwapFree_kib": 30404500,
+      "native_rss_kib": 43116676,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 56.52890927705448,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17016436,
+      "SwapFree_kib": 30404244,
+      "native_rss_kib": 42874756,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 57.05752084904816,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17277320,
+      "SwapFree_kib": 30405012,
+      "native_rss_kib": 42643516,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 57.58821646706201,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17292292,
+      "SwapFree_kib": 30405012,
+      "native_rss_kib": 42744616,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 58.11784962203819,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16971112,
+      "SwapFree_kib": 30405012,
+      "native_rss_kib": 42826260,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 58.65772206499241,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17018044,
+      "SwapFree_kib": 30405012,
+      "native_rss_kib": 42952216,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 59.18811434903182,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17145752,
+      "SwapFree_kib": 30405012,
+      "native_rss_kib": 42871544,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 59.72246277600061,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 18508424,
+      "SwapFree_kib": 30405012,
+      "native_rss_kib": 43251652,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 60.25349177897442,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 18437092,
+      "SwapFree_kib": 30405012,
+      "native_rss_kib": 43850456,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 60.783822898054495,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 19428076,
+      "SwapFree_kib": 30405268,
+      "native_rss_kib": 44458936,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 61.31177885807119,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 19525384,
+      "SwapFree_kib": 30405268,
+      "native_rss_kib": 45068336,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 61.841290896059945,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21153684,
+      "SwapFree_kib": 30405532,
+      "native_rss_kib": 45683512,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 62.38392562000081,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 20665148,
+      "SwapFree_kib": 30405532,
+      "native_rss_kib": 46337524,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 62.92714118002914,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 22243460,
+      "SwapFree_kib": 30195612,
+      "native_rss_kib": 46745664,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 63.45940257597249,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21717736,
+      "SwapFree_kib": 30198172,
+      "native_rss_kib": 47360948,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 63.99401535105426,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23176152,
+      "SwapFree_kib": 30199452,
+      "native_rss_kib": 47973732,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 64.5206881989725,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23092988,
+      "SwapFree_kib": 30210900,
+      "native_rss_kib": 48582748,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 65.04786874901038,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 24171744,
+      "SwapFree_kib": 30210900,
+      "native_rss_kib": 49212480,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 65.57487960299477,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 24255724,
+      "SwapFree_kib": 30210900,
+      "native_rss_kib": 49832332,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 66.10237622098066,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 25535740,
+      "SwapFree_kib": 30211156,
+      "native_rss_kib": 50439688,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 66.62907164602075,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 25356588,
+      "SwapFree_kib": 30211156,
+      "native_rss_kib": 51014996,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 67.1622914330801,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 26538476,
+      "SwapFree_kib": 30211412,
+      "native_rss_kib": 51567360,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 67.69083454099018,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 26459860,
+      "SwapFree_kib": 30211412,
+      "native_rss_kib": 52105496,
+      "gpu_csv_mib_percent": "21896, 24564, 0"
+    },
+    {
+      "elapsed_s": 68.21881107101217,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 26887340,
+      "SwapFree_kib": 30211412,
+      "native_rss_kib": 52837956,
+      "gpu_csv_mib_percent": "21972, 24564, 1"
+    },
+    {
+      "elapsed_s": 68.74772121501155,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 26206488,
+      "SwapFree_kib": 30211668,
+      "native_rss_kib": 53563680,
+      "gpu_csv_mib_percent": "22328, 24564, 1"
+    },
+    {
+      "elapsed_s": 69.29498147207778,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27469964,
+      "SwapFree_kib": 30214484,
+      "native_rss_kib": 53554756,
+      "gpu_csv_mib_percent": "22328, 24564, 0"
+    },
+    {
+      "elapsed_s": 69.82103803998325,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27968108,
+      "SwapFree_kib": 30214484,
+      "native_rss_kib": 53858900,
+      "gpu_csv_mib_percent": "22378, 24564, 0"
+    },
+    {
+      "elapsed_s": 70.3527915730374,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27932516,
+      "SwapFree_kib": 30214484,
+      "native_rss_kib": 54110400,
+      "gpu_csv_mib_percent": "22378, 24564, 0"
+    },
+    {
+      "elapsed_s": 70.88933919603005,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28008116,
+      "SwapFree_kib": 30214740,
+      "native_rss_kib": 54110476,
+      "gpu_csv_mib_percent": "22378, 24564, 0"
+    },
+    {
+      "elapsed_s": 71.41460833698511,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27991184,
+      "SwapFree_kib": 30214740,
+      "native_rss_kib": 54110520,
+      "gpu_csv_mib_percent": "22378, 24564, 0"
+    },
+    {
+      "elapsed_s": 71.9380697470624,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27963272,
+      "SwapFree_kib": 30214740,
+      "native_rss_kib": 54110608,
+      "gpu_csv_mib_percent": "22378, 24564, 0"
+    },
+    {
+      "elapsed_s": 72.46346382796764,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27967208,
+      "SwapFree_kib": 30214740,
+      "native_rss_kib": 54110668,
+      "gpu_csv_mib_percent": "22378, 24564, 0"
+    },
+    {
+      "elapsed_s": 72.99138212297112,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27963320,
+      "SwapFree_kib": 30214996,
+      "native_rss_kib": 54110728,
+      "gpu_csv_mib_percent": "22378, 24564, 0"
+    },
+    {
+      "elapsed_s": 73.52719829196576,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27867496,
+      "SwapFree_kib": 30214996,
+      "native_rss_kib": 54168548,
+      "gpu_csv_mib_percent": "22378, 24564, 0"
+    },
+    {
+      "elapsed_s": 74.05396232800558,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27732520,
+      "SwapFree_kib": 30215252,
+      "native_rss_kib": 54526184,
+      "gpu_csv_mib_percent": "22378, 24564, 0"
+    },
+    {
+      "elapsed_s": 74.58116952306591,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28538280,
+      "SwapFree_kib": 30215252,
+      "native_rss_kib": 54916124,
+      "gpu_csv_mib_percent": "22378, 24564, 8"
+    },
+    {
+      "elapsed_s": 75.10997222398873,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28412372,
+      "SwapFree_kib": 30215508,
+      "native_rss_kib": 55296376,
+      "gpu_csv_mib_percent": "22378, 24564, 17"
+    },
+    {
+      "elapsed_s": 75.63690455304459,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 29507420,
+      "SwapFree_kib": 30215764,
+      "native_rss_kib": 55694100,
+      "gpu_csv_mib_percent": "22378, 24564, 17"
+    },
+    {
+      "elapsed_s": 76.17117343703285,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 29575504,
+      "SwapFree_kib": 30216020,
+      "native_rss_kib": 56148936,
+      "gpu_csv_mib_percent": "22378, 24564, 9"
+    },
+    {
+      "elapsed_s": 76.69795611407608,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 29834260,
+      "SwapFree_kib": 30216276,
+      "native_rss_kib": 56633452,
+      "gpu_csv_mib_percent": "22378, 24564, 9"
+    },
+    {
+      "elapsed_s": 77.2397807140369,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 29698788,
+      "SwapFree_kib": 30216532,
+      "native_rss_kib": 57223268,
+      "gpu_csv_mib_percent": "22378, 24564, 11"
+    },
+    {
+      "elapsed_s": 77.82757585507352,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 30099388,
+      "SwapFree_kib": 29773908,
+      "native_rss_kib": 57155968,
+      "gpu_csv_mib_percent": "22378, 24564, 11"
+    },
+    {
+      "elapsed_s": 78.35409014602192,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 30996408,
+      "SwapFree_kib": 29305684,
+      "native_rss_kib": 57308952,
+      "gpu_csv_mib_percent": "22378, 24564, 11"
+    },
+    {
+      "elapsed_s": 78.88554185500834,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 31262864,
+      "SwapFree_kib": 29283924,
+      "native_rss_kib": 57654024,
+      "gpu_csv_mib_percent": "22378, 24564, 11"
+    },
+    {
+      "elapsed_s": 79.41846031602472,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 31385392,
+      "SwapFree_kib": 28851284,
+      "native_rss_kib": 56855980,
+      "gpu_csv_mib_percent": "22378, 24564, 9"
+    },
+    {
+      "elapsed_s": 80.37352487805765,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 31342100,
+      "SwapFree_kib": 28822612,
+      "native_rss_kib": 46017340,
+      "gpu_csv_mib_percent": "22378, 24564, 2"
+    },
+    {
+      "elapsed_s": 80.91522571106907,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 31609516,
+      "SwapFree_kib": 28830036,
+      "native_rss_kib": 45414936,
+      "gpu_csv_mib_percent": "22378, 24564, 2"
+    },
+    {
+      "elapsed_s": 81.44203623197973,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 31268240,
+      "SwapFree_kib": 28832596,
+      "native_rss_kib": 45491716,
+      "gpu_csv_mib_percent": "22378, 24564, 12"
+    },
+    {
+      "elapsed_s": 81.96946264000144,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 30997984,
+      "SwapFree_kib": 28835156,
+      "native_rss_kib": 45549288,
+      "gpu_csv_mib_percent": "22378, 24564, 12"
+    },
+    {
+      "elapsed_s": 82.50492184201721,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 31056424,
+      "SwapFree_kib": 28836692,
+      "native_rss_kib": 45635924,
+      "gpu_csv_mib_percent": "22378, 24564, 19"
+    },
+    {
+      "elapsed_s": 83.02988467400428,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 31275360,
+      "SwapFree_kib": 28839508,
+      "native_rss_kib": 45719652,
+      "gpu_csv_mib_percent": "22378, 24564, 19"
+    },
+    {
+      "elapsed_s": 83.55753686802927,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 31051056,
+      "SwapFree_kib": 28841812,
+      "native_rss_kib": 45328612,
+      "gpu_csv_mib_percent": "22378, 24564, 12"
+    },
+    {
+      "elapsed_s": 84.10082328796852,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 30260880,
+      "SwapFree_kib": 28841812,
+      "native_rss_kib": 44745424,
+      "gpu_csv_mib_percent": "22378, 24564, 14"
+    },
+    {
+      "elapsed_s": 84.6377827420365,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 29118088,
+      "SwapFree_kib": 28842068,
+      "native_rss_kib": 43776356,
+      "gpu_csv_mib_percent": "22378, 24564, 14"
+    },
+    {
+      "elapsed_s": 85.16597526904661,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 29332300,
+      "SwapFree_kib": 28842580,
+      "native_rss_kib": 43335676,
+      "gpu_csv_mib_percent": "22378, 24564, 9"
+    },
+    {
+      "elapsed_s": 85.69169108907226,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28703568,
+      "SwapFree_kib": 28845396,
+      "native_rss_kib": 43343472,
+      "gpu_csv_mib_percent": "22378, 24564, 9"
+    },
+    {
+      "elapsed_s": 86.21945823705755,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28278068,
+      "SwapFree_kib": 28846164,
+      "native_rss_kib": 42862536,
+      "gpu_csv_mib_percent": "22378, 24564, 14"
+    },
+    {
+      "elapsed_s": 86.76044125901535,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28039148,
+      "SwapFree_kib": 28846932,
+      "native_rss_kib": 42483560,
+      "gpu_csv_mib_percent": "22378, 24564, 14"
+    },
+    {
+      "elapsed_s": 87.2961225269828,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28033128,
+      "SwapFree_kib": 28849748,
+      "native_rss_kib": 42485832,
+      "gpu_csv_mib_percent": "22378, 24564, 71"
+    },
+    {
+      "elapsed_s": 87.82128075207584,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28032768,
+      "SwapFree_kib": 28852308,
+      "native_rss_kib": 42493528,
+      "gpu_csv_mib_percent": "22378, 24564, 71"
+    },
+    {
+      "elapsed_s": 88.3461016509682,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27932928,
+      "SwapFree_kib": 28852564,
+      "native_rss_kib": 42494364,
+      "gpu_csv_mib_percent": "22378, 24564, 83"
+    },
+    {
+      "elapsed_s": 88.87357008003164,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27944952,
+      "SwapFree_kib": 28855636,
+      "native_rss_kib": 42497440,
+      "gpu_csv_mib_percent": "22378, 24564, 83"
+    },
+    {
+      "elapsed_s": 89.40109764004592,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27904080,
+      "SwapFree_kib": 28857940,
+      "native_rss_kib": 42503312,
+      "gpu_csv_mib_percent": "22378, 24564, 75"
+    },
+    {
+      "elapsed_s": 89.92921786906663,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28360904,
+      "SwapFree_kib": 28858708,
+      "native_rss_kib": 42131712,
+      "gpu_csv_mib_percent": "22378, 24564, 75"
+    },
+    {
+      "elapsed_s": 90.45474933902733,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28284476,
+      "SwapFree_kib": 28858708,
+      "native_rss_kib": 42132596,
+      "gpu_csv_mib_percent": "22378, 24564, 87"
+    },
+    {
+      "elapsed_s": 90.9804928470403,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28307116,
+      "SwapFree_kib": 28861780,
+      "native_rss_kib": 42135652,
+      "gpu_csv_mib_percent": "22378, 24564, 87"
+    },
+    {
+      "elapsed_s": 91.50745927903336,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28264512,
+      "SwapFree_kib": 28861780,
+      "native_rss_kib": 42135652,
+      "gpu_csv_mib_percent": "22378, 24564, 67"
+    },
+    {
+      "elapsed_s": 92.04797437402885,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28248056,
+      "SwapFree_kib": 28862292,
+      "native_rss_kib": 42135652,
+      "gpu_csv_mib_percent": "22378, 24564, 67"
+    },
+    {
+      "elapsed_s": 92.5762441890547,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28225864,
+      "SwapFree_kib": 28903508,
+      "native_rss_kib": 42136480,
+      "gpu_csv_mib_percent": "22378, 24564, 81"
+    },
+    {
+      "elapsed_s": 93.10382348496933,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28285020,
+      "SwapFree_kib": 28916564,
+      "native_rss_kib": 42134404,
+      "gpu_csv_mib_percent": "22378, 24564, 82"
+    },
+    {
+      "elapsed_s": 93.64492122398224,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28244940,
+      "SwapFree_kib": 28917076,
+      "native_rss_kib": 42134404,
+      "gpu_csv_mib_percent": "22378, 24564, 82"
+    },
+    {
+      "elapsed_s": 94.17504408105742,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28247388,
+      "SwapFree_kib": 28917076,
+      "native_rss_kib": 42134404,
+      "gpu_csv_mib_percent": "22378, 24564, 81"
+    },
+    {
+      "elapsed_s": 94.70368237199727,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28131240,
+      "SwapFree_kib": 28917588,
+      "native_rss_kib": 42135260,
+      "gpu_csv_mib_percent": "22378, 24564, 81"
+    },
+    {
+      "elapsed_s": 95.24499927600846,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28100572,
+      "SwapFree_kib": 28918612,
+      "native_rss_kib": 42136104,
+      "gpu_csv_mib_percent": "22378, 24564, 76"
+    },
+    {
+      "elapsed_s": 95.77181016700342,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28052552,
+      "SwapFree_kib": 28918612,
+      "native_rss_kib": 42136104,
+      "gpu_csv_mib_percent": "22378, 24564, 76"
+    },
+    {
+      "elapsed_s": 96.31187850504648,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28043252,
+      "SwapFree_kib": 28919380,
+      "native_rss_kib": 42136104,
+      "gpu_csv_mib_percent": "22378, 24564, 77"
+    },
+    {
+      "elapsed_s": 96.85361011698842,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28029600,
+      "SwapFree_kib": 28922964,
+      "native_rss_kib": 42136880,
+      "gpu_csv_mib_percent": "22378, 24564, 77"
+    },
+    {
+      "elapsed_s": 97.39415091101546,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28008092,
+      "SwapFree_kib": 28928644,
+      "native_rss_kib": 42138684,
+      "gpu_csv_mib_percent": "22378, 24564, 79"
+    },
+    {
+      "elapsed_s": 97.93490959401242,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28004364,
+      "SwapFree_kib": 28929668,
+      "native_rss_kib": 42138684,
+      "gpu_csv_mib_percent": "22378, 24564, 79"
+    },
+    {
+      "elapsed_s": 98.47629907401279,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27985600,
+      "SwapFree_kib": 28929924,
+      "native_rss_kib": 42138684,
+      "gpu_csv_mib_percent": "22378, 24564, 80"
+    },
+    {
+      "elapsed_s": 99.01830470003188,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27786056,
+      "SwapFree_kib": 28930948,
+      "native_rss_kib": 42140076,
+      "gpu_csv_mib_percent": "22378, 24564, 80"
+    },
+    {
+      "elapsed_s": 99.55907379207201,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27902108,
+      "SwapFree_kib": 28931972,
+      "native_rss_kib": 42136888,
+      "gpu_csv_mib_percent": "22378, 24564, 77"
+    },
+    {
+      "elapsed_s": 100.09984691801947,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27903200,
+      "SwapFree_kib": 28931972,
+      "native_rss_kib": 42136888,
+      "gpu_csv_mib_percent": "22378, 24564, 83"
+    },
+    {
+      "elapsed_s": 100.64100900501944,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27873400,
+      "SwapFree_kib": 28932228,
+      "native_rss_kib": 42136888,
+      "gpu_csv_mib_percent": "22378, 24564, 83"
+    },
+    {
+      "elapsed_s": 101.17787575803231,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27842912,
+      "SwapFree_kib": 28933252,
+      "native_rss_kib": 42138716,
+      "gpu_csv_mib_percent": "22378, 24564, 72"
+    },
+    {
+      "elapsed_s": 101.71925804798957,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27806644,
+      "SwapFree_kib": 28935556,
+      "native_rss_kib": 42139020,
+      "gpu_csv_mib_percent": "22378, 24564, 72"
+    },
+    {
+      "elapsed_s": 102.2597564390162,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28174216,
+      "SwapFree_kib": 28936068,
+      "native_rss_kib": 42139020,
+      "gpu_csv_mib_percent": "22378, 24564, 78"
+    },
+    {
+      "elapsed_s": 102.78762778604869,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28129696,
+      "SwapFree_kib": 28936068,
+      "native_rss_kib": 42139088,
+      "gpu_csv_mib_percent": "22378, 24564, 78"
+    },
+    {
+      "elapsed_s": 103.3287944010226,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27784868,
+      "SwapFree_kib": 28938116,
+      "native_rss_kib": 42140936,
+      "gpu_csv_mib_percent": "22378, 24564, 82"
+    },
+    {
+      "elapsed_s": 103.86996967799496,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28149648,
+      "SwapFree_kib": 28938884,
+      "native_rss_kib": 42140936,
+      "gpu_csv_mib_percent": "22378, 24564, 82"
+    },
+    {
+      "elapsed_s": 104.40404170600232,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28124748,
+      "SwapFree_kib": 28938884,
+      "native_rss_kib": 42140940,
+      "gpu_csv_mib_percent": "22378, 24564, 84"
+    },
+    {
+      "elapsed_s": 104.94154560798779,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27780884,
+      "SwapFree_kib": 28939396,
+      "native_rss_kib": 42141196,
+      "gpu_csv_mib_percent": "22378, 24564, 84"
+    },
+    {
+      "elapsed_s": 105.48176303098444,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27798276,
+      "SwapFree_kib": 28940164,
+      "native_rss_kib": 42141992,
+      "gpu_csv_mib_percent": "22378, 24564, 74"
+    },
+    {
+      "elapsed_s": 106.00876678398345,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27787776,
+      "SwapFree_kib": 28940164,
+      "native_rss_kib": 42141992,
+      "gpu_csv_mib_percent": "22378, 24564, 74"
+    },
+    {
+      "elapsed_s": 106.53681793203577,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 28101336,
+      "SwapFree_kib": 28940164,
+      "native_rss_kib": 42141992,
+      "gpu_csv_mib_percent": "22378, 24564, 73"
+    },
+    {
+      "elapsed_s": 107.07932159106713,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27772988,
+      "SwapFree_kib": 28940932,
+      "native_rss_kib": 42142480,
+      "gpu_csv_mib_percent": "22378, 24564, 73"
+    },
+    {
+      "elapsed_s": 107.61125800106674,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27789512,
+      "SwapFree_kib": 28941700,
+      "native_rss_kib": 42143068,
+      "gpu_csv_mib_percent": "22378, 24564, 78"
+    },
+    {
+      "elapsed_s": 108.14837077306584,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27783980,
+      "SwapFree_kib": 28941700,
+      "native_rss_kib": 42143068,
+      "gpu_csv_mib_percent": "22378, 24564, 76"
+    },
+    {
+      "elapsed_s": 108.67553611297626,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27790748,
+      "SwapFree_kib": 28941700,
+      "native_rss_kib": 42143068,
+      "gpu_csv_mib_percent": "22378, 24564, 76"
+    },
+    {
+      "elapsed_s": 109.21611051098444,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27771852,
+      "SwapFree_kib": 28941700,
+      "native_rss_kib": 42143284,
+      "gpu_csv_mib_percent": "22378, 24564, 77"
+    },
+    {
+      "elapsed_s": 109.74552868003957,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27735288,
+      "SwapFree_kib": 28941700,
+      "native_rss_kib": 42143284,
+      "gpu_csv_mib_percent": "22378, 24564, 77"
+    },
+    {
+      "elapsed_s": 110.2733585999813,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27722980,
+      "SwapFree_kib": 28941700,
+      "native_rss_kib": 42143284,
+      "gpu_csv_mib_percent": "22378, 24564, 78"
+    },
+    {
+      "elapsed_s": 110.80880254798103,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27660108,
+      "SwapFree_kib": 29004676,
+      "native_rss_kib": 42368456,
+      "gpu_csv_mib_percent": "22378, 24564, 78"
+    },
+    {
+      "elapsed_s": 111.34356461104471,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27794332,
+      "SwapFree_kib": 29122436,
+      "native_rss_kib": 42076604,
+      "gpu_csv_mib_percent": "22378, 24564, 2"
+    },
+    {
+      "elapsed_s": 111.87898058397695,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 27220332,
+      "SwapFree_kib": 29317292,
+      "native_rss_kib": 42314892,
+      "gpu_csv_mib_percent": "22378, 24564, 2"
+    },
+    {
+      "elapsed_s": 112.40824689297006,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 26956112,
+      "SwapFree_kib": 29326508,
+      "native_rss_kib": 42607968,
+      "gpu_csv_mib_percent": "22440, 24564, 82"
+    },
+    {
+      "elapsed_s": 112.9461181879742,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 26190020,
+      "SwapFree_kib": 29327276,
+      "native_rss_kib": 42641488,
+      "gpu_csv_mib_percent": "22466, 24564, 82"
+    },
+    {
+      "elapsed_s": 113.47965783497784,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 25397740,
+      "SwapFree_kib": 29327276,
+      "native_rss_kib": 42441768,
+      "gpu_csv_mib_percent": "22466, 24564, 82"
+    },
+    {
+      "elapsed_s": 114.00701661698986,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 25107456,
+      "SwapFree_kib": 29327276,
+      "native_rss_kib": 42292564,
+      "gpu_csv_mib_percent": "22466, 24564, 82"
+    },
+    {
+      "elapsed_s": 114.5392580650514,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23929092,
+      "SwapFree_kib": 29324728,
+      "native_rss_kib": 42061692,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 115.0731279370375,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 24317424,
+      "SwapFree_kib": 29317560,
+      "native_rss_kib": 42317680,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 115.60400312102865,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 24056772,
+      "SwapFree_kib": 29317560,
+      "native_rss_kib": 42792960,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 116.13873075402807,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23996156,
+      "SwapFree_kib": 29317560,
+      "native_rss_kib": 43144748,
+      "gpu_csv_mib_percent": "22466, 24564, 85"
+    },
+    {
+      "elapsed_s": 116.66657466103788,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 24142764,
+      "SwapFree_kib": 29318072,
+      "native_rss_kib": 43395084,
+      "gpu_csv_mib_percent": "22466, 24564, 85"
+    },
+    {
+      "elapsed_s": 117.19357783102896,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23769668,
+      "SwapFree_kib": 29469880,
+      "native_rss_kib": 43427604,
+      "gpu_csv_mib_percent": "22466, 24564, 90"
+    },
+    {
+      "elapsed_s": 117.72436311596539,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23886300,
+      "SwapFree_kib": 29465528,
+      "native_rss_kib": 43354748,
+      "gpu_csv_mib_percent": "22466, 24564, 90"
+    },
+    {
+      "elapsed_s": 118.2499930569902,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 24042824,
+      "SwapFree_kib": 29465784,
+      "native_rss_kib": 43590256,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 118.78907144803088,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 24327112,
+      "SwapFree_kib": 29466296,
+      "native_rss_kib": 43345764,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 119.32407973601948,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 24176904,
+      "SwapFree_kib": 29466296,
+      "native_rss_kib": 43481032,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 119.86011308396701,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23926412,
+      "SwapFree_kib": 29466296,
+      "native_rss_kib": 43604892,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    }
+  ],
+  "notes": [
+    "One sequence, no concurrency throughput claim.",
+    "Cold engine starts do not imply a cold OS/ZFS disk cache.",
+    "First token may be reasoning; answer latency is measured separately.",
+    "Native phase rates exclude injected reasoning wrap; last-phase rate may cover only post-wrap output. API output counts include injected tokens.",
+    "Warm engine does not imply warm prefix; cache_n records actual prefix reuse."
+  ],
+  "benchmark_complete": true,
+  "decode_summary_note": "Wrapper rates describe the last native phase; reasoning-budget wraps can make this only the post-wrap phase. See native_accounting for all-phase rates and request_tokens_per_s for API wall rate.",
+  "native_all_phases_summary_by_workload_tokens_s": {
+    "context_varied_long": {
+      "median": 51.90861737239209,
+      "min": 41.11216730038023,
+      "max": 62.70506744440394
+    }
+  },
+  "last_native_phase_summary_by_workload_tokens_s": {
+    "context_varied_long": {
+      "median": 56.13596756410712,
+      "min": 39.691289966923925,
+      "max": 72.58064516129032
+    }
+  },
+  "memory_summary": {
+    "minimum_available_kib": 16971112,
+    "peak_native_rss_kib": 57654024,
+    "peak_gpu_used_mib": 22466.0
+  }
+}

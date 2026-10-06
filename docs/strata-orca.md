@@ -31,12 +31,11 @@ small projections that the engine expects as BF16; this introduces rounding and
 cannot recover the original full-precision checkpoint. Expert weights and the
 28.8 GB disk-backed PLE lookup table retain their quantized form. Packed dense
 weights require about 1.43 GiB. The original model's MTP head uses its upstream
-pinned revision and tensor checksums; acceptance on this fine-tune still needs
-measurement. No vision encoder/projector is configured: this setup is text-only.
+pinned revision and tensor checksums; acceptance on this fine-tune was measured in the dated local benchmark report, including the zero-proposal control. No vision encoder/projector is configured: this setup is text-only.
 
 ## Hardware and resource limits
 
-Read-only inspection on 2026-10-05 found:
+Historical read-only predeployment inspection on 2026-10-05 found:
 
 | Resource | HAL9000                                                   |
 | -------- | --------------------------------------------------------- |
@@ -47,7 +46,7 @@ Read-only inspection on 2026-10-05 found:
 | Storage  | `/storage-fast`, 789 GiB free on ZFS                      |
 
 The upstream-validated resident IQ3_XXS expert arena alone needs approximately
-49.8 GiB RAM. The current **available** memory is insufficient for that mode.
+49.8 GiB RAM. That snapshot did not meet the resident guard. Final restored-state availability was 53.37GiB, still below the 56GiB guard; restored-service cold admission began at50.05GiB and completed at28.00GiB available.
 The module preserves a full `resident` option with a **56 GiB MemAvailable**
 guard. HAL9000 explicitly selects source-supported **`bounded-mmap`**: native
 `--mmap-experts --resident-budget-gib 24`, with
@@ -60,8 +59,8 @@ The pinned native IQ loader retains the same quantized expert bytes and supports
 budgeted residency for this pack: hot experts are held in RAM, uncached experts
 are read from the immutable GGUF shards through the OS cache. This is an explicit,
 independently source-reviewed configuration for the 64 GiB host, **not an
-upstream Orca benchmark result**. Real inference and measured performance must
-validate it. The configured budget is an upper bound: allocation can be smaller,
+upstream Orca benchmark result**. Local real inference screening has validated
+24 GiB resident allocation and the measured prompt set; permanent tuning, production inference and restored-service acceptance completed on2026-10-05. The configured budget is an upper bound: allocation can be smaller,
 or fail over to mmap-only operation. Benchmark artifacts require and preserve
 the actual startup allocation/fallback marker; they cannot present configured
 budget as measured resident memory.
@@ -135,9 +134,10 @@ The immutable Orca shard URL requires publisher access approval. Earlier on 2026
 unauthenticated requests returned HTTP 401; HAL9000's existing Hugging Face token
 returned **HTTP 403, account not in the authorized list**. Access was subsequently
 granted by the user and authenticated pinned-shard requests succeeded; provisioning
-is now in progress. The token can access
-the pinned original Qwen MTP head. Access is now resolved; completed hash-verified provisioning and real inference
-are still prerequisites before claiming a runnable deployment or benchmark.
+completed on 2026-10-05. Both immutable shards were downloaded and SHA256-verified,
+the compatibility pack and matching MTP runtime were produced, and real inference
+subsequently completed the measured screening runs linked below. The token can access
+the pinned original Qwen MTP head. Access is resolved. Independently reviewed final activation, shared-endpoint lifecycle UAT, the actual production benchmark and restored-service cold admission all completed; see the dated report for evidence and limitations.
 
 Provisioning accepts `STRATA_HF_TOKEN_FILE`; curl reads a temporary mode-0600
 header file, and the MTP helper reads the token file without placing credentials
@@ -161,7 +161,8 @@ services or activate NixOS. A custom data directory can be selected with
 
 ## Validation, review, and benchmark status
 
-Validation completed on 2026-10-05:
+Historical build and non-activating rehearsal completed on 2026-10-05, **before
+the subsequently authorized provisioning, activation and real inference tests**:
 
 - Formatting/treefmt, shellcheck, and staged whitespace checks passed.
 - `nix flake check --impure` passed on the local aarch64-darwin system (six
@@ -169,7 +170,8 @@ Validation completed on 2026-10-05:
 - Strata's CUDA sm_89 binary built successfully with CUDA 12.8.93. All **23
   packing tests** and **139 mock-server tests** passed inside the Nix sandbox.
 - Packaged server/packing CLI help and provisioning `--dry-run` passed. No model
-  weights were downloaded, and real model inference was not run.
+  weights were downloaded **during that rehearsal**, and real inference had not yet run.
+  Subsequent provisioning and measured inference are documented below.
 - `nix develop -c deploy-test hal9000` completed its remote full system build and
   **dry-activate**. Shared-route rehearsal closure (before the final Host allowlist refinement):
   `/nix/store/7wxla3m3zd4nmsin6snmf9xmmqng0kyn-nixos-system-hal9000-25.11.20260630.b6018f8`.
@@ -188,25 +190,19 @@ actual v249 binary. It verifies three-model listing, exact ID forwarding,
 eager readiness, SSE, Bonsai/Orca/Qwen exclusive switches, forced native-child
 cleanup, TTL unloading, reloading, and llama-swap shutdown. Authentication has
 three offline regression checks for missing tokens, host scoping, and redirects.
-Eight benchmark evidence/plan checks reject failed/truncated streams and stale or
+Seventeen benchmark evidence/comparison checks reject failed/truncated streams and stale or
 concurrent timing evidence. Output-limit incomplete responses are labeled;
 telemetry failures mark a benchmark incomplete. Independent Codex peer review
 verified lifecycle, recipe, authentication and benchmark evidence against pinned
 upstream sources, independently reran the authentication and benchmark checks, and found no
 remaining material code issues after the benchmark corrections.
 
-A runnable real deployment and benchmark require completed authenticated
-provisioning, reviewed activation and a successful live memory preflight. The user authorized deployment after independent Codex
-review, and temporary Mold/graphical-session stop during benchmarking. The
-original state must be recorded and restored; SSH/access and unrelated services
-must remain intact. Read-only inspection found approximately **16 GiB ZFS ARC**
-(`c_max = 17179869184`), so freeing Mold/desktop alone may not satisfy the RAM
-guard. Any temporary ARC cap must be reviewed, measured, and restored as well.
-HAL9000 explicitly selects the reviewed bounded mmap mode above. A temporary ARC
-change is unnecessary if its 36 GiB preflight is already satisfied. Do not disable
-the guard.
+Current status on 2026-10-05: authenticated immutable provisioning and measured phased tuning completed. The balanced FP16/32K/prefill 2048/23-worker/T4/suffix0/24GiB configuration is now deployed from independently reviewed commit `7985f2c`, closure `/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8`. System profile and running generation match. All 23 encrypted activation inputs and runtime file types/owners/groups/modes passed checks before and after switching; legitimate empty plaintext is allowed and no plaintext was read. The two failed rollout/checker events and successful rollbacks are retained in the dated report.
 
-The benchmark runner is prepared, not a completed measurement:
+See [the measured report](benchmarks/orca-20261005.md), full raw artifacts and per-trial summary. Final shared-endpoint lifecycle UAT, actual deployed-configuration benchmark and restored desktop/Mold acceptance completed on2026-10-05. The user authorized deployment after independent Codex review and temporary Mold/graphical-session stop during benchmarking. Original service states must be restored while preserving SSH/access and unrelated services. Read-only inspection found approximately 16GiB ZFS ARC (`c_max = 17179869184`); no ARC mutation was needed. Every cold start retains the 36GiB MemAvailable and GPU admission guards. Temporary test-only service stoppage does not justify increasing the normal resident budget or disabling guards.
+
+The benchmark runner below produced the dated screening artifacts. Use these commands
+for reproduction; completed repeated measurements and acceptance are tracked in the report:
 
 ```sh
 python3 scripts/test-strata-llama-swap.py /run/current-system/sw/bin/llama-swap
@@ -256,14 +252,18 @@ Keep INT8 KV, budget 24 and auto GPU cache initially. Higher capacities allocate
 more KV/state at the expense of GPU expert cache; the MTP window stays at most
 32768 in these candidates. Use identical varied retrieval prompts across capacity
 comparisons; only later use `--long-records 700` for deeper 32K/64K finalists.
-Actual usage tokens, not character count, establish tested depth.
+Actual usage tokens, not character count, establish tested depth. Measured depth
+now includes 31176 input tokens at 32K and 59469 at 64K, each retrieved exactly
+twice; see the dated report. A 700-record prompt can exceed 32K after tokenization,
+so use the measured 680-record 32K case rather than assuming it fits.
 
 Optional RAM 24/28/32 GiB candidates require startup guards 36/40/44 GiB, respectively.
 Skip infeasible budgets rather than lowering the guard. Optional GPU-cache caps
 are 75%/50% of **measured auto expert slots** (`--phase gpu-cache --auto-cache-slots N`),
-not GiB. Parser-supported KV variants are fp16/int8/q4_0/k8v4; only int8 has the Orca
-recipe's evidence. Reduced-KV candidates require answer/retrieval-quality review
-alongside speed and memory; fp16 may leave insufficient 4090 VRAM.
+not GiB. Parser-supported KV variants are fp16/int8/q4_0/k8v4. Int8 is the upstream
+Orca recipe's starting point; all four now have bounded local screening evidence
+and reviewed code/prose/retrieval outputs. Their quality and resource tradeoffs
+still require repeated finalist comparison before choosing a permanent setting.
 
 For each candidate, use the existing llama-swap service and endpoint with an
 explicit **temporary runtime configuration**, preserving a copy of its baseline
@@ -312,8 +312,11 @@ regardless of current utilization. Missing/N/A PID or memory measurements fail
 closed. Graphics allocations are covered by the measured free-VRAM floor.
 
 Native `--vram-reserve-mib 2048` holds two GiB out of auto expert-cache sizing after
-model/session/MTP allocations and prevents the pinned engine from automatically
-reducing the reserve toward 300 MiB. This is a reviewed starting policy, not proof
+initial model/session allocations and prevents the pinned engine from automatically
+reducing the reserve toward 300 MiB. Later MTP/verification/driver allocations mean
+this is not a guaranteed two GiB of free VRAM while loaded. The measured native
+startup reported 1750 MiB free; representative screens peaked near 22482 MiB used
+on the 24564 MiB NVML-reported GPU. This is a configured sizing policy, not proof
 of desktop responsiveness; restored-graphics trials must measure remaining VRAM
 and representative desktop activity. The candidate launcher uses the same shared
 guard and cannot lower the reserve/free floor or expand the reviewed allowlist.
@@ -379,6 +382,21 @@ Screen `0.35`, `0.55`, and `0.75` in a balanced repeated order. Artifacts record
 
 `services.strata-orca` exposes `contextTokens` (32768), `prefillTokens` (512), `kvType` (`int8`; also `fp16`, `q4_0`, `k8v4`), `specWindow` (4; 2–8), `mtpMaxT` (0 means the verification window), `suffixDraft` (3; 0 disables lookup), and `mtpWindowTokens` (32768). The generated MTP context is the minimum of its window and `contextTokens`. Window T allows at most T−1 MTP drafts; this native model requires a loaded MTP runtime, so verification window 1/true MTP-off is unavailable. `mtpMaxT = 1` is a supported loaded-MTP control with zero draft proposals; it differs from omitting the MTP runtime. Suffix lookup can extend the verification window upstream; record both settings when comparing results.
 
-`poolWorkers = null` preserves upstream automatic sizing; positive integers request a fixed count. `poolAffinity` accepts `auto` (module default), `p-cores`, or `all` (upstream default). Auto is an explicit module policy choice. HAL lacks the Linux `cpu_capacity` files used for hybrid detection, so automatic placement does not identify its P cores: the measured `all`/7 combination selects P-core primaries on its observed CPU order. Verify actual affinities when changing hardware or cpusets. `pcieFraction = null` preserves native bandwidth probing; a number from 0 to 1 emits `--pcie-frac`. These options expose reproducible configuration, not a claim that every combination fits available resources. RAM preflight, desktop GPU allowlist, minimum free VRAM and explicit reserve remain enforced. Permanent HAL tuning selection awaits repeated quality/performance results.
+`poolWorkers = null` preserves upstream automatic sizing; positive integers request a fixed count. `poolAffinity` accepts `auto` (module default), `p-cores`, or `all` (upstream default). Auto is an explicit module policy choice. HAL lacks the Linux `cpu_capacity` files used for hybrid detection, so automatic placement does not identify its P cores: the measured `all`/7 combination selects P-core primaries on its observed CPU order. Verify actual affinities when changing hardware or cpusets. `pcieFraction = null` preserves native bandwidth probing; a number from 0 to 1 emits `--pcie-frac`. These options expose reproducible configuration, not a claim that every combination fits available resources. RAM preflight, desktop GPU allowlist, minimum free VRAM and explicit reserve remain enforced. The selected HAL configuration from repeated local trials is FP16 KV, prefill 2048, context32768,23 workers with affinityall, spec4/mtpMaxT4, suffix0, MTP window32768, and native PCIe probing. The RAM24GiB budget/headroom8GiB/guard36GiB and configured2048MiB VRAM reserve remain unchanged. Exact production deployment and restored-state acceptance completed; all measured candidates are retained in the dated benchmark report.
 
 Evaluate configuration and bounds without activation using `python3 scripts/test-strata-tuning-options.py` and `python3 scripts/test-strata-memory-modes.py`. This also verifies absent nullable flags preserve automatic behavior, the MTP context cap and unchanged resource guard metadata.
+
+### Complete source and activation-input preflight
+
+Use `scripts/stage-nixos-revision.py COMMIT /tmp/nixos-orca-reviewed` to stage the reviewed revision and **all pinned submodules**. A plain `git archive` omits gitlink contents, including encrypted agenix inputs. HAL now rejects missing encrypted source files during its system build; the separate preflight also requires nonempty ciphertext and verifies the actual built closure and activation-script references.
+
+Transfer this immutable snapshot to the same isolated path on HAL. Build with `--no-link` and keep the printed closure path outside the snapshot: a newly created `result` link changes a path-based flake's source and can produce a different closure on reevaluation. Run these target-side checks before switching:
+
+```sh
+cd /tmp/nixos-orca-reviewed
+nix build --impure --no-link --print-out-paths .#nixosConfigurations.hal9000.config.system.build.toplevel > /tmp/orca-reviewed-closure.txt
+python3 scripts/verify-nixos-activation-inputs.py --host hal9000 --closure "$(cat /tmp/orca-reviewed-closure.txt)" --ciphertext-root secrets
+"$(cat /tmp/orca-reviewed-closure.txt)/bin/switch-to-configuration" dry-activate
+```
+
+Require independent review of the exact source/closure and activation approval. After an authorized switch, repeat the same preflight with `--runtime`; it stats **every configured runtime secret path** for existence, regular file type, configured owner/group and permissions without reading plaintext. Valid empty plaintext is allowed; encrypted source files must remain nonempty. Keep rollback automatic on switch/runtime-preflight failure and check service/API health before declaring success. Encrypted inputs remain in the private pinned submodule; neither plaintext nor ciphertext artifacts belong in the benchmark report.

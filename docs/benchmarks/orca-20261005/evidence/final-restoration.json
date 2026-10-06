@@ -1,0 +1,76 @@
+{
+  "complete": true,
+  "unload_http_status": 200,
+  "unload_response": "{\"msg\":\"ok\"}\n",
+  "state": {
+    "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+    "services": {
+      "mold": "active",
+      "display-manager": "active",
+      "llama-swap": "active",
+      "ollama": "active",
+      "pgweb": "active"
+    },
+    "memory_kib": {
+      "MemAvailable": 55957288,
+      "SwapTotal": 33554428,
+      "SwapFree": 30453512
+    },
+    "gpu_used_free_mib": "278, 23801",
+    "compute_clients": "",
+    "zfs_arc_max": "17179869184",
+    "temporary_override_present": false
+  },
+  "private_backend_closed": true,
+  "shared_models": {
+    "data": [
+      {
+        "id": "bonsai-2-27b",
+        "object": "model",
+        "created": 1791246240,
+        "owned_by": "llama-swap",
+        "meta": {
+          "llamaswap": {
+            "type": "model"
+          }
+        },
+        "status": {
+          "value": "unloaded"
+        }
+      },
+      {
+        "id": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "object": "model",
+        "created": 1791246240,
+        "owned_by": "llama-swap",
+        "meta": {
+          "llamaswap": {
+            "type": "model"
+          }
+        },
+        "status": {
+          "value": "unloaded"
+        }
+      },
+      {
+        "id": "qwen3.8-27b",
+        "object": "model",
+        "created": 1791246240,
+        "owned_by": "llama-swap",
+        "meta": {
+          "llamaswap": {
+            "type": "model"
+          }
+        },
+        "status": {
+          "value": "unloaded"
+        }
+      }
+    ],
+    "object": "list"
+  },
+  "mold_status": "Server running at http://127.0.0.1:7680\n  Version: 0.32.0\n  Uptime:  445s\n  Models:  none\n  GPU 0: NVIDIA GeForce RTX 4090 [cuda:db05f475196cb5175d2ccced23c71d8f] Enabled/Healthy, VRAM 763/24564MB, util 0%\n",
+  "runtime_inputs_check": "Verified 23 runtime secret paths, file types, owners, groups and modes; empty plaintext allowed, no plaintext read\nVerified 23 nonempty encrypted activation inputs (source and built closure); no plaintext read\n",
+  "graphical_login_service": "restored; prior interactive desktop applications were not automatically resumed",
+  "mold_status_exit_code": 0
+}

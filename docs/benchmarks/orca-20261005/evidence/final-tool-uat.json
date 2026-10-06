@@ -1,0 +1,184 @@
+{
+  "complete": true,
+  "requests": [
+    {
+      "payload": {
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "temperature": 0,
+        "max_tokens": 256,
+        "reasoning_budget_tokens": 32,
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        },
+        "messages": [
+          {
+            "role": "system",
+            "content": "Use the provided tool when asked for a value. Never invent a tool result."
+          },
+          {
+            "role": "user",
+            "content": "Call lookup_test_value with key alpha to obtain its value. Do not answer before using the tool."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "lookup_test_value",
+              "description": "Look up a deterministic test value by key.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "enum": [
+                      "alpha"
+                    ]
+                  }
+                },
+                "required": [
+                  "key"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        ],
+        "tool_choice": "auto"
+      },
+      "http_status": 200,
+      "response": {
+        "id": "chatcmpl-aaea5e018fb744f38c862044",
+        "object": "chat.completion",
+        "created": 1791246190,
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": null,
+              "tool_calls": [
+                {
+                  "id": "call_dd9d902c087b413eaa0d64ba",
+                  "type": "function",
+                  "function": {
+                    "name": "lookup_test_value",
+                    "arguments": "{\"key\":\"alpha\"}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 312,
+          "completion_tokens": 27,
+          "total_tokens": 339,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "timings": {
+          "cache_n": 0,
+          "prompt_n": 312,
+          "prompt_ms": 10483.8,
+          "prompt_per_token_ms": 33.602,
+          "prompt_per_second": 29.8,
+          "predicted_n": 27,
+          "predicted_ms": 1066.8,
+          "predicted_per_token_ms": 39.511,
+          "predicted_per_second": 25.3,
+          "draft_n": 21,
+          "draft_n_accepted": 21
+        }
+      },
+      "wall_s": 11.576898696948774
+    },
+    {
+      "payload": {
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "temperature": 0,
+        "max_tokens": 256,
+        "reasoning_budget_tokens": 32,
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        },
+        "messages": [
+          {
+            "role": "system",
+            "content": "Use the provided tool when asked for a value. Never invent a tool result."
+          },
+          {
+            "role": "user",
+            "content": "Call lookup_test_value with key alpha to obtain its value. Do not answer before using the tool."
+          },
+          {
+            "role": "assistant",
+            "content": null,
+            "tool_calls": [
+              {
+                "id": "call_dd9d902c087b413eaa0d64ba",
+                "type": "function",
+                "function": {
+                  "name": "lookup_test_value",
+                  "arguments": "{\"key\":\"alpha\"}"
+                }
+              }
+            ]
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "call_dd9d902c087b413eaa0d64ba",
+            "content": "{\"key\": \"alpha\", \"value\": \"ORCA_TOOL_OK\"}"
+          },
+          {
+            "role": "user",
+            "content": "Reply with only the value returned by the tool, exactly."
+          }
+        ]
+      },
+      "http_status": 200,
+      "response": {
+        "id": "chatcmpl-a22f2039eea947bf82799d36",
+        "object": "chat.completion",
+        "created": 1791246202,
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "ORCA_TOOL_OK"
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 129,
+          "completion_tokens": 5,
+          "total_tokens": 134,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "timings": {
+          "cache_n": 0,
+          "prompt_n": 129,
+          "prompt_ms": 1347.7,
+          "prompt_per_token_ms": 10.447,
+          "prompt_per_second": 95.7,
+          "predicted_n": 5,
+          "predicted_ms": 246.1,
+          "predicted_per_token_ms": 49.22,
+          "predicted_per_second": 20.3,
+          "draft_n": 3,
+          "draft_n_accepted": 3
+        }
+      },
+      "wall_s": 1.6235076319426298
+    }
+  ],
+  "tool_execution": "synthetic deterministic result; no external function executed"
+}

@@ -1,0 +1,3701 @@
+{
+  "benchmark_script_sha256": "0fc576e12c3fdd21faf11593dec2a858399fba232cabce88341ff3cd68d27939",
+  "runtime_config_sha256": "e2bff4ab8df48b641d155404456b9c4031254e33a6fbe85808e68a90c00526ce",
+  "timestamp_utc": "2026-10-05T23:17:36.967841+00:00",
+  "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+  "api": "http://127.0.0.1:8080",
+  "backend_status": "http://127.0.0.1:18081",
+  "runtime": "Strata 0.1.39 6f32ec070f23ced9f50e704d854d775da52591ab",
+  "model_revision": "e43d00f4e2b8b40b89f75e9adeb1045ac34c8acc",
+  "quant": "IQ3_XXS",
+  "context": 32768,
+  "kv": "fp16",
+  "prefill": "2048",
+  "spec": 4,
+  "memory_configuration": {
+    "config_sha256": "e2bff4ab8df48b641d155404456b9c4031254e33a6fbe85808e68a90c00526ce",
+    "backend_port": 18081,
+    "mode": "bounded-mmap",
+    "resident_budget_gib": 24.0,
+    "resident_headroom_gib": 8,
+    "minimum_available_gib": 36.0,
+    "native_args": [
+      "--pack",
+      "/storage-fast/llm/strata-orca/pack",
+      "--native",
+      "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+      "--ple-gguf",
+      "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+      "--expert-profile",
+      "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+      "--expert-cache",
+      "auto",
+      "--prefill",
+      "2048",
+      "--spec",
+      "4",
+      "--spec-min-p",
+      "0.5",
+      "--mtp",
+      "/storage-fast/llm/strata-orca/mtp/rt",
+      "--max-context",
+      "32768",
+      "--vram-reserve-mib",
+      "2048",
+      "--kv",
+      "fp16",
+      "--mmap-experts",
+      "--resident-budget-gib",
+      "24",
+      "--mtp-max-t",
+      "4",
+      "--suffix-draft",
+      "0",
+      "--pool-workers",
+      "7",
+      "--pool-affinity",
+      "all",
+      "--mtp-window",
+      "32768"
+    ],
+    "context": 32768,
+    "kv": "fp16",
+    "prefill": "2048",
+    "spec_window": 4,
+    "expert_cache": "auto",
+    "suffix_draft": 0,
+    "mtp_max_t": 4,
+    "mtp_window": 32768,
+    "spec_min_p": 0.5,
+    "vram_reserve_mib": 2048,
+    "gpu_startup_policy": {
+      "allowed_desktop_compute_processes": [
+        "walker"
+      ],
+      "maximum_desktop_compute_mib": 512,
+      "minimum_free_vram_mib": 20480
+    },
+    "log": "/storage-fast/llm/strata-orca/strata.log"
+  },
+  "system": "/nix/store/f9adjl9fipy8ha2dl9fg9ds599p2fl9l-nixos-system-hal9000-25.11.20260630.b6018f8",
+  "cold_policy": "keep-loaded",
+  "request_tuning": {
+    "pcie_frac": 0.75
+  },
+  "generation_controls": {
+    "max_output_tokens": 384,
+    "reasoning_budget_tokens": 64,
+    "temperature": 0
+  },
+  "trials": [
+    {
+      "workload": "code",
+      "trial": 1,
+      "cold_engine": false,
+      "request_tuning": {
+        "pcie_frac": 0.75
+      },
+      "prompt_chars": 109,
+      "prompt": "Write a correct Python function that merges two sorted integer lists in linear time. Include two short tests.",
+      "first_token_s": 6.404597999993712,
+      "first_answer_s": 12.995590662001632,
+      "output_text": "```python\ndef merge_sorted_lists(a: list[int], b: list[int]) -> list[int]:\n    \"\"\"Merge two sorted integer lists in linear time.\"\"\"\n    merged = []\n    i = j = 0\n\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            merged.append(a[i])\n            i += 1\n        else:\n            merged.append(b[j])\n            j += 1\n\n    merged.extend(a[i:])\n    merged.extend(b[j:])\n\n    return merged\n\n\n# Tests\nassert merge_sorted_lists([1, 3, 5], [2, 4, 6]) == [1, 2, 3, 4, 5, 6]\nassert merge_sorted_lists([], [1, 2, 3]) == [1, 2, 3]\n```",
+      "reasoning_text": "We need answer user: \"Write a correct Python function that merges two sorted integer lists in linear time. Include two short tests.\" Need provide code likely with tests. Need final answer concise but enough. Need ensure linear time O(n+m). Function merges two sorted integer lists. Could return list. Include two short tests.\n\nI have thought about this long enough; time to give my answer.\n",
+      "terminal_type": "response.completed",
+      "response": {
+        "id": "resp_843892c8d6fe4609a454e48812ad9fc8",
+        "object": "response",
+        "created_at": 1791242256,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 384,
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "output": [
+          {
+            "id": "rs_cb461efcd5404377ab9cf39bd3396f59",
+            "type": "reasoning",
+            "status": "completed",
+            "summary": [],
+            "content": [
+              {
+                "type": "reasoning_text",
+                "text": "We need answer user: \"Write a correct Python function that merges two sorted integer lists in linear time. Include two short tests.\" Need provide code likely with tests. Need final answer concise but enough. Need ensure linear time O(n+m). Function merges two sorted integer lists. Could return list. Include two short tests.\n\nI have thought about this long enough; time to give my answer.\n"
+              }
+            ]
+          },
+          {
+            "id": "msg_9636503ac37b4cbea1e4f6310f3c1f2c",
+            "type": "message",
+            "status": "completed",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "```python\ndef merge_sorted_lists(a: list[int], b: list[int]) -> list[int]:\n    \"\"\"Merge two sorted integer lists in linear time.\"\"\"\n    merged = []\n    i = j = 0\n\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            merged.append(a[i])\n            i += 1\n        else:\n            merged.append(b[j])\n            j += 1\n\n    merged.extend(a[i:])\n    merged.extend(b[j:])\n\n    return merged\n\n\n# Tests\nassert merge_sorted_lists([1, 3, 5], [2, 4, 6]) == [1, 2, 3, 4, 5, 6]\nassert merge_sorted_lists([], [1, 2, 3]) == [1, 2, 3]\n```",
+                "annotations": [],
+                "logprobs": []
+              }
+            ]
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "store": false,
+        "temperature": 0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": null,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 72,
+          "input_tokens_details": {
+            "cached_tokens": 72
+          },
+          "output_tokens": 273,
+          "output_tokens_details": {
+            "reasoning_tokens": 81
+          },
+          "total_tokens": 345
+        },
+        "user": null,
+        "metadata": {},
+        "completed_at": 1791242282
+      },
+      "wall_s": 25.96723392000422,
+      "status_before": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 460,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 20,
+          "in_flight": 0,
+          "last_request_at": 1791242256
+        },
+        "last_timings": {
+          "cache_n": 4219,
+          "prompt_n": 5,
+          "prompt_ms": 3507.5,
+          "prompt_per_token_ms": 701.5,
+          "prompt_per_second": 1.4,
+          "predicted_n": 190,
+          "predicted_ms": 1951.2,
+          "predicted_per_token_ms": 18.067,
+          "predicted_per_second": 55.4,
+          "draft_n": 81,
+          "draft_n_accepted": 81,
+          "at": 1791242256
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242256,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 100,
+            "temp_c": 43,
+            "power_w": 140.275
+          },
+          "ram": {
+            "used_gib": 40.0,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "status_after": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 486,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 21,
+          "in_flight": 0,
+          "last_request_at": 1791242282
+        },
+        "last_timings": {
+          "cache_n": 135,
+          "prompt_n": 0,
+          "prompt_ms": 857.2,
+          "prompt_per_token_ms": null,
+          "prompt_per_second": null,
+          "predicted_n": 273,
+          "predicted_ms": 12918.0,
+          "predicted_per_token_ms": 67.634,
+          "predicted_per_second": 14.8,
+          "draft_n": 152,
+          "draft_n_accepted": 134,
+          "at": 1791242282
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242282,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 100,
+            "temp_c": 41,
+            "power_w": 106.54
+          },
+          "ram": {
+            "used_gib": 45.9,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "native_request_log": "strata serve: prompt 72 tokens = 0 reused + 72 read in 6375 ms (11.3 tok/s), 64 generated in 5737 ms (11.2 tok/s), drafts accepted 37 of 50, 1 checkpoints\nstrata serve: decode expert cache hit rate: 86.6% (28460 hits / 32879 lookups); 4081 more read by the GPU over PCIe or from another GPU (11.0% of all 36960 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 26314 exchanged with the VRAM tier, 153006 blob reads from the file\nstrata serve: expert tiers: GPU 28460 hits this request; since the start RAM 732942 blobs, files 153006 blobs 529473.0 MB read (the GGUF in place)\nstrata serve: prompt 154 tokens = 135 reused + 19 read in 857 ms (22.2 tok/s), 191 generated in 12918 ms (14.8 tok/s), drafts accepted 134 of 152, 1 checkpoints\nstrata serve: decode expert cache hit rate: 77.7% (65160 hits / 83832 lookups); 17448 more read by the GPU over PCIe or from another GPU (17.2% of all 101280 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 27346 exchanged with the VRAM tier, 161805 blob reads from the file\nstrata serve: expert tiers: GPU 65160 hits this request; since the start RAM 756065 blobs, files 161805 blobs 541993.7 MB read (the GGUF in place)\n",
+      "native_phases": [
+        {
+          "prompt_tokens": 72,
+          "cache_n": 0,
+          "fresh_prompt_tokens": 72,
+          "requested_fresh_prompt_tokens": 72,
+          "prompt_ms": 6375.0,
+          "native_generated_tokens": 64,
+          "decode_ms": 5737.0,
+          "draft_accepted": 37,
+          "draft_offered": 50
+        },
+        {
+          "prompt_tokens": 154,
+          "cache_n": 135,
+          "fresh_prompt_tokens": 19,
+          "requested_fresh_prompt_tokens": 19,
+          "prompt_ms": 857.0,
+          "native_generated_tokens": 191,
+          "decode_ms": 12918.0,
+          "draft_accepted": 134,
+          "draft_offered": 152
+        }
+      ],
+      "status": "completed",
+      "native_accounting": {
+        "phase_count": 2,
+        "native_generated_tokens_all_phases": 255,
+        "native_decode_ms_all_phases": 18655.0,
+        "native_prompt_ms_all_phases": 7232.0,
+        "fresh_prompt_tokens_all_phases": 91,
+        "initial_cached_input_tokens": 0,
+        "last_phase_native_generated_tokens": 191,
+        "last_phase_native_tokens_s": 14.785570521752595,
+        "native_all_phases_tokens_s": 13.669257571696596,
+        "api_minus_native_output_tokens": 18,
+        "note": "API usage includes injected reasoning-wrap tokens; native counts may include cancellation/drain overrun. Wrapper status exposes final native phase clock/cache with total API predicted_n; these counters must not be divided as though one phase."
+      },
+      "engine_timings": {
+        "cache_n": 135,
+        "prompt_n": 0,
+        "prompt_ms": 857.2,
+        "prompt_per_token_ms": null,
+        "prompt_per_second": null,
+        "predicted_n": 273,
+        "predicted_ms": 12918.0,
+        "predicted_per_token_ms": 67.634,
+        "predicted_per_second": 14.8,
+        "draft_n": 152,
+        "draft_n_accepted": 134,
+        "at": 1791242282
+      },
+      "valid_measurement": true,
+      "output_tokens": 273,
+      "reasoning_tokens": 81,
+      "answer_tokens": 192,
+      "api_answer_tokens_per_response_wall_s": 7.393933469829073,
+      "request_tokens_per_s": 10.513249152413213
+    },
+    {
+      "workload": "code",
+      "trial": 2,
+      "cold_engine": false,
+      "request_tuning": {
+        "pcie_frac": 0.75
+      },
+      "prompt_chars": 109,
+      "prompt": "Write a correct Python function that merges two sorted integer lists in linear time. Include two short tests.",
+      "first_token_s": 0.29759634705260396,
+      "first_answer_s": 6.313220651005395,
+      "output_text": "```python\ndef merge_sorted_lists(a: list[int], b: list[int]) -> list[int]:\n    \"\"\"Merge two sorted integer lists into one sorted list in linear time.\"\"\"\n    result = []\n    i = j = 0\n\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n\n    result.extend(a[i:])\n    result.extend(b[j:])\n    return result\n\n\n# Tests\nassert merge_sorted_lists([1, 3, 5], [2, 4, 6]) == [1, 2, 3, 4, 5, 6]\nassert merge_sorted_lists([], [1, 2, 3]) == [1, 2, 3]\n```",
+      "reasoning_text": "We need answer user: \"Write a correct Python function that merges two sorted integer lists in linear time. Include two short tests.\" Need provide code likely with tests. Need final answer concise but enough. Need ensure linear time O(n+m). Function merges two sorted integer lists. Could return list. Include two short tests.\n\nI have thought about this long enough; time to give my answer.\n",
+      "terminal_type": "response.completed",
+      "response": {
+        "id": "resp_f3bd1cb95b7244e4bef197ed8408e3d8",
+        "object": "response",
+        "created_at": 1791242282,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 384,
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "output": [
+          {
+            "id": "rs_b1e6463e858343f6a7cf3ab3686d102e",
+            "type": "reasoning",
+            "status": "completed",
+            "summary": [],
+            "content": [
+              {
+                "type": "reasoning_text",
+                "text": "We need answer user: \"Write a correct Python function that merges two sorted integer lists in linear time. Include two short tests.\" Need provide code likely with tests. Need final answer concise but enough. Need ensure linear time O(n+m). Function merges two sorted integer lists. Could return list. Include two short tests.\n\nI have thought about this long enough; time to give my answer.\n"
+              }
+            ]
+          },
+          {
+            "id": "msg_a014e37b4a194e549bae8a189f955757",
+            "type": "message",
+            "status": "completed",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "```python\ndef merge_sorted_lists(a: list[int], b: list[int]) -> list[int]:\n    \"\"\"Merge two sorted integer lists into one sorted list in linear time.\"\"\"\n    result = []\n    i = j = 0\n\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n\n    result.extend(a[i:])\n    result.extend(b[j:])\n    return result\n\n\n# Tests\nassert merge_sorted_lists([1, 3, 5], [2, 4, 6]) == [1, 2, 3, 4, 5, 6]\nassert merge_sorted_lists([], [1, 2, 3]) == [1, 2, 3]\n```",
+                "annotations": [],
+                "logprobs": []
+              }
+            ]
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "store": false,
+        "temperature": 0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": null,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 72,
+          "input_tokens_details": {
+            "cached_tokens": 72
+          },
+          "output_tokens": 277,
+          "output_tokens_details": {
+            "reasoning_tokens": 81
+          },
+          "total_tokens": 349
+        },
+        "user": null,
+        "metadata": {},
+        "completed_at": 1791242297
+      },
+      "wall_s": 14.751817841082811,
+      "status_before": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 486,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 21,
+          "in_flight": 0,
+          "last_request_at": 1791242282
+        },
+        "last_timings": {
+          "cache_n": 135,
+          "prompt_n": 0,
+          "prompt_ms": 857.2,
+          "prompt_per_token_ms": null,
+          "prompt_per_second": null,
+          "predicted_n": 273,
+          "predicted_ms": 12918.0,
+          "predicted_per_token_ms": 67.634,
+          "predicted_per_second": 14.8,
+          "draft_n": 152,
+          "draft_n_accepted": 134,
+          "at": 1791242282
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242282,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 100,
+            "temp_c": 41,
+            "power_w": 106.54
+          },
+          "ram": {
+            "used_gib": 45.9,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "status_after": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 501,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 22,
+          "in_flight": 0,
+          "last_request_at": 1791242297
+        },
+        "last_timings": {
+          "cache_n": 135,
+          "prompt_n": 0,
+          "prompt_ms": 765.8,
+          "prompt_per_token_ms": null,
+          "prompt_per_second": null,
+          "predicted_n": 277,
+          "predicted_ms": 8441.7,
+          "predicted_per_token_ms": 43.291,
+          "predicted_per_second": 23.1,
+          "draft_n": 160,
+          "draft_n_accepted": 137,
+          "at": 1791242297
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242297,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 99,
+            "temp_c": 43,
+            "power_w": 117.482
+          },
+          "ram": {
+            "used_gib": 46.8,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "native_request_log": "strata serve: prompt 72 tokens = 67 reused + 5 read in 281 ms (17.8 tok/s), 64 generated in 5253 ms (12.2 tok/s), drafts accepted 37 of 49, 1 checkpoints\nstrata serve: decode expert cache hit rate: 92.6% (31646 hits / 34177 lookups); 2303 more read by the GPU over PCIe or from another GPU (6.3% of all 36480 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 27711 exchanged with the VRAM tier, 163123 blob reads from the file\nstrata serve: expert tiers: GPU 31646 hits this request; since the start RAM 760024 blobs, files 163123 blobs 543899.9 MB read (the GGUF in place)\nstrata serve: prompt 154 tokens = 135 reused + 19 read in 766 ms (24.8 tok/s), 195 generated in 8442 ms (23.1 tok/s), drafts accepted 137 of 160, 1 checkpoints\nstrata serve: decode expert cache hit rate: 87.3% (82459 hits / 94404 lookups); 11196 more read by the GPU over PCIe or from another GPU (10.6% of all 105600 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 28770 exchanged with the VRAM tier, 169282 blob reads from the file\nstrata serve: expert tiers: GPU 82459 hits this request; since the start RAM 776509 blobs, files 169282 blobs 552697.5 MB read (the GGUF in place)\n",
+      "native_phases": [
+        {
+          "prompt_tokens": 72,
+          "cache_n": 67,
+          "fresh_prompt_tokens": 5,
+          "requested_fresh_prompt_tokens": 5,
+          "prompt_ms": 281.0,
+          "native_generated_tokens": 64,
+          "decode_ms": 5253.0,
+          "draft_accepted": 37,
+          "draft_offered": 49
+        },
+        {
+          "prompt_tokens": 154,
+          "cache_n": 135,
+          "fresh_prompt_tokens": 19,
+          "requested_fresh_prompt_tokens": 19,
+          "prompt_ms": 766.0,
+          "native_generated_tokens": 195,
+          "decode_ms": 8442.0,
+          "draft_accepted": 137,
+          "draft_offered": 160
+        }
+      ],
+      "status": "completed",
+      "native_accounting": {
+        "phase_count": 2,
+        "native_generated_tokens_all_phases": 259,
+        "native_decode_ms_all_phases": 13695.0,
+        "native_prompt_ms_all_phases": 1047.0,
+        "fresh_prompt_tokens_all_phases": 24,
+        "initial_cached_input_tokens": 67,
+        "last_phase_native_generated_tokens": 195,
+        "last_phase_native_tokens_s": 23.098791755508174,
+        "native_all_phases_tokens_s": 18.91201168309602,
+        "api_minus_native_output_tokens": 18,
+        "note": "API usage includes injected reasoning-wrap tokens; native counts may include cancellation/drain overrun. Wrapper status exposes final native phase clock/cache with total API predicted_n; these counters must not be divided as though one phase."
+      },
+      "engine_timings": {
+        "cache_n": 135,
+        "prompt_n": 0,
+        "prompt_ms": 765.8,
+        "prompt_per_token_ms": null,
+        "prompt_per_second": null,
+        "predicted_n": 277,
+        "predicted_ms": 8441.7,
+        "predicted_per_token_ms": 43.291,
+        "predicted_per_second": 23.1,
+        "draft_n": 160,
+        "draft_n_accepted": 137,
+        "at": 1791242297
+      },
+      "valid_measurement": true,
+      "output_tokens": 277,
+      "reasoning_tokens": 81,
+      "answer_tokens": 196,
+      "api_answer_tokens_per_response_wall_s": 13.28649811917778,
+      "request_tokens_per_s": 18.77734683169513
+    },
+    {
+      "workload": "prose",
+      "trial": 1,
+      "cold_engine": false,
+      "request_tuning": {
+        "pcie_frac": 0.75
+      },
+      "prompt_chars": 90,
+      "prompt": "Explain how a seed grows into a plant to a curious ten-year-old in three clear paragraphs.",
+      "first_token_s": 4.468190048937686,
+      "first_answer_s": 10.907551136915572,
+      "output_text": "A seed is like a tiny sleeping baby plant wrapped in a hard shell. It has everything it needs inside to start growing, but it waits for the right conditions. When the seed gets water, warmth, and sometimes sunlight, it wakes up and begins to grow.\n\nFirst, the seed sends roots down into the soil. These roots drink up water and nutrients, which help the plant grow strong. At the same time, a tiny shoot pushes up toward the sunlight. Sunlight helps the plant make its own food, so it can keep growing taller and stronger.\n\nSoon, the shoot becomes a stem with leaves, and the plant starts to look like a real plant. The leaves catch sunlight, the roots keep drinking water, and the plant grows bigger and bigger. If it lives long enough, it may even make flowers and seeds of its own, starting the whole cycle again!",
+      "reasoning_text": "We need to respond to user: \"Explain how a seed grows into a plant to a curious ten-year-old in three clear paragraphs.\" Need final answer only likely. Need three clear paragraphs, age-appropriate. Ensure no extra? Just three paragraphs. Need maybe mention seed, water, warmth, roots, shoot,\n\nI have thought about this long enough; time to give my answer.\n",
+      "terminal_type": "response.completed",
+      "response": {
+        "id": "resp_7899f8ceee4c4c198acfee30d980c652",
+        "object": "response",
+        "created_at": 1791242297,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 384,
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "output": [
+          {
+            "id": "rs_9875c8d0ffaa4b5383d6e0f323736050",
+            "type": "reasoning",
+            "status": "completed",
+            "summary": [],
+            "content": [
+              {
+                "type": "reasoning_text",
+                "text": "We need to respond to user: \"Explain how a seed grows into a plant to a curious ten-year-old in three clear paragraphs.\" Need final answer only likely. Need three clear paragraphs, age-appropriate. Ensure no extra? Just three paragraphs. Need maybe mention seed, water, warmth, roots, shoot,\n\nI have thought about this long enough; time to give my answer.\n"
+              }
+            ]
+          },
+          {
+            "id": "msg_fde399e4680a4dd189c179dc173ea9a7",
+            "type": "message",
+            "status": "completed",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "A seed is like a tiny sleeping baby plant wrapped in a hard shell. It has everything it needs inside to start growing, but it waits for the right conditions. When the seed gets water, warmth, and sometimes sunlight, it wakes up and begins to grow.\n\nFirst, the seed sends roots down into the soil. These roots drink up water and nutrients, which help the plant grow strong. At the same time, a tiny shoot pushes up toward the sunlight. Sunlight helps the plant make its own food, so it can keep growing taller and stronger.\n\nSoon, the shoot becomes a stem with leaves, and the plant starts to look like a real plant. The leaves catch sunlight, the roots keep drinking water, and the plant grows bigger and bigger. If it lives long enough, it may even make flowers and seeds of its own, starting the whole cycle again!",
+                "annotations": [],
+                "logprobs": []
+              }
+            ]
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "store": false,
+        "temperature": 0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": null,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 72,
+          "input_tokens_details": {
+            "cached_tokens": 72
+          },
+          "output_tokens": 260,
+          "output_tokens_details": {
+            "reasoning_tokens": 81
+          },
+          "total_tokens": 332
+        },
+        "user": null,
+        "metadata": {},
+        "completed_at": 1791242320
+      },
+      "wall_s": 23.273690278991126,
+      "status_before": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 501,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 22,
+          "in_flight": 0,
+          "last_request_at": 1791242297
+        },
+        "last_timings": {
+          "cache_n": 135,
+          "prompt_n": 0,
+          "prompt_ms": 765.8,
+          "prompt_per_token_ms": null,
+          "prompt_per_second": null,
+          "predicted_n": 277,
+          "predicted_ms": 8441.7,
+          "predicted_per_token_ms": 43.291,
+          "predicted_per_second": 23.1,
+          "draft_n": 160,
+          "draft_n_accepted": 137,
+          "at": 1791242297
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242297,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 99,
+            "temp_c": 43,
+            "power_w": 117.482
+          },
+          "ram": {
+            "used_gib": 46.8,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "status_after": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 524,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 23,
+          "in_flight": 0,
+          "last_request_at": 1791242320
+        },
+        "last_timings": {
+          "cache_n": 136,
+          "prompt_n": 0,
+          "prompt_ms": 827.0,
+          "prompt_per_token_ms": null,
+          "prompt_per_second": null,
+          "predicted_n": 260,
+          "predicted_ms": 12363.1,
+          "predicted_per_token_ms": 69.456,
+          "predicted_per_second": 14.4,
+          "draft_n": 173,
+          "draft_n_accepted": 99,
+          "at": 1791242320
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242320,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 80,
+            "temp_c": 42,
+            "power_w": 106.507
+          },
+          "ram": {
+            "used_gib": 47.3,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "native_request_log": "strata serve: prompt 72 tokens = 0 reused + 72 read in 4454 ms (16.2 tok/s), 65 generated in 5611 ms (11.6 tok/s), drafts accepted 38 of 52, 1 checkpoints\nstrata serve: decode expert cache hit rate: 79.8% (25651 hits / 32146 lookups); 5774 more read by the GPU over PCIe or from another GPU (15.2% of all 37920 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 29244 exchanged with the VRAM tier, 172262 blob reads from the file\nstrata serve: expert tiers: GPU 25651 hits this request; since the start RAM 787950 blobs, files 172262 blobs 559081.9 MB read (the GGUF in place)\nstrata serve: prompt 154 tokens = 136 reused + 18 read in 827 ms (21.8 tok/s), 178 generated in 12363 ms (14.4 tok/s), drafts accepted 99 of 173, 1 checkpoints\nstrata serve: decode expert cache hit rate: 86.2% (93085 hits / 108035 lookups); 13405 more read by the GPU over PCIe or from another GPU (11.0% of all 121440 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 30650 exchanged with the VRAM tier, 179268 blob reads from the file\nstrata serve: expert tiers: GPU 93085 hits this request; since the start RAM 807256 blobs, files 179268 blobs 566911.1 MB read (the GGUF in place)\n",
+      "native_phases": [
+        {
+          "prompt_tokens": 72,
+          "cache_n": 0,
+          "fresh_prompt_tokens": 72,
+          "requested_fresh_prompt_tokens": 72,
+          "prompt_ms": 4454.0,
+          "native_generated_tokens": 65,
+          "decode_ms": 5611.0,
+          "draft_accepted": 38,
+          "draft_offered": 52
+        },
+        {
+          "prompt_tokens": 154,
+          "cache_n": 136,
+          "fresh_prompt_tokens": 18,
+          "requested_fresh_prompt_tokens": 18,
+          "prompt_ms": 827.0,
+          "native_generated_tokens": 178,
+          "decode_ms": 12363.0,
+          "draft_accepted": 99,
+          "draft_offered": 173
+        }
+      ],
+      "status": "completed",
+      "native_accounting": {
+        "phase_count": 2,
+        "native_generated_tokens_all_phases": 243,
+        "native_decode_ms_all_phases": 17974.0,
+        "native_prompt_ms_all_phases": 5281.0,
+        "fresh_prompt_tokens_all_phases": 90,
+        "initial_cached_input_tokens": 0,
+        "last_phase_native_generated_tokens": 178,
+        "last_phase_native_tokens_s": 14.397799886758877,
+        "native_all_phases_tokens_s": 13.519528207410705,
+        "api_minus_native_output_tokens": 17,
+        "note": "API usage includes injected reasoning-wrap tokens; native counts may include cancellation/drain overrun. Wrapper status exposes final native phase clock/cache with total API predicted_n; these counters must not be divided as though one phase."
+      },
+      "engine_timings": {
+        "cache_n": 136,
+        "prompt_n": 0,
+        "prompt_ms": 827.0,
+        "prompt_per_token_ms": null,
+        "prompt_per_second": null,
+        "predicted_n": 260,
+        "predicted_ms": 12363.1,
+        "predicted_per_token_ms": 69.456,
+        "predicted_per_second": 14.4,
+        "draft_n": 173,
+        "draft_n_accepted": 99,
+        "at": 1791242320
+      },
+      "valid_measurement": true,
+      "output_tokens": 260,
+      "reasoning_tokens": 81,
+      "answer_tokens": 179,
+      "api_answer_tokens_per_response_wall_s": 7.691087999120668,
+      "request_tokens_per_s": 11.171412736152925
+    },
+    {
+      "workload": "prose",
+      "trial": 2,
+      "cold_engine": false,
+      "request_tuning": {
+        "pcie_frac": 0.75
+      },
+      "prompt_chars": 90,
+      "prompt": "Explain how a seed grows into a plant to a curious ten-year-old in three clear paragraphs.",
+      "first_token_s": 0.10585578402969986,
+      "first_answer_s": 1.7432173009729013,
+      "output_text": "A seed is like a tiny sleeping baby plant wrapped in a hard shell. It has everything it needs inside to start growing, but it needs the right conditions to wake up. When a seed gets water, warmth, and sometimes light, it begins to soften and swell. This tells the plant inside that it\u2019s time to grow.\n\nFirst, the seed sends a root down into the soil to drink water and get nutrients. Then a tiny shoot pushes up toward the sunlight. The shoot grows into a stem, and leaves begin to unfold. Leaves are like solar panels\u2014they catch sunlight and help the plant make its own food.\n\nAs the plant gets bigger, it keeps growing taller and stronger. It may grow flowers, which can make seeds for new plants. That\u2019s how the cycle starts all over again!",
+      "reasoning_text": "We need to respond to user: \"Explain how a seed grows into a plant to a curious ten-year-old in three clear paragraphs.\" Need final answer only likely. Need three clear paragraphs, age-appropriate. Ensure simple, engaging. No need complex. Final in English.\n",
+      "terminal_type": "response.completed",
+      "response": {
+        "id": "resp_bc50186f9f574857ab879b691b3e8121",
+        "object": "response",
+        "created_at": 1791242320,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 384,
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "output": [
+          {
+            "id": "rs_407e7b20b12a425e9487d185425fb1e3",
+            "type": "reasoning",
+            "status": "completed",
+            "summary": [],
+            "content": [
+              {
+                "type": "reasoning_text",
+                "text": "We need to respond to user: \"Explain how a seed grows into a plant to a curious ten-year-old in three clear paragraphs.\" Need final answer only likely. Need three clear paragraphs, age-appropriate. Ensure simple, engaging. No need complex. Final in English.\n"
+              }
+            ]
+          },
+          {
+            "id": "msg_caf6266bb5bb4a10bb538fb7718dbea5",
+            "type": "message",
+            "status": "completed",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "A seed is like a tiny sleeping baby plant wrapped in a hard shell. It has everything it needs inside to start growing, but it needs the right conditions to wake up. When a seed gets water, warmth, and sometimes light, it begins to soften and swell. This tells the plant inside that it\u2019s time to grow.\n\nFirst, the seed sends a root down into the soil to drink water and get nutrients. Then a tiny shoot pushes up toward the sunlight. The shoot grows into a stem, and leaves begin to unfold. Leaves are like solar panels\u2014they catch sunlight and help the plant make its own food.\n\nAs the plant gets bigger, it keeps growing taller and stronger. It may grow flowers, which can make seeds for new plants. That\u2019s how the cycle starts all over again!",
+                "annotations": [],
+                "logprobs": []
+              }
+            ]
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "store": false,
+        "temperature": 0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": null,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 72,
+          "input_tokens_details": {
+            "cached_tokens": 67
+          },
+          "output_tokens": 222,
+          "output_tokens_details": {
+            "reasoning_tokens": 58
+          },
+          "total_tokens": 294
+        },
+        "user": null,
+        "metadata": {},
+        "completed_at": 1791242332
+      },
+      "wall_s": 11.795456561027095,
+      "status_before": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 524,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 23,
+          "in_flight": 0,
+          "last_request_at": 1791242320
+        },
+        "last_timings": {
+          "cache_n": 136,
+          "prompt_n": 0,
+          "prompt_ms": 827.0,
+          "prompt_per_token_ms": null,
+          "prompt_per_second": null,
+          "predicted_n": 260,
+          "predicted_ms": 12363.1,
+          "predicted_per_token_ms": 69.456,
+          "predicted_per_second": 14.4,
+          "draft_n": 173,
+          "draft_n_accepted": 99,
+          "at": 1791242320
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242320,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 80,
+            "temp_c": 42,
+            "power_w": 106.507
+          },
+          "ram": {
+            "used_gib": 47.3,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "status_after": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 536,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 24,
+          "in_flight": 0,
+          "last_request_at": 1791242332
+        },
+        "last_timings": {
+          "cache_n": 67,
+          "prompt_n": 5,
+          "prompt_ms": 40.6,
+          "prompt_per_token_ms": 8.12,
+          "prompt_per_second": 123.2,
+          "predicted_n": 222,
+          "predicted_ms": 11739.6,
+          "predicted_per_token_ms": 52.881,
+          "predicted_per_second": 18.9,
+          "draft_n": 209,
+          "draft_n_accepted": 114,
+          "at": 1791242332
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242332,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 100,
+            "temp_c": 42,
+            "power_w": 106.519
+          },
+          "ram": {
+            "used_gib": 47.2,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "native_request_log": "strata serve: prompt 72 tokens = 67 reused + 5 read in 41 ms (123.2 tok/s), 222 generated in 11740 ms (18.9 tok/s), drafts accepted 114 of 209, 1 checkpoints\nstrata serve: decode expert cache hit rate: 95.4% (140952 hits / 147673 lookups); 4487 more read by the GPU over PCIe or from another GPU (2.9% of all 152160 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 32013 exchanged with the VRAM tier, 182407 blob reads from the file\nstrata serve: expert tiers: GPU 140952 hits this request; since the start RAM 816139 blobs, files 182407 blobs 570458.0 MB read (the GGUF in place)\n",
+      "native_phases": [
+        {
+          "prompt_tokens": 72,
+          "cache_n": 67,
+          "fresh_prompt_tokens": 5,
+          "requested_fresh_prompt_tokens": 5,
+          "prompt_ms": 41.0,
+          "native_generated_tokens": 222,
+          "decode_ms": 11740.0,
+          "draft_accepted": 114,
+          "draft_offered": 209
+        }
+      ],
+      "status": "completed",
+      "native_accounting": {
+        "phase_count": 1,
+        "native_generated_tokens_all_phases": 222,
+        "native_decode_ms_all_phases": 11740.0,
+        "native_prompt_ms_all_phases": 41.0,
+        "fresh_prompt_tokens_all_phases": 5,
+        "initial_cached_input_tokens": 67,
+        "last_phase_native_generated_tokens": 222,
+        "last_phase_native_tokens_s": 18.909710391822827,
+        "native_all_phases_tokens_s": 18.909710391822827,
+        "api_minus_native_output_tokens": 0,
+        "note": "API usage includes injected reasoning-wrap tokens; native counts may include cancellation/drain overrun. Wrapper status exposes final native phase clock/cache with total API predicted_n; these counters must not be divided as though one phase."
+      },
+      "engine_timings": {
+        "cache_n": 67,
+        "prompt_n": 5,
+        "prompt_ms": 40.6,
+        "prompt_per_token_ms": 8.12,
+        "prompt_per_second": 123.2,
+        "predicted_n": 222,
+        "predicted_ms": 11739.6,
+        "predicted_per_token_ms": 52.881,
+        "predicted_per_second": 18.9,
+        "draft_n": 209,
+        "draft_n_accepted": 114,
+        "at": 1791242332
+      },
+      "valid_measurement": true,
+      "output_tokens": 222,
+      "reasoning_tokens": 58,
+      "answer_tokens": 164,
+      "api_answer_tokens_per_response_wall_s": 13.90365851050361,
+      "request_tokens_per_s": 18.820806032510983
+    },
+    {
+      "workload": "context_varied_short",
+      "trial": 1,
+      "cold_engine": false,
+      "request_tuning": {
+        "pcie_frac": 0.75
+      },
+      "prompt_chars": 8231,
+      "prompt": "Record entry_00000: unique_code=code_104729_0000; owner=team_0; cycle=2000; priority=0.\nRecord entry_00001: unique_code=code_112648_0001; owner=team_17; cycle=2001; priority=13.\nRecord entry_00002: unique_code=code_120567_0002; owner=team_34; cycle=2002; priority=26.\nRecord entry_00003: unique_code=code_128486_0003; owner=team_51; cycle=2003; priority=39.\nRecord entry_00004: unique_code=code_136405_0004; owner=team_68; cycle=2004; priority=52.\nRecord entry_00005: unique_code=code_144324_0005; owner=team_85; cycle=2005; priority=65.\nRecord entry_00006: unique_code=code_152243_0006; owner=team_1; cycle=2006; priority=78.\nRecord entry_00007: unique_code=code_160162_0007; owner=team_18; cycle=2007; priority=91.\nRecord entry_00008: unique_code=code_168081_0008; owner=team_35; cycle=2008; priority=7.\nRecord entry_00009: unique_code=code_176000_0009; owner=team_52; cycle=2009; priority=20.\nRecord entry_00010: unique_code=code_183919_000a; owner=team_69; cycle=2010; priority=33.\nRecord entry_00011: unique_code=code_191838_000b; owner=team_86; cycle=2011; priority=46.\nRecord entry_00012: unique_code=code_199757_000c; owner=team_2; cycle=2012; priority=59.\nRecord entry_00013: unique_code=code_207676_000d; owner=team_19; cycle=2013; priority=72.\nRecord entry_00014: unique_code=code_215595_000e; owner=team_36; cycle=2014; priority=85.\nRecord entry_00015: unique_code=code_223514_000f; owner=team_53; cycle=2015; priority=1.\nRecord entry_00016: unique_code=code_231433_0010; owner=team_70; cycle=2016; priority=14.\nRecord entry_00017: unique_code=code_239352_0011; owner=team_87; cycle=2017; priority=27.\nRecord entry_00018: unique_code=code_247271_0012; owner=team_3; cycle=2018; priority=40.\nRecord entry_00019: unique_code=code_255190_0013; owner=team_20; cycle=2019; priority=53.\nRecord entry_00020: unique_code=code_263109_0014; owner=team_37; cycle=2020; priority=66.\nRecord entry_00021: unique_code=code_271028_0015; owner=team_54; cycle=2021; priority=79.\nRecord entry_00022: unique_code=code_278947_0016; owner=team_71; cycle=2022; priority=92.\nRecord entry_00023: unique_code=code_286866_0017; owner=team_88; cycle=2023; priority=8.\nRecord entry_00024: unique_code=code_294785_0018; owner=team_4; cycle=2024; priority=21.\nRecord entry_00025: unique_code=code_302704_0019; owner=team_21; cycle=2025; priority=34.\nRecord entry_00026: unique_code=code_310623_001a; owner=team_38; cycle=2026; priority=47.\nRecord entry_00027: unique_code=code_318542_001b; owner=team_55; cycle=2027; priority=60.\nRecord entry_00028: unique_code=code_326461_001c; owner=team_72; cycle=2028; priority=73.\nRecord entry_00029: unique_code=code_334380_001d; owner=team_89; cycle=2029; priority=86.\nRecord entry_00030: unique_code=code_342299_001e; owner=team_5; cycle=2030; priority=2.\nRecord entry_00031: unique_code=code_350218_001f; owner=team_22; cycle=2031; priority=15.\nRecord entry_00032: unique_code=code_358137_0020; owner=team_39; cycle=2032; priority=28.\nRecord entry_00033: unique_code=code_366056_0021; owner=team_56; cycle=2033; priority=41.\nRecord entry_00034: unique_code=code_373975_0022; owner=team_73; cycle=2034; priority=54.\nRecord entry_00035: unique_code=code_381894_0023; owner=team_90; cycle=2035; priority=67.\nRecord entry_00036: unique_code=code_389813_0024; owner=team_6; cycle=2036; priority=80.\nRecord entry_00037: unique_code=code_397732_0025; owner=team_23; cycle=2037; priority=93.\nRecord entry_00038: unique_code=code_405651_0026; owner=team_40; cycle=2038; priority=9.\nRecord entry_00039: unique_code=code_413570_0027; owner=team_57; cycle=2039; priority=22.\nRecord entry_00040: unique_code=code_421489_0028; owner=team_74; cycle=2040; priority=35.\nRecord entry_00041: unique_code=code_429408_0029; owner=team_91; cycle=2041; priority=48.\nRecord entry_00042: unique_code=code_437327_002a; owner=team_7; cycle=2042; priority=61.\nRecord entry_00043: unique_code=code_445246_002b; owner=team_24; cycle=2043; priority=74.\nRecord entry_00044: unique_code=code_453165_002c; owner=team_41; cycle=2044; priority=87.\nRecord entry_00045: unique_code=code_461084_002d; owner=team_58; cycle=2045; priority=3.\nRecord entry_00046: unique_code=code_469003_002e; owner=team_75; cycle=2046; priority=16.\nRecord entry_00047: unique_code=code_476922_002f; owner=team_92; cycle=2047; priority=29.\nRecord entry_00048: unique_code=code_484841_0030; owner=team_8; cycle=2048; priority=42.\nRecord entry_00049: unique_code=code_492760_0031; owner=team_25; cycle=2049; priority=55.\nRecord entry_00050: unique_code=code_500679_0032; owner=team_42; cycle=2050; priority=68.\nRecord entry_00051: unique_code=code_508598_0033; owner=team_59; cycle=2051; priority=81.\nRecord entry_00052: unique_code=code_516517_0034; owner=team_76; cycle=2052; priority=94.\nRecord entry_00053: unique_code=code_524436_0035; owner=team_93; cycle=2053; priority=10.\nRecord entry_00054: unique_code=code_532355_0036; owner=team_9; cycle=2054; priority=23.\nRecord entry_00055: unique_code=code_540274_0037; owner=team_26; cycle=2055; priority=36.\nRecord entry_00056: unique_code=code_548193_0038; owner=team_43; cycle=2056; priority=49.\nRecord entry_00057: unique_code=code_556112_0039; owner=team_60; cycle=2057; priority=62.\nRecord entry_00058: unique_code=code_564031_003a; owner=team_77; cycle=2058; priority=75.\nRecord entry_00059: unique_code=code_571950_003b; owner=team_94; cycle=2059; priority=88.\nRecord entry_00060: unique_code=code_579869_003c; owner=team_10; cycle=2060; priority=4.\nRecord entry_00061: unique_code=code_587788_003d; owner=team_27; cycle=2061; priority=17.\nRecord entry_00062: unique_code=code_595707_003e; owner=team_44; cycle=2062; priority=30.\nRecord entry_00063: unique_code=code_603626_003f; owner=team_61; cycle=2063; priority=43.\nRecord entry_00064: unique_code=code_611545_0040; owner=team_78; cycle=2064; priority=56.\nRecord entry_00065: unique_code=code_619464_0041; owner=team_95; cycle=2065; priority=69.\nRecord entry_00066: unique_code=code_627383_0042; owner=team_11; cycle=2066; priority=82.\nRecord entry_00067: unique_code=code_635302_0043; owner=team_28; cycle=2067; priority=95.\nRecord entry_00068: unique_code=code_643221_0044; owner=team_45; cycle=2068; priority=11.\nRecord entry_00069: unique_code=code_651140_0045; owner=team_62; cycle=2069; priority=24.\nRecord entry_00070: unique_code=code_659059_0046; owner=team_79; cycle=2070; priority=37.\nRecord entry_00071: unique_code=code_666978_0047; owner=team_96; cycle=2071; priority=50.\nRecord entry_00072: unique_code=code_674897_0048; owner=team_12; cycle=2072; priority=63.\nRecord entry_00073: unique_code=code_682816_0049; owner=team_29; cycle=2073; priority=76.\nRecord entry_00074: unique_code=code_690735_004a; owner=team_46; cycle=2074; priority=89.\nRecord entry_00075: unique_code=code_698654_004b; owner=team_63; cycle=2075; priority=5.\nRecord entry_00076: unique_code=code_706573_004c; owner=team_80; cycle=2076; priority=18.\nRecord entry_00077: unique_code=code_714492_004d; owner=team_97; cycle=2077; priority=31.\nRecord entry_00078: unique_code=code_722411_004e; owner=team_13; cycle=2078; priority=44.\nRecord entry_00079: unique_code=code_730330_004f; owner=team_30; cycle=2079; priority=57.\nRecord entry_00080: unique_code=code_738249_0050; owner=team_47; cycle=2080; priority=70.\nRecord entry_00081: unique_code=code_746168_0051; owner=team_64; cycle=2081; priority=83.\nRecord entry_00082: unique_code=code_754087_0052; owner=team_81; cycle=2082; priority=96.\nRecord entry_00083: unique_code=code_762006_0053; owner=team_98; cycle=2083; priority=12.\nRecord entry_00084: unique_code=code_769925_0054; owner=team_14; cycle=2084; priority=25.\nRecord entry_00085: unique_code=code_777844_0055; owner=team_31; cycle=2085; priority=38.\nRecord entry_00086: unique_code=code_785763_0056; owner=team_48; cycle=2086; priority=51.\nRecord entry_00087: unique_code=code_793682_0057; owner=team_65; cycle=2087; priority=64.\nRecord entry_00088: unique_code=code_801601_0058; owner=team_82; cycle=2088; priority=77.\nRecord entry_00089: unique_code=code_809520_0059; owner=team_99; cycle=2089; priority=90.\nReturn ONLY a JSON object mapping each requested record ID to its exact unique_code. Requested IDs: entry_00000, entry_00022, entry_00045, entry_00089",
+      "first_token_s": 24.776755328988656,
+      "first_answer_s": 32.545793386991136,
+      "output_text": "{\n  \"entry_00000\": \"code_104729_0000\",\n  \"entry_00022\": \"code_278947_0016\",\n  \"entry_00045\": \"code_461084_002d\",\n  \"entry_00089\": \"code_809520_0059\"\n}",
+      "reasoning_text": "We need answer user's request. Need produce final JSON only. Need extract unique_code for requested IDs:\nentry_00000 -> code_104729_0000\nentry_00022 -> code_278947_001\n\nI have thought about this long enough; time to give my answer.\n",
+      "terminal_type": "response.completed",
+      "response": {
+        "id": "resp_71ae2d3ba724417091ff45ee4d94b45b",
+        "object": "response",
+        "created_at": 1791242332,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 384,
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "output": [
+          {
+            "id": "rs_cb35e47e2f11495b99007c5ebb7cfd48",
+            "type": "reasoning",
+            "status": "completed",
+            "summary": [],
+            "content": [
+              {
+                "type": "reasoning_text",
+                "text": "We need answer user's request. Need produce final JSON only. Need extract unique_code for requested IDs:\nentry_00000 -> code_104729_0000\nentry_00022 -> code_278947_001\n\nI have thought about this long enough; time to give my answer.\n"
+              }
+            ]
+          },
+          {
+            "id": "msg_fbafaacc525244bbbe8a398d1af4be97",
+            "type": "message",
+            "status": "completed",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "{\n  \"entry_00000\": \"code_104729_0000\",\n  \"entry_00022\": \"code_278947_0016\",\n  \"entry_00045\": \"code_461084_002d\",\n  \"entry_00089\": \"code_809520_0059\"\n}",
+                "annotations": [],
+                "logprobs": []
+              }
+            ]
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "store": false,
+        "temperature": 0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": null,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 4224,
+          "input_tokens_details": {
+            "cached_tokens": 4219
+          },
+          "output_tokens": 190,
+          "output_tokens_details": {
+            "reasoning_tokens": 81
+          },
+          "total_tokens": 4414
+        },
+        "user": null,
+        "metadata": {},
+        "completed_at": 1791242368
+      },
+      "wall_s": 36.222658323007636,
+      "status_before": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 536,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 24,
+          "in_flight": 0,
+          "last_request_at": 1791242332
+        },
+        "last_timings": {
+          "cache_n": 67,
+          "prompt_n": 5,
+          "prompt_ms": 40.6,
+          "prompt_per_token_ms": 8.12,
+          "prompt_per_second": 123.2,
+          "predicted_n": 222,
+          "predicted_ms": 11739.6,
+          "predicted_per_token_ms": 52.881,
+          "predicted_per_second": 18.9,
+          "draft_n": 209,
+          "draft_n_accepted": 114,
+          "at": 1791242332
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242332,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 100,
+            "temp_c": 42,
+            "power_w": 106.519
+          },
+          "ram": {
+            "used_gib": 47.2,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "status_after": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 572,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 25,
+          "in_flight": 0,
+          "last_request_at": 1791242368
+        },
+        "last_timings": {
+          "cache_n": 4219,
+          "prompt_n": 5,
+          "prompt_ms": 1653.2,
+          "prompt_per_token_ms": 330.64,
+          "prompt_per_second": 3.0,
+          "predicted_n": 190,
+          "predicted_ms": 3677.4,
+          "predicted_per_token_ms": 34.05,
+          "predicted_per_second": 29.4,
+          "draft_n": 81,
+          "draft_n_accepted": 81,
+          "at": 1791242368
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242369,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 100,
+            "temp_c": 42,
+            "power_w": 120.025
+          },
+          "ram": {
+            "used_gib": 46.0,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "native_request_log": "strata serve: prompt 4224 tokens = 0 reused + 4224 read in 24755 ms (170.6 tok/s), 67 generated in 6105 ms (11.0 tok/s), drafts accepted 45 of 56, 1 checkpoints\nstrata serve: decode expert cache hit rate: 70.1% (20486 hits / 29223 lookups); 8217 more read by the GPU over PCIe or from another GPU (21.9% of all 37440 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 32424 exchanged with the VRAM tier, 186586 blob reads from the file\nstrata serve: expert tiers: GPU 20486 hits this request; since the start RAM 855380 blobs, files 186586 blobs 605256.6 MB read (the GGUF in place)\nstrata serve: prompt 4306 tokens = 4219 reused + 87 read in 1653 ms (52.6 tok/s), 108 generated in 3677 ms (29.4 tok/s), drafts accepted 81 of 81, 1 checkpoints\nstrata serve: decode expert cache hit rate: 65.5% (25746 hits / 39319 lookups); 13001 more read by the GPU over PCIe or from another GPU (24.8% of all 52320 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 32918 exchanged with the VRAM tier, 192577 blob reads from the file\nstrata serve: expert tiers: GPU 25746 hits this request; since the start RAM 873945 blobs, files 192577 blobs 617823.0 MB read (the GGUF in place)\n",
+      "native_phases": [
+        {
+          "prompt_tokens": 4224,
+          "cache_n": 0,
+          "fresh_prompt_tokens": 4224,
+          "requested_fresh_prompt_tokens": 4224,
+          "prompt_ms": 24755.0,
+          "native_generated_tokens": 67,
+          "decode_ms": 6105.0,
+          "draft_accepted": 45,
+          "draft_offered": 56
+        },
+        {
+          "prompt_tokens": 4306,
+          "cache_n": 4219,
+          "fresh_prompt_tokens": 87,
+          "requested_fresh_prompt_tokens": 87,
+          "prompt_ms": 1653.0,
+          "native_generated_tokens": 108,
+          "decode_ms": 3677.0,
+          "draft_accepted": 81,
+          "draft_offered": 81
+        }
+      ],
+      "status": "completed",
+      "native_accounting": {
+        "phase_count": 2,
+        "native_generated_tokens_all_phases": 175,
+        "native_decode_ms_all_phases": 9782.0,
+        "native_prompt_ms_all_phases": 26408.0,
+        "fresh_prompt_tokens_all_phases": 4311,
+        "initial_cached_input_tokens": 0,
+        "last_phase_native_generated_tokens": 108,
+        "last_phase_native_tokens_s": 29.371770465053032,
+        "native_all_phases_tokens_s": 17.890002044571663,
+        "api_minus_native_output_tokens": 15,
+        "note": "API usage includes injected reasoning-wrap tokens; native counts may include cancellation/drain overrun. Wrapper status exposes final native phase clock/cache with total API predicted_n; these counters must not be divided as though one phase."
+      },
+      "engine_timings": {
+        "cache_n": 4219,
+        "prompt_n": 5,
+        "prompt_ms": 1653.2,
+        "prompt_per_token_ms": 330.64,
+        "prompt_per_second": 3.0,
+        "predicted_n": 190,
+        "predicted_ms": 3677.4,
+        "predicted_per_token_ms": 34.05,
+        "predicted_per_second": 29.4,
+        "draft_n": 81,
+        "draft_n_accepted": 81,
+        "at": 1791242368
+      },
+      "valid_measurement": true,
+      "output_tokens": 190,
+      "reasoning_tokens": 81,
+      "answer_tokens": 109,
+      "expected_retrieval": {
+        "entry_00000": "code_104729_0000",
+        "entry_00022": "code_278947_0016",
+        "entry_00045": "code_461084_002d",
+        "entry_00089": "code_809520_0059"
+      },
+      "retrieval_correct": true,
+      "api_answer_tokens_per_response_wall_s": 3.0091662248534146,
+      "request_tokens_per_s": 5.245335621304117
+    },
+    {
+      "workload": "context_varied_short",
+      "trial": 2,
+      "cold_engine": false,
+      "request_tuning": {
+        "pcie_frac": 0.75
+      },
+      "prompt_chars": 8231,
+      "prompt": "Record entry_00000: unique_code=code_104729_0000; owner=team_0; cycle=2000; priority=0.\nRecord entry_00001: unique_code=code_112648_0001; owner=team_17; cycle=2001; priority=13.\nRecord entry_00002: unique_code=code_120567_0002; owner=team_34; cycle=2002; priority=26.\nRecord entry_00003: unique_code=code_128486_0003; owner=team_51; cycle=2003; priority=39.\nRecord entry_00004: unique_code=code_136405_0004; owner=team_68; cycle=2004; priority=52.\nRecord entry_00005: unique_code=code_144324_0005; owner=team_85; cycle=2005; priority=65.\nRecord entry_00006: unique_code=code_152243_0006; owner=team_1; cycle=2006; priority=78.\nRecord entry_00007: unique_code=code_160162_0007; owner=team_18; cycle=2007; priority=91.\nRecord entry_00008: unique_code=code_168081_0008; owner=team_35; cycle=2008; priority=7.\nRecord entry_00009: unique_code=code_176000_0009; owner=team_52; cycle=2009; priority=20.\nRecord entry_00010: unique_code=code_183919_000a; owner=team_69; cycle=2010; priority=33.\nRecord entry_00011: unique_code=code_191838_000b; owner=team_86; cycle=2011; priority=46.\nRecord entry_00012: unique_code=code_199757_000c; owner=team_2; cycle=2012; priority=59.\nRecord entry_00013: unique_code=code_207676_000d; owner=team_19; cycle=2013; priority=72.\nRecord entry_00014: unique_code=code_215595_000e; owner=team_36; cycle=2014; priority=85.\nRecord entry_00015: unique_code=code_223514_000f; owner=team_53; cycle=2015; priority=1.\nRecord entry_00016: unique_code=code_231433_0010; owner=team_70; cycle=2016; priority=14.\nRecord entry_00017: unique_code=code_239352_0011; owner=team_87; cycle=2017; priority=27.\nRecord entry_00018: unique_code=code_247271_0012; owner=team_3; cycle=2018; priority=40.\nRecord entry_00019: unique_code=code_255190_0013; owner=team_20; cycle=2019; priority=53.\nRecord entry_00020: unique_code=code_263109_0014; owner=team_37; cycle=2020; priority=66.\nRecord entry_00021: unique_code=code_271028_0015; owner=team_54; cycle=2021; priority=79.\nRecord entry_00022: unique_code=code_278947_0016; owner=team_71; cycle=2022; priority=92.\nRecord entry_00023: unique_code=code_286866_0017; owner=team_88; cycle=2023; priority=8.\nRecord entry_00024: unique_code=code_294785_0018; owner=team_4; cycle=2024; priority=21.\nRecord entry_00025: unique_code=code_302704_0019; owner=team_21; cycle=2025; priority=34.\nRecord entry_00026: unique_code=code_310623_001a; owner=team_38; cycle=2026; priority=47.\nRecord entry_00027: unique_code=code_318542_001b; owner=team_55; cycle=2027; priority=60.\nRecord entry_00028: unique_code=code_326461_001c; owner=team_72; cycle=2028; priority=73.\nRecord entry_00029: unique_code=code_334380_001d; owner=team_89; cycle=2029; priority=86.\nRecord entry_00030: unique_code=code_342299_001e; owner=team_5; cycle=2030; priority=2.\nRecord entry_00031: unique_code=code_350218_001f; owner=team_22; cycle=2031; priority=15.\nRecord entry_00032: unique_code=code_358137_0020; owner=team_39; cycle=2032; priority=28.\nRecord entry_00033: unique_code=code_366056_0021; owner=team_56; cycle=2033; priority=41.\nRecord entry_00034: unique_code=code_373975_0022; owner=team_73; cycle=2034; priority=54.\nRecord entry_00035: unique_code=code_381894_0023; owner=team_90; cycle=2035; priority=67.\nRecord entry_00036: unique_code=code_389813_0024; owner=team_6; cycle=2036; priority=80.\nRecord entry_00037: unique_code=code_397732_0025; owner=team_23; cycle=2037; priority=93.\nRecord entry_00038: unique_code=code_405651_0026; owner=team_40; cycle=2038; priority=9.\nRecord entry_00039: unique_code=code_413570_0027; owner=team_57; cycle=2039; priority=22.\nRecord entry_00040: unique_code=code_421489_0028; owner=team_74; cycle=2040; priority=35.\nRecord entry_00041: unique_code=code_429408_0029; owner=team_91; cycle=2041; priority=48.\nRecord entry_00042: unique_code=code_437327_002a; owner=team_7; cycle=2042; priority=61.\nRecord entry_00043: unique_code=code_445246_002b; owner=team_24; cycle=2043; priority=74.\nRecord entry_00044: unique_code=code_453165_002c; owner=team_41; cycle=2044; priority=87.\nRecord entry_00045: unique_code=code_461084_002d; owner=team_58; cycle=2045; priority=3.\nRecord entry_00046: unique_code=code_469003_002e; owner=team_75; cycle=2046; priority=16.\nRecord entry_00047: unique_code=code_476922_002f; owner=team_92; cycle=2047; priority=29.\nRecord entry_00048: unique_code=code_484841_0030; owner=team_8; cycle=2048; priority=42.\nRecord entry_00049: unique_code=code_492760_0031; owner=team_25; cycle=2049; priority=55.\nRecord entry_00050: unique_code=code_500679_0032; owner=team_42; cycle=2050; priority=68.\nRecord entry_00051: unique_code=code_508598_0033; owner=team_59; cycle=2051; priority=81.\nRecord entry_00052: unique_code=code_516517_0034; owner=team_76; cycle=2052; priority=94.\nRecord entry_00053: unique_code=code_524436_0035; owner=team_93; cycle=2053; priority=10.\nRecord entry_00054: unique_code=code_532355_0036; owner=team_9; cycle=2054; priority=23.\nRecord entry_00055: unique_code=code_540274_0037; owner=team_26; cycle=2055; priority=36.\nRecord entry_00056: unique_code=code_548193_0038; owner=team_43; cycle=2056; priority=49.\nRecord entry_00057: unique_code=code_556112_0039; owner=team_60; cycle=2057; priority=62.\nRecord entry_00058: unique_code=code_564031_003a; owner=team_77; cycle=2058; priority=75.\nRecord entry_00059: unique_code=code_571950_003b; owner=team_94; cycle=2059; priority=88.\nRecord entry_00060: unique_code=code_579869_003c; owner=team_10; cycle=2060; priority=4.\nRecord entry_00061: unique_code=code_587788_003d; owner=team_27; cycle=2061; priority=17.\nRecord entry_00062: unique_code=code_595707_003e; owner=team_44; cycle=2062; priority=30.\nRecord entry_00063: unique_code=code_603626_003f; owner=team_61; cycle=2063; priority=43.\nRecord entry_00064: unique_code=code_611545_0040; owner=team_78; cycle=2064; priority=56.\nRecord entry_00065: unique_code=code_619464_0041; owner=team_95; cycle=2065; priority=69.\nRecord entry_00066: unique_code=code_627383_0042; owner=team_11; cycle=2066; priority=82.\nRecord entry_00067: unique_code=code_635302_0043; owner=team_28; cycle=2067; priority=95.\nRecord entry_00068: unique_code=code_643221_0044; owner=team_45; cycle=2068; priority=11.\nRecord entry_00069: unique_code=code_651140_0045; owner=team_62; cycle=2069; priority=24.\nRecord entry_00070: unique_code=code_659059_0046; owner=team_79; cycle=2070; priority=37.\nRecord entry_00071: unique_code=code_666978_0047; owner=team_96; cycle=2071; priority=50.\nRecord entry_00072: unique_code=code_674897_0048; owner=team_12; cycle=2072; priority=63.\nRecord entry_00073: unique_code=code_682816_0049; owner=team_29; cycle=2073; priority=76.\nRecord entry_00074: unique_code=code_690735_004a; owner=team_46; cycle=2074; priority=89.\nRecord entry_00075: unique_code=code_698654_004b; owner=team_63; cycle=2075; priority=5.\nRecord entry_00076: unique_code=code_706573_004c; owner=team_80; cycle=2076; priority=18.\nRecord entry_00077: unique_code=code_714492_004d; owner=team_97; cycle=2077; priority=31.\nRecord entry_00078: unique_code=code_722411_004e; owner=team_13; cycle=2078; priority=44.\nRecord entry_00079: unique_code=code_730330_004f; owner=team_30; cycle=2079; priority=57.\nRecord entry_00080: unique_code=code_738249_0050; owner=team_47; cycle=2080; priority=70.\nRecord entry_00081: unique_code=code_746168_0051; owner=team_64; cycle=2081; priority=83.\nRecord entry_00082: unique_code=code_754087_0052; owner=team_81; cycle=2082; priority=96.\nRecord entry_00083: unique_code=code_762006_0053; owner=team_98; cycle=2083; priority=12.\nRecord entry_00084: unique_code=code_769925_0054; owner=team_14; cycle=2084; priority=25.\nRecord entry_00085: unique_code=code_777844_0055; owner=team_31; cycle=2085; priority=38.\nRecord entry_00086: unique_code=code_785763_0056; owner=team_48; cycle=2086; priority=51.\nRecord entry_00087: unique_code=code_793682_0057; owner=team_65; cycle=2087; priority=64.\nRecord entry_00088: unique_code=code_801601_0058; owner=team_82; cycle=2088; priority=77.\nRecord entry_00089: unique_code=code_809520_0059; owner=team_99; cycle=2089; priority=90.\nReturn ONLY a JSON object mapping each requested record ID to its exact unique_code. Requested IDs: entry_00000, entry_00022, entry_00045, entry_00089",
+      "first_token_s": 0.11920381302479655,
+      "first_answer_s": 5.346829187008552,
+      "output_text": "{\n  \"entry_00000\": \"code_104729_0000\",\n  \"entry_00022\": \"code_278947_0016\",\n  \"entry_00045\": \"code_461084_002d\",\n  \"entry_00089\": \"code_809520_0059\"\n}",
+      "reasoning_text": "We need answer user's request. Need produce final JSON only. Need map requested IDs to exact unique_code from records.\n\nRequested IDs: entry_00000, entry_00022, entry_00045, entry_00089.\n\nFrom data:\n\nI have thought about this long enough; time to give my answer.\n",
+      "terminal_type": "response.completed",
+      "response": {
+        "id": "resp_9026861ca1d84be3b70342810fbce696",
+        "object": "response",
+        "created_at": 1791242369,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 384,
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "output": [
+          {
+            "id": "rs_0c95dc0f6b6941028f07960b384d2fd3",
+            "type": "reasoning",
+            "status": "completed",
+            "summary": [],
+            "content": [
+              {
+                "type": "reasoning_text",
+                "text": "We need answer user's request. Need produce final JSON only. Need map requested IDs to exact unique_code from records.\n\nRequested IDs: entry_00000, entry_00022, entry_00045, entry_00089.\n\nFrom data:\n\nI have thought about this long enough; time to give my answer.\n"
+              }
+            ]
+          },
+          {
+            "id": "msg_94e0e3244e564a888ff5cccad9e42d6a",
+            "type": "message",
+            "status": "completed",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "{\n  \"entry_00000\": \"code_104729_0000\",\n  \"entry_00022\": \"code_278947_0016\",\n  \"entry_00045\": \"code_461084_002d\",\n  \"entry_00089\": \"code_809520_0059\"\n}",
+                "annotations": [],
+                "logprobs": []
+              }
+            ]
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "store": false,
+        "temperature": 0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": null,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 4224,
+          "input_tokens_details": {
+            "cached_tokens": 4219
+          },
+          "output_tokens": 190,
+          "output_tokens_details": {
+            "reasoning_tokens": 81
+          },
+          "total_tokens": 4414
+        },
+        "user": null,
+        "metadata": {},
+        "completed_at": 1791242377
+      },
+      "wall_s": 8.060744812013581,
+      "status_before": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 572,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 25,
+          "in_flight": 0,
+          "last_request_at": 1791242368
+        },
+        "last_timings": {
+          "cache_n": 4219,
+          "prompt_n": 5,
+          "prompt_ms": 1653.2,
+          "prompt_per_token_ms": 330.64,
+          "prompt_per_second": 3.0,
+          "predicted_n": 190,
+          "predicted_ms": 3677.4,
+          "predicted_per_token_ms": 34.05,
+          "predicted_per_second": 29.4,
+          "draft_n": 81,
+          "draft_n_accepted": 81,
+          "at": 1791242368
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242369,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 100,
+            "temp_c": 42,
+            "power_w": 120.025
+          },
+          "ram": {
+            "used_gib": 46.0,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "status_after": {
+        "service": "strata",
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "loaded": true,
+        "auto_load": true,
+        "structured_output": {
+          "formats": [
+            "json_object",
+            "json_schema"
+          ],
+          "method": "prompt_and_validate",
+          "constrained_decoding": false,
+          "stream_buffered": true
+        },
+        "engine": "0.1.39",
+        "started": 1791241796,
+        "uptime_s": 580,
+        "cache_max_tokens": 32768,
+        "context": {
+          "native": 32768,
+          "max_positions": 32768
+        },
+        "concurrency": {
+          "serving": 1,
+          "requested": 1
+        },
+        "dialects": [
+          "/v1/chat/completions",
+          "/v1/messages",
+          "/v1/responses"
+        ],
+        "vision": {
+          "enabled": false,
+          "available": false,
+          "error": null
+        },
+        "activity": {
+          "requests": 26,
+          "in_flight": 0,
+          "last_request_at": 1791242377
+        },
+        "last_timings": {
+          "cache_n": 4219,
+          "prompt_n": 5,
+          "prompt_ms": 2084.3,
+          "prompt_per_token_ms": 416.86,
+          "prompt_per_second": 2.4,
+          "predicted_n": 190,
+          "predicted_ms": 2724.5,
+          "predicted_per_token_ms": 25.227,
+          "predicted_per_second": 39.6,
+          "draft_n": 81,
+          "draft_n_accepted": 81,
+          "at": 1791242377
+        },
+        "vram": {
+          "elastic": false
+        },
+        "machine": {
+          "at": 1791242377,
+          "gpu": {
+            "name": "NVIDIA GeForce RTX 4090",
+            "used_mib": 22951.0,
+            "total_mib": 24564.0,
+            "util_pct": 84,
+            "temp_c": 41,
+            "power_w": 125.951
+          },
+          "ram": {
+            "used_gib": 47.0,
+            "total_gib": 62.5
+          }
+        }
+      },
+      "native_request_log": "strata serve: prompt 4224 tokens = 4219 reused + 5 read in 43 ms (116.9 tok/s), 66 generated in 3135 ms (21.1 tok/s), drafts accepted 40 of 52, 1 checkpoints\nstrata serve: decode expert cache hit rate: 88.4% (29815 hits / 33740 lookups); 3700 more read by the GPU over PCIe or from another GPU (9.9% of all 37440 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 33346 exchanged with the VRAM tier, 194560 blob reads from the file\nstrata serve: expert tiers: GPU 29815 hits this request; since the start RAM 879484 blobs, files 194560 blobs 620110.0 MB read (the GGUF in place)\nstrata serve: prompt 4306 tokens = 4219 reused + 87 read in 2084 ms (41.7 tok/s), 108 generated in 2725 ms (39.6 tok/s), drafts accepted 81 of 81, 1 checkpoints\nstrata serve: decode expert cache hit rate: 83.2% (37520 hits / 45073 lookups); 7247 more read by the GPU over PCIe or from another GPU (13.9% of all 52320 routed)\nstrata serve: resident RAM: 24.00 GiB of experts in RAM, 33822 exchanged with the VRAM tier, 198463 blob reads from the file\nstrata serve: expert tiers: GPU 37520 hits this request; since the start RAM 891390 blobs, files 198463 blobs 628315.6 MB read (the GGUF in place)\n",
+      "native_phases": [
+        {
+          "prompt_tokens": 4224,
+          "cache_n": 4219,
+          "fresh_prompt_tokens": 5,
+          "requested_fresh_prompt_tokens": 5,
+          "prompt_ms": 43.0,
+          "native_generated_tokens": 66,
+          "decode_ms": 3135.0,
+          "draft_accepted": 40,
+          "draft_offered": 52
+        },
+        {
+          "prompt_tokens": 4306,
+          "cache_n": 4219,
+          "fresh_prompt_tokens": 87,
+          "requested_fresh_prompt_tokens": 87,
+          "prompt_ms": 2084.0,
+          "native_generated_tokens": 108,
+          "decode_ms": 2725.0,
+          "draft_accepted": 81,
+          "draft_offered": 81
+        }
+      ],
+      "status": "completed",
+      "native_accounting": {
+        "phase_count": 2,
+        "native_generated_tokens_all_phases": 174,
+        "native_decode_ms_all_phases": 5860.0,
+        "native_prompt_ms_all_phases": 2127.0,
+        "fresh_prompt_tokens_all_phases": 92,
+        "initial_cached_input_tokens": 4219,
+        "last_phase_native_generated_tokens": 108,
+        "last_phase_native_tokens_s": 39.63302752293578,
+        "native_all_phases_tokens_s": 29.692832764505116,
+        "api_minus_native_output_tokens": 16,
+        "note": "API usage includes injected reasoning-wrap tokens; native counts may include cancellation/drain overrun. Wrapper status exposes final native phase clock/cache with total API predicted_n; these counters must not be divided as though one phase."
+      },
+      "engine_timings": {
+        "cache_n": 4219,
+        "prompt_n": 5,
+        "prompt_ms": 2084.3,
+        "prompt_per_token_ms": 416.86,
+        "prompt_per_second": 2.4,
+        "predicted_n": 190,
+        "predicted_ms": 2724.5,
+        "predicted_per_token_ms": 25.227,
+        "predicted_per_second": 39.6,
+        "draft_n": 81,
+        "draft_n_accepted": 81,
+        "at": 1791242377
+      },
+      "valid_measurement": true,
+      "output_tokens": 190,
+      "reasoning_tokens": 81,
+      "answer_tokens": 109,
+      "expected_retrieval": {
+        "entry_00000": "code_104729_0000",
+        "entry_00022": "code_278947_0016",
+        "entry_00045": "code_461084_002d",
+        "entry_00089": "code_809520_0059"
+      },
+      "retrieval_correct": true,
+      "api_answer_tokens_per_response_wall_s": 13.522323624182777,
+      "request_tokens_per_s": 23.571022831144287
+    }
+  ],
+  "samples": [
+    {
+      "elapsed_s": 0.036602315958589315,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23607328,
+      "SwapFree_kib": 28658948,
+      "native_rss_kib": 35517548,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 0.5728169330395758,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23656616,
+      "SwapFree_kib": 28658948,
+      "native_rss_kib": 35422164,
+      "gpu_csv_mib_percent": "22466, 24564, 13"
+    },
+    {
+      "elapsed_s": 1.1121594610158354,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23589328,
+      "SwapFree_kib": 28658948,
+      "native_rss_kib": 35455700,
+      "gpu_csv_mib_percent": "22466, 24564, 13"
+    },
+    {
+      "elapsed_s": 1.6514559210045263,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23552804,
+      "SwapFree_kib": 28659204,
+      "native_rss_kib": 35481800,
+      "gpu_csv_mib_percent": "22466, 24564, 4"
+    },
+    {
+      "elapsed_s": 2.180895086028613,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23532356,
+      "SwapFree_kib": 28659204,
+      "native_rss_kib": 35510508,
+      "gpu_csv_mib_percent": "22466, 24564, 4"
+    },
+    {
+      "elapsed_s": 2.719277468044311,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23494852,
+      "SwapFree_kib": 28659204,
+      "native_rss_kib": 35540412,
+      "gpu_csv_mib_percent": "22466, 24564, 5"
+    },
+    {
+      "elapsed_s": 3.258324958034791,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23464924,
+      "SwapFree_kib": 28659204,
+      "native_rss_kib": 35573688,
+      "gpu_csv_mib_percent": "22466, 24564, 5"
+    },
+    {
+      "elapsed_s": 3.7924730520462617,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23380976,
+      "SwapFree_kib": 28659204,
+      "native_rss_kib": 35600092,
+      "gpu_csv_mib_percent": "22466, 24564, 8"
+    },
+    {
+      "elapsed_s": 4.332336475956254,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23337256,
+      "SwapFree_kib": 28659460,
+      "native_rss_kib": 35634004,
+      "gpu_csv_mib_percent": "22466, 24564, 8"
+    },
+    {
+      "elapsed_s": 4.86513955204282,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23303784,
+      "SwapFree_kib": 28659460,
+      "native_rss_kib": 35671204,
+      "gpu_csv_mib_percent": "22466, 24564, 0"
+    },
+    {
+      "elapsed_s": 5.404519733041525,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23245032,
+      "SwapFree_kib": 28659972,
+      "native_rss_kib": 35694836,
+      "gpu_csv_mib_percent": "22466, 24564, 0"
+    },
+    {
+      "elapsed_s": 5.935336812981404,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 23105816,
+      "SwapFree_kib": 28659972,
+      "native_rss_kib": 35820644,
+      "gpu_csv_mib_percent": "22466, 24564, 11"
+    },
+    {
+      "elapsed_s": 6.476651872973889,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 22923528,
+      "SwapFree_kib": 28660228,
+      "native_rss_kib": 35851276,
+      "gpu_csv_mib_percent": "22466, 24564, 11"
+    },
+    {
+      "elapsed_s": 7.021317578968592,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 22629516,
+      "SwapFree_kib": 28660484,
+      "native_rss_kib": 35880516,
+      "gpu_csv_mib_percent": "22466, 24564, 85"
+    },
+    {
+      "elapsed_s": 7.553819888038561,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 22288116,
+      "SwapFree_kib": 28660484,
+      "native_rss_kib": 35903228,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 8.092652937048115,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 22012596,
+      "SwapFree_kib": 28660484,
+      "native_rss_kib": 35921672,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 8.641376010957174,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21933168,
+      "SwapFree_kib": 28660484,
+      "native_rss_kib": 35934468,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 9.175449904985726,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21852652,
+      "SwapFree_kib": 28660484,
+      "native_rss_kib": 35949532,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 9.716049353010021,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21782140,
+      "SwapFree_kib": 28660484,
+      "native_rss_kib": 35960164,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 10.267263525049202,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21687876,
+      "SwapFree_kib": 28660484,
+      "native_rss_kib": 35982164,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 10.798735819989815,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21093092,
+      "SwapFree_kib": 28660484,
+      "native_rss_kib": 36004656,
+      "gpu_csv_mib_percent": "22466, 24564, 87"
+    },
+    {
+      "elapsed_s": 11.34081647102721,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 20966824,
+      "SwapFree_kib": 28660996,
+      "native_rss_kib": 36041856,
+      "gpu_csv_mib_percent": "22466, 24564, 87"
+    },
+    {
+      "elapsed_s": 11.872925532981753,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 21152316,
+      "SwapFree_kib": 28660996,
+      "native_rss_kib": 36069076,
+      "gpu_csv_mib_percent": "22466, 24564, 91"
+    },
+    {
+      "elapsed_s": 12.402288065990433,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 20965628,
+      "SwapFree_kib": 28660996,
+      "native_rss_kib": 36089572,
+      "gpu_csv_mib_percent": "22466, 24564, 91"
+    },
+    {
+      "elapsed_s": 12.937336093978956,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 20667864,
+      "SwapFree_kib": 28661252,
+      "native_rss_kib": 36105792,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 13.469429766060784,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 20327880,
+      "SwapFree_kib": 28661252,
+      "native_rss_kib": 36138936,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 14.010873898048885,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 19947596,
+      "SwapFree_kib": 28661252,
+      "native_rss_kib": 36172300,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 14.548381858039647,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 19863040,
+      "SwapFree_kib": 28661252,
+      "native_rss_kib": 36191724,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 15.09374232403934,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 19729076,
+      "SwapFree_kib": 28661508,
+      "native_rss_kib": 36210304,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 15.630745226982981,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 19499780,
+      "SwapFree_kib": 28661764,
+      "native_rss_kib": 36239924,
+      "gpu_csv_mib_percent": "22466, 24564, 87"
+    },
+    {
+      "elapsed_s": 16.17134136997629,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 19289464,
+      "SwapFree_kib": 28662020,
+      "native_rss_kib": 36267264,
+      "gpu_csv_mib_percent": "22466, 24564, 87"
+    },
+    {
+      "elapsed_s": 16.710327864973806,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 19063268,
+      "SwapFree_kib": 28662020,
+      "native_rss_kib": 36297140,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 17.23763038998004,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 18870992,
+      "SwapFree_kib": 28662060,
+      "native_rss_kib": 36321384,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 17.779756451956928,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 18688576,
+      "SwapFree_kib": 28662060,
+      "native_rss_kib": 36353280,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 18.32592871703673,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 18539184,
+      "SwapFree_kib": 28662060,
+      "native_rss_kib": 36375756,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 18.866362491971813,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 18400584,
+      "SwapFree_kib": 28662060,
+      "native_rss_kib": 36404116,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 19.410454876022413,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 18239824,
+      "SwapFree_kib": 28662316,
+      "native_rss_kib": 36434872,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 19.95030076999683,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 18098268,
+      "SwapFree_kib": 28662572,
+      "native_rss_kib": 36458480,
+      "gpu_csv_mib_percent": "22466, 24564, 88"
+    },
+    {
+      "elapsed_s": 20.493204365018755,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17896340,
+      "SwapFree_kib": 28662572,
+      "native_rss_kib": 36488308,
+      "gpu_csv_mib_percent": "22466, 24564, 88"
+    },
+    {
+      "elapsed_s": 21.03093373903539,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17738364,
+      "SwapFree_kib": 28662572,
+      "native_rss_kib": 36518632,
+      "gpu_csv_mib_percent": "22466, 24564, 88"
+    },
+    {
+      "elapsed_s": 21.575835820054635,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17544476,
+      "SwapFree_kib": 28662572,
+      "native_rss_kib": 36549092,
+      "gpu_csv_mib_percent": "22466, 24564, 93"
+    },
+    {
+      "elapsed_s": 22.108272123965435,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17430152,
+      "SwapFree_kib": 28662828,
+      "native_rss_kib": 36568536,
+      "gpu_csv_mib_percent": "22466, 24564, 93"
+    },
+    {
+      "elapsed_s": 22.655657378025353,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17381324,
+      "SwapFree_kib": 28662828,
+      "native_rss_kib": 36582352,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 23.187052453984506,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17285848,
+      "SwapFree_kib": 28663084,
+      "native_rss_kib": 36608916,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 23.73366442800034,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17085384,
+      "SwapFree_kib": 28663084,
+      "native_rss_kib": 36633880,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 24.27268572500907,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17037560,
+      "SwapFree_kib": 28663340,
+      "native_rss_kib": 36652284,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 24.82169861800503,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17005832,
+      "SwapFree_kib": 28663596,
+      "native_rss_kib": 36675780,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 25.360868107061833,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17678056,
+      "SwapFree_kib": 28642860,
+      "native_rss_kib": 36665624,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 25.917660036007874,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17563592,
+      "SwapFree_kib": 28642860,
+      "native_rss_kib": 36686040,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 26.45533579797484,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17039104,
+      "SwapFree_kib": 28647468,
+      "native_rss_kib": 36701712,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 26.998210255987942,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16953572,
+      "SwapFree_kib": 28615724,
+      "native_rss_kib": 35916332,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 27.524822521023452,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16878384,
+      "SwapFree_kib": 28615724,
+      "native_rss_kib": 35933532,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 28.067321276059374,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16793344,
+      "SwapFree_kib": 28616780,
+      "native_rss_kib": 35955916,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 28.60467875795439,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17100692,
+      "SwapFree_kib": 28615756,
+      "native_rss_kib": 35769532,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 29.14569814701099,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16678420,
+      "SwapFree_kib": 28615756,
+      "native_rss_kib": 35783184,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 29.684187271050178,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16623992,
+      "SwapFree_kib": 28615756,
+      "native_rss_kib": 35798372,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 30.212332932045683,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16909300,
+      "SwapFree_kib": 28614732,
+      "native_rss_kib": 35632332,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 30.740893802954815,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16554348,
+      "SwapFree_kib": 28614732,
+      "native_rss_kib": 35654348,
+      "gpu_csv_mib_percent": "22466, 24564, 89"
+    },
+    {
+      "elapsed_s": 31.283979051047936,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16409684,
+      "SwapFree_kib": 28614476,
+      "native_rss_kib": 35561360,
+      "gpu_csv_mib_percent": "22466, 24564, 89"
+    },
+    {
+      "elapsed_s": 31.820990003994666,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16303176,
+      "SwapFree_kib": 28614476,
+      "native_rss_kib": 35587820,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 32.358835543040186,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16652356,
+      "SwapFree_kib": 28613196,
+      "native_rss_kib": 35083824,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 32.90592290600762,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16195604,
+      "SwapFree_kib": 28613196,
+      "native_rss_kib": 35113128,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 33.44461056496948,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16072228,
+      "SwapFree_kib": 28613196,
+      "native_rss_kib": 35150448,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 33.98588337097317,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15957828,
+      "SwapFree_kib": 28613196,
+      "native_rss_kib": 35209072,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 34.51916036801413,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16033432,
+      "SwapFree_kib": 28612684,
+      "native_rss_kib": 35211312,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 35.05708445701748,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16928564,
+      "SwapFree_kib": 28609100,
+      "native_rss_kib": 35087952,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 35.5969128269935,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16561716,
+      "SwapFree_kib": 28609100,
+      "native_rss_kib": 35124772,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 36.13751014904119,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16365740,
+      "SwapFree_kib": 28620004,
+      "native_rss_kib": 35160720,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 36.67205753503367,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16086032,
+      "SwapFree_kib": 28620260,
+      "native_rss_kib": 35204016,
+      "gpu_csv_mib_percent": "22466, 24564, 96"
+    },
+    {
+      "elapsed_s": 37.201593126985244,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16292272,
+      "SwapFree_kib": 28620516,
+      "native_rss_kib": 35250364,
+      "gpu_csv_mib_percent": "22466, 24564, 96"
+    },
+    {
+      "elapsed_s": 37.742039454053156,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16152684,
+      "SwapFree_kib": 28620772,
+      "native_rss_kib": 35314540,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 38.27523436804768,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16402808,
+      "SwapFree_kib": 28620772,
+      "native_rss_kib": 35361644,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 38.809459152049385,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16228636,
+      "SwapFree_kib": 28621028,
+      "native_rss_kib": 35405896,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 39.34667983499821,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16210472,
+      "SwapFree_kib": 28621540,
+      "native_rss_kib": 35440524,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 39.887945609982125,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15936220,
+      "SwapFree_kib": 28621540,
+      "native_rss_kib": 35470296,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 40.43290957598947,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16412324,
+      "SwapFree_kib": 28621540,
+      "native_rss_kib": 35339100,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 40.95728648104705,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15959512,
+      "SwapFree_kib": 28622052,
+      "native_rss_kib": 35260516,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 41.484653859981336,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17045176,
+      "SwapFree_kib": 28621540,
+      "native_rss_kib": 35215208,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 42.02303019305691,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16859448,
+      "SwapFree_kib": 28621540,
+      "native_rss_kib": 35304728,
+      "gpu_csv_mib_percent": "22466, 24564, 11"
+    },
+    {
+      "elapsed_s": 42.55034368298948,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16695656,
+      "SwapFree_kib": 28621796,
+      "native_rss_kib": 35401120,
+      "gpu_csv_mib_percent": "22466, 24564, 11"
+    },
+    {
+      "elapsed_s": 43.088417315040715,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16578112,
+      "SwapFree_kib": 28622052,
+      "native_rss_kib": 35475184,
+      "gpu_csv_mib_percent": "22466, 24564, 11"
+    },
+    {
+      "elapsed_s": 43.61470087605994,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16110360,
+      "SwapFree_kib": 28622052,
+      "native_rss_kib": 35542212,
+      "gpu_csv_mib_percent": "22466, 24564, 13"
+    },
+    {
+      "elapsed_s": 44.15622830798384,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16826548,
+      "SwapFree_kib": 28622052,
+      "native_rss_kib": 35725308,
+      "gpu_csv_mib_percent": "22466, 24564, 13"
+    },
+    {
+      "elapsed_s": 44.69467938004527,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16376500,
+      "SwapFree_kib": 28622052,
+      "native_rss_kib": 35768176,
+      "gpu_csv_mib_percent": "22466, 24564, 2"
+    },
+    {
+      "elapsed_s": 45.231989776017144,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16235552,
+      "SwapFree_kib": 28622052,
+      "native_rss_kib": 35795972,
+      "gpu_csv_mib_percent": "22466, 24564, 2"
+    },
+    {
+      "elapsed_s": 45.77337146096397,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16992688,
+      "SwapFree_kib": 28621028,
+      "native_rss_kib": 35680184,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 46.30889176100027,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16851912,
+      "SwapFree_kib": 28621028,
+      "native_rss_kib": 35703588,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 46.83633928000927,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16343460,
+      "SwapFree_kib": 28621284,
+      "native_rss_kib": 35736020,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 47.37907184904907,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17155848,
+      "SwapFree_kib": 28620772,
+      "native_rss_kib": 35726400,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 47.9214336470468,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17020516,
+      "SwapFree_kib": 28621028,
+      "native_rss_kib": 35759712,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 48.459761128993705,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16812244,
+      "SwapFree_kib": 28621028,
+      "native_rss_kib": 35784972,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 48.9875096679898,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16669484,
+      "SwapFree_kib": 28621028,
+      "native_rss_kib": 35809964,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 49.545653803041205,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16577852,
+      "SwapFree_kib": 28621284,
+      "native_rss_kib": 35824032,
+      "gpu_csv_mib_percent": "22466, 24564, 96"
+    },
+    {
+      "elapsed_s": 50.08561196399387,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16387840,
+      "SwapFree_kib": 28621284,
+      "native_rss_kib": 35869272,
+      "gpu_csv_mib_percent": "22466, 24564, 96"
+    },
+    {
+      "elapsed_s": 50.60954828397371,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16201332,
+      "SwapFree_kib": 28621284,
+      "native_rss_kib": 35912528,
+      "gpu_csv_mib_percent": "22466, 24564, 96"
+    },
+    {
+      "elapsed_s": 51.14944267005194,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16056304,
+      "SwapFree_kib": 28614116,
+      "native_rss_kib": 35616820,
+      "gpu_csv_mib_percent": "22466, 24564, 96"
+    },
+    {
+      "elapsed_s": 51.68374359305017,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16176760,
+      "SwapFree_kib": 28609764,
+      "native_rss_kib": 35604664,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 52.21692608203739,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15741956,
+      "SwapFree_kib": 28598500,
+      "native_rss_kib": 35258960,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 52.76209503097925,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15609152,
+      "SwapFree_kib": 28598500,
+      "native_rss_kib": 35293260,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 53.30917084903922,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16240428,
+      "SwapFree_kib": 28558052,
+      "native_rss_kib": 35172200,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 53.84305077197496,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16094860,
+      "SwapFree_kib": 28558052,
+      "native_rss_kib": 35213192,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 54.372895059059374,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16415360,
+      "SwapFree_kib": 28558052,
+      "native_rss_kib": 35235608,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 54.91447562095709,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16214840,
+      "SwapFree_kib": 28558308,
+      "native_rss_kib": 35270952,
+      "gpu_csv_mib_percent": "22466, 24564, 87"
+    },
+    {
+      "elapsed_s": 55.45793919602875,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15982552,
+      "SwapFree_kib": 28558308,
+      "native_rss_kib": 35292176,
+      "gpu_csv_mib_percent": "22466, 24564, 87"
+    },
+    {
+      "elapsed_s": 55.990822967956774,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15829672,
+      "SwapFree_kib": 28558820,
+      "native_rss_kib": 35311128,
+      "gpu_csv_mib_percent": "22466, 24564, 81"
+    },
+    {
+      "elapsed_s": 56.5193568340037,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15738776,
+      "SwapFree_kib": 28558820,
+      "native_rss_kib": 35324124,
+      "gpu_csv_mib_percent": "22466, 24564, 83"
+    },
+    {
+      "elapsed_s": 57.06547010096256,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15778736,
+      "SwapFree_kib": 28546532,
+      "native_rss_kib": 35066024,
+      "gpu_csv_mib_percent": "22466, 24564, 83"
+    },
+    {
+      "elapsed_s": 57.610015450045466,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16133616,
+      "SwapFree_kib": 28546532,
+      "native_rss_kib": 35095904,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 58.151464615017176,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16014072,
+      "SwapFree_kib": 28546788,
+      "native_rss_kib": 35132144,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 58.679470306960866,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15955080,
+      "SwapFree_kib": 28547044,
+      "native_rss_kib": 35152256,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 59.22463657299522,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15935236,
+      "SwapFree_kib": 28547812,
+      "native_rss_kib": 35170012,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 59.75166170496959,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15861304,
+      "SwapFree_kib": 28548068,
+      "native_rss_kib": 35181348,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 60.297407418023795,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15849116,
+      "SwapFree_kib": 28548068,
+      "native_rss_kib": 35186484,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 60.824456462985836,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15806300,
+      "SwapFree_kib": 28548836,
+      "native_rss_kib": 35198744,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 61.35393763706088,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15778468,
+      "SwapFree_kib": 28548836,
+      "native_rss_kib": 35207424,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 61.888786036055535,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15853236,
+      "SwapFree_kib": 28548836,
+      "native_rss_kib": 34939344,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 62.431802698993124,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15703744,
+      "SwapFree_kib": 28549092,
+      "native_rss_kib": 34963544,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 62.97246337903198,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16058644,
+      "SwapFree_kib": 28549092,
+      "native_rss_kib": 34984136,
+      "gpu_csv_mib_percent": "22466, 24564, 80"
+    },
+    {
+      "elapsed_s": 63.51331170706544,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16000924,
+      "SwapFree_kib": 28549348,
+      "native_rss_kib": 35004060,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 64.05042308801785,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15883516,
+      "SwapFree_kib": 28550116,
+      "native_rss_kib": 35025632,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 64.59754676895682,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15753128,
+      "SwapFree_kib": 28550116,
+      "native_rss_kib": 35059300,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 65.13896680099424,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16051272,
+      "SwapFree_kib": 28550116,
+      "native_rss_kib": 35097940,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 65.67795328306966,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15900016,
+      "SwapFree_kib": 28550372,
+      "native_rss_kib": 35135160,
+      "gpu_csv_mib_percent": "22466, 24564, 88"
+    },
+    {
+      "elapsed_s": 66.22242844302673,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15809728,
+      "SwapFree_kib": 28550372,
+      "native_rss_kib": 35158532,
+      "gpu_csv_mib_percent": "22466, 24564, 88"
+    },
+    {
+      "elapsed_s": 66.7642745450139,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15748996,
+      "SwapFree_kib": 28550628,
+      "native_rss_kib": 35185816,
+      "gpu_csv_mib_percent": "22466, 24564, 88"
+    },
+    {
+      "elapsed_s": 67.3085817709798,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16009540,
+      "SwapFree_kib": 28551140,
+      "native_rss_kib": 35202628,
+      "gpu_csv_mib_percent": "22466, 24564, 88"
+    },
+    {
+      "elapsed_s": 67.8427759159822,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15978660,
+      "SwapFree_kib": 28551140,
+      "native_rss_kib": 35210284,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 68.3786147730425,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15975544,
+      "SwapFree_kib": 28551652,
+      "native_rss_kib": 35219928,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 68.9153877190547,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15952596,
+      "SwapFree_kib": 28551652,
+      "native_rss_kib": 35251372,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 69.44293024204671,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15886976,
+      "SwapFree_kib": 28551652,
+      "native_rss_kib": 35296620,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 69.97719238104764,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15784736,
+      "SwapFree_kib": 28551908,
+      "native_rss_kib": 35326508,
+      "gpu_csv_mib_percent": "22466, 24564, 99"
+    },
+    {
+      "elapsed_s": 70.51755709399004,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15701824,
+      "SwapFree_kib": 28552164,
+      "native_rss_kib": 35355976,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 71.04883170302492,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16060480,
+      "SwapFree_kib": 28552164,
+      "native_rss_kib": 35367852,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 71.58802475396078,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16036188,
+      "SwapFree_kib": 28552420,
+      "native_rss_kib": 35377908,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 72.12155677797273,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16018780,
+      "SwapFree_kib": 28552932,
+      "native_rss_kib": 35404788,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 72.64759406505618,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15974628,
+      "SwapFree_kib": 28552932,
+      "native_rss_kib": 35443164,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 73.18928399099968,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15926172,
+      "SwapFree_kib": 28553956,
+      "native_rss_kib": 35473680,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 73.73496665002313,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15855584,
+      "SwapFree_kib": 28553956,
+      "native_rss_kib": 35490900,
+      "gpu_csv_mib_percent": "22466, 24564, 96"
+    },
+    {
+      "elapsed_s": 74.2735649299575,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15806312,
+      "SwapFree_kib": 28554468,
+      "native_rss_kib": 35504816,
+      "gpu_csv_mib_percent": "22466, 24564, 96"
+    },
+    {
+      "elapsed_s": 74.81302692298777,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16102476,
+      "SwapFree_kib": 28554724,
+      "native_rss_kib": 35523376,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 75.3471196469618,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16048708,
+      "SwapFree_kib": 28554724,
+      "native_rss_kib": 35541100,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 75.88794885296375,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15745256,
+      "SwapFree_kib": 28555748,
+      "native_rss_kib": 35460444,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 76.42738885502331,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16030456,
+      "SwapFree_kib": 28558308,
+      "native_rss_kib": 35554588,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 76.9711723170476,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15843136,
+      "SwapFree_kib": 28558308,
+      "native_rss_kib": 35692908,
+      "gpu_csv_mib_percent": "22466, 24564, 9"
+    },
+    {
+      "elapsed_s": 77.51333393098321,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16232252,
+      "SwapFree_kib": 28557540,
+      "native_rss_kib": 35368168,
+      "gpu_csv_mib_percent": "22466, 24564, 20"
+    },
+    {
+      "elapsed_s": 78.05030586302746,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16053324,
+      "SwapFree_kib": 28557540,
+      "native_rss_kib": 35443696,
+      "gpu_csv_mib_percent": "22466, 24564, 20"
+    },
+    {
+      "elapsed_s": 78.57799101003911,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15890768,
+      "SwapFree_kib": 28557540,
+      "native_rss_kib": 35519304,
+      "gpu_csv_mib_percent": "22466, 24564, 0"
+    },
+    {
+      "elapsed_s": 79.11863865505438,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15825376,
+      "SwapFree_kib": 28557284,
+      "native_rss_kib": 35360392,
+      "gpu_csv_mib_percent": "22466, 24564, 0"
+    },
+    {
+      "elapsed_s": 79.66053900902625,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15594080,
+      "SwapFree_kib": 28557284,
+      "native_rss_kib": 35401692,
+      "gpu_csv_mib_percent": "22466, 24564, 0"
+    },
+    {
+      "elapsed_s": 80.20071799797006,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16345516,
+      "SwapFree_kib": 28549092,
+      "native_rss_kib": 35495808,
+      "gpu_csv_mib_percent": "22466, 24564, 0"
+    },
+    {
+      "elapsed_s": 80.74150431097951,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16061608,
+      "SwapFree_kib": 28549604,
+      "native_rss_kib": 35578312,
+      "gpu_csv_mib_percent": "22466, 24564, 13"
+    },
+    {
+      "elapsed_s": 81.27865193900652,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17071492,
+      "SwapFree_kib": 28549952,
+      "native_rss_kib": 35630336,
+      "gpu_csv_mib_percent": "22466, 24564, 13"
+    },
+    {
+      "elapsed_s": 81.81814597197808,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16897408,
+      "SwapFree_kib": 28549952,
+      "native_rss_kib": 35731452,
+      "gpu_csv_mib_percent": "22466, 24564, 1"
+    },
+    {
+      "elapsed_s": 82.35586929903366,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16444368,
+      "SwapFree_kib": 28549952,
+      "native_rss_kib": 35809784,
+      "gpu_csv_mib_percent": "22466, 24564, 1"
+    },
+    {
+      "elapsed_s": 82.8843450769782,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16243784,
+      "SwapFree_kib": 28550208,
+      "native_rss_kib": 35893872,
+      "gpu_csv_mib_percent": "22466, 24564, 22"
+    },
+    {
+      "elapsed_s": 83.43079335195944,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17119816,
+      "SwapFree_kib": 28550208,
+      "native_rss_kib": 35976956,
+      "gpu_csv_mib_percent": "22466, 24564, 22"
+    },
+    {
+      "elapsed_s": 83.97108669695444,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16922792,
+      "SwapFree_kib": 28550208,
+      "native_rss_kib": 36048792,
+      "gpu_csv_mib_percent": "22466, 24564, 25"
+    },
+    {
+      "elapsed_s": 84.49745357804932,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16361784,
+      "SwapFree_kib": 28550464,
+      "native_rss_kib": 36124252,
+      "gpu_csv_mib_percent": "22466, 24564, 25"
+    },
+    {
+      "elapsed_s": 85.02888499805704,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16668780,
+      "SwapFree_kib": 28520512,
+      "native_rss_kib": 35374868,
+      "gpu_csv_mib_percent": "22466, 24564, 8"
+    },
+    {
+      "elapsed_s": 85.57038418098819,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16229128,
+      "SwapFree_kib": 28520512,
+      "native_rss_kib": 35457312,
+      "gpu_csv_mib_percent": "22466, 24564, 9"
+    },
+    {
+      "elapsed_s": 86.11067680397537,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15933396,
+      "SwapFree_kib": 28517696,
+      "native_rss_kib": 35202996,
+      "gpu_csv_mib_percent": "22466, 24564, 9"
+    },
+    {
+      "elapsed_s": 86.6513252920704,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15782832,
+      "SwapFree_kib": 28516928,
+      "native_rss_kib": 34994028,
+      "gpu_csv_mib_percent": "22466, 24564, 26"
+    },
+    {
+      "elapsed_s": 87.18964763404801,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16228508,
+      "SwapFree_kib": 28516672,
+      "native_rss_kib": 35082212,
+      "gpu_csv_mib_percent": "22466, 24564, 26"
+    },
+    {
+      "elapsed_s": 87.71778699196875,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16280476,
+      "SwapFree_kib": 28516672,
+      "native_rss_kib": 35178064,
+      "gpu_csv_mib_percent": "22466, 24564, 11"
+    },
+    {
+      "elapsed_s": 88.259276558063,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15966140,
+      "SwapFree_kib": 28516672,
+      "native_rss_kib": 35262140,
+      "gpu_csv_mib_percent": "22466, 24564, 11"
+    },
+    {
+      "elapsed_s": 88.79607018595561,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16312236,
+      "SwapFree_kib": 28516160,
+      "native_rss_kib": 35201500,
+      "gpu_csv_mib_percent": "22466, 24564, 2"
+    },
+    {
+      "elapsed_s": 89.33693250105716,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16121336,
+      "SwapFree_kib": 28516160,
+      "native_rss_kib": 35292728,
+      "gpu_csv_mib_percent": "22466, 24564, 2"
+    },
+    {
+      "elapsed_s": 89.8757301439764,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 15955444,
+      "SwapFree_kib": 28516160,
+      "native_rss_kib": 35348356,
+      "gpu_csv_mib_percent": "22466, 24564, 4"
+    },
+    {
+      "elapsed_s": 90.4164080710616,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16162672,
+      "SwapFree_kib": 28471360,
+      "native_rss_kib": 35431296,
+      "gpu_csv_mib_percent": "22466, 24564, 4"
+    },
+    {
+      "elapsed_s": 90.95631950499956,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16624948,
+      "SwapFree_kib": 28460608,
+      "native_rss_kib": 35523396,
+      "gpu_csv_mib_percent": "22466, 24564, 1"
+    },
+    {
+      "elapsed_s": 91.49628496402875,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16253328,
+      "SwapFree_kib": 28460608,
+      "native_rss_kib": 35615444,
+      "gpu_csv_mib_percent": "22466, 24564, 1"
+    },
+    {
+      "elapsed_s": 92.02095646096859,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16816552,
+      "SwapFree_kib": 28458560,
+      "native_rss_kib": 35707012,
+      "gpu_csv_mib_percent": "22466, 24564, 4"
+    },
+    {
+      "elapsed_s": 92.54800304898527,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16659876,
+      "SwapFree_kib": 28458560,
+      "native_rss_kib": 35780420,
+      "gpu_csv_mib_percent": "22466, 24564, 5"
+    },
+    {
+      "elapsed_s": 93.07743036805186,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17364004,
+      "SwapFree_kib": 28455488,
+      "native_rss_kib": 35852152,
+      "gpu_csv_mib_percent": "22466, 24564, 5"
+    },
+    {
+      "elapsed_s": 93.60800750099588,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17207328,
+      "SwapFree_kib": 28455488,
+      "native_rss_kib": 35926536,
+      "gpu_csv_mib_percent": "22466, 24564, 0"
+    },
+    {
+      "elapsed_s": 94.14188276103232,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17098044,
+      "SwapFree_kib": 28455488,
+      "native_rss_kib": 36016348,
+      "gpu_csv_mib_percent": "22466, 24564, 0"
+    },
+    {
+      "elapsed_s": 94.68193907698151,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17342780,
+      "SwapFree_kib": 28455232,
+      "native_rss_kib": 35973068,
+      "gpu_csv_mib_percent": "22466, 24564, 0"
+    },
+    {
+      "elapsed_s": 95.22046908095945,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16883024,
+      "SwapFree_kib": 28455488,
+      "native_rss_kib": 36066292,
+      "gpu_csv_mib_percent": "22466, 24564, 0"
+    },
+    {
+      "elapsed_s": 95.747592331958,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17549016,
+      "SwapFree_kib": 28455488,
+      "native_rss_kib": 36124716,
+      "gpu_csv_mib_percent": "22466, 24564, 4"
+    },
+    {
+      "elapsed_s": 96.28388583497144,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17074584,
+      "SwapFree_kib": 28456000,
+      "native_rss_kib": 36191232,
+      "gpu_csv_mib_percent": "22466, 24564, 4"
+    },
+    {
+      "elapsed_s": 96.82382786599919,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17740636,
+      "SwapFree_kib": 28454976,
+      "native_rss_kib": 36103100,
+      "gpu_csv_mib_percent": "22466, 24564, 25"
+    },
+    {
+      "elapsed_s": 97.35173183702864,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17697704,
+      "SwapFree_kib": 28455232,
+      "native_rss_kib": 36103100,
+      "gpu_csv_mib_percent": "22466, 24564, 25"
+    },
+    {
+      "elapsed_s": 97.88749913999345,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17704792,
+      "SwapFree_kib": 28455232,
+      "native_rss_kib": 36103100,
+      "gpu_csv_mib_percent": "22466, 24564, 54"
+    },
+    {
+      "elapsed_s": 98.42765526100993,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17642644,
+      "SwapFree_kib": 28455232,
+      "native_rss_kib": 36103260,
+      "gpu_csv_mib_percent": "22466, 24564, 54"
+    },
+    {
+      "elapsed_s": 98.96861200698186,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17635120,
+      "SwapFree_kib": 28455232,
+      "native_rss_kib": 36103260,
+      "gpu_csv_mib_percent": "22466, 24564, 77"
+    },
+    {
+      "elapsed_s": 99.50832226895727,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17653988,
+      "SwapFree_kib": 28455232,
+      "native_rss_kib": 36103452,
+      "gpu_csv_mib_percent": "22466, 24564, 65"
+    },
+    {
+      "elapsed_s": 100.04522248997819,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17633344,
+      "SwapFree_kib": 28455744,
+      "native_rss_kib": 36103452,
+      "gpu_csv_mib_percent": "22466, 24564, 65"
+    },
+    {
+      "elapsed_s": 100.58940530999098,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17213736,
+      "SwapFree_kib": 28455744,
+      "native_rss_kib": 36222372,
+      "gpu_csv_mib_percent": "22466, 24564, 26"
+    },
+    {
+      "elapsed_s": 101.13172401604243,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16926300,
+      "SwapFree_kib": 28418112,
+      "native_rss_kib": 35636572,
+      "gpu_csv_mib_percent": "22466, 24564, 26"
+    },
+    {
+      "elapsed_s": 101.66847055405378,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16866104,
+      "SwapFree_kib": 28403776,
+      "native_rss_kib": 34264816,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 102.20459388196468,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17033672,
+      "SwapFree_kib": 28404032,
+      "native_rss_kib": 34272600,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 102.74074420600664,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17090860,
+      "SwapFree_kib": 28404032,
+      "native_rss_kib": 34272600,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 103.2806180419866,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16916744,
+      "SwapFree_kib": 28403264,
+      "native_rss_kib": 34094932,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 103.8268768490525,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16688348,
+      "SwapFree_kib": 28401984,
+      "native_rss_kib": 33963300,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 104.36701766599435,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16269444,
+      "SwapFree_kib": 28304448,
+      "native_rss_kib": 28582172,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 104.90767047798727,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16670052,
+      "SwapFree_kib": 28301120,
+      "native_rss_kib": 28739812,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 105.44860726606566,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16548600,
+      "SwapFree_kib": 28301888,
+      "native_rss_kib": 28930832,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 105.99283015402034,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16506048,
+      "SwapFree_kib": 28301888,
+      "native_rss_kib": 29152128,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 106.53470318100881,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16419624,
+      "SwapFree_kib": 28301888,
+      "native_rss_kib": 29395392,
+      "gpu_csv_mib_percent": "22466, 24564, 74"
+    },
+    {
+      "elapsed_s": 107.06254830001853,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16343000,
+      "SwapFree_kib": 28302400,
+      "native_rss_kib": 29447940,
+      "gpu_csv_mib_percent": "22466, 24564, 74"
+    },
+    {
+      "elapsed_s": 107.59169197606388,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16297112,
+      "SwapFree_kib": 28302400,
+      "native_rss_kib": 29458632,
+      "gpu_csv_mib_percent": "22466, 24564, 15"
+    },
+    {
+      "elapsed_s": 108.13036930502858,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16271376,
+      "SwapFree_kib": 28302912,
+      "native_rss_kib": 29467844,
+      "gpu_csv_mib_percent": "22466, 24564, 15"
+    },
+    {
+      "elapsed_s": 108.67721314402297,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17008808,
+      "SwapFree_kib": 28302912,
+      "native_rss_kib": 29493760,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 109.21744918206241,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17079232,
+      "SwapFree_kib": 28302400,
+      "native_rss_kib": 29652488,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 109.75636408606078,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16810328,
+      "SwapFree_kib": 28302400,
+      "native_rss_kib": 29775836,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 110.2999087809585,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16727128,
+      "SwapFree_kib": 28302656,
+      "native_rss_kib": 30100816,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 110.8305428030435,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16505924,
+      "SwapFree_kib": 28302656,
+      "native_rss_kib": 30512856,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 111.37977427896112,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17243196,
+      "SwapFree_kib": 28297792,
+      "native_rss_kib": 30435620,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 111.91493550105952,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16666952,
+      "SwapFree_kib": 28297792,
+      "native_rss_kib": 30642968,
+      "gpu_csv_mib_percent": "22466, 24564, 98"
+    },
+    {
+      "elapsed_s": 112.45715862605721,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16374116,
+      "SwapFree_kib": 28298304,
+      "native_rss_kib": 30695324,
+      "gpu_csv_mib_percent": "22466, 24564, 98"
+    },
+    {
+      "elapsed_s": 113.00489381700754,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17312548,
+      "SwapFree_kib": 28295232,
+      "native_rss_kib": 30423336,
+      "gpu_csv_mib_percent": "22466, 24564, 77"
+    },
+    {
+      "elapsed_s": 113.54583608999383,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17214724,
+      "SwapFree_kib": 28295232,
+      "native_rss_kib": 30522956,
+      "gpu_csv_mib_percent": "22466, 24564, 97"
+    },
+    {
+      "elapsed_s": 114.08375538897235,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16995844,
+      "SwapFree_kib": 28295232,
+      "native_rss_kib": 30675016,
+      "gpu_csv_mib_percent": "22466, 24564, 97"
+    },
+    {
+      "elapsed_s": 114.62359584297519,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16654964,
+      "SwapFree_kib": 28295488,
+      "native_rss_kib": 30799228,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 115.16817952506244,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16446140,
+      "SwapFree_kib": 28295744,
+      "native_rss_kib": 30888036,
+      "gpu_csv_mib_percent": "22466, 24564, 100"
+    },
+    {
+      "elapsed_s": 115.70735603198409,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17363608,
+      "SwapFree_kib": 28294976,
+      "native_rss_kib": 30727872,
+      "gpu_csv_mib_percent": "22466, 24564, 16"
+    },
+    {
+      "elapsed_s": 116.23454227205366,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17299348,
+      "SwapFree_kib": 28294976,
+      "native_rss_kib": 30738140,
+      "gpu_csv_mib_percent": "22466, 24564, 16"
+    },
+    {
+      "elapsed_s": 116.77502992399968,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17270460,
+      "SwapFree_kib": 28294976,
+      "native_rss_kib": 30758800,
+      "gpu_csv_mib_percent": "22466, 24564, 8"
+    },
+    {
+      "elapsed_s": 117.31253878795542,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 17242384,
+      "SwapFree_kib": 28294976,
+      "native_rss_kib": 30771300,
+      "gpu_csv_mib_percent": "22466, 24564, 8"
+    },
+    {
+      "elapsed_s": 117.86145896103699,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16848236,
+      "SwapFree_kib": 28294976,
+      "native_rss_kib": 30903112,
+      "gpu_csv_mib_percent": "22466, 24564, 62"
+    },
+    {
+      "elapsed_s": 118.40789552603383,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16653208,
+      "SwapFree_kib": 28295488,
+      "native_rss_kib": 31044964,
+      "gpu_csv_mib_percent": "22466, 24564, 62"
+    },
+    {
+      "elapsed_s": 118.95366980496328,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16327808,
+      "SwapFree_kib": 28294976,
+      "native_rss_kib": 30907696,
+      "gpu_csv_mib_percent": "22466, 24564, 84"
+    },
+    {
+      "elapsed_s": 119.48907270596828,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16349944,
+      "SwapFree_kib": 28294464,
+      "native_rss_kib": 30737644,
+      "gpu_csv_mib_percent": "22466, 24564, 84"
+    },
+    {
+      "elapsed_s": 120.01897005399223,
+      "MemTotal_kib": 65574844,
+      "MemAvailable_kib": 16329212,
+      "SwapFree_kib": 28294208,
+      "native_rss_kib": 30499696,
+      "gpu_csv_mib_percent": "22466, 24564, 83"
+    }
+  ],
+  "notes": [
+    "One sequence, no concurrency throughput claim.",
+    "Cold engine starts do not imply a cold OS/ZFS disk cache.",
+    "First token may be reasoning; answer latency is measured separately.",
+    "Native phase rates exclude injected reasoning wrap; last-phase rate may cover only post-wrap output. API output counts include injected tokens.",
+    "Warm engine does not imply warm prefix; cache_n records actual prefix reuse."
+  ],
+  "benchmark_complete": true,
+  "decode_summary_note": "Wrapper rates describe the last native phase; reasoning-budget wraps can make this only the post-wrap phase. See native_accounting for all-phase rates and request_tokens_per_s for API wall rate.",
+  "native_all_phases_summary_by_workload_tokens_s": {
+    "code": {
+      "median": 16.290634627396308,
+      "min": 13.669257571696596,
+      "max": 18.91201168309602
+    },
+    "prose": {
+      "median": 16.214619299616764,
+      "min": 13.519528207410705,
+      "max": 18.909710391822827
+    },
+    "context_varied_short": {
+      "median": 23.79141740453839,
+      "min": 17.890002044571663,
+      "max": 29.692832764505116
+    }
+  },
+  "last_native_phase_summary_by_workload_tokens_s": {
+    "code": {
+      "median": 18.942181138630385,
+      "min": 14.785570521752595,
+      "max": 23.098791755508174
+    },
+    "prose": {
+      "median": 16.65375513929085,
+      "min": 14.397799886758877,
+      "max": 18.909710391822827
+    },
+    "context_varied_short": {
+      "median": 34.502398993994404,
+      "min": 29.371770465053032,
+      "max": 39.63302752293578
+    }
+  },
+  "memory_summary": {
+    "minimum_available_kib": 15594080,
+    "peak_native_rss_kib": 36701712,
+    "peak_gpu_used_mib": 22466.0
+  }
+}

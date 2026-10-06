@@ -1,0 +1,1113 @@
+{
+  "complete": true,
+  "requests": [
+    {
+      "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+      "endpoint": "/v1/chat/completions",
+      "stream": false,
+      "payload": {
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "temperature": 0,
+        "stream": false,
+        "reasoning_budget_tokens": 32,
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is 7 times 11? Give the final answer as the number only."
+          }
+        ],
+        "max_tokens": 256
+      },
+      "before": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "17, 24061\n"
+      },
+      "http_status": 200,
+      "raw_response": "{\"id\": \"chatcmpl-6fcb6698bd33487c9da253ad\", \"object\": \"chat.completion\", \"created\": 1791245037, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"message\": {\"role\": \"assistant\", \"content\": \"77\", \"reasoning_content\": \"We need answer user: \\\"What is 7 times 11? Give the final answer as the number only.\\\" Need final only number. Compute 7\\n\\nI have thought about this long enough; time to give my answer.\\n\"}, \"finish_reason\": \"stop\"}], \"usage\": {\"prompt_tokens\": 70, \"completion_tokens\": 53, \"total_tokens\": 123, \"prompt_tokens_details\": {\"cached_tokens\": 65}}, \"timings\": {\"cache_n\": 65, \"prompt_n\": 5, \"prompt_ms\": 1277.0, \"prompt_per_token_ms\": 255.4, \"prompt_per_second\": 3.9, \"predicted_n\": 53, \"predicted_ms\": 828.7, \"predicted_per_token_ms\": 276.233, \"predicted_per_second\": 3.6, \"draft_n\": 3, \"draft_n_accepted\": 3}}",
+      "answer": "77",
+      "after": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2211013,
+            "args": [
+              "/nix/store/zsjkf4ll0c40v5kld8mgvfmrnys56dn2-python3-3.13.12-env/bin/python",
+              "-m",
+              "serve.server",
+              "--engine",
+              "strata",
+              "--config",
+              "/nix/store/ggfh281ldys6kv1zqxayssyhysx5c1h5-strata-orca.json",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "18081"
+            ]
+          },
+          {
+            "pid": 2212205,
+            "args": [
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/bin/strata",
+              "--serve",
+              "--pack",
+              "/storage-fast/llm/strata-orca/pack",
+              "--native",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--ple-gguf",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--expert-profile",
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+              "--expert-cache",
+              "auto",
+              "--prefill",
+              "2048",
+              "--spec",
+              "4",
+              "--spec-min-p",
+              "0.5",
+              "--mtp",
+              "/storage-fast/llm/strata-orca/mtp/rt",
+              "--max-context",
+              "32768",
+              "--mtp-window",
+              "32768",
+              "--mtp-max-t",
+              "4",
+              "--suffix-draft",
+              "0",
+              "--pool-affinity",
+              "all",
+              "--vram-reserve-mib",
+              "2048",
+              "--kv",
+              "fp16",
+              "--pool-workers",
+              "23",
+              "--mmap-experts",
+              "--resident-budget-gib",
+              "24"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      5                                        127.0.0.1:18081      0.0.0.0:*   \nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "22476, 1603\n"
+      },
+      "passed": true,
+      "wall_s": 92.17257584596518
+    },
+    {
+      "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+      "endpoint": "/v1/chat/completions",
+      "stream": true,
+      "payload": {
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "temperature": 0,
+        "stream": true,
+        "reasoning_budget_tokens": 32,
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is 7 times 11? Give the final answer as the number only."
+          }
+        ],
+        "max_tokens": 256
+      },
+      "before": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2211013,
+            "args": [
+              "/nix/store/zsjkf4ll0c40v5kld8mgvfmrnys56dn2-python3-3.13.12-env/bin/python",
+              "-m",
+              "serve.server",
+              "--engine",
+              "strata",
+              "--config",
+              "/nix/store/ggfh281ldys6kv1zqxayssyhysx5c1h5-strata-orca.json",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "18081"
+            ]
+          },
+          {
+            "pid": 2212205,
+            "args": [
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/bin/strata",
+              "--serve",
+              "--pack",
+              "/storage-fast/llm/strata-orca/pack",
+              "--native",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--ple-gguf",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--expert-profile",
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+              "--expert-cache",
+              "auto",
+              "--prefill",
+              "2048",
+              "--spec",
+              "4",
+              "--spec-min-p",
+              "0.5",
+              "--mtp",
+              "/storage-fast/llm/strata-orca/mtp/rt",
+              "--max-context",
+              "32768",
+              "--mtp-window",
+              "32768",
+              "--mtp-max-t",
+              "4",
+              "--suffix-draft",
+              "0",
+              "--pool-affinity",
+              "all",
+              "--vram-reserve-mib",
+              "2048",
+              "--kv",
+              "fp16",
+              "--pool-workers",
+              "23",
+              "--mmap-experts",
+              "--resident-budget-gib",
+              "24"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      5                                        127.0.0.1:18081      0.0.0.0:*   \nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "22476, 1603\n"
+      },
+      "http_status": 200,
+      "raw_response": "data: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"role\": \"assistant\", \"content\": \"\"}, \"finish_reason\": null}]}\n\n: keep-alive\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"We\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" need\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" answer\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" user\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \":\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" \\\"\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"What\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" is\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" \"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"7\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" times\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" \"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"1\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"1\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"?\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" Give\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" the\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" final\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" answer\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" as\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" the\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" number\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" only\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \".\\\"\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" Need\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" final\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" only\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" number\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \".\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" \"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"7\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"*\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"\\n\\n\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"I\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" have\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" thought\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" about\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" this\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" long\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" enough\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \";\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" time\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" to\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" give\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" my\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \" answer\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \".\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"reasoning_content\": \"\\n\"}, \"finish_reason\": null}]}\n\n: keep-alive\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"content\": \"7\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {\"content\": \"7\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-e0fcb5b988d346bc92a960bd\", \"object\": \"chat.completion.chunk\", \"created\": 1791245046, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"delta\": {}, \"finish_reason\": \"stop\"}], \"usage\": {\"prompt_tokens\": 70, \"completion_tokens\": 53, \"total_tokens\": 123, \"prompt_tokens_details\": {\"cached_tokens\": 65}}, \"timings\": {\"cache_n\": 65, \"prompt_n\": 5, \"prompt_ms\": 493.9, \"prompt_per_token_ms\": 98.78, \"prompt_per_second\": 10.1, \"predicted_n\": 53, \"predicted_ms\": 339.8, \"predicted_per_token_ms\": 113.267, \"predicted_per_second\": 8.8, \"draft_n\": 3, \"draft_n_accepted\": 3}}\n\ndata: [DONE]\n\n",
+      "answer": "77",
+      "after": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2211013,
+            "args": [
+              "/nix/store/zsjkf4ll0c40v5kld8mgvfmrnys56dn2-python3-3.13.12-env/bin/python",
+              "-m",
+              "serve.server",
+              "--engine",
+              "strata",
+              "--config",
+              "/nix/store/ggfh281ldys6kv1zqxayssyhysx5c1h5-strata-orca.json",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "18081"
+            ]
+          },
+          {
+            "pid": 2212205,
+            "args": [
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/bin/strata",
+              "--serve",
+              "--pack",
+              "/storage-fast/llm/strata-orca/pack",
+              "--native",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--ple-gguf",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--expert-profile",
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+              "--expert-cache",
+              "auto",
+              "--prefill",
+              "2048",
+              "--spec",
+              "4",
+              "--spec-min-p",
+              "0.5",
+              "--mtp",
+              "/storage-fast/llm/strata-orca/mtp/rt",
+              "--max-context",
+              "32768",
+              "--mtp-window",
+              "32768",
+              "--mtp-max-t",
+              "4",
+              "--suffix-draft",
+              "0",
+              "--pool-affinity",
+              "all",
+              "--vram-reserve-mib",
+              "2048",
+              "--kv",
+              "fp16",
+              "--pool-workers",
+              "23",
+              "--mmap-experts",
+              "--resident-budget-gib",
+              "24"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      5                                        127.0.0.1:18081      0.0.0.0:*   \nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "22476, 1603\n"
+      },
+      "passed": true,
+      "wall_s": 1.6298340960638598
+    },
+    {
+      "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+      "endpoint": "/v1/responses",
+      "stream": false,
+      "payload": {
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "temperature": 0,
+        "stream": false,
+        "reasoning_budget_tokens": 32,
+        "input": "What is 7 times 11? Give the final answer as the number only.",
+        "max_output_tokens": 256
+      },
+      "before": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2211013,
+            "args": [
+              "/nix/store/zsjkf4ll0c40v5kld8mgvfmrnys56dn2-python3-3.13.12-env/bin/python",
+              "-m",
+              "serve.server",
+              "--engine",
+              "strata",
+              "--config",
+              "/nix/store/ggfh281ldys6kv1zqxayssyhysx5c1h5-strata-orca.json",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "18081"
+            ]
+          },
+          {
+            "pid": 2212205,
+            "args": [
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/bin/strata",
+              "--serve",
+              "--pack",
+              "/storage-fast/llm/strata-orca/pack",
+              "--native",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--ple-gguf",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--expert-profile",
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+              "--expert-cache",
+              "auto",
+              "--prefill",
+              "2048",
+              "--spec",
+              "4",
+              "--spec-min-p",
+              "0.5",
+              "--mtp",
+              "/storage-fast/llm/strata-orca/mtp/rt",
+              "--max-context",
+              "32768",
+              "--mtp-window",
+              "32768",
+              "--mtp-max-t",
+              "4",
+              "--suffix-draft",
+              "0",
+              "--pool-affinity",
+              "all",
+              "--vram-reserve-mib",
+              "2048",
+              "--kv",
+              "fp16",
+              "--pool-workers",
+              "23",
+              "--mmap-experts",
+              "--resident-budget-gib",
+              "24"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      5                                        127.0.0.1:18081      0.0.0.0:*   \nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "22476, 1603\n"
+      },
+      "http_status": 200,
+      "raw_response": "{\"id\": \"resp_db3ddd7e08bc46af94c64912722a1b78\", \"object\": \"response\", \"created_at\": 1791245047, \"status\": \"completed\", \"background\": false, \"error\": null, \"incomplete_details\": null, \"instructions\": null, \"max_output_tokens\": 256, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"output\": [{\"id\": \"rs_b125e38f3fd3443c844477bb84085ee9\", \"type\": \"reasoning\", \"status\": \"completed\", \"summary\": [], \"content\": [{\"type\": \"reasoning_text\", \"text\": \"We need answer user: \\\"What is 7 times 11? Give the final answer as the number only.\\\" Need final only number. Compute 7\\n\\nI have thought about this long enough; time to give my answer.\\n\"}]}, {\"id\": \"msg_9cf9fb28fb7b4b208ed6d518268851f6\", \"type\": \"message\", \"status\": \"completed\", \"role\": \"assistant\", \"content\": [{\"type\": \"output_text\", \"text\": \"77\", \"annotations\": [], \"logprobs\": []}]}], \"parallel_tool_calls\": true, \"previous_response_id\": null, \"reasoning\": {\"effort\": null, \"summary\": null}, \"store\": false, \"temperature\": 0, \"text\": {\"format\": {\"type\": \"text\"}}, \"tool_choice\": \"auto\", \"tools\": [], \"top_p\": null, \"truncation\": \"disabled\", \"usage\": {\"input_tokens\": 70, \"input_tokens_details\": {\"cached_tokens\": 65}, \"output_tokens\": 53, \"output_tokens_details\": {\"reasoning_tokens\": 49}, \"total_tokens\": 123}, \"user\": null, \"metadata\": {}, \"completed_at\": 1791245049}",
+      "answer": "77",
+      "after": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2211013,
+            "args": [
+              "/nix/store/zsjkf4ll0c40v5kld8mgvfmrnys56dn2-python3-3.13.12-env/bin/python",
+              "-m",
+              "serve.server",
+              "--engine",
+              "strata",
+              "--config",
+              "/nix/store/ggfh281ldys6kv1zqxayssyhysx5c1h5-strata-orca.json",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "18081"
+            ]
+          },
+          {
+            "pid": 2212205,
+            "args": [
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/bin/strata",
+              "--serve",
+              "--pack",
+              "/storage-fast/llm/strata-orca/pack",
+              "--native",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--ple-gguf",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--expert-profile",
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+              "--expert-cache",
+              "auto",
+              "--prefill",
+              "2048",
+              "--spec",
+              "4",
+              "--spec-min-p",
+              "0.5",
+              "--mtp",
+              "/storage-fast/llm/strata-orca/mtp/rt",
+              "--max-context",
+              "32768",
+              "--mtp-window",
+              "32768",
+              "--mtp-max-t",
+              "4",
+              "--suffix-draft",
+              "0",
+              "--pool-affinity",
+              "all",
+              "--vram-reserve-mib",
+              "2048",
+              "--kv",
+              "fp16",
+              "--pool-workers",
+              "23",
+              "--mmap-experts",
+              "--resident-budget-gib",
+              "24"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      5                                        127.0.0.1:18081      0.0.0.0:*   \nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "22476, 1603\n"
+      },
+      "passed": true,
+      "wall_s": 1.3855695559177548
+    },
+    {
+      "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+      "endpoint": "/v1/messages",
+      "stream": false,
+      "payload": {
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "temperature": 0,
+        "stream": false,
+        "reasoning_budget_tokens": 32,
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is 7 times 11? Give the final answer as the number only."
+          }
+        ],
+        "max_tokens": 256
+      },
+      "before": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2211013,
+            "args": [
+              "/nix/store/zsjkf4ll0c40v5kld8mgvfmrnys56dn2-python3-3.13.12-env/bin/python",
+              "-m",
+              "serve.server",
+              "--engine",
+              "strata",
+              "--config",
+              "/nix/store/ggfh281ldys6kv1zqxayssyhysx5c1h5-strata-orca.json",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "18081"
+            ]
+          },
+          {
+            "pid": 2212205,
+            "args": [
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/bin/strata",
+              "--serve",
+              "--pack",
+              "/storage-fast/llm/strata-orca/pack",
+              "--native",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--ple-gguf",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--expert-profile",
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+              "--expert-cache",
+              "auto",
+              "--prefill",
+              "2048",
+              "--spec",
+              "4",
+              "--spec-min-p",
+              "0.5",
+              "--mtp",
+              "/storage-fast/llm/strata-orca/mtp/rt",
+              "--max-context",
+              "32768",
+              "--mtp-window",
+              "32768",
+              "--mtp-max-t",
+              "4",
+              "--suffix-draft",
+              "0",
+              "--pool-affinity",
+              "all",
+              "--vram-reserve-mib",
+              "2048",
+              "--kv",
+              "fp16",
+              "--pool-workers",
+              "23",
+              "--mmap-experts",
+              "--resident-budget-gib",
+              "24"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      5                                        127.0.0.1:18081      0.0.0.0:*   \nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "22476, 1603\n"
+      },
+      "http_status": 200,
+      "raw_response": "{\"id\": \"msg_8778c24aeb3644b1ada6d4e3\", \"type\": \"message\", \"role\": \"assistant\", \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"content\": [{\"type\": \"thinking\", \"thinking\": \"We need answer user: \\\"What is 7 times 11? Give the final answer as the number only.\\\" Need final only number. 7*\\n\\nI have thought about this long enough; time to give my answer.\\n\", \"signature\": \"\"}, {\"type\": \"text\", \"text\": \"77\"}], \"stop_reason\": \"end_turn\", \"stop_sequence\": null, \"usage\": {\"input_tokens\": 5, \"output_tokens\": 53, \"cache_read_input_tokens\": 65}}",
+      "answer": "77",
+      "after": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2211013,
+            "args": [
+              "/nix/store/zsjkf4ll0c40v5kld8mgvfmrnys56dn2-python3-3.13.12-env/bin/python",
+              "-m",
+              "serve.server",
+              "--engine",
+              "strata",
+              "--config",
+              "/nix/store/ggfh281ldys6kv1zqxayssyhysx5c1h5-strata-orca.json",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "18081"
+            ]
+          },
+          {
+            "pid": 2212205,
+            "args": [
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/bin/strata",
+              "--serve",
+              "--pack",
+              "/storage-fast/llm/strata-orca/pack",
+              "--native",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--ple-gguf",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--expert-profile",
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+              "--expert-cache",
+              "auto",
+              "--prefill",
+              "2048",
+              "--spec",
+              "4",
+              "--spec-min-p",
+              "0.5",
+              "--mtp",
+              "/storage-fast/llm/strata-orca/mtp/rt",
+              "--max-context",
+              "32768",
+              "--mtp-window",
+              "32768",
+              "--mtp-max-t",
+              "4",
+              "--suffix-draft",
+              "0",
+              "--pool-affinity",
+              "all",
+              "--vram-reserve-mib",
+              "2048",
+              "--kv",
+              "fp16",
+              "--pool-workers",
+              "23",
+              "--mmap-experts",
+              "--resident-budget-gib",
+              "24"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      5                                        127.0.0.1:18081      0.0.0.0:*   \nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "22476, 1603\n"
+      },
+      "passed": true,
+      "wall_s": 0.9515657749725506
+    },
+    {
+      "model": "bonsai-2-27b",
+      "endpoint": "/v1/chat/completions",
+      "stream": false,
+      "payload": {
+        "model": "bonsai-2-27b",
+        "temperature": 0,
+        "stream": false,
+        "reasoning_budget_tokens": 32,
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is 7 times 11? Give the final answer as the number only."
+          }
+        ],
+        "max_tokens": 256
+      },
+      "before": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2211013,
+            "args": [
+              "/nix/store/zsjkf4ll0c40v5kld8mgvfmrnys56dn2-python3-3.13.12-env/bin/python",
+              "-m",
+              "serve.server",
+              "--engine",
+              "strata",
+              "--config",
+              "/nix/store/ggfh281ldys6kv1zqxayssyhysx5c1h5-strata-orca.json",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "18081"
+            ]
+          },
+          {
+            "pid": 2212205,
+            "args": [
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/bin/strata",
+              "--serve",
+              "--pack",
+              "/storage-fast/llm/strata-orca/pack",
+              "--native",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--ple-gguf",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--expert-profile",
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+              "--expert-cache",
+              "auto",
+              "--prefill",
+              "2048",
+              "--spec",
+              "4",
+              "--spec-min-p",
+              "0.5",
+              "--mtp",
+              "/storage-fast/llm/strata-orca/mtp/rt",
+              "--max-context",
+              "32768",
+              "--mtp-window",
+              "32768",
+              "--mtp-max-t",
+              "4",
+              "--suffix-draft",
+              "0",
+              "--pool-affinity",
+              "all",
+              "--vram-reserve-mib",
+              "2048",
+              "--kv",
+              "fp16",
+              "--pool-workers",
+              "23",
+              "--mmap-experts",
+              "--resident-budget-gib",
+              "24"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      5                                        127.0.0.1:18081      0.0.0.0:*   \nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "22476, 1603\n"
+      },
+      "http_status": 200,
+      "raw_response": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"77\",\"reasoning_content\":\"We need answer user's simple math: \\\"What is 7 times 11? Give the final answer as the number only.\\\" Need final only number\"}}],\"created\":1791245066,\"model\":\"/storage-fast/llm/models/Ternary-Bonsai-2-27B-MTP/Ternary-Bonsai-2-27B-PQ2_0-MTP-Q8_0.gguf\",\"system_fingerprint\":\"b0-unknown\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":36,\"prompt_tokens\":70,\"total_tokens\":106,\"prompt_tokens_details\":{\"cached_tokens\":0}},\"id\":\"chatcmpl-HKV9WU5uILY11FMhdjvjTavyYodKOP8e\",\"timings\":{\"cache_n\":0,\"prompt_n\":70,\"prompt_ms\":215.243,\"prompt_per_token_ms\":3.0749,\"prompt_per_second\":325.2138280919705,\"predicted_n\":36,\"predicted_ms\":346.531,\"predicted_per_token_ms\":9.900885714285714,\"predicted_per_second\":101.00106483979788,\"draft_n\":19,\"draft_n_accepted\":17}}",
+      "answer": "77",
+      "after": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2222530,
+            "args": [
+              "/nix/store/5g8ykspxpaddvbzpf8n16hypxsmgxha7-llama-cpp-cuda-prism-87268f7/bin/llama-server",
+              "--port",
+              "5800",
+              "--host",
+              "127.0.0.1",
+              "-ngl",
+              "99",
+              "-fa",
+              "on",
+              "--jinja",
+              "-lm",
+              "none",
+              "-kvu",
+              "--cache-ram",
+              "16384",
+              "-m",
+              "/storage-fast/llm/models/Ternary-Bonsai-2-27B-MTP/Ternary-Bonsai-2-27B-PQ2_0-MTP-Q8_0.gguf",
+              "--spec-type",
+              "draft-mtp",
+              "--spec-draft-n-max",
+              "1",
+              "--mmproj",
+              "/storage-fast/llm/models/Ternary-Bonsai-2-27B/Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf",
+              "--image-min-tokens",
+              "1024",
+              "-c",
+              "327680",
+              "-ctk",
+              "q4_0",
+              "-ctv",
+              "q4_0",
+              "-np",
+              "8",
+              "-n",
+              "32768",
+              "--temp",
+              "1.0",
+              "--top-p",
+              "0.95",
+              "--top-k",
+              "20",
+              "--min-p",
+              "0.05"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "19864, 4215\n"
+      },
+      "passed": true,
+      "wall_s": 15.998610276030377
+    },
+    {
+      "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+      "endpoint": "/v1/chat/completions",
+      "stream": false,
+      "payload": {
+        "model": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "temperature": 0,
+        "stream": false,
+        "reasoning_budget_tokens": 32,
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is 7 times 11? Give the final answer as the number only."
+          }
+        ],
+        "max_tokens": 256
+      },
+      "before": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2222530,
+            "args": [
+              "/nix/store/5g8ykspxpaddvbzpf8n16hypxsmgxha7-llama-cpp-cuda-prism-87268f7/bin/llama-server",
+              "--port",
+              "5800",
+              "--host",
+              "127.0.0.1",
+              "-ngl",
+              "99",
+              "-fa",
+              "on",
+              "--jinja",
+              "-lm",
+              "none",
+              "-kvu",
+              "--cache-ram",
+              "16384",
+              "-m",
+              "/storage-fast/llm/models/Ternary-Bonsai-2-27B-MTP/Ternary-Bonsai-2-27B-PQ2_0-MTP-Q8_0.gguf",
+              "--spec-type",
+              "draft-mtp",
+              "--spec-draft-n-max",
+              "1",
+              "--mmproj",
+              "/storage-fast/llm/models/Ternary-Bonsai-2-27B/Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf",
+              "--image-min-tokens",
+              "1024",
+              "-c",
+              "327680",
+              "-ctk",
+              "q4_0",
+              "-ctv",
+              "q4_0",
+              "-np",
+              "8",
+              "-n",
+              "32768",
+              "--temp",
+              "1.0",
+              "--top-p",
+              "0.95",
+              "--top-k",
+              "20",
+              "--min-p",
+              "0.05"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "19864, 4215\n"
+      },
+      "http_status": 200,
+      "raw_response": "{\"id\": \"chatcmpl-9e20f25e658d457dae504a8c\", \"object\": \"chat.completion\", \"created\": 1791245163, \"model\": \"orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs\", \"choices\": [{\"index\": 0, \"message\": {\"role\": \"assistant\", \"content\": \"77\", \"reasoning_content\": \"We need answer user: \\\"What is 7 times 11? Give the final answer as the number only.\\\" Need final only number. Compute 7\\n\\nI have thought about this long enough; time to give my answer.\\n\"}, \"finish_reason\": \"stop\"}], \"usage\": {\"prompt_tokens\": 70, \"completion_tokens\": 53, \"total_tokens\": 123, \"prompt_tokens_details\": {\"cached_tokens\": 65}}, \"timings\": {\"cache_n\": 65, \"prompt_n\": 5, \"prompt_ms\": 1209.7, \"prompt_per_token_ms\": 241.94, \"prompt_per_second\": 4.1, \"predicted_n\": 53, \"predicted_ms\": 789.0, \"predicted_per_token_ms\": 263.0, \"predicted_per_second\": 3.8, \"draft_n\": 3, \"draft_n_accepted\": 3}}",
+      "answer": "77",
+      "after": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2223834,
+            "args": [
+              "/nix/store/zsjkf4ll0c40v5kld8mgvfmrnys56dn2-python3-3.13.12-env/bin/python",
+              "-m",
+              "serve.server",
+              "--engine",
+              "strata",
+              "--config",
+              "/nix/store/ggfh281ldys6kv1zqxayssyhysx5c1h5-strata-orca.json",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "18081"
+            ]
+          },
+          {
+            "pid": 2225225,
+            "args": [
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/bin/strata",
+              "--serve",
+              "--pack",
+              "/storage-fast/llm/strata-orca/pack",
+              "--native",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--ple-gguf",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--expert-profile",
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+              "--expert-cache",
+              "auto",
+              "--prefill",
+              "2048",
+              "--spec",
+              "4",
+              "--spec-min-p",
+              "0.5",
+              "--mtp",
+              "/storage-fast/llm/strata-orca/mtp/rt",
+              "--max-context",
+              "32768",
+              "--mtp-window",
+              "32768",
+              "--mtp-max-t",
+              "4",
+              "--suffix-draft",
+              "0",
+              "--pool-affinity",
+              "all",
+              "--vram-reserve-mib",
+              "2048",
+              "--kv",
+              "fp16",
+              "--pool-workers",
+              "23",
+              "--mmap-experts",
+              "--resident-budget-gib",
+              "24"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      5                                        127.0.0.1:18081      0.0.0.0:*   \nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "22476, 1603\n"
+      },
+      "passed": true,
+      "wall_s": 104.57204711297527
+    },
+    {
+      "model": "qwen3.8-27b",
+      "endpoint": "/v1/chat/completions",
+      "stream": false,
+      "payload": {
+        "model": "qwen3.8-27b",
+        "temperature": 0,
+        "stream": false,
+        "reasoning_budget_tokens": 32,
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is 7 times 11? Give the final answer as the number only."
+          }
+        ],
+        "max_tokens": 256
+      },
+      "before": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2223834,
+            "args": [
+              "/nix/store/zsjkf4ll0c40v5kld8mgvfmrnys56dn2-python3-3.13.12-env/bin/python",
+              "-m",
+              "serve.server",
+              "--engine",
+              "strata",
+              "--config",
+              "/nix/store/ggfh281ldys6kv1zqxayssyhysx5c1h5-strata-orca.json",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "18081"
+            ]
+          },
+          {
+            "pid": 2225225,
+            "args": [
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/bin/strata",
+              "--serve",
+              "--pack",
+              "/storage-fast/llm/strata-orca/pack",
+              "--native",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--ple-gguf",
+              "/storage-fast/llm/strata-orca/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf",
+              "--expert-profile",
+              "/nix/store/m7xk99h9hc3p5pqhkn0zq6c2yyjp7gqr-strata-0.1.39-6f32ec0/share/strata/data/expert-profile.bin",
+              "--expert-cache",
+              "auto",
+              "--prefill",
+              "2048",
+              "--spec",
+              "4",
+              "--spec-min-p",
+              "0.5",
+              "--mtp",
+              "/storage-fast/llm/strata-orca/mtp/rt",
+              "--max-context",
+              "32768",
+              "--mtp-window",
+              "32768",
+              "--mtp-max-t",
+              "4",
+              "--suffix-draft",
+              "0",
+              "--pool-affinity",
+              "all",
+              "--vram-reserve-mib",
+              "2048",
+              "--kv",
+              "fp16",
+              "--pool-workers",
+              "23",
+              "--mmap-experts",
+              "--resident-budget-gib",
+              "24"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      5                                        127.0.0.1:18081      0.0.0.0:*   \nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "22476, 1603\n"
+      },
+      "http_status": 200,
+      "raw_response": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"77\",\"reasoning_content\":\"We need answer user's simple math: \\\"What is 7 times 11? Give the final answer as the number only.\\\" Need final only number\"}}],\"created\":1791245198,\"model\":\"/storage-fast/llm/models/Qwen3.8-27B/Qwen3.8-27B-UD-Q4_K_M.gguf\",\"system_fingerprint\":\"b0-unknown\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":36,\"prompt_tokens\":70,\"total_tokens\":106,\"prompt_tokens_details\":{\"cached_tokens\":0}},\"id\":\"chatcmpl-dZUMyWLlTPWHhMXee4JfAYHfROtu5H4L\",\"timings\":{\"cache_n\":0,\"prompt_n\":70,\"prompt_ms\":245.366,\"prompt_per_token_ms\":3.505228571428572,\"prompt_per_second\":285.2881002257851,\"predicted_n\":36,\"predicted_ms\":265.275,\"predicted_per_token_ms\":7.579285714285714,\"predicted_per_second\":131.93855433041185,\"draft_n\":27,\"draft_n_accepted\":26}}",
+      "answer": "77",
+      "after": {
+        "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+        "processes": [
+          {
+            "pid": 2234493,
+            "args": [
+              "/nix/store/5g8ykspxpaddvbzpf8n16hypxsmgxha7-llama-cpp-cuda-prism-87268f7/bin/llama-server",
+              "--port",
+              "5801",
+              "--host",
+              "127.0.0.1",
+              "-ngl",
+              "99",
+              "-fa",
+              "on",
+              "--jinja",
+              "-lm",
+              "none",
+              "-kvu",
+              "--cache-ram",
+              "16384",
+              "-m",
+              "/storage-fast/llm/models/Qwen3.8-27B/Qwen3.8-27B-UD-Q4_K_M.gguf",
+              "--spec-type",
+              "draft-mtp",
+              "--spec-draft-n-max",
+              "3",
+              "-md",
+              "/storage-fast/llm/models/Qwen3.8-27B/MTP/mtp-Qwen3.8-27B-Q4_0.gguf",
+              "--mmproj",
+              "/storage-fast/llm/models/Qwen3.8-27B/mmproj-Qwen3.8-27B-Q8_0.gguf",
+              "--image-min-tokens",
+              "1024",
+              "-c",
+              "65536",
+              "-ctk",
+              "q8_0",
+              "-ctv",
+              "q8_0",
+              "-np",
+              "2",
+              "-n",
+              "32768",
+              "--temp",
+              "1.0",
+              "--top-p",
+              "0.95",
+              "--top-k",
+              "20",
+              "--min-p",
+              "0.0"
+            ]
+          }
+        ],
+        "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+        "gpu": "21306, 2773\n"
+      },
+      "passed": true,
+      "wall_s": 27.062396550085396
+    }
+  ],
+  "models": {
+    "data": [
+      {
+        "id": "bonsai-2-27b",
+        "object": "model",
+        "created": 1791244953,
+        "owned_by": "llama-swap",
+        "meta": {
+          "llamaswap": {
+            "type": "model"
+          }
+        },
+        "status": {
+          "value": "unloaded"
+        }
+      },
+      {
+        "id": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "object": "model",
+        "created": 1791244953,
+        "owned_by": "llama-swap",
+        "meta": {
+          "llamaswap": {
+            "type": "model"
+          }
+        },
+        "status": {
+          "value": "unloaded"
+        }
+      },
+      {
+        "id": "qwen3.8-27b",
+        "object": "model",
+        "created": 1791244953,
+        "owned_by": "llama-swap",
+        "meta": {
+          "llamaswap": {
+            "type": "model"
+          }
+        },
+        "status": {
+          "value": "unloaded"
+        }
+      }
+    ],
+    "object": "list"
+  },
+  "requests_complete": true,
+  "unload_http_status": 200,
+  "unload_raw": "{\"msg\":\"ok\"}\n",
+  "unloaded": {
+    "system": "/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8",
+    "processes": [],
+    "listeners": "State  Recv-Q Send-Q                               Local Address:Port  Peer Address:Port\nLISTEN 0      4096                                             *:8080             *:*   \nLISTEN 0      4096                                             *:8081             *:*   \n",
+    "gpu": "17, 24061\n"
+  },
+  "cleanup_complete": true,
+  "models_after_cleanup": {
+    "data": [
+      {
+        "id": "bonsai-2-27b",
+        "object": "model",
+        "created": 1791245198,
+        "owned_by": "llama-swap",
+        "meta": {
+          "llamaswap": {
+            "type": "model"
+          }
+        },
+        "status": {
+          "value": "unloaded"
+        }
+      },
+      {
+        "id": "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs",
+        "object": "model",
+        "created": 1791245198,
+        "owned_by": "llama-swap",
+        "meta": {
+          "llamaswap": {
+            "type": "model"
+          }
+        },
+        "status": {
+          "value": "unloaded"
+        }
+      },
+      {
+        "id": "qwen3.8-27b",
+        "object": "model",
+        "created": 1791245198,
+        "owned_by": "llama-swap",
+        "meta": {
+          "llamaswap": {
+            "type": "model"
+          }
+        },
+        "status": {
+          "value": "unloaded"
+        }
+      }
+    ],
+    "object": "list"
+  },
+  "provenance": {
+    "source": "/storage-fast/llm/strata-orca/tuning/final-uat.json",
+    "source_sha256": "083d440302ff6cacb14f41a01bb1d2bcb60d7952f210c2d8f5ac90f577f33fd4",
+    "transformation": "Derived evidence: listener inventories filtered to ports8080/18081/8081. All request payloads, responses, durations, GPU/process/system snapshots and acceptance flags retained. Original raw private onHAL, not copied to repository."
+  }
+}
