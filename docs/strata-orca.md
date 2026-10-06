@@ -5,13 +5,21 @@ Strata, alongside the existing Bonsai/Qwen llama-swap stack. It is an explicit
 local compatibility workflow, not a replacement with the aligned GSQ-RCO weights
 in Strata's installer menu. No upstream installer or host driver changes are used.
 
-## Configured 64K context, awaiting activation
+## Deployed 64K context and client settings
 
 HAL9000 now selects `services.strata-orca.contextTokens = 65536` in
-`hosts/hal9000/default.nix`. This change is committed for the next user-run
-deployment; it has not been activated by the agent. The last verified live
-configuration remains the 32K deployment recorded below. The historical
-benchmark report is unchanged.
+`hosts/hal9000/default.nix`. It was activated on 2026-10-05 from committed
+`main` revision `d41b56e`, preserving the newer Mold update. The running system
+and profile both point to
+`/nix/store/8c3pbks0wi6grpxzmabch75lql1zmwd0-nixos-system-hal9000-25.11.20260630.b6018f8`.
+All 23 encrypted activation inputs and runtime secret metadata checks passed.
+Dry activation restarted only llama-swap; Mold's unit was unchanged. The real
+backend reports 65536 native context and returned `77` for the arithmetic check.
+That cold request took 175.056s including startup. The OMP request also returned
+`77` after its catalog was updated to 65536 context and 8192 maximum output.
+Mold, display-manager, llama-swap, Ollama and pgweb remained active. See
+[deployment acceptance evidence](benchmarks/orca-64k-deployment-20261005.json).
+The historical 32K production benchmark report is unchanged.
 
 To switch context later, edit only `contextTokens` in the HAL configuration:
 `32768` for 32K or `65536` for 64K. The shared module generates the native
@@ -24,7 +32,7 @@ prefill was 33.910s at 32K and 37.097s at 64K; cached request wall time was
 3.062s and 3.381s respectively. GPU expert slots fell from 7857 to 7426
 (431 fewer, 5.5%). The 64K deep test retrieved all four facts exactly twice
 from 59469 input tokens. These are screening measurements, not a benchmark of
-the newly configured 64K/23-worker production combination. See the
+the deployed 64K/23-worker production combination. See the
 [complete context results](benchmarks/orca-20261005.md#context-capacity-and-automatic-expert-cache-tradeoff).
 
 All other selected settings remain FP16 KV, prefill 2048, 23 expert workers,
@@ -35,13 +43,13 @@ consumes session memory; automatic expert-cache sizing compensates by
 reducing GPU expert slots. Do not interpret unchanged total VRAM as unchanged
 cache capacity or guaranteed speed.
 
-After the server is activated and reports 65536 native context, update the
-Orca override's `contextWindow` in local `~/.omp/agent/models.yml` to `65536`
-and restart OMP. Keep `maxTokens: 8192`, not `65536`: input, tool definitions,
-reasoning and output all share the total window. At 64K, an 8K output cap
-leaves at most 57344 tokens for input before template overhead; compact well
-before that boundary. Until activation, the local OMP override remains 32K
-to match the running server.
+When changing context in the future, activate the server first and confirm
+its reported native context, then match the Orca override's `contextWindow`
+in local `~/.omp/agent/models.yml` and restart OMP. It now uses `65536`.
+Keep `maxTokens: 8192`, not `65536`: input, tool definitions, reasoning and
+output all share the total window. At 64K, an 8K output cap leaves at most
+57344 tokens for input before template overhead; compact well before that
+boundary. Existing OMP sessions must reload the model configuration.
 
 ## Model and runtime selection
 
@@ -235,7 +243,7 @@ verified lifecycle, recipe, authentication and benchmark evidence against pinned
 upstream sources, independently reran the authentication and benchmark checks, and found no
 remaining material code issues after the benchmark corrections.
 
-Current status on 2026-10-05: authenticated immutable provisioning and measured phased tuning completed. The balanced FP16/32K/prefill 2048/23-worker/T4/suffix0/24GiB configuration is now deployed from independently reviewed commit `7985f2c`, closure `/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8`. System profile and running generation match. All 23 encrypted activation inputs and runtime file types/owners/groups/modes passed checks before and after switching; legitimate empty plaintext is allowed and no plaintext was read. The two failed rollout/checker events and successful rollbacks are retained in the dated report.
+Earlier 32K deployment on 2026-10-05: authenticated immutable provisioning and measured phased tuning completed. The balanced FP16/32K/prefill 2048/23-worker/T4/suffix0/24GiB configuration was deployed from independently reviewed commit `7985f2c`, closure `/nix/store/hfsq6wnvk23rrl42jm8z9hnf0gi8zn81-nixos-system-hal9000-25.11.20260630.b6018f8`. At that acceptance, the system profile and running generation matched. All 23 encrypted activation inputs and runtime file types/owners/groups/modes passed checks before and after switching; legitimate empty plaintext is allowed and no plaintext was read. The two failed rollout/checker events and successful rollbacks are retained in the dated report.
 
 See [the measured report](benchmarks/orca-20261005.md), full raw artifacts and per-trial summary. Final shared-endpoint lifecycle UAT, actual deployed-configuration benchmark and restored desktop/Mold acceptance completed on2026-10-05. The user authorized deployment after independent Codex review and temporary Mold/graphical-session stop during benchmarking. Original service states must be restored while preserving SSH/access and unrelated services. Read-only inspection found approximately 16GiB ZFS ARC (`c_max = 17179869184`); no ARC mutation was needed. Every cold start retains the 36GiB MemAvailable and GPU admission guards. Temporary test-only service stoppage does not justify increasing the normal resident budget or disabling guards.
 
@@ -420,7 +428,7 @@ Screen `0.35`, `0.55`, and `0.75` in a balanced repeated order. Artifacts record
 
 `services.strata-orca` exposes `contextTokens` (32768), `prefillTokens` (512), `kvType` (`int8`; also `fp16`, `q4_0`, `k8v4`), `specWindow` (4; 2–8), `mtpMaxT` (0 means the verification window), `suffixDraft` (3; 0 disables lookup), and `mtpWindowTokens` (32768). The generated MTP context is the minimum of its window and `contextTokens`. Window T allows at most T−1 MTP drafts; this native model requires a loaded MTP runtime, so verification window 1/true MTP-off is unavailable. `mtpMaxT = 1` is a supported loaded-MTP control with zero draft proposals; it differs from omitting the MTP runtime. Suffix lookup can extend the verification window upstream; record both settings when comparing results.
 
-`poolWorkers = null` preserves upstream automatic sizing; positive integers request a fixed count. `poolAffinity` accepts `auto` (module default), `p-cores`, or `all` (upstream default). Auto is an explicit module policy choice. HAL lacks the Linux `cpu_capacity` files used for hybrid detection, so automatic placement does not identify its P cores: the measured `all`/7 combination selects P-core primaries on its observed CPU order. Verify actual affinities when changing hardware or cpusets. `pcieFraction = null` preserves native bandwidth probing; a number from 0 to 1 emits `--pcie-frac`. These options expose reproducible configuration, not a claim that every combination fits available resources. RAM preflight, desktop GPU allowlist, minimum free VRAM and explicit reserve remain enforced. The measured and last verified deployed HAL configuration from repeated local trials was FP16 KV, prefill 2048, context32768,23 workers with affinityall, spec4/mtpMaxT4, suffix0, MTP window32768, and native PCIe probing. The RAM24GiB budget/headroom8GiB/guard36GiB and configured2048MiB VRAM reserve remain unchanged. Exact production deployment and restored-state acceptance completed; all measured candidates are retained in the dated benchmark report.
+`poolWorkers = null` preserves upstream automatic sizing; positive integers request a fixed count. `poolAffinity` accepts `auto` (module default), `p-cores`, or `all` (upstream default). Auto is an explicit module policy choice. HAL lacks the Linux `cpu_capacity` files used for hybrid detection, so automatic placement does not identify its P cores: the measured `all`/7 combination selects P-core primaries on its observed CPU order. Verify actual affinities when changing hardware or cpusets. `pcieFraction = null` preserves native bandwidth probing; a number from 0 to 1 emits `--pcie-frac`. These options expose reproducible configuration, not a claim that every combination fits available resources. RAM preflight, desktop GPU allowlist, minimum free VRAM and explicit reserve remain enforced. The earlier 32K production benchmark configuration from repeated local trials was FP16 KV, prefill 2048, context32768,23 workers with affinityall, spec4/mtpMaxT4, suffix0, MTP window32768, and native PCIe probing. The RAM24GiB budget/headroom8GiB/guard36GiB and configured2048MiB VRAM reserve remain unchanged. Exact production deployment and restored-state acceptance completed; all measured candidates are retained in the dated benchmark report.
 
 Evaluate configuration and bounds without activation using `python3 scripts/test-strata-tuning-options.py` and `python3 scripts/test-strata-memory-modes.py`. This also verifies absent nullable flags preserve automatic behavior, the MTP context cap and unchanged resource guard metadata.
 
