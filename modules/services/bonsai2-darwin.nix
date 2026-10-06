@@ -10,25 +10,19 @@ let
   cfg = config.services.bonsai2;
   modelRevision = "b072e1d3b35a0a630cece372c2127528e0994386";
   modelRepository = "https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf/resolve/${modelRevision}";
-
-  defaultModel = pkgs.fetchurl {
-    name = "Ternary-Bonsai-2-27B-PQ2_0.gguf";
-    url = "${modelRepository}/Ternary-Bonsai-2-27B-PQ2_0.gguf";
-    hash = "sha256-OQfcFljbH3ipgmv41by43GXbDUZjiJN69X8ilPrmLsE=";
-  };
-
-  defaultMmproj = pkgs.fetchurl {
-    name = "Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf";
-    url = "${modelRepository}/Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf";
-    hash = "sha256-aAft5h1XC7hro0t1ag+hCe3DNmhgTehnxuptjx1jGQM=";
-  };
+  modelFileName = "Ternary-Bonsai-2-27B-PQ2_0.gguf";
+  modelSha256 = "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1";
+  mmprojFileName = "Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf";
+  mmprojSha256 = "6807ede61d570bb86ba34b756a0fa109edc33668604de867c6ea6d8f1d631903";
+  modelPath = "${cfg.dataDir}/${modelFileName}";
+  mmprojPath = "${cfg.dataDir}/${mmprojFileName}";
 
   backendCommand = builtins.concatStringsSep " " [
     "${lib.getExe' cfg.package "llama-server"}"
     "--port \${PORT}"
     "--host 127.0.0.1"
-    "--model ${cfg.model}"
-    "--mmproj ${cfg.mmproj}"
+    "--model ${modelPath}"
+    "--mmproj ${mmprojPath}"
     "--alias bonsai-2-27b"
     "--n-gpu-layers 99"
     "--flash-attn on"
@@ -74,18 +68,13 @@ in
       description = "llama-swap package used for on-demand loading and idle unloading.";
     };
 
-    model = lib.mkOption {
-      type = lib.types.path;
-      default = defaultModel;
-      defaultText = "Pinned official Bonsai 2 27B PQ2_0 GGUF";
-      description = "Bonsai 2 language-model GGUF.";
-    };
-
-    mmproj = lib.mkOption {
-      type = lib.types.path;
-      default = defaultMmproj;
-      defaultText = "Pinned official Bonsai 2 27B Q8_0 vision projector";
-      description = "Bonsai 2 vision projector GGUF.";
+    dataDir = lib.mkOption {
+      type = lib.types.str;
+      default = "/Users/${cfg.user}/.local/share/bonsai2";
+      description = ''
+        Mutable model directory. Disabling this module removes the directory so
+        the downloaded model and vision projector do not survive the redeploy.
+      '';
     };
 
     host = lib.mkOption {
@@ -119,30 +108,92 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
+  config = lib.mkMerge [
+    {
+      assertions = [
+        {
+          assertion = lib.hasPrefix "/Users/${cfg.user}/" cfg.dataDir;
+          message = "services.bonsai2.dataDir must be inside /Users/${cfg.user}/";
+        }
+      ];
 
-    launchd.daemons.bonsai2 = {
-      serviceConfig = {
-        ProgramArguments = [
-          (lib.getExe cfg.swapPackage)
-          "--listen"
-          "${cfg.host}:${toString cfg.port}"
-          "--config"
-          (toString swapConfig)
-        ];
-        EnvironmentVariables = {
-          HOME = "/Users/${cfg.user}";
+      system.activationScripts.preActivation.text =
+        if cfg.enable then
+          ''
+            bonsai2_download() {
+              local url="$1"
+              local expected_sha256="$2"
+              local target="$3"
+
+              if test -f "$target" \
+                && echo "$expected_sha256  $target" | ${pkgs.coreutils}/bin/sha256sum --check --status
+              then
+                return
+              fi
+
+              rm -f -- "$target"
+              ${pkgs.curl}/bin/curl \
+                --fail \
+                --location \
+                --retry 5 \
+                --retry-all-errors \
+                --continue-at - \
+                --output "$target.part" \
+                "$url"
+              if ! echo "$expected_sha256  $target.part" \
+                | ${pkgs.coreutils}/bin/sha256sum --check --status
+              then
+                rm -f -- "$target.part"
+                return 1
+              fi
+              mv -f -- "$target.part" "$target"
+            }
+
+            echo "provisioning Bonsai 2 model data..." >&2
+            install -d -m 0755 -o ${lib.escapeShellArg cfg.user} -g staff ${lib.escapeShellArg cfg.dataDir}
+            bonsai2_download \
+              ${lib.escapeShellArg "${modelRepository}/${modelFileName}"} \
+              ${lib.escapeShellArg modelSha256} \
+              ${lib.escapeShellArg modelPath}
+            bonsai2_download \
+              ${lib.escapeShellArg "${modelRepository}/${mmprojFileName}"} \
+              ${lib.escapeShellArg mmprojSha256} \
+              ${lib.escapeShellArg mmprojPath}
+            chown -R ${lib.escapeShellArg "${cfg.user}:staff"} ${lib.escapeShellArg cfg.dataDir}
+          ''
+        else
+          ''
+            echo "removing disabled Bonsai 2 model data..." >&2
+            rm -rf -- ${lib.escapeShellArg cfg.dataDir}
+            rm -f -- /tmp/bonsai2.log
+          '';
+    }
+
+    (lib.mkIf cfg.enable {
+      environment.systemPackages = [ cfg.package ];
+
+      launchd.daemons.bonsai2 = {
+        serviceConfig = {
+          ProgramArguments = [
+            (lib.getExe cfg.swapPackage)
+            "--listen"
+            "${cfg.host}:${toString cfg.port}"
+            "--config"
+            (toString swapConfig)
+          ];
+          EnvironmentVariables = {
+            HOME = "/Users/${cfg.user}";
+          };
+          GroupName = "staff";
+          KeepAlive = true;
+          ProcessType = "Interactive";
+          RunAtLoad = true;
+          StandardErrorPath = "/tmp/bonsai2.log";
+          StandardOutPath = "/tmp/bonsai2.log";
+          ThrottleInterval = 10;
+          UserName = cfg.user;
         };
-        GroupName = "staff";
-        KeepAlive = true;
-        ProcessType = "Interactive";
-        RunAtLoad = true;
-        StandardErrorPath = "/tmp/bonsai2.log";
-        StandardOutPath = "/tmp/bonsai2.log";
-        ThrottleInterval = 10;
-        UserName = cfg.user;
       };
-    };
-  };
+    })
+  ];
 }
