@@ -37,6 +37,22 @@ if [ -n "${STRATA_HF_TOKEN_FILE:-}" ]; then
   curl_auth=(--header "@$auth_header")
 fi
 mkdir -p "$DATA_DIR/models"
+# Existing complete/partial shards consume space already; reserve another 8GiB
+# for the compatibility pack, filesystem headroom and interrupted transfers.
+required=127740657536
+for name in "${names[@]}"; do
+  file="$DATA_DIR/models/$name"
+  if [ -f "$file" ]; then
+    required=$((required - $(stat -c %s "$file")))
+  elif [ -f "$file.partial" ]; then
+    required=$((required - $(stat -c %s "$file.partial")))
+  fi
+done
+available=$(df -PB1 "$DATA_DIR" | awk 'NR == 2 {print $4}')
+if [ "$available" -lt "$required" ]; then
+  echo "Q4 provisioning requires $required more free bytes; found $available." >&2
+  exit 1
+fi
 for i in "${!names[@]}"; do
   target="$DATA_DIR/models/${names[$i]}"
   if ! [ -f "$target" ]; then
@@ -46,7 +62,7 @@ for i in "${!names[@]}"; do
     mv "$target.partial" "$target"
   fi
   printf '%s  %s\n' "${hashes[$i]}" "$target" | sha256sum --check
- done
+done
 if ! [ -s "$DATA_DIR/pack/native_experts.txt" ]; then
   strata-iq_pack --gguf "$DATA_DIR/models/${names[0]}" --out "$DATA_DIR/pack" --compat-bf16
 fi

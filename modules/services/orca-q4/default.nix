@@ -47,6 +47,7 @@ let
       pkgs.coreutils
     ];
     text = ''
+      export STRATA_ORCA_Q4_DATA_DIR="''${STRATA_ORCA_Q4_DATA_DIR:-${cfg.dataDir}}"
       exec ${pkgs.bash}/bin/bash ${../../../scripts/strata-orca-q4-provision.sh} "$@"
     '';
   };
