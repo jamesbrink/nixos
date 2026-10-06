@@ -72,7 +72,7 @@ def flags(config):
 baseline, candidate, small = (result[key] for key in ("baseline", "candidate", "small"))
 selected = result["selectedHost"]
 h = flags(selected)
-assert h["--max-context"] == h["--mtp-window"] == "32768"
+assert h["--max-context"] == "65536" and h["--mtp-window"] == "32768"
 assert h["--prefill"] == "2048" and h["--kv"] == "fp16"
 assert h["--spec"] == h["--mtp-max-t"] == "4" and h["--suffix-draft"] == "0"
 assert h["--pool-workers"] == "23" and h["--pool-affinity"] == "all"

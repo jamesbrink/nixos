@@ -612,13 +612,21 @@
     memoryMode = "bounded-mmap";
     residentBudgetGiB = 24;
     residentHeadroomGiB = 8;
+    # Total prompt + reasoning + answer capacity. Change this one setting to
+    # switch windows: 32768 = 32K, 65536 = 64K. 128K needs a new hardware test.
+    # 64K passed retrieval at 59469 input tokens; it trades GPU expert-cache
+    # slots for context (7426 vs 7857 at 32K in the 7-worker screening run).
+    # After activation, match OMP contextWindow to this value; keep its output
+    # cap at 8192 and compact before the prompt consumes the remaining room.
+    contextTokens = 65536;
     # Matched 2026-10-05 local trials; retain native PCIe bandwidth probing.
-    contextTokens = 32768;
     prefillTokens = 2048;
     kvType = "fp16";
     specWindow = 4;
     mtpMaxT = 4;
     suffixDraft = 0;
+    # The draft model keeps its own 32K window; this does not cap the target
+    # at 32K. Keep it separate when changing contextTokens (64K was tested).
     mtpWindowTokens = 32768;
     poolWorkers = 23;
     poolAffinity = "all";

@@ -5,6 +5,44 @@ Strata, alongside the existing Bonsai/Qwen llama-swap stack. It is an explicit
 local compatibility workflow, not a replacement with the aligned GSQ-RCO weights
 in Strata's installer menu. No upstream installer or host driver changes are used.
 
+## Configured 64K context, awaiting activation
+
+HAL9000 now selects `services.strata-orca.contextTokens = 65536` in
+`hosts/hal9000/default.nix`. This change is committed for the next user-run
+deployment; it has not been activated by the agent. The last verified live
+configuration remains the 32K deployment recorded below. The historical
+benchmark report is unchanged.
+
+To switch context later, edit only `contextTokens` in the HAL configuration:
+`32768` for 32K or `65536` for 64K. The shared module generates the native
+`--max-context` argument. Keep `mtpWindowTokens = 32768`: the draft context is
+independent of the target window, and drafting worked above 32K target depth.
+128K is not hardware-validated by these results.
+
+The measured 7-worker context screen used the same 12890-token prompt: fresh
+prefill was 33.910s at 32K and 37.097s at 64K; cached request wall time was
+3.062s and 3.381s respectively. GPU expert slots fell from 7857 to 7426
+(431 fewer, 5.5%). The 64K deep test retrieved all four facts exactly twice
+from 59469 input tokens. These are screening measurements, not a benchmark of
+the newly configured 64K/23-worker production combination. See the
+[complete context results](benchmarks/orca-20261005.md#context-capacity-and-automatic-expert-cache-tradeoff).
+
+All other selected settings remain FP16 KV, prefill 2048, 23 expert workers,
+MTP verification window/cap 4, suffix lookup 0, 24GiB resident budget,
+8GiB allocation headroom, 36GiB available-RAM admission guard, 20480MiB
+free-VRAM admission guard and 2048MiB native VRAM reserve. Increasing context
+consumes session memory; automatic expert-cache sizing compensates by
+reducing GPU expert slots. Do not interpret unchanged total VRAM as unchanged
+cache capacity or guaranteed speed.
+
+After the server is activated and reports 65536 native context, update the
+Orca override's `contextWindow` in local `~/.omp/agent/models.yml` to `65536`
+and restart OMP. Keep `maxTokens: 8192`, not `65536`: input, tool definitions,
+reasoning and output all share the total window. At 64K, an 8K output cap
+leaves at most 57344 tokens for input before template overhead; compact well
+before that boundary. Until activation, the local OMP override remains 32K
+to match the running server.
+
 ## Model and runtime selection
 
 - [Orca model card](https://huggingface.co/orcarouter/Qwen3.8-Flash-Next-Uncensored-GGUF/tree/e43d00f4e2b8b40b89f75e9adeb1045ac34c8acc):
@@ -382,7 +420,7 @@ Screen `0.35`, `0.55`, and `0.75` in a balanced repeated order. Artifacts record
 
 `services.strata-orca` exposes `contextTokens` (32768), `prefillTokens` (512), `kvType` (`int8`; also `fp16`, `q4_0`, `k8v4`), `specWindow` (4; 2–8), `mtpMaxT` (0 means the verification window), `suffixDraft` (3; 0 disables lookup), and `mtpWindowTokens` (32768). The generated MTP context is the minimum of its window and `contextTokens`. Window T allows at most T−1 MTP drafts; this native model requires a loaded MTP runtime, so verification window 1/true MTP-off is unavailable. `mtpMaxT = 1` is a supported loaded-MTP control with zero draft proposals; it differs from omitting the MTP runtime. Suffix lookup can extend the verification window upstream; record both settings when comparing results.
 
-`poolWorkers = null` preserves upstream automatic sizing; positive integers request a fixed count. `poolAffinity` accepts `auto` (module default), `p-cores`, or `all` (upstream default). Auto is an explicit module policy choice. HAL lacks the Linux `cpu_capacity` files used for hybrid detection, so automatic placement does not identify its P cores: the measured `all`/7 combination selects P-core primaries on its observed CPU order. Verify actual affinities when changing hardware or cpusets. `pcieFraction = null` preserves native bandwidth probing; a number from 0 to 1 emits `--pcie-frac`. These options expose reproducible configuration, not a claim that every combination fits available resources. RAM preflight, desktop GPU allowlist, minimum free VRAM and explicit reserve remain enforced. The selected HAL configuration from repeated local trials is FP16 KV, prefill 2048, context32768,23 workers with affinityall, spec4/mtpMaxT4, suffix0, MTP window32768, and native PCIe probing. The RAM24GiB budget/headroom8GiB/guard36GiB and configured2048MiB VRAM reserve remain unchanged. Exact production deployment and restored-state acceptance completed; all measured candidates are retained in the dated benchmark report.
+`poolWorkers = null` preserves upstream automatic sizing; positive integers request a fixed count. `poolAffinity` accepts `auto` (module default), `p-cores`, or `all` (upstream default). Auto is an explicit module policy choice. HAL lacks the Linux `cpu_capacity` files used for hybrid detection, so automatic placement does not identify its P cores: the measured `all`/7 combination selects P-core primaries on its observed CPU order. Verify actual affinities when changing hardware or cpusets. `pcieFraction = null` preserves native bandwidth probing; a number from 0 to 1 emits `--pcie-frac`. These options expose reproducible configuration, not a claim that every combination fits available resources. RAM preflight, desktop GPU allowlist, minimum free VRAM and explicit reserve remain enforced. The measured and last verified deployed HAL configuration from repeated local trials was FP16 KV, prefill 2048, context32768,23 workers with affinityall, spec4/mtpMaxT4, suffix0, MTP window32768, and native PCIe probing. The RAM24GiB budget/headroom8GiB/guard36GiB and configured2048MiB VRAM reserve remain unchanged. Exact production deployment and restored-state acceptance completed; all measured candidates are retained in the dated benchmark report.
 
 Evaluate configuration and bounds without activation using `python3 scripts/test-strata-tuning-options.py` and `python3 scripts/test-strata-memory-modes.py`. This also verifies absent nullable flags preserve automatic behavior, the MTP context cap and unchanged resource guard metadata.
 
