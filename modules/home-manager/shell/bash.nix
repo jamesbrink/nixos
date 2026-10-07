@@ -125,7 +125,7 @@
       export AWS_PAGER=""
 
       # Source environment files
-      for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key claude-primary-token claude-secondary-token openrouter-key huggingface-token cloudflare-token; do
+      for env_file in github-token infracost-api-key pypi-token deadmansnitch-api-key claude-primary-token claude-secondary-token claude-quantierra-token openrouter-key huggingface-token cloudflare-token; do
         if [[ -f ~/.config/environment.d/$env_file.sh ]]; then
           source ~/.config/environment.d/$env_file.sh 2>/dev/null || true
         fi
@@ -160,6 +160,12 @@
             export CLAUDE_CURRENT_PROFILE="secondary"
             echo "Switched to Claude secondary account (OAuth)"
             ;;
+          quantierra|3)
+            unset ANTHROPIC_API_KEY
+            export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_QUANTIERRA"
+            export CLAUDE_CURRENT_PROFILE="quantierra"
+            echo "Switched to Claude Quantierra account (OAuth)"
+            ;;
           api)
             unset CLAUDE_CODE_OAUTH_TOKEN
             if [[ -f ~/.config/environment.d/anthropic-key.sh ]]; then
@@ -181,7 +187,7 @@
             echo "API key:  $([[ -n "''${ANTHROPIC_API_KEY:-}" ]] && echo "set (...''${ANTHROPIC_API_KEY: -8})" || echo "unset")"
             ;;
           ""|*)
-            echo "Usage: claude-profile {primary|secondary|api|none|status|1|2|s|0}"
+            echo "Usage: claude-profile {primary|secondary|quantierra|api|none|status|1|2|3|s|0}"
             echo ""
             echo "Profile:  ''${CLAUDE_CURRENT_PROFILE:-none}"
             echo "OAuth:    $([[ -n "''${CLAUDE_CODE_OAUTH_TOKEN:-}" ]] && echo "set (...''${CLAUDE_CODE_OAUTH_TOKEN: -8})" || echo "unset")"
@@ -192,7 +198,7 @@
       }
 
       # Initialize default Claude profile. halcyon intentionally starts with NO
-      # profile (credentials unset) — run `claude-profile {primary|secondary|api}`
+      # profile (credentials unset) — run `claude-profile {primary|secondary|quantierra|api}`
       # to pick one per shell. All other hosts default to secondary.
       # ANTHROPIC_API_KEY is unset either way to avoid conflicting with OAuth tokens.
       unset ANTHROPIC_API_KEY

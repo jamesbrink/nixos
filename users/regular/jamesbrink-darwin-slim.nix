@@ -106,6 +106,13 @@
     mode = "0600";
   };
 
+  age.secrets."claude-quantierra" = {
+    file = "${secretsPath}/jamesbrink/claude-quantierra.age";
+    owner = "jamesbrink";
+    group = "staff";
+    mode = "0600";
+  };
+
   # bender has its own OpenRouter key; every other host uses the shared
   # jamesbrink/openrouter-key.age
   age.secrets."openrouter-key" = {
@@ -305,8 +312,17 @@
         echo "# Claude secondary token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
       fi
 
+      if [[ -f ${config.age.secrets."claude-quantierra".path} ]]; then
+        echo "export CLAUDE_CODE_OAUTH_TOKEN_QUANTIERRA=\"\$(cat ${
+          config.age.secrets."claude-quantierra".path
+        })\"" > /Users/jamesbrink/.config/environment.d/claude-quantierra-token.sh
+      else
+        echo "# Claude Quantierra token not yet available from agenix" > /Users/jamesbrink/.config/environment.d/claude-quantierra-token.sh
+      fi
+
       chmod 600 /Users/jamesbrink/.config/environment.d/claude-primary-token.sh
       chmod 600 /Users/jamesbrink/.config/environment.d/claude-secondary-token.sh
+      chmod 600 /Users/jamesbrink/.config/environment.d/claude-quantierra-token.sh
     '
     echo "Claude Code OAuth tokens deployed to /Users/jamesbrink/.config/environment.d/"
 

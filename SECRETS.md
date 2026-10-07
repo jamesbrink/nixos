@@ -71,6 +71,39 @@ agenix -e jamesbrink/aws/config.age
 agenix -e jamesbrink/aws/credentials.age
 ```
 
+## Claude Code profiles
+
+`claude-profile` is available in Bash and Zsh. Select `primary` / `1`,
+`secondary` / `2`, or `quantierra` / `3`; all three use Claude Code OAuth
+tokens. `api` selects the separate Anthropic API key, `none` clears active
+credentials, and `status` shows the active profile. Shell defaults are unchanged:
+halcyon starts without credentials; other hosts use secondary when available.
+
+- `secrets/jamesbrink/claude-primary.age`
+- `secrets/jamesbrink/claude-secondary.age`
+- `secrets/jamesbrink/claude-quantierra.age`
+
+All three use the `allKeys` recipients in `secrets/secrets.nix`. Darwin
+(including slim profiles) and Linux deploy them as owner-only (`0600`) secrets
+and generate matching token files in `~/.config/environment.d/`.
+
+To populate or rotate the Quantierra secret, enter the account's Claude Code
+OAuth token (not an Anthropic API key):
+
+```bash
+scripts/secrets-edit.sh jamesbrink/claude-quantierra
+```
+
+Save only the token as the secret contents. Commit the secret and its recipient
+rule in the secrets submodule, then update the parent repository's submodule
+reference along with the profile wiring. Rebuild/deploy the target host after
+populating or rotating the token, open a new shell, then run:
+
+```bash
+claude-profile quantierra
+claude-profile status
+```
+
 ## Deployment
 
 After setting up secrets, you can deploy the configuration:

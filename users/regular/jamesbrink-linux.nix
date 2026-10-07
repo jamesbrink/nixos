@@ -342,6 +342,13 @@ in
     mode = "0600";
   };
 
+  age.secrets."claude-quantierra" = {
+    file = "${effectiveSecretsPath}/jamesbrink/claude-quantierra.age";
+    owner = "jamesbrink";
+    group = "users";
+    mode = "0600";
+  };
+
   age.secrets."openrouter-key" = {
     file = "${effectiveSecretsPath}/jamesbrink/openrouter-key.age";
     owner = "jamesbrink";
@@ -532,6 +539,26 @@ in
       })\"" > /home/jamesbrink/.config/environment.d/claude-secondary-token.sh
       chmod 600 /home/jamesbrink/.config/environment.d/claude-secondary-token.sh
       chown jamesbrink:users /home/jamesbrink/.config/environment.d/claude-secondary-token.sh
+    '';
+  };
+
+  systemd.services.claude-quantierra-token-setup = {
+    description = "Setup Claude Quantierra OAuth token environment";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "jamesbrink";
+    };
+    script = ''
+      # Read the Claude Quantierra token and create a shell source file
+      mkdir -p /home/jamesbrink/.config/environment.d
+      echo "export CLAUDE_CODE_OAUTH_TOKEN_QUANTIERRA=\"$(cat ${
+        config.age.secrets."claude-quantierra".path
+      })\"" > /home/jamesbrink/.config/environment.d/claude-quantierra-token.sh
+      chmod 600 /home/jamesbrink/.config/environment.d/claude-quantierra-token.sh
+      chown jamesbrink:users /home/jamesbrink/.config/environment.d/claude-quantierra-token.sh
     '';
   };
 
