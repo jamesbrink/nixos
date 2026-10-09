@@ -259,6 +259,10 @@ in
       SupplementaryGroups = [ "strata-orca" ];
       # PrivateUsers remaps supplementary GIDs; use the host model-data group.
       PrivateUsers = lib.mkForce false;
+      # The GPU guard (shared by every Strata launcher) matches desktop compute
+      # clients by name; ProtectProc=invisible makes nvidia-smi report
+      # "[Not Found]" for other users' processes, so the allowlist never matches.
+      ProtectProc = lib.mkForce "default";
       ReadWritePaths = [ cfg.dataDir ];
       LimitMEMLOCK = "infinity";
       TimeoutStopSec = 90;

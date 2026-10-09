@@ -53,8 +53,13 @@ for mode, config in result.items():
     args = config["args"]
     assert config["model_name"] == "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs"
     assert config["host"] == "127.0.0.1" and config["port"] == 18081
-    assert config["allowed_desktop_compute_processes"] == ["walker"]
-    assert config["maximum_desktop_compute_mib"] == 512
+    assert config["allowed_desktop_compute_processes"] == [
+        "chrome",
+        "mpv",
+        "swayosd-server",
+        "walker",
+    ]
+    assert config["maximum_desktop_compute_mib"] == 1024
     assert config["minimum_free_vram_mib"] == 20480
     assert args[args.index("--vram-reserve-mib") + 1] == "2048"
     if mode == "bounded":

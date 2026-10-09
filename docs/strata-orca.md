@@ -468,12 +468,17 @@ verify shared-endpoint lifecycle and existing-model operation again.
 ## Desktop coexistence and GPU startup policy
 
 The module's desktop compute allowlist defaults to **empty**, so unreviewed hosts
-retain zero-compute-client startup. HAL9000 explicitly allows only executable
-basename `walker` (observed 268 MiB), with an **aggregate 512 MiB limit** across all
+retain zero-compute-client startup. HAL9000 explicitly allows executable
+basenames `walker` (observed 268 MiB), `chrome` (120 MiB), `mpv` (469 MiB) and
+`swayosd-server` (12 MiB), with an **aggregate 1024 MiB limit** across all
 allowed compute PIDs and an actual **20,480 MiB free-VRAM floor** on GPU0. Unknown
 compute names, other LLM servers, and Mold/Python compute processes are refused
 regardless of current utilization. Missing/N/A PID or memory measurements fail
 closed. Graphics allocations are covered by the measured free-VRAM floor.
+Names are matched on the executable of the reported command line, and
+llama-swap runs with `ProtectProc=default` so nvidia-smi can resolve other
+users' process names; under `ProtectProc=invisible` every client reports
+`[Not Found]` and the guard refuses all desktop activity.
 
 Native `--vram-reserve-mib 2048` holds two GiB out of auto expert-cache sizing after
 initial model/session allocations and prevents the pinned engine from automatically

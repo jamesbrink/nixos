@@ -15,7 +15,9 @@ def validate_gpu(processes, free_mib, allowed, maximum_desktop_mib, minimum_free
         )
     aggregate = 0
     for pid, name, memory in processes:
-        if int(pid) <= 0 or Path(name).name not in allowed:
+        # nvidia-smi may report the full command line; match the executable only.
+        executable = Path(name.split()[0]).name if name.split() else ""
+        if int(pid) <= 0 or executable not in allowed:
             raise ValueError(f"Unapproved GPU compute client: pid={pid}, name={name}")
         used = int(memory)
         if used < 0:

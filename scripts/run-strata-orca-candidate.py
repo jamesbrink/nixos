@@ -58,7 +58,7 @@ guard_spec = importlib.util.spec_from_file_location(
 guard = importlib.util.module_from_spec(guard_spec)
 guard_spec.loader.exec_module(guard)
 require(
-    config.get("maximum_desktop_compute_mib", 513) <= 512,
+    config.get("maximum_desktop_compute_mib", 1025) <= 1024,
     "Candidate exceeds desktop compute cap",
 )
 require(
@@ -66,7 +66,7 @@ require(
     "Candidate lowers reviewed free-VRAM floor",
 )
 require(
-    set(config.get("allowed_desktop_compute_processes", [])) <= {"walker"},
+    set(config.get("allowed_desktop_compute_processes", [])) <= {"chrome", "mpv", "swayosd-server", "walker"},
     "Candidate extends reviewed desktop allowlist",
 )
 reserve = int(native[native.index("--vram-reserve-mib") + 1])

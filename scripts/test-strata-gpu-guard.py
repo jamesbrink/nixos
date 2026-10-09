@@ -20,6 +20,17 @@ class GuardTests(unittest.TestCase):
         result = self.validate([("123", "/nix/store/desktop/bin/walker", "268")])
         self.assertEqual(result["allowed_desktop_compute_mib"], 268)
 
+    def test_command_line_name_matches_executable(self):
+        chrome = (
+            "/nix/store/x-google-chrome/share/google/chrome/chrome --type=gpu-process"
+            " --render-node-override=/dev/dri/renderD128 --enable-crash-reporter=?"
+        )
+        self.validate([("123", chrome, "120")], allowed=("chrome",))
+        with self.assertRaises(ValueError):
+            self.validate([("123", chrome, "120")], allowed=("renderD128",))
+        with self.assertRaises(ValueError):
+            self.validate([("123", "", "120")])
+
     def test_empty_default_is_strict(self):
         self.validate([])
         with self.assertRaises(ValueError):

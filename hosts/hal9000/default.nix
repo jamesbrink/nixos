@@ -612,8 +612,14 @@
     dataDir = "/var/lib/strata-orca";
     # 64 GiB host: keep expert allocation bounded; require 36 GiB available.
     port = 18081;
-    allowedDesktopComputeProcesses = [ "walker" ];
-    maximumDesktopComputeMiB = 512;
+    # Desktop GPU clients observed 2026-10-09: chrome 120, mpv 469, swayosd 12 MiB.
+    allowedDesktopComputeProcesses = [
+      "chrome"
+      "mpv"
+      "swayosd-server"
+      "walker"
+    ];
+    maximumDesktopComputeMiB = 1024;
     minimumFreeVRAMMiB = 20480;
     vramReserveMiB = 2048;
     memoryMode = "bounded-mmap";
