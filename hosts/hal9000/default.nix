@@ -26,7 +26,7 @@
     # ./nginx-netboot.nix
     ../../modules/nix-caches.nix
     ../../modules/nix-limits.nix
-    ../../modules/wifi-iwd.nix
+    ../../modules/wifi-networkmanager.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix
@@ -465,9 +465,9 @@
     };
   };
 
-  # WiFi via iwd (radio link) + systemd-networkd (DHCP). Coexists with the br0
-  # bridge stack; wired stays preferred. CLI: iwctl. GUI: iwgtk / iwgtk -i (tray).
-  local.wifi.enable = true;
+  # WiFi via NetworkManager (iwd backend) for Omarchy's network panel. Only
+  # wireless devices are managed; wired/br0 stay on systemd-networkd.
+  local.wifiNetworkManager.enable = true;
 
   # systemd-networkd configuration
   systemd.network = {

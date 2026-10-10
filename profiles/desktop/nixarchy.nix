@@ -31,10 +31,6 @@
   programs.hyprland.package = lib.mkForce pkgs.hyprland;
   programs.hyprland.portalPackage = lib.mkForce pkgs.xdg-desktop-portal-hyprland;
 
-  # hal9000's wired link and br0 bridge run on systemd-networkd; don't let
-  # NetworkManager take them over. Wi-Fi moves to NetworkManager separately.
-  networking.networkmanager.enable = lib.mkForce false;
-
   home-manager.users.jamesbrink = {
     imports = [ inputs.nixarchy.homeManagerModules.nixarchy ];
     programs.nixarchy.enable = true;
