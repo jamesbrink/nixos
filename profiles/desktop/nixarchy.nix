@@ -2,17 +2,20 @@
 # the existing Hyprland session. Omarchy's Quickshell shell brings the bar,
 # menus, Wi-Fi/Bluetooth/audio/display panels, agent integration and theming.
 {
+  config,
   inputs,
   lib,
   pkgs,
   ...
 }:
 let
-  # Omarchy with two local changes:
+  # Omarchy with local changes:
   # - its idle screensaver plays the video screensavers (hypr-launch-screensaver,
   #   from modules/home-manager/hyprland) instead of the terminal text effect;
   # - theme switches reload open terminals. Upstream matches `pgrep -x ghostty`,
-  #   but nixpkgs' wrappers run as `.ghostty-wrappe` / `.kitty-wrapped`.
+  #   but nixpkgs' wrappers run as `.ghostty-wrappe` / `.kitty-wrapped`;
+  # - volume keys play a feedback blip;
+  # - the Windows VM helper works outside an FHS layout (see below).
   omarchy = (pkgs.extend inputs.nixarchy.overlays.default).omarchy.overrideAttrs (old: {
     postFixup = (old.postFixup or "") + ''
       cat > $out/share/omarchy/bin/omarchy-launch-screensaver <<'SCRIPT'
@@ -32,6 +35,30 @@ let
       ${pkgs.procps}/bin/pkill -USR2 -x '\.?ghostty(-wrappe(d)?)?' || true
       SCRIPT
       chmod +x $out/share/omarchy/bin/omarchy-restart-terminal
+
+      # Windows VM (dockur/windows): upstream assumes an FHS layout. Its root
+      # helper must be /usr/bin/omarchy-windows-vm with a root-only-writable
+      # path up to /, and the privileged side pins PATH to /usr/bin. Point both
+      # at the immutable store copy (/nix/store itself is 1775 root:nixbld, so
+      # the ownership walk stops there) and at the root-owned system profile.
+      substituteInPlace $out/share/omarchy/bin/omarchy-windows-vm \
+        --replace-fail 'local candidate=/usr/bin/omarchy-windows-vm' \
+          "local candidate=$out/share/omarchy/bin/omarchy-windows-vm" \
+        --replace-fail "    owner=\$(stat -Lc '%u' \"\$probe\" 2>/dev/null) || return 1" \
+          "    [[ \$probe == /nix/store ]] && break; owner=\$(stat -Lc '%u' \"\$probe\" 2>/dev/null) || return 1" \
+        --replace-fail 'export PATH=/usr/bin:/usr/sbin:/bin:/sbin' \
+          'export PATH=/run/current-system/sw/bin:/run/current-system/sw/sbin' \
+        --replace-fail 'TREE_SCAN_TIMEOUT=/usr/bin/timeout' 'TREE_SCAN_TIMEOUT=${pkgs.coreutils}/bin/timeout' \
+        --replace-fail 'TREE_SCAN_FIND=/usr/bin/find' 'TREE_SCAN_FIND=${pkgs.findutils}/bin/find' \
+        --replace-fail 'xfreerdp3 /u:' '${pkgs.freerdp}/bin/xfreerdp /u:'
+
+      # Volume keys play the freedesktop change blip (at 50%), as the legacy
+      # Hyprland setup did; skipped for mute toggles and while muted.
+      substituteInPlace $out/share/omarchy/bin/omarchy-audio-output-volume \
+        --replace-fail 'omarchy-osd -i "$icon"' 'if [[ $action != mute-toggle ]] && ! volume_muted; then
+        ${pkgs.pulseaudio}/bin/paplay --volume=32768 ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/audio-volume-change.oga 2>/dev/null &
+      fi
+      omarchy-osd -i "$icon"'
     '';
   });
 in
@@ -59,6 +86,28 @@ in
   # Keep the Hyprland the rest of the system already uses (0.55, from nixpkgs).
   programs.hyprland.package = lib.mkForce pkgs.hyprland;
   programs.hyprland.portalPackage = lib.mkForce pkgs.xdg-desktop-portal-hyprland;
+
+  # Taildrop: save files sent from other tailnet devices into ~/Downloads.
+  # Upstream ships this unit with /usr/bin paths and only enables it from its
+  # own Tailscale installer, so it is declared here like nixarchy's other units.
+  systemd.user.services.omarchy-tailscale-receive = lib.mkIf config.services.tailscale.enable {
+    description = "Save incoming Taildrop files to the downloads directory";
+    after = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    wantedBy = [ "graphical-session.target" ];
+    unitConfig.ConditionEnvironment = "WAYLAND_DISPLAY";
+    path = [
+      omarchy
+      config.services.tailscale.package
+      pkgs.xdg-utils
+    ];
+    environment.OMARCHY_PATH = "${omarchy}/share/omarchy";
+    serviceConfig = {
+      ExecStart = "${omarchy}/bin/omarchy-tailscale-receive";
+      Restart = "always";
+      RestartSec = 5;
+    };
+  };
 
   home-manager.users.jamesbrink =
     hm:
@@ -128,6 +177,15 @@ in
           (_: {
             text = "[Desktop Entry]\nType=Application\nHidden=true\n";
           });
+
+      # No HEY: hide its webapp launcher (keybindings are unbound in the
+      # Omarchy-owned ~/.config/hypr/bindings.lua).
+      xdg.dataFile."applications/omarchy-HEY.desktop".text = ''
+        [Desktop Entry]
+        Type=Application
+        Name=HEY
+        Hidden=true
+      '';
 
       # Default terminal is Ghostty. Seeded rather than linked: Omarchy's
       # "default terminal" menu rewrites this file, which a store symlink blocks.
