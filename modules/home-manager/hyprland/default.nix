@@ -285,13 +285,13 @@ in
         "$mod SHIFT, ESCAPE, exec, wlogout --buttons-per-row 3 --column-spacing 24 --row-spacing 24 --margin 160"
         "$mod, COMMA, exec, desktop-control-center"
         "$mod ALT, S, exec, screensaver-menu"
-        "$mod ALT SHIFT, S, exec, omarchy-launch-screensaver force random"
+        "$mod ALT SHIFT, S, exec, hypr-launch-screensaver force random"
         "$mod, K, exec, show-keybindings" # Key bindings menu (Omarchy-style)
         "$mod SHIFT, SPACE, exec, toggle-waybar" # Toggle status bar (Omarchy-style)
 
         # Screensaver and idle management
-        "$mod, L, exec, omarchy-lock-screen" # Lock screen
-        "$mod SHIFT, I, exec, omarchy-toggle-idle" # Toggle idle management
+        "$mod, L, exec, hypr-lock-screen" # Lock screen
+        "$mod SHIFT, I, exec, hypr-toggle-idle" # Toggle idle management
 
         # Window Management
         "$mod, W, killactive,"
@@ -931,7 +931,7 @@ in
       )
 
       case "$choice" in
-        "Lock") exec omarchy-lock-screen ;;
+        "Lock") exec hypr-lock-screen ;;
         "Suspend") systemctl suspend ;;
         "Logout Hyprland") hyprctl dispatch exit ;;
         "Reboot") systemctl reboot ;;
@@ -996,18 +996,18 @@ in
       )
 
       case "$choice" in
-        "Aerial video") exec omarchy-launch-screensaver force video ;;
-        "Aerial crop fill") exec omarchy-launch-screensaver force aerial-crop ;;
-        "Random video") exec omarchy-launch-screensaver force random ;;
-        "Random crop fill") exec omarchy-launch-screensaver force random-crop ;;
+        "Aerial video") exec hypr-launch-screensaver force video ;;
+        "Aerial crop fill") exec hypr-launch-screensaver force aerial-crop ;;
+        "Random video") exec hypr-launch-screensaver force random ;;
+        "Random crop fill") exec hypr-launch-screensaver force random-crop ;;
         "Manage videos") exec screensaver-video-manager ;;
         "Download Apple 4K aerials") exec aerial-screensaver-download 3 4K-SDR ;;
         "Find native 32:9 videos") exec ultrawide-screensaver-search ;;
         "Open videos folder") mkdir -p "$HOME/Videos/Screensavers"; exec thunar "$HOME/Videos/Screensavers" ;;
-        "HAL fallback") exec omarchy-launch-screensaver force hal ;;
-        "Digital rain") exec omarchy-launch-screensaver force rain ;;
+        "HAL fallback") exec hypr-launch-screensaver force hal ;;
+        "Digital rain") exec hypr-launch-screensaver force rain ;;
         "Stop screensaver") exec screensaver-stop ;;
-        "Lock screen") exec omarchy-lock-screen ;;
+        "Lock screen") exec hypr-lock-screen ;;
         *) exit 0 ;;
       esac
     '';
@@ -1565,7 +1565,7 @@ in
   xdg.configFile."wlogout/layout".text = ''
     {
       "label" : "lock",
-      "action" : "omarchy-lock-screen",
+      "action" : "hypr-lock-screen",
       "text" : "Lock",
       "keybind" : "l"
     }
@@ -1651,7 +1651,8 @@ in
   xdg.configFile."swayosd/style.css".source =
     config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/omarchy/current/theme/swayosd.css";
 
-  systemd.user.services.swayosd = {
+  # Part of the legacy shell: skipped when a host turns Waybar off (e.g. nixarchy).
+  systemd.user.services.swayosd = lib.mkIf config.programs.waybar.enable {
     Unit = {
       Description = "SwayOSD volume and brightness overlay";
       After = [ "hyprland-session.target" ];
@@ -2398,7 +2399,7 @@ in
         if command -v thunar >/dev/null 2>&1; then
           thunar "$video_dir" >/dev/null 2>&1 &
         fi
-        exec omarchy-launch-screensaver force hal
+        exec hypr-launch-screensaver force hal
       fi
 
       playlist=$(${pkgs.coreutils}/bin/mktemp --tmpdir video-screensaver.XXXXXX.m3u)
@@ -2653,9 +2654,9 @@ in
       )
 
       case "$choice" in
-        "Play Apple crop fill") exec omarchy-launch-screensaver force aerial-crop ;;
-        "Play native 32:9") exec omarchy-launch-screensaver force native ;;
-        "Play random crop fill") exec omarchy-launch-screensaver force random-crop ;;
+        "Play Apple crop fill") exec hypr-launch-screensaver force aerial-crop ;;
+        "Play native 32:9") exec hypr-launch-screensaver force native ;;
+        "Play random crop fill") exec hypr-launch-screensaver force random-crop ;;
         "Browse Apple aerials") exec apple-aerial-browser ;;
         "Download Apple 4K batch") exec aerial-screensaver-download 3 4K-SDR ;;
         "Search/download native 32:9") exec ultrawide-screensaver-search ;;
@@ -2679,7 +2680,7 @@ in
       esac
     '')
 
-    (pkgs.writeShellScriptBin "omarchy-launch-screensaver" ''
+    (pkgs.writeShellScriptBin "hypr-launch-screensaver" ''
       force=false
       effect="video"
       if [[ ''${1:-} == "force" ]]; then
@@ -2702,12 +2703,12 @@ in
         ${pkgs.hyprland}/bin/hyprctl dispatch exec -- \
           ${pkgs.alacritty}/bin/alacritty --class Screensaver \
           --config-file ~/.local/share/omarchy/default/alacritty/screensaver.toml \
-          -e omarchy-cmd-screensaver "$effect"
+          -e hypr-cmd-screensaver "$effect"
       done
       ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor $focused
     '')
 
-    (pkgs.writeShellScriptBin "omarchy-cmd-screensaver" ''
+    (pkgs.writeShellScriptBin "hypr-cmd-screensaver" ''
       selected_effect="''${1:-hal}"
       screensaver_in_focus() {
         ${pkgs.hyprland}/bin/hyprctl activewindow -j | ${pkgs.jq}/bin/jq -e '.class == "Screensaver"' >/dev/null 2>&1
@@ -2813,7 +2814,7 @@ in
       done
     '')
 
-    (pkgs.writeShellScriptBin "omarchy-lock-screen" ''
+    (pkgs.writeShellScriptBin "hypr-lock-screen" ''
       pidof hyprlock || ${pkgs.hyprlock}/bin/hyprlock &
       if pgrep -x "1password" >/dev/null; then
         1password --lock &
@@ -2821,7 +2822,7 @@ in
       screensaver-stop
     '')
 
-    (pkgs.writeShellScriptBin "omarchy-toggle-screensaver" ''
+    (pkgs.writeShellScriptBin "hypr-toggle-screensaver" ''
       STATE_FILE=~/.local/state/omarchy/toggles/screensaver-off
       if [[ -f $STATE_FILE ]]; then
         rm -f $STATE_FILE
@@ -2833,7 +2834,7 @@ in
       fi
     '')
 
-    (pkgs.writeShellScriptBin "omarchy-toggle-idle" ''
+    (pkgs.writeShellScriptBin "hypr-toggle-idle" ''
       if pgrep -x hypridle >/dev/null; then
         ${pkgs.killall}/bin/pkill -x hypridle
         ${pkgs.libnotify}/bin/notify-send "Stop locking computer when idle"
@@ -2941,69 +2942,6 @@ in
     set -g @prefix_highlight_show_copy_mode 'on'
     set -g @prefix_highlight_copy_mode_attr 'fg=black,bg=yellow,bold'
   '';
-
-  # btop system monitor (theme-integrated)
-  xdg.configFile."btop/themes/current.theme".text =
-    let
-      # Helper function to generate theme property lines
-      themeProp = name: value: ''theme[${name}]="${value}"'';
-
-      # Generate all theme properties
-      props = [
-        (themeProp "main_bg" themeConfig.btop.main_bg)
-        (themeProp "main_fg" themeConfig.btop.main_fg)
-        (themeProp "title" themeConfig.btop.title)
-        (themeProp "hi_fg" themeConfig.btop.hi_fg)
-        (themeProp "selected_bg" themeConfig.btop.selected_bg)
-        (themeProp "selected_fg" themeConfig.btop.selected_fg)
-        (themeProp "inactive_fg" themeConfig.btop.inactive_fg)
-      ]
-      ++ lib.optional (themeConfig.btop ? graph_text) (themeProp "graph_text" themeConfig.btop.graph_text)
-      ++ lib.optional (themeConfig.btop ? meter_bg) (themeProp "meter_bg" themeConfig.btop.meter_bg)
-      ++ [
-        (themeProp "proc_misc" themeConfig.btop.proc_misc)
-        (themeProp "cpu_box" themeConfig.btop.cpu_box)
-        (themeProp "mem_box" themeConfig.btop.mem_box)
-        (themeProp "net_box" themeConfig.btop.net_box)
-        (themeProp "proc_box" themeConfig.btop.proc_box)
-        (themeProp "div_line" themeConfig.btop.div_line)
-        (themeProp "temp_start" themeConfig.btop.temp_start)
-        (themeProp "temp_mid" themeConfig.btop.temp_mid)
-        (themeProp "temp_end" themeConfig.btop.temp_end)
-        (themeProp "cpu_start" themeConfig.btop.cpu_start)
-        (themeProp "cpu_mid" themeConfig.btop.cpu_mid)
-        (themeProp "cpu_end" themeConfig.btop.cpu_end)
-        (themeProp "free_start" themeConfig.btop.free_start)
-        (themeProp "free_mid" themeConfig.btop.free_mid)
-        (themeProp "free_end" themeConfig.btop.free_end)
-        (themeProp "cached_start" themeConfig.btop.cached_start)
-        (themeProp "cached_mid" themeConfig.btop.cached_mid)
-        (themeProp "cached_end" themeConfig.btop.cached_end)
-        (themeProp "available_start" themeConfig.btop.available_start)
-        (themeProp "available_mid" themeConfig.btop.available_mid)
-        (themeProp "available_end" themeConfig.btop.available_end)
-        (themeProp "used_start" themeConfig.btop.used_start)
-        (themeProp "used_mid" themeConfig.btop.used_mid)
-        (themeProp "used_end" themeConfig.btop.used_end)
-        (themeProp "download_start" themeConfig.btop.download_start)
-        (themeProp "download_mid" themeConfig.btop.download_mid)
-        (themeProp "download_end" themeConfig.btop.download_end)
-        (themeProp "upload_start" themeConfig.btop.upload_start)
-        (themeProp "upload_mid" themeConfig.btop.upload_mid)
-        (themeProp "upload_end" themeConfig.btop.upload_end)
-      ]
-      ++ lib.optionals (themeConfig.btop ? process_start) [
-        (themeProp "process_start" themeConfig.btop.process_start)
-        (themeProp "process_mid" themeConfig.btop.process_mid)
-        (themeProp "process_end" themeConfig.btop.process_end)
-      ];
-    in
-    ''
-      # Theme: ${themeConfig.displayName}
-      # Generated by NixOS Home Manager
-
-      ${lib.concatStringsSep "\n" props}
-    '';
 
   xdg.configFile."btop/btop.conf".text = ''
     # btop config - theme-integrated

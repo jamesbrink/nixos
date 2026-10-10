@@ -32,6 +32,7 @@
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
     ../../profiles/desktop/hyprland.nix
+    ../../profiles/desktop/nixarchy.nix
     ../../profiles/keychron/default.nix
     ../../modules/services/strata
     ../../modules/services/orca-q4

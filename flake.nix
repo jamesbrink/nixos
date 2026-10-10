@@ -99,6 +99,12 @@
     ai-toolkit = {
       url = "github:jamesbrink/ai-toolkit/refactor";
     };
+    # Omarchy v4 desktop packaged for NixOS (hal9000's Linux desktop refresh)
+    nixarchy = {
+      url = "github:olafkfreund/nixarchy/v4.0.4-2";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
     zerobyte = {
       url = "github:utensils/zerobyte-nix";
     };
