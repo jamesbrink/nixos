@@ -804,6 +804,9 @@
   # InvokeAI service (manual start: systemctl start invokeai)
   services.invokeai = {
     enable = true;
+    # Use the flake's own build (its pinned nixpkgs); the overlay rebuilt
+    # against 26.05 hits Python deps that no longer build (mediapipe, jupyter).
+    package = inputs.invokeai.packages.x86_64-linux.invokeai;
     dataDir = "/mnt/storage20tb/AI/InvokeAI";
     host = "0.0.0.0";
     port = 9090;
@@ -821,6 +824,8 @@
   # AI Toolkit training service
   services.ai-toolkit = {
     enable = true;
+    # Same as InvokeAI: pin to the flake's own nixpkgs (gradio/wandb break on 26.05).
+    package = inputs.ai-toolkit.packages.x86_64-linux.ui;
     dataDir = "/mnt/storage20tb/AI/ai-toolkit";
     host = "0.0.0.0";
     port = 8675;
