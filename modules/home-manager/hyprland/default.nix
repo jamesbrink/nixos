@@ -147,6 +147,14 @@ let
   # (fullscreen, float, close-on-lock) treat the video screensaver as its own.
   screensaverClass = "org.omarchy.screensaver";
 
+  # Runtime theme dir the terminals import colors from: themectl's Omarchy-v3
+  # layout, or Omarchy v4's state dir when Omarchy itself owns theming.
+  themeDir =
+    if config.programs.themectl.enable then
+      "${config.home.homeDirectory}/.config/omarchy/current/theme"
+    else
+      "${config.home.homeDirectory}/.local/state/omarchy/current/theme";
+
   # hyprctl dispatch helpers that work under both Hyprland config dialects:
   # Lua (Omarchy session) first, then legacy hyprlang (alienware's session).
   hyprDispatchHelpers = ''
@@ -1803,7 +1811,7 @@ in
   home.file.".config/alacritty/alacritty.toml.template" = {
     text = ''
       # Import runtime theme colors (symlink updates without rebuild)
-      general.import = [ "${config.home.homeDirectory}/.config/omarchy/current/theme/alacritty.toml" ]
+      general.import = [ "${themeDir}/alacritty.toml" ]
 
       [env]
       TERM = "xterm-256color"
@@ -1877,7 +1885,7 @@ in
   home.file.".config/kitty/kitty.conf.template" = {
     text = ''
       # Import runtime theme colors (symlink updates without rebuild)
-      include ''${HOME}/.config/omarchy/current/theme/kitty.conf
+      include ${themeDir}/kitty.conf
 
       # Font
       font_family ${fontFamily}
@@ -1932,7 +1940,7 @@ in
   home.file.".config/ghostty/config.template" = {
     text = ''
       # Dynamic theme colors
-      config-file = ?"''${HOME}/.config/omarchy/current/theme/ghostty.conf"
+      config-file = ?"${themeDir}/ghostty.conf"
 
       # Font
       font-family = "${fontFamily}"

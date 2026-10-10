@@ -7,10 +7,11 @@
 }:
 
 {
-  # Starship config is managed by themectl via XDG_CONFIG_HOME override
-  # The actual config is symlinked to ~/.config/omarchy/current/theme/starship.toml
-  # This allows dynamic theme switching without rebuilding the system
-  home.sessionVariables = {
+  # With themectl, the config is symlinked to ~/.config/omarchy/current/theme/starship.toml
+  # so theme switches recolor the prompt without a rebuild. Without it (Omarchy
+  # v4 themes ship no starship.toml) the static settings below apply; their ANSI
+  # color names follow the terminal's theme anyway.
+  home.sessionVariables = lib.mkIf (config.programs.themectl.enable or false) {
     STARSHIP_CONFIG = lib.mkForce "${config.home.homeDirectory}/.config/omarchy/current/theme/starship.toml";
   };
 
