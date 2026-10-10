@@ -182,6 +182,10 @@ in
 
   # Essential services for Wayland/Hyprland
   services = {
+    # Hyprland 0.55 also ships hyprland-uwsm.desktop, which black-screens
+    # without uwsm; keep the plain session preselected.
+    displayManager.defaultSession = "hyprland";
+
     # Display manager - SDDM works well with Hyprland
     displayManager.sddm = {
       enable = true;
