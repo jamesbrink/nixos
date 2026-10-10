@@ -8,6 +8,7 @@
 {
   imports = [
     ../../modules/nix-caches.nix
+    ../../modules/darwin/agenix-ramdisk.nix
     ../../modules/darwin/nix-limits.nix
     ../../modules/shared-packages/default.nix
     ../../modules/shared-packages/python.nix
