@@ -287,7 +287,7 @@ in
 
     # Audio control
     easyeffects # PipeWire effects and EQ
-    helvum # PipeWire patchbay
+    crosspipe # PipeWire patchbay (helvum was removed in 26.05)
     pavucontrol # PulseAudio volume control
     pamixer # CLI audio mixer
     qpwgraph # PipeWire graph/router
@@ -302,7 +302,6 @@ in
 
     # Brightness control
     brightnessctl # Screen brightness
-    light # Alternative brightness control
 
     # Media control
     playerctl # Media player control (for keybindings)

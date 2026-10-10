@@ -66,10 +66,7 @@
     };
 
     # Display and desktop managers (moved out of xserver)
-    displayManager.gdm = {
-      enable = true;
-      wayland = true; # Use Wayland - modern GNOME works best with it
-    };
+    displayManager.gdm.enable = true;
 
     desktopManager.gnome.enable = true;
 

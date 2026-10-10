@@ -99,12 +99,12 @@
   };
 
   # Prevent sleep/hibernation
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=no
-    AllowHibernation=no
-    AllowHybridSleep=no
-    AllowSuspendThenHibernate=no
-  '';
+  systemd.sleep.settings.Sleep = {
+    AllowSuspend = "no";
+    AllowHibernation = "no";
+    AllowHybridSleep = "no";
+    AllowSuspendThenHibernate = "no";
+  };
 
   # Enable hardware watchdog for automatic recovery from hangs
   systemd.settings.Manager = {
@@ -292,7 +292,6 @@
   environment = {
     shells = with pkgs; [ zsh ];
     variables = {
-      EDITOR = "vim";
       MOLD_HOST = "http://hal9000.home.urandom.io:7680";
     };
     # GUI automation tools for remote control
