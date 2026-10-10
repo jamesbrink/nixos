@@ -70,6 +70,42 @@ Quick reference for macOS (Yabai), Hyprland, tmux, and Vim/Neovim hotkeys. See `
 
 ---
 
+## Omarchy Desktop (hal9000)
+
+hal9000 runs the Omarchy v4 session from nixarchy (`profiles/desktop/nixarchy.nix`) with Omarchy's own keybindings, defined in its Lua config (`$OMARCHY_PATH/default/hypr/bindings/*.lua`). `Super+K` lists every binding live. The "Hyprland Window Manager" section below applies to the legacy session (alienware).
+
+### Menus
+
+- `Super+Space` - Omarchy menu, `Super+Alt+Space` - Apps
+- `Super+Escape` - System menu (lock, suspend, restart, shutdown)
+- `Super+K` - Keybindings, `Super+Alt+K` - Tmux keybindings
+- `Super+Ctrl+C` - Capture menu, `Super+Ctrl+O` - Toggles, `Super+Ctrl+H` - Hardware
+- `Super+Ctrl+Space` - Background switcher, `Super+Shift+Ctrl+Space` - Theme menu
+- `Super+Ctrl+E` - Emojis, `Super+Ctrl+V` - Clipboard manager
+
+### Panels
+
+- `Super+Ctrl+W` - Network (Wi-Fi via NetworkManager), `Super+Ctrl+B` - Bluetooth
+- `Super+Ctrl+A` - Audio, `Super+Ctrl+D` - Display, `Super+Ctrl+P` - Power
+- `Super+Ctrl+Alt+D` - Calendar, `Super+Ctrl+T` - btop
+- `Super+Shift+Ctrl+A` - Launch the default agent (Claude Code)
+
+### Windows
+
+- `Super+W` - Close, `Super+T` - Toggle floating, `Super+J` - Toggle split, `Super+P` - Pseudo
+- `Super+F` - Fullscreen, `Super+Ctrl+F` - Tiled fullscreen
+- `Super+Backspace` - Toggle transparency, `Super+Shift+Backspace` - Toggle gaps
+
+### Notifications, Idle & Utilities
+
+- `Super+,` - Dismiss last, `Super+Shift+,` - Dismiss all, `Super+Ctrl+,` - Silence
+- `Super+Ctrl+I` - Toggle idle locking (stay awake), `Super+Ctrl+N` - Nightlight
+- `Super+Ctrl+L` - Lock, `Super+Shift+Space` - Toggle bar
+- `Super+Print` - Color picker, `Super+Ctrl+Print` - OCR text from screenshot
+- `Super+Ctrl+R` - Set reminder, `Super+Ctrl+Q` - Calculator
+
+---
+
 ## Hyprland Window Manager
 
 **Modifier:** `Super` (Windows key)

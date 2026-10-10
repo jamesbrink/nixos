@@ -13,14 +13,15 @@
 - `users/`: user-specific Home Manager overlays.
 - `pkgs/` + `overlays/`: custom derivations and modifications to upstream packages.
 - `scripts/`: operational helpers (deploy, secrets, diagnostics). `scripts/themectl/` hosts the cross-platform theme CLI.
-- `external/omarchy/`: upstream theme assets managed as a submodule.
+- `external/omarchy/`: upstream Omarchy (v4) as a submodule; reference for nixarchy work and source for themectl's wallpaper/color sync.
+- `profiles/desktop/nixarchy.nix`: hal9000's Omarchy desktop (nixarchy flake input) and the overrides that keep it compatible with this fleet.
 - `mikrotik-terraform/`: MikroTik router IaC (submodule, private repo with secrets). Manages DHCP, DNS, VPN, and PXE boot for the `10.70.100.0/24` network.
 
 ## State & Secrets
 
 - Secrets live under `secrets/` as `.age` files; `SECRETS.md` tracks recipients.
 - Network secrets (router credentials, tfstate) live in `mikrotik-terraform/` submodule.
-- Mutable runtime state (e.g., `~/.config/alacritty/alacritty.toml`) is either generated via activation hooks or managed through helper scripts like `themectl`.
+- Mutable runtime state (e.g., `~/.config/alacritty/alacritty.toml`) is either generated via activation hooks or managed through helper scripts like `themectl`. On hal9000, Omarchy owns its seeded user files (`~/.config/hypr/*.lua`, `~/.config/omarchy/`) and theme state.
 
 ## Workflow
 

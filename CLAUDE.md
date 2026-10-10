@@ -64,12 +64,21 @@ Then configure the service in the host's `default.nix`. See hal9000 (comfyui, in
 - Commands: `cd mikrotik-terraform && nix develop`, then `tf-plan` / `tf-apply`
 - See `mikrotik-terraform/README.md` for full documentation
 
-**Theme system** (`scripts/themectl/`) is a Python CLI that:
+**Theme system** (`scripts/themectl/`) is a Python CLI used on Darwin and on the legacy Hyprland session (alienware); hal9000 disables it in favour of Omarchy's theming. It:
 
 - Reads theme metadata from `modules/themes/lib.nix` and color definitions in `modules/themes/colors/`
 - Syncs wallpapers from `external/omarchy/` submodule
 - Rewrites configs for Alacritty, Ghostty, VSCode, Neovim, tmux, btop
 - Drives yabai BSP/native mode toggle on macOS
+
+### Desktop: Omarchy via nixarchy (hal9000)
+
+hal9000 (NixOS 26.05) autologins into the "Omarchy" session from the `nixarchy` flake input (Omarchy v4, Quickshell shell), configured in `profiles/desktop/nixarchy.nix`. Overrides there: keep SDDM, pin `boot.kernelPackages = pkgs.linuxPackages` (nixarchy defaults to latest), keep nixpkgs Hyprland, disable `services.nixi`, and turn off the legacy shell from `modules/home-manager/hyprland` (Waybar, Mako, hypridle, swayosd, themectl, tray autostarts). That module still loads for tmux/terminals and for alienware's legacy session. Wi-Fi uses `modules/wifi-networkmanager.nix` (NetworkManager + iwd, wireless only; wired and `br0` stay on networkd).
+
+- The video screensaver runs as Omarchy's screensaver: the profile overrides `omarchy-launch-screensaver` to exec `hypr-launch-screensaver`, and mpv uses Omarchy's window class `org.omarchy.screensaver`.
+- Omarchy-owned, mutable user files (not in git): `~/.config/hypr/*.lua` (e.g. `monitors.lua` pins DP-1 at 7680x2160@120) and `~/.config/omarchy/shell.toml` (`[font] base-size = 24` doubles the bar/menus).
+- Live debugging: copy `PATH`, `OMARCHY_PATH`, `WAYLAND_DISPLAY` and `HYPRLAND_INSTANCE_SIGNATURE` from the running `quickshell` process, then drive panels with `omarchy-shell <target> <method>`. `hyprctl dispatch` takes Lua (`hl.dsp.*`) in this session.
+- Hyprland 0.53+ config (legacy session) uses `match:` window rules and `layoutmsg` for `togglesplit`/`splitratio`; HM `configType = "hyprlang"` is pinned because 26.05 defaults to Lua.
 
 ### PostgreSQL 17 (hal9000)
 
@@ -111,7 +120,7 @@ Plain upstream `services.postgresql` for misc dev work: port 5432, trust auth fr
 | --------------------- | ------------------------------------------ | --------------------- |
 | `secrets/`            | Agenix-encrypted secrets (.age files)      | Yes                   |
 | `mikrotik-terraform/` | MikroTik router IaC (DHCP, DNS, VPN, PXE)  | Yes (tfvars, tfstate) |
-| `external/omarchy/`   | Upstream theme assets (wallpapers, colors) | No                    |
+| `external/omarchy/`   | Upstream Omarchy v4 (reference, themectl)  | No                    |
 
 **Keeping submodules in sync:** Private submodules (`secrets/`, `mikrotik-terraform/`) must be pushed before the main repo. This is enforced by:
 

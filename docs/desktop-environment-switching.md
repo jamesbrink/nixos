@@ -6,6 +6,7 @@ This guide shows how to easily switch between desktop environments in your NixOS
 
 - **GNOME** (default): `profiles/desktop/default.nix` or `profiles/desktop/default-stable.nix`
 - **Hyprland**: `profiles/desktop/hyprland.nix`
+- **Omarchy v4** (on top of Hyprland): also import `profiles/desktop/nixarchy.nix`; it adds and autologins the "Omarchy" session (see CLAUDE.md, "Desktop: Omarchy via nixarchy")
 
 ## How to Switch Desktop Environments
 

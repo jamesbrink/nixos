@@ -3,7 +3,7 @@
 ## Operating Systems & Provisioning
 
 - **Nix flakes**: single source for hosts, dev shells, packages, and overlays.
-- **NixOS** (laptops, servers) and **nix-darwin** (macOS) with **Home Manager** for user layers.
+- **NixOS 26.05** (laptops, servers) and **nix-darwin** (macOS) with **Home Manager** for user layers.
 - **deploy-rs** scripts (`deploy`, `deploy-test`, `deploy-all`) for remote builds and rollbacks.
 
 ## Languages & Tooling
@@ -16,6 +16,7 @@
 ## Desktop & UX Stack
 
 - **Hyprland** (Wayland) + **Yabai/Hammerspoon** (macOS) for tiling parity.
+- **Omarchy v4** via the `nixarchy` flake on hal9000: Quickshell shell (bar, menus, Wi-Fi/Bluetooth/audio/display panels, agent usage), Lua Hyprland config, NetworkManager (iwd backend) for Wi-Fi.
 - **Alacritty**, **Ghostty**, **Neovim**, **VSCode/Cursor** as primary dev tools.
 - **Sketchybar**, **Karabiner**, **AltTab**, **Walker/fzf launcher** for ergonomics.
 

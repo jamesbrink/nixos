@@ -4,6 +4,8 @@
 
 `flake.nix` pins nixpkgs, agenix, and Darwin revisions, exports dev shells, and composes hosts under `hosts/<hostname>/`. Shared logic lives in `modules/darwin`, `modules/services`, `modules/home-manager`, and `profiles/`. Place package overrides in `pkgs/` and `overlays/`, user tweaks in `users/`, helper scripts in `scripts/`, and encrypted credentials in `secrets/` with recipients tracked in `SECRETS.md`. Review `VISION.md`, `DESIGN.md`, `TECH_STACK.md`, and `STANDARDS.md` before editing fleet-wide modules.
 
+hal9000's desktop is Omarchy v4 from the `nixarchy` flake input (`profiles/desktop/nixarchy.nix`); see the "Desktop: Omarchy via nixarchy" section in `CLAUDE.md` before changing desktop, Wi-Fi or theming config there.
+
 ## Build, Test, and Development Commands
 
 - `nix develop` (or `direnv allow`) enters the dev shell with shared helpers and `NIXPKGS_ALLOW_UNFREE=1`.
