@@ -7,11 +7,27 @@
   pkgs,
   ...
 }:
+let
+  # Omarchy with one local change: its idle screensaver plays the video
+  # screensavers (hypr-launch-screensaver, from modules/home-manager/hyprland)
+  # instead of the terminal text effect.
+  omarchy = (pkgs.extend inputs.nixarchy.overlays.default).omarchy.overrideAttrs (old: {
+    postFixup = (old.postFixup or "") + ''
+      cat > $out/share/omarchy/bin/omarchy-launch-screensaver <<'SCRIPT'
+      #!${pkgs.bash}/bin/bash
+      # omarchy:summary=Launch the video screensaver (nixarchy override).
+      exec hypr-launch-screensaver "$@"
+      SCRIPT
+      chmod +x $out/share/omarchy/bin/omarchy-launch-screensaver
+    '';
+  });
+in
 {
   imports = [ inputs.nixarchy.nixosModules.nixarchy ];
 
   programs.nixarchy = {
     enable = true;
+    package = omarchy;
     user = "jamesbrink";
     defaultAgent = "claude";
     # Keep our SDDM (autologin + theme) instead of nixarchy's greeter.
@@ -33,7 +49,10 @@
 
   home-manager.users.jamesbrink = {
     imports = [ inputs.nixarchy.homeManagerModules.nixarchy ];
-    programs.nixarchy.enable = true;
+    programs.nixarchy = {
+      enable = true;
+      package = omarchy;
+    };
     # nixi (guided tour) pulls codex-acp, which fails to link on 26.05.
     services.nixi.enable = false;
 

@@ -142,6 +142,25 @@ let
       modPart = lib.concatStringsSep " " mods;
     in
     if modPart == "" then ", ${key}" else "${modPart}, ${key}";
+
+  # Screensaver window class: Omarchy's, so its idle service and window rules
+  # (fullscreen, float, close-on-lock) treat the video screensaver as its own.
+  screensaverClass = "org.omarchy.screensaver";
+
+  # hyprctl dispatch helpers that work under both Hyprland config dialects:
+  # Lua (Omarchy session) first, then legacy hyprlang (alienware's session).
+  hyprDispatchHelpers = ''
+    hypr_focus_monitor() {
+      ${pkgs.hyprland}/bin/hyprctl dispatch "hl.dsp.focus({ monitor = \"$1\" })" 2>/dev/null | grep -qx ok ||
+        ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor "$1" >/dev/null
+    }
+    hypr_exec() {
+      local command
+      printf -v command '%q ' "$@"
+      ${pkgs.hyprland}/bin/hyprctl dispatch "hl.dsp.exec_cmd([[$command]])" 2>/dev/null | grep -qx ok ||
+        ${pkgs.hyprland}/bin/hyprctl dispatch exec -- "$@" >/dev/null
+    }
+  '';
 in
 {
   imports = [
@@ -221,7 +240,7 @@ in
         "opacity 1.0 1.0, match:initial_title ((?i)(?:[a-z0-9-]+\\.)*youtube\\.com_/|app\\.zoom\\.us_/wc/home)"
 
         # No transparency on media windows
-        "opacity 1 1, match:class ^(zoom|vlc|mpv|Screensaver|org.kde.kdenlive|com.obsproject.Studio|com.github.PintaProject.Pinta|imv|org.gnome.NautilusPreviewer)$"
+        "opacity 1 1, match:class ^(zoom|vlc|mpv|${screensaverClass}|org.kde.kdenlive|com.obsproject.Studio|com.github.PintaProject.Pinta|imv|org.gnome.NautilusPreviewer)$"
 
         # Floating windows - tag identification
         "tag +floating-window, match:class (blueberry.py|Impala|Wiremix|org.gnome.NautilusPreviewer|com.gabm.satty|Omarchy|About|TUI.float)"
@@ -233,7 +252,7 @@ in
         "size 800 600, match:tag floating-window"
 
         # Fullscreen screensaver
-        "fullscreen on, match:class Screensaver"
+        "fullscreen on, match:class ${screensaverClass}"
 
         # Picture-in-picture overlays
         "tag +pip, match:title (Picture.?in.?[Pp]icture)"
@@ -2354,13 +2373,14 @@ in
       ${pkgs.hyprland}/bin/hyprctl keyword cursor:invisible false >/dev/null 2>&1 || true
       while read -r pid; do
         [[ -n "$pid" ]] && kill "$pid" 2>/dev/null || true
-      done < <(${pkgs.hyprland}/bin/hyprctl clients -j | ${pkgs.jq}/bin/jq -r '.[] | select(.class == "Screensaver" or .title == "Screensaver") | .pid // empty' 2>/dev/null)
+      done < <(${pkgs.hyprland}/bin/hyprctl clients -j | ${pkgs.jq}/bin/jq -r '.[] | select(.class == "${screensaverClass}" or .title == "Screensaver") | .pid // empty' 2>/dev/null)
       ${pkgs.killall}/bin/pkill -x tte 2>/dev/null || true
-      ${pkgs.killall}/bin/pkill -f "alacritty --class Screensaver" 2>/dev/null || true
-      ${pkgs.killall}/bin/pkill -f "wayland-app-id=Screensaver" 2>/dev/null || true
+      ${pkgs.killall}/bin/pkill -f "alacritty --class ${screensaverClass}" 2>/dev/null || true
+      ${pkgs.killall}/bin/pkill -f "wayland-app-id=${screensaverClass}" 2>/dev/null || true
     '')
 
     (pkgs.writeShellScriptBin "video-screensaver" ''
+      ${hyprDispatchHelpers}
       mode="''${1:-random}"
       video_dir="$HOME/Videos/Screensavers"
       input_conf="$HOME/.local/share/omarchy/default/mpv/screensaver-input.conf"
@@ -2377,7 +2397,7 @@ in
         stretch) fit_args+=(--video-aspect-override=32:9) ;;
       esac
 
-      if ${pkgs.procps}/bin/pgrep -f "[a]lacritty --class Screensaver|[w]ayland-app-id=Screensaver" >/dev/null; then
+      if ${pkgs.procps}/bin/pgrep -f "[a]lacritty --class ${screensaverClass}|[w]ayland-app-id=${screensaverClass}" >/dev/null; then
         exit 0
       fi
 
@@ -2419,10 +2439,10 @@ in
       initial_cursor="$(${pkgs.hyprland}/bin/hyprctl cursorpos 2>/dev/null || true)"
 
       for monitor in $(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | .name'); do
-        ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor "$monitor" >/dev/null
-        ${pkgs.hyprland}/bin/hyprctl dispatch exec -- \
+        hypr_focus_monitor "$monitor"
+        hypr_exec \
           ${pkgs.mpv}/bin/mpv \
-            --wayland-app-id=Screensaver \
+            --wayland-app-id=${screensaverClass} \
             --title=Screensaver \
             --fs \
             --force-window=immediate \
@@ -2437,13 +2457,13 @@ in
             "''${fit_args[@]}" \
             --playlist="$playlist" >/dev/null
       done
-      ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor "$focused" >/dev/null
+      hypr_focus_monitor "$focused"
 
       sleep 1
-      initial_count=$(${pkgs.procps}/bin/pgrep -fc "[w]ayland-app-id=Screensaver" || true)
-      while ${pkgs.procps}/bin/pgrep -f "[w]ayland-app-id=Screensaver" >/dev/null; do
+      initial_count=$(${pkgs.procps}/bin/pgrep -fc "[w]ayland-app-id=${screensaverClass}" || true)
+      while ${pkgs.procps}/bin/pgrep -f "[w]ayland-app-id=${screensaverClass}" >/dev/null; do
         current_cursor="$(${pkgs.hyprland}/bin/hyprctl cursorpos 2>/dev/null || true)"
-        current_count=$(${pkgs.procps}/bin/pgrep -fc "[w]ayland-app-id=Screensaver" || true)
+        current_count=$(${pkgs.procps}/bin/pgrep -fc "[w]ayland-app-id=${screensaverClass}" || true)
         if [[ -n "$initial_cursor" && "$current_cursor" != "$initial_cursor" ]]; then
           exit 0
         fi
@@ -2681,6 +2701,7 @@ in
     '')
 
     (pkgs.writeShellScriptBin "hypr-launch-screensaver" ''
+      ${hyprDispatchHelpers}
       force=false
       effect="video"
       if [[ ''${1:-} == "force" ]]; then
@@ -2690,7 +2711,7 @@ in
       if [[ -n ''${1:-} ]]; then
         effect="$1"
       fi
-      ${pkgs.procps}/bin/pgrep -f "[a]lacritty --class Screensaver" && exit 0
+      ${pkgs.procps}/bin/pgrep -f "[a]lacritty --class ${screensaverClass}" && exit 0
       if [[ -f ~/.local/state/omarchy/toggles/screensaver-off ]] && [[ $force != true ]]; then
         exit 1
       fi
@@ -2699,19 +2720,19 @@ in
       esac
       focused=$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused == true).name')
       for m in $(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | .name'); do
-        ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor $m
-        ${pkgs.hyprland}/bin/hyprctl dispatch exec -- \
-          ${pkgs.alacritty}/bin/alacritty --class Screensaver \
+        hypr_focus_monitor "$m"
+        hypr_exec \
+          ${pkgs.alacritty}/bin/alacritty --class ${screensaverClass} \
           --config-file ~/.local/share/omarchy/default/alacritty/screensaver.toml \
           -e hypr-cmd-screensaver "$effect"
       done
-      ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor $focused
+      hypr_focus_monitor "$focused"
     '')
 
     (pkgs.writeShellScriptBin "hypr-cmd-screensaver" ''
       selected_effect="''${1:-hal}"
       screensaver_in_focus() {
-        ${pkgs.hyprland}/bin/hyprctl activewindow -j | ${pkgs.jq}/bin/jq -e '.class == "Screensaver"' >/dev/null 2>&1
+        ${pkgs.hyprland}/bin/hyprctl activewindow -j | ${pkgs.jq}/bin/jq -e '.class == "${screensaverClass}"' >/dev/null 2>&1
       }
       cursor_position() {
         ${pkgs.hyprland}/bin/hyprctl cursorpos 2>/dev/null || true
