@@ -1396,6 +1396,8 @@
     enable = true;
     openFirewall = true;
     authKeyFile = "${config.age.secrets."hal9000-tailscale".path}";
+    # Lets Omarchy's Tailscale bar panel toggle/switch without sudo
+    extraSetFlags = [ "--operator=jamesbrink" ];
   };
 
   # pgweb service configuration
