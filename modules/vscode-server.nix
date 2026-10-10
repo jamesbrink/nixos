@@ -13,7 +13,7 @@
 
   # Add environment variables to help with extension installation
   environment.systemPackages = with pkgs; [
-    nodejs_20 # Required for many extensions
+    nodejs_22 # Required for many extensions (nodejs_20 is EOL in 26.05)
     python3 # Required for Python extensions
   ];
 

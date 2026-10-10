@@ -156,6 +156,8 @@ in
   # Hyprland window manager
   wayland.windowManager.hyprland = {
     enable = true;
+    # 26.05 HM defaults to Lua; this module still emits hyprlang settings.
+    configType = "hyprlang";
     settings = {
       # Monitor configuration - Samsung Odyssey G95NC at native resolution
       # DP-1 at 7680x2160@120Hz, fallback to preferred for other monitors
@@ -1969,7 +1971,7 @@ in
   programs.waybar = {
     enable = true;
     systemd.enable = true; # Manage waybar via systemd service for proper toggling
-    systemd.target = "hyprland-session.target"; # Wait for Hyprland to be fully ready
+    systemd.targets = [ "hyprland-session.target" ]; # Wait for Hyprland to be fully ready
 
     settings = {
       mainBar = {

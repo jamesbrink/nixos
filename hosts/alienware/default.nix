@@ -96,11 +96,13 @@
 
   fileSystems."/export/storage" = {
     device = "/mnt/storage";
+    fsType = "none";
     options = [ "bind" ];
   };
 
   fileSystems."/export/data" = {
     device = "/mnt/data";
+    fsType = "none";
     options = [ "bind" ];
   };
 
@@ -548,7 +550,6 @@
 
     # Specific tools
     alacritty-theme
-    exo
     fly
     gitea
     gitlab
@@ -579,12 +580,12 @@
   ];
 
   # Power management
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=no
-    AllowHibernation=no
-    AllowHybridSleep=no
-    AllowSuspendThenHibernate=no
-  '';
+  systemd.sleep.settings.Sleep = {
+    AllowSuspend = "no";
+    AllowHibernation = "no";
+    AllowHybridSleep = "no";
+    AllowSuspendThenHibernate = "no";
+  };
 
   # Firewall configuration (disabled for home network)
   networking.firewall = {

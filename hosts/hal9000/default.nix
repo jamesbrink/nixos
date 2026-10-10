@@ -51,6 +51,8 @@
     allowUnfree = true;
     permittedInsecurePackages = [
       "qtwebkit-5.212.0-alpha4"
+      # Build-time only: the InvokeAI flake builds its frontend with pnpm_10.
+      "pnpm-10.34.0"
     ];
   };
 
@@ -210,6 +212,7 @@
 
   fileSystems."/home/jamesbrink/AI" = {
     device = "/mnt/storage20tb/AI";
+    fsType = "none";
     options = [
       "bind"
       "x-systemd.requires-mounts-for=/mnt/storage20tb"
@@ -242,6 +245,7 @@
 
   fileSystems."/export/storage-fast" = {
     device = "/storage-fast";
+    fsType = "none";
     options = [
       "rbind"
       # Bind after the child datasets are mounted so the export sees them.
@@ -274,6 +278,7 @@
 
   fileSystems."/export/storage20tb" = {
     device = "/mnt/storage20tb";
+    fsType = "none";
     options = [ "bind" ];
   };
 
@@ -283,6 +288,7 @@
   # neither blocks boot nor starts the daemon against an empty home directory.
   fileSystems."/home/jamesbrink/Dropbox" = {
     device = "/mnt/storage20tb/Dropbox";
+    fsType = "none";
     options = [
       "bind"
       "nofail"
@@ -304,12 +310,12 @@
     statdPort = 4047;
   };
 
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=no
-    AllowHibernation=no
-    AllowHybridSleep=no
-    AllowSuspendThenHibernate=no
-  '';
+  systemd.sleep.settings.Sleep = {
+    AllowSuspend = "no";
+    AllowHibernation = "no";
+    AllowHybridSleep = "no";
+    AllowSuspendThenHibernate = "no";
+  };
 
   networking = {
     hostName = "hal9000";
@@ -1306,8 +1312,6 @@
     pixinsight # Pinned via overlay to version 1.9.3-20250402 - using cached file
     # Mold CLI; the service module only wires the server binary
     inputs.mold.packages.x86_64-linux.mold
-    # inputs.mold.packages.x86_64-linux.mold-desktop
-    # unstablePkgs.exo
     audit
     bottles
     bridge-utils
@@ -1315,7 +1319,6 @@
     dropbox-cli # `dropbox` control CLI (status/puburl/exclude); daemon runs via systemd below
     websocketd
     dotnetPackages.Nuget
-    exo
     mesa-demos
     incus
     nvidia-vaapi-driver

@@ -25,9 +25,6 @@
   users.defaultUserShell = pkgs.zsh;
 
   environment.systemPackages = with pkgs; [
-    # Claude Desktop application
-    # TODO: Re-enable when upstream hash is fixed
-    # inputs.claude-desktop.packages.${pkgs.system}.claude-desktop
     alacritty
     bitwarden-desktop
     blender
