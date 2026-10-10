@@ -180,71 +180,70 @@ in
         "col.inactive_border" = themeConfig.hyprland.inactiveBorder;
       };
 
-      # Dwindle layout configuration (Omarchy-style)
+      # Dwindle layout configuration (Omarchy-style). pseudotile was removed in 0.55.
       dwindle = {
-        pseudotile = true; # Enable pseudotiling
         preserve_split = true; # Preserve split direction
         force_split = 2; # Always split on the right (Omarchy default)
       };
 
       # Layer rules - disable animations for Walker (Omarchy-style)
       layerrule = [
-        "noanim, walker"
+        "animation none, match:namespace walker"
       ];
 
-      # Window rules (Omarchy-style)
+      # Window rules (Omarchy-style, Hyprland 0.53+ match: syntax)
       windowrule = [
         # Suppress maximize events for all windows
-        "suppressevent maximize, class:.*"
+        "suppress_event maximize, match:class .*"
 
         # Base opacity for all windows (subtle transparency)
-        "opacity 0.97 0.9, class:.*"
+        "opacity 0.97 0.9, match:class .*"
 
         # Fix some dragging issues with XWayland
-        "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
+        "no_focus on, match:class ^$, match:title ^$, match:xwayland 1, match:float 1, match:fullscreen 0, match:pin 0"
 
         # Terminal scroll sensitivity (touchpad)
-        "scrolltouchpad 1.5, class:(Alacritty|kitty)"
-        "scrolltouchpad 0.2, class:com.mitchellh.ghostty"
+        "match:class (Alacritty|kitty), scroll_touchpad 1.5"
+        "match:class com.mitchellh.ghostty, scroll_touchpad 0.2"
 
         # Browser types - tag identification
-        "tag +chromium-based-browser, class:([cC]hrom(e|ium)|[bB]rave-browser|Microsoft-edge|Vivaldi-stable)"
-        "tag +firefox-based-browser, class:([fF]irefox|zen|librewolf)"
+        "tag +chromium-based-browser, match:class ([cC]hrom(e|ium)|[bB]rave-browser|Microsoft-edge|Vivaldi-stable)"
+        "tag +firefox-based-browser, match:class ([fF]irefox|zen|librewolf)"
 
         # Force chromium-based browsers into a tile to deal with --app bug
-        "tile, tag:chromium-based-browser"
+        "tile on, match:tag chromium-based-browser"
 
         # Only subtle opacity change for browsers
-        "opacity 1 0.97, tag:chromium-based-browser"
-        "opacity 1 0.97, tag:firefox-based-browser"
+        "opacity 1 0.97, match:tag chromium-based-browser"
+        "opacity 1 0.97, match:tag firefox-based-browser"
 
         # Some video sites should never have opacity applied to them
-        "opacity 1.0 1.0, initialTitle:((?i)(?:[a-z0-9-]+\\.)*youtube\\.com_/|app\\.zoom\\.us_/wc/home)"
+        "opacity 1.0 1.0, match:initial_title ((?i)(?:[a-z0-9-]+\\.)*youtube\\.com_/|app\\.zoom\\.us_/wc/home)"
 
         # No transparency on media windows
-        "opacity 1 1, class:^(zoom|vlc|mpv|Screensaver|org.kde.kdenlive|com.obsproject.Studio|com.github.PintaProject.Pinta|imv|org.gnome.NautilusPreviewer)$"
+        "opacity 1 1, match:class ^(zoom|vlc|mpv|Screensaver|org.kde.kdenlive|com.obsproject.Studio|com.github.PintaProject.Pinta|imv|org.gnome.NautilusPreviewer)$"
 
         # Floating windows - tag identification
-        "tag +floating-window, class:(blueberry.py|Impala|Wiremix|org.gnome.NautilusPreviewer|com.gabm.satty|Omarchy|About|TUI.float)"
-        "tag +floating-window, class:(xdg-desktop-portal-gtk|sublime_text|DesktopEditors|org.gnome.Nautilus), title:^(Open.*Files?|Open [F|f]older.*|Save.*Files?|Save.*As|Save|All Files)"
+        "tag +floating-window, match:class (blueberry.py|Impala|Wiremix|org.gnome.NautilusPreviewer|com.gabm.satty|Omarchy|About|TUI.float)"
+        "tag +floating-window, match:class (xdg-desktop-portal-gtk|sublime_text|DesktopEditors|org.gnome.Nautilus), match:title ^(Open.*Files?|Open [F|f]older.*|Save.*Files?|Save.*As|Save|All Files)"
 
         # Floating window settings
-        "float, tag:floating-window"
-        "center, tag:floating-window"
-        "size 800 600, tag:floating-window"
+        "float on, match:tag floating-window"
+        "center on, match:tag floating-window"
+        "size 800 600, match:tag floating-window"
 
         # Fullscreen screensaver
-        "fullscreen, class:Screensaver"
+        "fullscreen on, match:class Screensaver"
 
         # Picture-in-picture overlays
-        "tag +pip, title:(Picture.?in.?[Pp]icture)"
-        "float, tag:pip"
-        "pin, tag:pip"
-        "size 600 338, tag:pip"
-        "keepaspectratio, tag:pip"
-        "noborder, tag:pip"
-        "opacity 1 1, tag:pip"
-        "move 100%-w-40 4%, tag:pip"
+        "tag +pip, match:title (Picture.?in.?[Pp]icture)"
+        "float on, match:tag pip"
+        "pin on, match:tag pip"
+        "size 600 338, match:tag pip"
+        "keep_aspect_ratio on, match:tag pip"
+        "border_size 0, match:tag pip"
+        "opacity 1 1, match:tag pip"
+        "move 100%-w-40 4%, match:tag pip"
       ];
 
       # Startup services
@@ -255,11 +254,11 @@ in
         # Mako is now managed by services.mako (see below)
         "wl-paste --type text --watch cliphist store" # Clipboard history for text
         "wl-paste --type image --watch cliphist store" # Clipboard history for images
-        "${pkgs.swww}/bin/swww-daemon" # Wallpaper daemon
+        "${pkgs.awww}/bin/awww-daemon" # Wallpaper daemon
         "elephant" # Walker data provider backend (must start before walker service)
         "walker --gapplication-service" # Walker launcher daemon (required for Super+Space)
       ]
-      ++ (if wallpaperPath != null then [ "${pkgs.swww}/bin/swww img ${wallpaperPath}" ] else [ ])
+      ++ (if wallpaperPath != null then [ "${pkgs.awww}/bin/awww img ${wallpaperPath}" ] else [ ])
       ++ lib.optional (networkApplet != null) networkApplet; # Network tray icon (iwgtk/nm-applet)
 
       bind = [
@@ -296,7 +295,7 @@ in
 
         # Window Management
         "$mod, W, killactive,"
-        "$mod, J, togglesplit,"
+        "$mod, J, layoutmsg, togglesplit"
         "$mod, P, pseudo,"
         "$mod, T, togglefloating,"
         "$mod, F, fullscreen, 0"
@@ -309,7 +308,7 @@ in
         "$mod SHIFT, right, swapwindow, r"
         "$mod SHIFT, up, swapwindow, u"
         "$mod SHIFT, down, swapwindow, d"
-        "${hyprChord windowBalanceBinding}, splitratio, exact 1" # Balance window sizes
+        "${hyprChord windowBalanceBinding}, layoutmsg, splitratio exact 1" # Balance window sizes
 
         # Workspaces
         "$mod, 1, workspace, 1"
@@ -1450,7 +1449,7 @@ in
   home.file.".local/bin/rotate-background" = {
     text = ''
       #!/usr/bin/env bash
-      # Cycle through theme wallpapers using swww (Omarchy-style)
+      # Cycle through theme wallpapers using awww (Omarchy-style)
 
       WALLPAPERS_DIR="${config.home.homeDirectory}/.config/hyprland/current-theme-wallpapers"
       CURRENT_BG_FILE="${config.home.homeDirectory}/.config/hyprland/current-background"
@@ -1460,10 +1459,10 @@ in
       if [[ ! -d "$WALLPAPERS_DIR" ]] || [[ -z "$(${pkgs.coreutils}/bin/ls -A "$WALLPAPERS_DIR")" ]]; then
         # No wallpapers available, use solid color
         ${pkgs.libnotify}/bin/notify-send "No backgrounds for this theme" "Using solid color" -t 2000 2>/dev/null || true
-        ${pkgs.procps}/bin/pkill -x swww-daemon
-        ${pkgs.swww}/bin/swww-daemon &
+        ${pkgs.procps}/bin/pkill -x awww-daemon
+        ${pkgs.awww}/bin/awww-daemon &
         sleep 0.5
-        ${pkgs.swww}/bin/swww img --transition-type=none -o '*' --resize=crop -t 0 <(${pkgs.imagemagick}/bin/convert -size 1920x1080 xc:'#000000' png:-)
+        ${pkgs.awww}/bin/awww img --transition-type=none -o '*' --resize=crop -t 0 <(${pkgs.imagemagick}/bin/convert -size 1920x1080 xc:'#000000' png:-)
         exit 0
       fi
 
@@ -1474,10 +1473,10 @@ in
       if [[ $TOTAL -eq 0 ]]; then
         # No image files found, use solid color
         ${pkgs.libnotify}/bin/notify-send "No backgrounds for this theme" "Using solid color" -t 2000 2>/dev/null || true
-        ${pkgs.procps}/bin/pkill -x swww-daemon
-        ${pkgs.swww}/bin/swww-daemon &
+        ${pkgs.procps}/bin/pkill -x awww-daemon
+        ${pkgs.awww}/bin/awww-daemon &
         sleep 0.5
-        ${pkgs.swww}/bin/swww img --transition-type=none -o '*' --resize=crop -t 0 <(${pkgs.imagemagick}/bin/convert -size 1920x1080 xc:'#000000' png:-)
+        ${pkgs.awww}/bin/awww img --transition-type=none -o '*' --resize=crop -t 0 <(${pkgs.imagemagick}/bin/convert -size 1920x1080 xc:'#000000' png:-)
         exit 0
       fi
 
@@ -1498,8 +1497,8 @@ in
       # Update current background symlink
       ${pkgs.coreutils}/bin/ln -sf "$NEXT_WALLPAPER" "$CURRENT_BG_FILE"
 
-      # Apply wallpaper with swww
-      ${pkgs.swww}/bin/swww img --transition-type=wipe --transition-angle=30 --transition-duration=1 "$NEXT_WALLPAPER"
+      # Apply wallpaper with awww
+      ${pkgs.awww}/bin/awww img --transition-type=wipe --transition-angle=30 --transition-duration=1 "$NEXT_WALLPAPER"
 
       # Get wallpaper filename for notification
       WALLPAPER_NAME=$(${pkgs.coreutils}/bin/basename "$NEXT_WALLPAPER")

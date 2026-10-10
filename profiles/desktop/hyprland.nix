@@ -82,7 +82,7 @@ in
     bind = $mainMod, E, exec, thunar
     bind = $mainMod, F, togglefloating,
     bind = $mainMod, D, exec, rofi -show drun
-    bind = $mainMod, J, togglesplit, # Toggle window split direction
+    bind = $mainMod, J, layoutmsg, togglesplit # Toggle window split direction
 
     # Screenshot bindings (macOS-style) - saves to ~/Pictures and copies to clipboard
     bind = SUPER CTRL SHIFT, 3, exec, grim - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | wl-copy
@@ -264,7 +264,7 @@ in
     swaylock-effects # Enhanced screen locker with effects
 
     # Wallpaper management
-    swww # Animated wallpaper daemon (alternative to hyprpaper)
+    awww # Animated wallpaper daemon (swww was renamed to awww in 26.05)
 
     # Application launcher and bar
     rofi # Wayland-capable application launcher

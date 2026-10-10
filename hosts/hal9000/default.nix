@@ -586,8 +586,10 @@
   # systemd.services."getty@tty1".enable = false;
   # systemd.services."autovt@tty1".enable = false;
 
-  # services.displayManager.autoLogin.enable = true;
-  # services.displayManager.autoLogin.user = "jamesbrink";
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "jamesbrink";
+  };
 
   # systemd.user.services.sunshine = {
   #   description = "Sunshine self-hosted game stream host for Moonlight";
