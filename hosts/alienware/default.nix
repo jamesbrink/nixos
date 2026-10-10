@@ -23,6 +23,7 @@
     ../../modules/services/samba-server.nix
     ../../modules/services/k3s.nix
     ../../users/regular/jamesbrink.nix
+    ../../modules/container-prune.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
 
@@ -398,6 +399,8 @@
   };
 
   # Virtualization configuration
+  local.containerPrune.enable = true;
+
   virtualisation = {
     containers = {
       enable = true;
@@ -425,10 +428,6 @@
       enableOnBoot = true;
       # docker_28 is EOL/insecure as of Nov 2025 — track 29.x
       package = pkgs.docker_29;
-      autoPrune = {
-        enable = true;
-        dates = "weekly";
-      };
       daemon.settings = {
         features = {
           buildkit = true;

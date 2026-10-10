@@ -31,6 +31,7 @@
     ../../modules/shared-packages/python.nix
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
+    ../../modules/container-prune.nix
     ../../profiles/desktop/hyprland.nix
     ../../profiles/desktop/nixarchy.nix
     ../../profiles/keychron/default.nix
@@ -587,6 +588,8 @@
   # systemd.services."getty@tty1".enable = false;
   # systemd.services."autovt@tty1".enable = false;
 
+  local.containerPrune.enable = true;
+
   services.displayManager.autoLogin = {
     enable = true;
     user = "jamesbrink";
@@ -909,10 +912,6 @@
       enable = true;
       # docker_28 is EOL/insecure as of Nov 2025 — track 29.x
       package = pkgs.docker_29;
-      autoPrune = {
-        enable = true;
-        dates = "weekly";
-      };
       daemon.settings = {
         features = {
           buildkit = true;

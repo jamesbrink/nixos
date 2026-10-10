@@ -80,6 +80,10 @@ hal9000 (NixOS 26.05) autologins into the "Omarchy" session from the `nixarchy` 
 - Live debugging: copy `PATH`, `OMARCHY_PATH`, `WAYLAND_DISPLAY` and `HYPRLAND_INSTANCE_SIGNATURE` from the running `quickshell` process, then drive panels with `omarchy-shell <target> <method>`. `hyprctl dispatch` takes Lua (`hl.dsp.*`) in this session.
 - Hyprland 0.53+ config (legacy session) uses `match:` window rules and `layoutmsg` for `togglesplit`/`splitratio`; HM `configType = "hyprlang"` is pinned because 26.05 defaults to Lua.
 
+### Container pruning
+
+`modules/container-prune.nix` (`local.containerPrune.enable`, on hal9000, alienware and the n100s) runs weekly `system prune --all --filter until=336h` for Docker, system Podman, and each user's rootless Podman store (a `systemd.user` timer). Running containers, their images and volumes are kept; tune with `local.containerPrune.olderThanDays`.
+
 ### PostgreSQL 17 (hal9000)
 
 Plain upstream `services.postgresql` for misc dev work: port 5432, trust auth from localhost/LAN/Tailscale, data on the `storage-fast/postgresql` ZFS dataset at `/var/lib/postgresql`. Connect with `psql -h hal9000` (superuser `jamesbrink` or `postgres`).

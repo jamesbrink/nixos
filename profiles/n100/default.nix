@@ -17,6 +17,7 @@
     # Desktop profile - uncomment for RustDesk server mode (X11/XFCE)
     # ../../profiles/desktop/xfce.nix
     ../../users/regular/jamesbrink.nix
+    ../../modules/container-prune.nix
     ../../users/regular/bender.nix
   ];
 
@@ -260,6 +261,9 @@
       # k3s-token is set per host
     };
   };
+
+  # Weekly prune of container resources unused for 14 days
+  local.containerPrune.enable = true;
 
   # Virtualization
   virtualisation = {
