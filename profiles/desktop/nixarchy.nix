@@ -63,11 +63,17 @@ in
   home-manager.users.jamesbrink =
     hm:
     let
+      # Starship prompt. Trying Omarchy's stock prompt (cyan, two-level path,
+      # git status glyphs). To go back to the themectl-style one, swap these two
+      # lines and uncomment the hook + activation further down.
+      starshipConfig = "${omarchy}/share/omarchy/config/starship.toml";
+      # starshipConfig = starshipThemedConfig;
+
       # Themed starship prompt, as themectl rendered it: the static settings from
       # modules/home-manager/shell/starship.nix with the theme's accent color
       # swapped in. Omarchy v4 themes ship no starship.toml, so a theme-set hook
       # renders it from colors.toml.
-      starshipConfig = "${hm.config.xdg.stateHome}/omarchy/starship.toml";
+      starshipThemedConfig = "${hm.config.xdg.stateHome}/omarchy/starship.toml";
       starshipTemplate = (pkgs.formats.toml { }).generate "starship-themed.toml" (
         lib.recursiveUpdate hm.config.programs.starship.settings {
           username.style_user = "@ACCENT@ bold";
@@ -87,9 +93,9 @@ in
       renderStarship = pkgs.writeShellScript "omarchy-starship-theme" ''
         colors="${hm.config.xdg.stateHome}/omarchy/current/theme/colors.toml"
         accent=$(${pkgs.gnused}/bin/sed -n 's/^accent *= *"\(#[0-9a-fA-F]\{6\}\)".*/\1/p' "$colors" 2>/dev/null)
-        mkdir -p "$(dirname ${starshipConfig})"
-        ${pkgs.gnused}/bin/sed "s/@ACCENT@/''${accent:-green}/g" ${starshipTemplate} >"${starshipConfig}.tmp"
-        mv "${starshipConfig}.tmp" "${starshipConfig}"
+        mkdir -p "$(dirname ${starshipThemedConfig})"
+        ${pkgs.gnused}/bin/sed "s/@ACCENT@/''${accent:-green}/g" ${starshipTemplate} >"${starshipThemedConfig}.tmp"
+        mv "${starshipThemedConfig}.tmp" "${starshipThemedConfig}"
       '';
     in
     {
@@ -132,12 +138,13 @@ in
         fi
       '';
 
-      home.file.".config/omarchy/hooks/theme-set.d/starship".text = ''
-        exec ${renderStarship}
-      '';
-      home.activation.renderStarshipTheme = hm.lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        $DRY_RUN_CMD ${renderStarship}
-      '';
+      # Themed starship (off while trying Omarchy's prompt; see starshipConfig).
+      # home.file.".config/omarchy/hooks/theme-set.d/starship".text = ''
+      #   exec ${renderStarship}
+      # '';
+      # home.activation.renderStarshipTheme = hm.lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      #   $DRY_RUN_CMD ${renderStarship}
+      # '';
       home.sessionVariables.STARSHIP_CONFIG = lib.mkForce starshipConfig;
       # Also set per shell: sessions started before a rebuild keep a stale value.
       programs.zsh.initContent = ''
