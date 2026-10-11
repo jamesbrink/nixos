@@ -633,6 +633,7 @@
     ];
     maximumDesktopComputeMiB = 1024;
     # Admit at 18 GiB free; retain the independent 2 GiB runtime cache reserve.
+    # Original threshold: 20480 MiB (20 GiB); restore that value here to roll back.
     minimumFreeVRAMMiB = 18432;
     vramReserveMiB = 2048;
     memoryMode = "bounded-mmap";
