@@ -155,7 +155,7 @@ the deployed 64K/23-worker production combination. See the
 
 All other selected settings remain FP16 KV, prefill 2048, 23 expert workers,
 MTP verification window/cap 4, suffix lookup 0, 24GiB resident budget,
-8GiB allocation headroom, 36GiB available-RAM admission guard, 20480MiB
+8GiB allocation headroom, 36GiB available-RAM admission guard, 18432MiB
 free-VRAM admission guard and 2048MiB native VRAM reserve. Increasing context
 consumes session memory; automatic expert-cache sizing compensates by
 reducing GPU expert slots. Do not interpret unchanged total VRAM as unchanged
@@ -471,7 +471,7 @@ The module's desktop compute allowlist defaults to **empty**, so unreviewed host
 retain zero-compute-client startup. HAL9000 explicitly allows executable
 basenames `walker` (observed 268 MiB), `chrome` (120 MiB), `mpv` (469 MiB) and
 `swayosd-server` (12 MiB), with an **aggregate 1024 MiB limit** across all
-allowed compute PIDs and an actual **20,480 MiB free-VRAM floor** on GPU0. Unknown
+allowed compute PIDs and an actual **18,432 MiB free-VRAM floor** on GPU0. Unknown
 compute names, other LLM servers, and Mold/Python compute processes are refused
 regardless of current utilization. Missing/N/A PID or memory measurements fail
 closed. Graphics allocations are covered by the measured free-VRAM floor.
@@ -479,6 +479,12 @@ Names are matched on the executable of the reported command line, and
 llama-swap runs with `ProtectProc=default` so nvidia-smi can resolve other
 users' process names; under `ProtectProc=invisible` every client reports
 `[Not Found]` and the guard refuses all desktop activity.
+
+HAL9000 lowers the free-VRAM admission floor from 20 GiB to 18 GiB for both
+Orca variants to accommodate desktop graphics allocations. This only allows
+startup with less free memory; it does not reduce model memory demand or the
+separate 2 GiB native reserve. Long-context and later desktop allocations
+can still exhaust VRAM.
 
 Native `--vram-reserve-mib 2048` holds two GiB out of auto expert-cache sizing after
 initial model/session allocations and prevents the pinned engine from automatically

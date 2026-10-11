@@ -632,7 +632,8 @@
       "walker"
     ];
     maximumDesktopComputeMiB = 1024;
-    minimumFreeVRAMMiB = 20480;
+    # Admit at 18 GiB free; retain the independent 2 GiB runtime cache reserve.
+    minimumFreeVRAMMiB = 18432;
     vramReserveMiB = 2048;
     memoryMode = "bounded-mmap";
     residentBudgetGiB = 24;
