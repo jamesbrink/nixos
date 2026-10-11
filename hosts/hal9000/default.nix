@@ -712,6 +712,8 @@
     # #378, #677). Same --listen/--config CLI.
     package = pkgs.unstablePkgs.llama-swap;
     port = 8080;
+    # Remote omp clients use this shared endpoint; upstream defaults to localhost.
+    listenAddress = "0.0.0.0";
     openFirewall = true;
     settings = {
       healthCheckTimeout = 300;
