@@ -6,6 +6,12 @@ LAN, Tailscale, and WAN HTTP/HTTPS; the managed proxy always uses end-to-end
 encryption. There is no automatic downgrade. Browser mixed-content and
 private-network restrictions still apply to HTTP destinations.
 
+The service advertises its persistent identity through `MOLD_PUBLIC_URL` and
+uses `MOLD_SECURE_WEBSOCKET_URL` for the production Secure relay. The public URL
+namespace was verified against the existing home identity before registration.
+Regular invitations keep an explicit direct address; managed proxy URLs never
+serve Regular HTTP. Preserve the home identity when restarting or upgrading.
+
 The operator API key remains in `/var/lib/mold-credentials/api-key`, owned by
 `mold:mold`, mode `0600`, inside a mode `0700` directory. It is provisioned once
 and loaded at service start. Never copy its contents into Git, Nix expressions,

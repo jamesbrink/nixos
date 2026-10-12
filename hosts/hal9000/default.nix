@@ -1720,6 +1720,7 @@
     # Provisioned once on this host; never copied into the Nix store.
     apiKeyFile = "/var/lib/mold-credentials/api-key";
     allowDirectApi = true; # Explicit Regular access alongside Secure pairing.
+    environment.MOLD_PUBLIC_URL = "https://c7d6052eaac97a2fea5e9ed47a2f081f.mold-link.urandom.io";
     environment.MOLD_SECURE_WEBSOCKET_URL = "wss://uwijdhg05d.execute-api.us-west-2.amazonaws.com/production";
     openFirewall = true;
     # Evict models parked in CPU RAM after 5 idle minutes (default 30).
