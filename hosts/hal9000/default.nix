@@ -1655,17 +1655,18 @@
     serviceConfig.Type = "oneshot";
     script = ''
       for dir in /mnt/storage20tb/AI/mold /storage-fast/mold; do
-        ${pkgs.acl}/bin/setfacl -R -d -m g::rwx,u:mold:rwx,u:jamesbrink:rwx "$dir"
-        ${pkgs.acl}/bin/setfacl -R -m u:mold:rwX,u:jamesbrink:rwX "$dir"
+        find "$dir" \( -path "$dir/secure" -o -path "$dir/queue-media" \) -prune -o -type d -exec ${pkgs.acl}/bin/setfacl -d -m g::rwx,u:mold:rwx,u:jamesbrink:rwx {} +
+        find "$dir" \( -path "$dir/secure" -o -path "$dir/queue-media" \) -prune -o ! -type l -exec ${pkgs.acl}/bin/setfacl -m u:mold:rwX,u:jamesbrink:rwX {} +
       done
 
+      # Secure identity and device credentials must never inherit shared ACLs.
       # queue-media is the durable-admission "receipt authority" store and holds
       # master.key. mold refuses to enable canonical durable admission unless the
       # directory is owned by the service user with no group/other bits at all
       # (queue_media_store.rs: `metadata.permissions().mode() & 0o077 != 0`), so
-      # the broad pass above disables the feature every time it runs. Re-tighten
-      # it afterwards: strip the ACLs, then u=rwX,go= for 0700 dirs / 0600 files.
-      for qm in /mnt/storage20tb/AI/mold/queue-media /storage-fast/mold/queue-media; do
+      # shared ACLs would disable the feature. Repair any previous broad-pass
+      # damage: strip ACLs, then u=rwX,go= for 0700 dirs / 0600 files.
+      for qm in /mnt/storage20tb/AI/mold/queue-media /storage-fast/mold/queue-media /mnt/storage20tb/AI/mold/secure /storage-fast/mold/secure; do
         [ -d "$qm" ] || continue
         ${pkgs.acl}/bin/setfacl -R -b -k "$qm"
         chown -R mold:mold "$qm"

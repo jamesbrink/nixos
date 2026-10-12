@@ -32,3 +32,8 @@ queue is idle and retain the host's Mold home, database, identity, and phone
 grants. After activation verify the exact live revision, authenticated API
 status, GPU and queue state, both connection modes, restart count, and recent
 logs without submitting generations. The Discord service reads the same private operator key into a mode `0600` runtime environment file and uses numeric loopback; inspect its health without sending messages.
+
+The shared-media ACL timer excludes the private `secure` authority tree. It
+repairs old named/default ACLs there to `0700` directories and `0600` files
+without replacing identity or device grants. Repeated timer runs retain those
+permissions; models and output retain their shared access.
