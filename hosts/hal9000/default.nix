@@ -36,6 +36,8 @@
     ../../profiles/desktop/nixarchy.nix
     ../../profiles/keychron/default.nix
     ../../modules/services/strata
+    ../../modules/services/mold-local-client.nix
+    ../../modules/services/mold-discord-auth.nix
     ../../modules/services/orca-q4
     ../../modules/services/k3s.nix
     ../../modules/services/tftp-server.nix
@@ -1715,6 +1717,10 @@
     modelsDir = "/storage-fast/mold/models";
     outputDir = "/mnt/storage20tb/AI/mold/output";
     hfTokenFile = config.age.secrets."huggingface-token".path;
+    # Provisioned once on this host; never copied into the Nix store.
+    apiKeyFile = "/var/lib/mold-credentials/api-key";
+    allowDirectApi = true; # Explicit Regular access alongside Secure pairing.
+    environment.MOLD_SECURE_WEBSOCKET_URL = "wss://uwijdhg05d.execute-api.us-west-2.amazonaws.com/production";
     openFirewall = true;
     # Evict models parked in CPU RAM after 5 idle minutes (default 30).
     # The GPU-resident model is never evicted by this.
