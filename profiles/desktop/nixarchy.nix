@@ -196,6 +196,15 @@ in
         fi
       '';
 
+      # No idle lock (and so no monitor blanking, which only happens while
+      # locked): Omarchy's "Stay Awake" indicator, re-asserted on each rebuild.
+      # The video screensaver is toggled off separately; Stay Awake would also
+      # suppress it if turned back on.
+      home.activation.omarchyStayAwake = hm.lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        $DRY_RUN_CMD mkdir -p "${hm.config.xdg.stateHome}/omarchy/indicators"
+        $DRY_RUN_CMD touch "${hm.config.xdg.stateHome}/omarchy/indicators/stay-awake"
+      '';
+
       # Themed starship (off while trying Omarchy's prompt; see starshipConfig).
       # home.file.".config/omarchy/hooks/theme-set.d/starship".text = ''
       #   exec ${renderStarship}
