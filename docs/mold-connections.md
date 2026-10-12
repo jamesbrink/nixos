@@ -19,6 +19,13 @@ command arguments, or logs, or broaden its permissions for interactive access.
 Regular clients redeem a separate one-use invitation and receive their own
 scoped credential; they do not receive the operator key.
 
+`apiKeyFile` bootstraps operator access and owner-only pairing. Ordinary direct
+REST apps use their own Regular device key, issued through a one-use invitation.
+Send it in the `X-API-Key` header; `Authorization: Bearer` alone is not supported.
+The device grant persists across service restarts until that device is revoked.
+Store the key privately, keep authentication enabled, and never give a remote
+app the operator key or revoke other apps during testing.
+
 For privileged local administration, run `sudo -u mold mold-local server status`
 or `sudo -u mold mold-local list`. The wrapper reads the existing private key at runtime, uses
 numeric loopback, and preserves Secure mode. Existing sudo policy controls
