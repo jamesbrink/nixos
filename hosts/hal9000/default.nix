@@ -760,6 +760,32 @@
           "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.05"
         ];
       };
+      # Separate experimental model; the original Bonsai entry stays intact.
+      models."bonsai-2-27b-crack" = {
+        ttl = 1800;
+        # llama-swap answers 429 past 10 in-flight requests by default; let
+        # extra agent requests queue in llama-server instead.
+        concurrencyLimit = 64;
+        cmd = builtins.concatStringsSep " " [
+          "\${prism-server}"
+          # CRACK retains Bonsai's PQ2_0 format and base vision projector.
+          # Its published GGUF has no MTP head; do not enable draft-mtp.
+          # Immutable source and provisioning: docs/bonsai2-hal9000-crack.md.
+          "-m \${models}/Bonsai-2-27B-Ternary-CRACK/Bonsai-2-27B-PQ2_0-CRACK.gguf"
+          "--mmproj \${models}/Ternary-Bonsai-2-27B/Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf"
+          # Qwen-VL grounding needs >=1024 image tokens (model KNOWN_ISSUES).
+          "--image-min-tokens 1024"
+          # The unified pool is shared by all 8 slots and requests fail with
+          # "Context size has been exceeded" when agents' combined context
+          # overflows it (70 failures at 256K on 2026-09-28). q4_0 KV fits a
+          # 320K pool in 19.8 GB (2 GB headroom); 384K = 21.6 GB was too tight.
+          "-c 327680 -ctk q4_0 -ctv q4_0 -np 8"
+          # Reasoning counts against the output limit; small caps return
+          # empty answers. Clients can still send max_tokens/reasoning_effort.
+          "-n 32768"
+          "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.05"
+        ];
+      };
       # Qwen3.8-27B does not fit beside Bonsai, so requesting it swaps Bonsai
       # out (and back on the next Bonsai request), dropping prompt caches both
       # ways. Short ttl hands the GPU back quickly. Measured on the 4090

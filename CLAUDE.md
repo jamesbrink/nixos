@@ -90,7 +90,7 @@ Plain upstream `services.postgresql` for misc dev work: port 5432, trust auth fr
 
 ### LLM serving (hal9000)
 
-`services.llama-swap` on port 8080 is the OpenAI-compatible endpoint (`http://hal9000:8080/v1`): it launches a `llama-server` per requested model and unloads after `ttl`. GGUFs live on the `storage-fast/llm` dataset (`/storage-fast/llm/models`, recordsize=1M). Ternary Bonsai 2 models need the PrismML llama.cpp fork (`overlays/llama-cpp-prism.nix`, input `llama-cpp-prism`, built for sm_89 only); stock GGUFs can use `pkgs.llama-cpp`. Models (no aliases): `bonsai-2-27b` (PQ2_0 + MTP bundle, 320K q4_0 KV pool shared by 8 slots, 262K per conversation) and `qwen3.8-27b` (UD-Q4_K_M + MTP draft, 64K, 2 slots). Only one fits the 4090 at a time, so switching models reloads and drops prompt caches. Both use MTP speculative decoding (`--spec-type draft-mtp`). Add a model by adding an entry under `services.llama-swap.settings.models`. Measured sizing notes live in the comment above the service in `hosts/hal9000/default.nix`.
+`services.llama-swap` on port 8080 is the OpenAI-compatible endpoint (`http://hal9000:8080/v1`): it launches a `llama-server` per requested model and unloads after `ttl`. GGUFs live on the `storage-fast/llm` dataset (`/storage-fast/llm/models`, recordsize=1M). Ternary Bonsai 2 models need the PrismML llama.cpp fork (`overlays/llama-cpp-prism.nix`, input `llama-cpp-prism`, built for sm_89 only); stock GGUFs can use `pkgs.llama-cpp`. Models (no aliases): `bonsai-2-27b` (PQ2_0 + MTP bundle, 320K q4_0 KV pool shared by 8 slots, 262K per conversation) and `qwen3.8-27b` (UD-Q4_K_M + MTP draft, 64K, 2 slots). Only one fits the 4090 at a time, so switching models reloads and drops prompt caches. Both use MTP speculative decoding (`--spec-type draft-mtp`). Experimental `bonsai-2-27b-crack` uses the same Bonsai settings without MTP (the published CRACK GGUF has no draft head); see [docs/bonsai2-hal9000-crack.md](docs/bonsai2-hal9000-crack.md). Add a model by adding an entry under `services.llama-swap.settings.models`. Measured sizing notes live in the comment above the service in `hosts/hal9000/default.nix`.
 
 Hal9000 explicitly sets `services.llama-swap.listenAddress = "0.0.0.0"` with `openFirewall = true` for LAN/Tailscale clients. Upstream defaults to `localhost`; opening the firewall alone does not make the listener reachable. If remote models disappear, compare `curl http://hal9000:8080/v1/models` with the loopback URL on Hal9000 before changing client model configuration. This endpoint has no API authentication; keep it on trusted networks, not the public internet.
 
@@ -124,11 +124,11 @@ Both Hal9000 Orca variants require 18 GiB free VRAM before startup (`minimumFree
 
 ## Submodules
 
-| Path                  | Purpose                                    | Contains Secrets      |
-| --------------------- | ------------------------------------------ | --------------------- |
-| `secrets/`            | Agenix-encrypted secrets (.age files)      | Yes                   |
-| `mikrotik-terraform/` | MikroTik router IaC (DHCP, DNS, VPN, PXE)  | Yes (tfvars, tfstate) |
-| `external/omarchy/`   | Upstream Omarchy v4 (reference, themectl)  | No                    |
+| Path                  | Purpose                                   | Contains Secrets      |
+| --------------------- | ----------------------------------------- | --------------------- |
+| `secrets/`            | Agenix-encrypted secrets (.age files)     | Yes                   |
+| `mikrotik-terraform/` | MikroTik router IaC (DHCP, DNS, VPN, PXE) | Yes (tfvars, tfstate) |
+| `external/omarchy/`   | Upstream Omarchy v4 (reference, themectl) | No                    |
 
 **Keeping submodules in sync:** Private submodules (`secrets/`, `mikrotik-terraform/`) must be pushed before the main repo. This is enforced by:
 
