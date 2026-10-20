@@ -80,6 +80,41 @@ Use `omp --model orca` to return to IQ3. Selecting another model unloads the
 previous backend; the normal 600-second idle unload applies to Q4 too.
 Private local config backups were taken; credentials are not stored here.
 
+## Vision (image input)
+
+`services.strata-orca.vision.enable = true` gives both Orca quantizations
+image input through the shared endpoint. Clients send OpenAI `image_url` parts
+(data URLs, http(s) URLs) or Anthropic image blocks; OMP sends WebP, which the
+server converts to PNG with Pillow.
+
+- **Projector:** the publisher's `mmproj-Qwen3.8-Flash-Next-Uncensored-F16.gguf`,
+  907,543,296 bytes, revision `d366e279688c1f2fd6e75e2f98475d38db534f1d`
+  (published 2026-10-18, after the shard revision), SHA256
+  `f0f352a97a62a057f3aecdb597cac664762cea2ca23f7b16ec92eee28c5572d9`.
+  Projector type `qwen3vl_merger`, the same as the base model's GSQ-RCO
+  mmproj that upstream Strata ships with; the pinned llama.cpp supports it.
+  It lives in the IQ3 `dataDir` and Q4 reads it from there.
+  `strata-orca-provision --provision` fetches and verifies it.
+- **Encoder:** `pkgs/strata-vision.nix` builds upstream `tools/vision` against
+  the engine's pinned llama.cpp (mtmd, CUDA sm_89, portable AVX2). The server
+  starts it before the engine, so the automatic expert cache sizes itself
+  around its ~1.2-1.4 GiB of VRAM. Each variant's encoder reads that variant's
+  own vocabulary (`model` = its first shard).
+- **Engine:** 0.1.39 needs `--vision` in the native args to accept image
+  embeddings (upstream #1322, automatic from 0.1.41); the module adds it.
+- **Defaults:** GPU encoder, up to 1024 tokens per image (`vision.gpu`,
+  `vision.maxTokens`). A repeated image is encoded once per server lifetime.
+- **Not used:** elastic vision (`--vram-elastic`) is refused with
+  bounded-mmap's resident mode, and upstream #3171 (tool-returned images
+  crash with elastic vision) is open.
+- **Known limits (0.1.39):** a client that disconnects during an image encode
+  is not cancelled until the encode finishes (upstream #1999); a picture in a
+  long conversation can invalidate the cached prefix (fixed upstream in 0.1.44,
+  #2228). Vision on this abliterated fine-tune is not upstream-validated; the
+  publisher reports image and OCR checks passing with this mmproj.
+
+OMP marks both Orca entries `input: [text, image]` in `~/.omp/agent/models.yml`.
+
 ## Root SSD relocation (deployed)
 
 The HAL9000 configuration selects `services.strata-orca.dataDir = "/var/lib/strata-orca"`.
@@ -195,7 +230,7 @@ small projections that the engine expects as BF16; this introduces rounding and
 cannot recover the original full-precision checkpoint. Expert weights and the
 28.8 GB disk-backed PLE lookup table retain their quantized form. Packed dense
 weights require about 1.43 GiB. The original model's MTP head uses its upstream
-pinned revision and tensor checksums; acceptance on this fine-tune was measured in the dated local benchmark report, including the zero-proposal control. No vision encoder/projector is configured: this setup is text-only.
+pinned revision and tensor checksums; acceptance on this fine-tune was measured in the dated local benchmark report, including the zero-proposal control. Image input is configured separately; see [Vision](#vision-image-input).
 
 ## Hardware and resource limits
 
@@ -277,7 +312,7 @@ started beside it.
 
 The config uses a 32,768-token context, INT8 KV, 512-token prefill chunks,
 automatic expert cache, and MTP proposals of up to four tokens at minimum
-probability 0.5. It is text-only and serializes one sequence through a FIFO;
+probability 0.5. It serializes one sequence (and image encodes) through a FIFO;
 concurrency queues requests rather than multiplying resident sequences.
 
 Primary lifecycle sources:

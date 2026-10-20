@@ -104,6 +104,8 @@ cudaPackages.backendStdenv.mkDerivation {
       }:$out/bin"
     runHook postInstall
   '';
+  # strata-vision builds from the same pinned Strata and llama.cpp sources.
+  passthru = { inherit source llamaSource; };
   meta = {
     description = "Strata tiered MoE runtime with pinned Orca-compatible packing tools";
     homepage = "https://github.com/Niko1221/Strata";

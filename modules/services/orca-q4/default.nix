@@ -37,6 +37,12 @@ let
         model_name = modelId;
         port = cfg.port;
       }
+      // lib.optionalAttrs (original ? vision) {
+        # Shared projector; the encoder reads this quantization's vocabulary.
+        vision = original.vision // {
+          model = shard;
+        };
+      }
     )) (builtins.getContext originalText)
   );
   provision = pkgs.writeShellApplication {
@@ -68,6 +74,7 @@ let
       test -s '${shard}'
       test -s '${cfg.dataDir}/pack/native_experts.txt'
       test -s '${primary.dataDir}/mtp/rt/draft_vocab.bin'
+      ${lib.optionalString (original ? vision) "test -s '${original.vision.mmproj}'"}
       export LD_LIBRARY_PATH="/run/opengl-driver/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
       ${lib.optionalString (
         primary.memoryMode == "bounded-mmap"

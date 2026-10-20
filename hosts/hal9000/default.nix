@@ -660,6 +660,9 @@
     poolWorkers = 23;
     poolAffinity = "all";
     pcieFraction = null;
+    # Image input for both quantizations: publisher mmproj (F16, revision
+    # d366e279) on a resident GPU encoder, up to 1024 tokens per image.
+    vision.enable = true;
   };
 
   # Exact recommended Q4_K_M, alongside IQ3_XXS. Shares contextTokens above.

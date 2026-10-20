@@ -7,76 +7,94 @@
 let
   cfg = config.services.strata-orca;
   package = pkgs.callPackage ../../../pkgs/strata.nix { };
+  visionPackage = pkgs.callPackage ../../../pkgs/strata-vision.nix { strata = package; };
   shard = "${cfg.dataDir}/models/Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00001-of-00002.gguf";
   modelId = "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs";
+  # Publisher's projector, shared by every Orca quantization (same vision tower).
+  mmproj = "${cfg.dataDir}/models/mmproj-Qwen3.8-Flash-Next-Uncensored-F16.gguf";
   bounded = cfg.memoryMode == "bounded-mmap";
   minimumAvailableGiB = if bounded then cfg.residentBudgetGiB + cfg.residentHeadroomGiB + 4 else 56;
   serverConfig = pkgs.writeText "strata-orca.json" (
-    builtins.toJSON {
-      exe = "${package}/bin/strata";
-      args = [
-        "--pack"
-        "${cfg.dataDir}/pack"
-        "--native"
-        shard
-        "--ple-gguf"
-        shard
-        "--expert-profile"
-        "${package}/share/strata/data/expert-profile.bin"
-        "--expert-cache"
-        "auto"
-        "--prefill"
-        (toString cfg.prefillTokens)
-        "--spec"
-        (toString cfg.specWindow)
-        "--spec-min-p"
-        "0.5"
-        "--mtp"
-        "${cfg.dataDir}/mtp/rt"
-        "--max-context"
-        (toString cfg.contextTokens)
-        "--mtp-window"
-        (toString (lib.min cfg.contextTokens cfg.mtpWindowTokens))
-        "--mtp-max-t"
-        (toString cfg.mtpMaxT)
-        "--suffix-draft"
-        (toString cfg.suffixDraft)
-        "--pool-affinity"
-        cfg.poolAffinity
-        "--vram-reserve-mib"
-        (toString cfg.vramReserveMiB)
-        "--kv"
-        cfg.kvType
-      ]
-      ++ lib.optionals (cfg.poolWorkers != null) [
-        "--pool-workers"
-        (toString cfg.poolWorkers)
-      ]
-      ++ lib.optionals (cfg.pcieFraction != null) [
-        "--pcie-frac"
-        (toString cfg.pcieFraction)
-      ]
-      ++ lib.optionals bounded [
-        "--mmap-experts"
-        "--resident-budget-gib"
-        (toString cfg.residentBudgetGiB)
-      ];
-      allowed_desktop_compute_processes = cfg.allowedDesktopComputeProcesses;
-      maximum_desktop_compute_mib = cfg.maximumDesktopComputeMiB;
-      minimum_free_vram_mib = cfg.minimumFreeVRAMMiB;
-      memory_mode = cfg.memoryMode;
-      resident_budget_gib = if bounded then cfg.residentBudgetGiB else null;
-      resident_headroom_gib = if bounded then cfg.residentHeadroomGiB else null;
-      minimum_available_gib = minimumAvailableGiB;
-      cwd = cfg.dataDir;
-      tokenizer = "${cfg.dataDir}/pack/tokenizer";
-      model_name = modelId;
-      log = "${cfg.dataDir}/strata.log";
-      host = "127.0.0.1";
-      # llama-swap preserves the client Host header when proxying.
-      allowed_hosts = cfg.allowedHosts;
-      port = cfg.port;
-    }
+    builtins.toJSON (
+      {
+        exe = "${package}/bin/strata";
+        args = [
+          "--pack"
+          "${cfg.dataDir}/pack"
+          "--native"
+          shard
+          "--ple-gguf"
+          shard
+          "--expert-profile"
+          "${package}/share/strata/data/expert-profile.bin"
+          "--expert-cache"
+          "auto"
+          "--prefill"
+          (toString cfg.prefillTokens)
+          "--spec"
+          (toString cfg.specWindow)
+          "--spec-min-p"
+          "0.5"
+          "--mtp"
+          "${cfg.dataDir}/mtp/rt"
+          "--max-context"
+          (toString cfg.contextTokens)
+          "--mtp-window"
+          (toString (lib.min cfg.contextTokens cfg.mtpWindowTokens))
+          "--mtp-max-t"
+          (toString cfg.mtpMaxT)
+          "--suffix-draft"
+          (toString cfg.suffixDraft)
+          "--pool-affinity"
+          cfg.poolAffinity
+          "--vram-reserve-mib"
+          (toString cfg.vramReserveMiB)
+          "--kv"
+          cfg.kvType
+        ]
+        ++ lib.optionals (cfg.poolWorkers != null) [
+          "--pool-workers"
+          (toString cfg.poolWorkers)
+        ]
+        ++ lib.optionals (cfg.pcieFraction != null) [
+          "--pcie-frac"
+          (toString cfg.pcieFraction)
+        ]
+        ++ lib.optionals bounded [
+          "--mmap-experts"
+          "--resident-budget-gib"
+          (toString cfg.residentBudgetGiB)
+        ]
+        # 0.1.39's engine accepts image embeddings only with --vision (#1322).
+        ++ lib.optional cfg.vision.enable "--vision";
+        allowed_desktop_compute_processes = cfg.allowedDesktopComputeProcesses;
+        maximum_desktop_compute_mib = cfg.maximumDesktopComputeMiB;
+        minimum_free_vram_mib = cfg.minimumFreeVRAMMiB;
+        memory_mode = cfg.memoryMode;
+        resident_budget_gib = if bounded then cfg.residentBudgetGiB else null;
+        resident_headroom_gib = if bounded then cfg.residentHeadroomGiB else null;
+        minimum_available_gib = minimumAvailableGiB;
+        cwd = cfg.dataDir;
+        tokenizer = "${cfg.dataDir}/pack/tokenizer";
+        model_name = modelId;
+        log = "${cfg.dataDir}/strata.log";
+        host = "127.0.0.1";
+        # llama-swap preserves the client Host header when proxying.
+        allowed_hosts = cfg.allowedHosts;
+        port = cfg.port;
+      }
+      // lib.optionalAttrs cfg.vision.enable {
+        # The server starts the encoder before the engine, so the expert cache
+        # sizes itself around the encoder's VRAM.
+        vision = {
+          exe = "${visionPackage}/bin/strata-vision";
+          inherit mmproj;
+          model = shard;
+          gpu = cfg.vision.gpu;
+          max_tokens = cfg.vision.maxTokens;
+        };
+      }
+    )
   );
   launcher = pkgs.writeShellApplication {
     name = "strata-orca-launch";
@@ -95,6 +113,7 @@ let
       test -s '${cfg.dataDir}/pack/native_experts.txt'
       test -s '${cfg.dataDir}/mtp/rt/draft_vocab.bin'
       test -s '${shard}'
+      ${lib.optionalString cfg.vision.enable "test -s '${mmproj}'"}
       # exec preserves llama-swap's process group; the Strata engine inherits it.
       ${lib.optionalString bounded "export STRATA_RESIDENT_HEADROOM_GIB=${toString cfg.residentHeadroomGiB}"}
       export LD_LIBRARY_PATH="/run/opengl-driver/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
@@ -223,6 +242,19 @@ in
       type = lib.types.ints.positive;
       default = 900;
       description = "Global llama-swap readiness timeout in seconds, including cold Strata loading";
+    };
+    vision = {
+      enable = lib.mkEnableOption "image input through strata-vision and the publisher's mmproj (also applies to orca-q4)";
+      gpu = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Encode images on the GPU (~1.2-1.4 GiB VRAM, 0.1-0.5 s per image) instead of the CPU (10-30 s)";
+      };
+      maxTokens = lib.mkOption {
+        type = lib.types.ints.positive;
+        default = 1024;
+        description = "Most context tokens one image becomes; upstream uses 1024 on GPU and 300 on CPU";
+      };
     };
     port = lib.mkOption {
       type = lib.types.port;

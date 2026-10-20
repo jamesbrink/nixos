@@ -10,10 +10,15 @@ SHARD2=Qwen3.8-Flash-Next-Uncensored-IQ3_XXS-00002-of-00002.gguf
 HASH1=aaf57046943c6638480e8984835ce5ec29c486180ff71169d3c22c6929851b7b
 HASH2=a19cf9bbe87bce45f312ef11401c88b675f3784c927d02fa2272822229e6a224
 MTP_REVISION=de4b8e4d43b917e7706784d8bb445c9af86a3540
+# The vision projector was published later than the shards; pin its own revision.
+MMPROJ_BASE=https://huggingface.co/orcarouter/Qwen3.8-Flash-Next-Uncensored-GGUF/resolve/d366e279688c1f2fd6e75e2f98475d38db534f1d
+MMPROJ=mmproj-Qwen3.8-Flash-Next-Uncensored-F16.gguf
+MMPROJ_HASH=f0f352a97a62a057f3aecdb597cac664762cea2ca23f7b16ec92eee28c5572d9
 
 case "${1:---dry-run}" in
   --dry-run)
     echo "Plan: download 85,202,668,032 bytes of IQ3_XXS shards at $REVISION into $DATA_DIR/models."
+    echo "Also download the 907,543,296-byte F16 vision projector (mmproj), shared by every Orca quantization."
     echo "Verify SHA256, prepare this model's compatibility pack/tokenizer and original-model MTP."
     echo "Budget at least 110 GB disk for weights, converted projections, MTP and temporary files."
     echo "No downloads, system changes, services, or activation in this plan. Use --provision to prepare files."
@@ -40,10 +45,10 @@ curl "${curl_auth[@]}" --fail --silent --show-error --location \
   --output mtp/pinned-index.json
 
 fetch_shard() {
-  local name=$1 hash=$2
+  local name=$1 hash=$2 base=${3:-$BASE}
   if ! [ -f "models/$name" ]; then
     curl "${curl_auth[@]}" --fail --show-error --location --retry 3 --continue-at - \
-      "$BASE/$name" --output "models/$name.partial"
+      "$base/$name" --output "models/$name.partial"
     echo "$hash  models/$name.partial" | sha256sum --check --status
     mv "models/$name.partial" "models/$name"
   fi
@@ -51,6 +56,7 @@ fetch_shard() {
 }
 fetch_shard "$SHARD1" "$HASH1"
 fetch_shard "$SHARD2" "$HASH2"
+fetch_shard "$MMPROJ" "$MMPROJ_HASH" "$MMPROJ_BASE"
 
 if ! [ -s pack/native_experts.txt ]; then
   strata-iq_pack --gguf "$DATA_DIR/models/$SHARD1" --out "$DATA_DIR/pack" --compat-bf16
