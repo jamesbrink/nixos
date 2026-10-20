@@ -771,10 +771,12 @@
         concurrencyLimit = 64;
         cmd = builtins.concatStringsSep " " [
           "\${prism-server}"
-          # CRACK retains Bonsai's PQ2_0 format and base vision projector.
-          # Its published GGUF has no MTP head; do not enable draft-mtp.
-          # Immutable source and provisioning: docs/bonsai2-hal9000-crack.md.
-          "-m \${models}/Bonsai-2-27B-Ternary-CRACK/Bonsai-2-27B-PQ2_0-CRACK.gguf"
+          # CRACK's 851 tensors grafted onto the Bonsai MTP bundle above (same
+          # blk.64 head; scripts/bonsai-crack-mtp-graft.py verifies every
+          # tensor), so it serves exactly like Bonsai. Base vision projector.
+          # Immutable sources and provisioning: docs/bonsai2-hal9000-crack.md.
+          "-m \${models}/Bonsai-2-27B-Ternary-CRACK/Bonsai-2-27B-PQ2_0-CRACK-MTP-Q8_0.gguf"
+          "--spec-type draft-mtp --spec-draft-n-max 1"
           "--mmproj \${models}/Ternary-Bonsai-2-27B/Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf"
           # Qwen-VL grounding needs >=1024 image tokens (model KNOWN_ISSUES).
           "--image-min-tokens 1024"
