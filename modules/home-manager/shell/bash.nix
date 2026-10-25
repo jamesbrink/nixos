@@ -197,17 +197,9 @@
         esac
       }
 
-      # Initialize default Claude profile. halcyon and hal9000 intentionally start with
-      # NO profile (credentials unset) — run `claude-profile {primary|secondary|quantierra|api}`
-      # to pick one per shell. All other hosts default to secondary.
-      # ANTHROPIC_API_KEY is unset either way to avoid conflicting with OAuth tokens.
-      unset ANTHROPIC_API_KEY
-      if [[ "$(hostname -s)" == "halcyon" || "$(hostname -s)" == "hal9000" ]]; then
-        unset CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CURRENT_PROFILE
-      elif [[ -n "$CLAUDE_CODE_OAUTH_TOKEN_SECONDARY" ]]; then
-        export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_SECONDARY"
-        export CLAUDE_CURRENT_PROFILE="secondary"
-      fi
+      # Every host starts with NO Claude profile (credentials unset) — run
+      # `claude-profile {primary|secondary|quantierra|api}` to pick one per shell.
+      unset CLAUDE_CODE_OAUTH_TOKEN ANTHROPIC_API_KEY CLAUDE_CURRENT_PROFILE
     '';
   };
 }

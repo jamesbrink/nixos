@@ -76,8 +76,8 @@ agenix -e jamesbrink/aws/credentials.age
 `claude-profile` is available in Bash and Zsh. Select `primary` / `1`,
 `secondary` / `2`, or `quantierra` / `3`; all three use Claude Code OAuth
 tokens. `api` selects the separate Anthropic API key, `none` clears active
-credentials, and `status` shows the active profile. Shell defaults:
-halcyon and hal9000 start without credentials; other hosts use secondary when available.
+credentials, and `status` shows the active profile. Every host starts
+shells without credentials.
 
 - `secrets/jamesbrink/claude-primary.age`
 - `secrets/jamesbrink/claude-secondary.age`
