@@ -83,7 +83,6 @@ let
       # System and automation
       boto3 # AWS SDK (keeping from original)
       paramiko # SSH
-      fabric # Remote execution
 
       # Documentation
       sphinx

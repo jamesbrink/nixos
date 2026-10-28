@@ -74,7 +74,9 @@
       # Keep this in step with the homebrew-core/cask tap pins below: taps track
       # the newest brew DSL (InstallSteps `run`/`overwrite:`, cask
       # `command_wrapper`), and an older brew makes formulae "unreadable".
-      inputs.brew-src.url = "github:Homebrew/brew/6.0.17";
+      # Also keep it on the same brew major as nix-homebrew's own brew-src pin:
+      # the module patches brew for that release line (7.x as of 2026-10).
+      inputs.brew-src.url = "github:Homebrew/brew/7.0.11";
     };
     homebrew-bundle = {
       url = "github:homebrew/homebrew-bundle";
