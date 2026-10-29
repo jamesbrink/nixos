@@ -141,6 +141,12 @@
       "pinentry-mac"
       "gnupg"
       "helm" # Not available in nixpkgs for darwin
+      # Hand-installed tools kept so `cleanup = "zap"` doesn't remove them
+      "tree-sitter"
+      "unicorn"
+      "vulkan-loader"
+      "xcodegen"
+      "zlib"
     ];
 
     casks = [
