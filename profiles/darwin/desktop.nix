@@ -122,6 +122,12 @@
 
   # Set Aerial as the default screensaver on all Darwin desktop systems
   system.defaults.CustomUserPreferences = {
+    # Chrome policy: no Safe Browsing interstitials on our own domains. The tailnet-only dev
+    # apps (rust.dev / app.dev.myquantierra.com) get false "Dangerous site" verdicts from
+    # Chrome's on-device phishing model; Google's list itself has them clean.
+    "com.google.Chrome" = {
+      SafeBrowsingAllowlistDomains = [ "myquantierra.com" ];
+    };
     "com.apple.screensaver" = {
       moduleDict = {
         moduleName = "Aerial";
