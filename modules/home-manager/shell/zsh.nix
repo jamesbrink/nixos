@@ -138,7 +138,7 @@ in
       add-zsh-hook precmd __reset_mouse_tracking
 
       # Ensure terminfo is available
-      export TERMINFO_DIRS="$HOME/.nix-profile/share/terminfo:/usr/share/terminfo:${pkgs.ncurses}/share/terminfo"
+      export TERMINFO_DIRS="$HOME/.nix-profile/share/terminfo:${lib.optionalString pkgs.stdenv.hostPlatform.isDarwin "/usr/share/terminfo:"}${pkgs.ncurses}/share/terminfo"
 
       # Fix backspace key
       stty erase '^?'

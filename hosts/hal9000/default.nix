@@ -1365,6 +1365,7 @@
     audit
     bottles
     bridge-utils
+    bubblewrap # Codex sandbox expects bwrap on PATH
     distrobox
     dropbox-cli # `dropbox` control CLI (status/puburl/exclude); daemon runs via systemd below
     websocketd
