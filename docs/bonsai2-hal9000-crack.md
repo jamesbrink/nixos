@@ -71,7 +71,7 @@ Python needs numpy, pyyaml, sentencepiece and tqdm.
 ## Local OMP
 
 The local `~/.omp/agent/models.yml` adds an explicit `bonsai-2-27b-crack` model
-and matching override under the existing `bonsai2-local` provider, retaining the
+and matching override under the `hal9000` provider, retaining the
 original model and default selections.
 It copies Bonsai's reasoning mappings, text/image inputs, 262,144-token
 per-conversation limit and 32,768-token output allowance. The server pool is
@@ -87,7 +87,7 @@ The local `~/.omp/agent/config.yml` includes a matching shortcut:
 
 ```yaml
 modelRoles:
-  crack: bonsai2-local/bonsai-2-27b-crack:medium
+  crack: hal9000/bonsai-2-27b-crack:medium
 ```
 
 Start a new session with:

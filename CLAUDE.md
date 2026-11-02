@@ -104,6 +104,10 @@ Two Strata-served Orca models share the existing llama-swap `:8080/v1` endpoint:
 
 Both Hal9000 Orca variants require 18 GiB free VRAM before startup (`minimumFreeVRAMMiB = 18432`), independently of the retained 2 GiB runtime expert-cache reserve (`vramReserveMiB = 2048`). The admission threshold was lowered from 20 GiB to accommodate desktop GPU usage; it does not guarantee sufficient headroom for every prompt or later desktop allocation.
 
+### OMP client config (halcyon + hal9000)
+
+`~/.omp/agent/` is not in git. The `hal9000` provider block in `models.yml` and `extensions/tool-loop-stop.ts` must stay byte-identical on both machines, and the model roles are `@bonsai`, `@crack`, `@qwen38`, `@orca` and `@orca-q4`. Disable OMP's implicit `llama.cpp` provider (`disabledProviders`): it bypasses `models.yml`, including Bonsai's `replayReasoningContent: false`. Orca needs sampling in `compat.extraBody` because Strata decodes greedily otherwise. Compaction skips `snapcompact` (`methodOrder: [remote, handoff, shake, soft]`), and Bonsai compacts at 50%. `tool-loop-stop.ts` aborts a run after 8 identical consecutive tool calls because OMP's own guard only injects a message.
+
 ## Coding Standards
 
 **Nix**: Two-space indentation, sorted attribute sets, formatted by `nixfmt`. Prefer upstream modules before writing custom logic.
