@@ -1,7 +1,7 @@
 # Orca Flash Next through the shared llama-swap API
 
-This adds the **OrcaRouter Qwen3.8-Flash-Next uncensored IQ3_XXS** model through
-Strata, alongside the existing Bonsai/Qwen llama-swap stack. It is an explicit
+This adds the **OrcaRouter Qwen3.8-Flash-Next uncensored** model in IQ3_XXS and
+Q4_K_M quantizations through Strata, alongside the existing Bonsai/Qwen llama-swap stack. This is an explicit
 local compatibility workflow, not a replacement with the aligned GSQ-RCO weights
 in Strata's installer menu. No upstream installer or host driver changes are used.
 
@@ -271,7 +271,8 @@ positive-GiB options, and the bounded preflight follows their sum plus 4 GiB.
 ## Shared endpoint and lifecycle
 
 Clients keep **`http://hal9000:8080/v1`** and select exactly
-**`orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs`**. Bonsai and Qwen retain
+**`orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs`** or
+**`orcarouter-qwen3.8-flash-next-uncensored-q4_k_m`**. Bonsai and Qwen retain
 `bonsai-2-27b` and `qwen3.8-27b`. There are no aliases or extra public listeners. Strata explicitly accepts the
 preserved `hal9000` and `hal9000.home.urandom.io` Host headers; IP/localhost
 clients are accepted upstream. Additional trusted DNS names can be configured
