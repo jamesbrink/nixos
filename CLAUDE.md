@@ -106,7 +106,7 @@ Both Hal9000 Orca variants require 18 GiB free VRAM before startup (`minimumFree
 
 ### OMP client config (halcyon + hal9000)
 
-`~/.omp/agent/` is not in git. The `hal9000` provider block in `models.yml` and `extensions/tool-loop-stop.ts` must stay byte-identical on both machines, and the model roles are `@bonsai`, `@crack`, `@qwen38`, `@orca` and `@orca-q4`. Disable OMP's implicit `llama.cpp` provider (`disabledProviders`): it bypasses `models.yml`, including Bonsai's `replayReasoningContent: false`. Orca needs sampling in `compat.extraBody` because Strata decodes greedily otherwise. Compaction skips `snapcompact` (`methodOrder: [remote, handoff, shake, soft]`), and Bonsai compacts at 50%. `tool-loop-stop.ts` aborts a run after 8 identical consecutive tool calls because OMP's own guard only injects a message.
+Live config lives in the private `jamesbrink/omp-config` repo, checked out at `~/Projects/jamesbrink/omp-config`. `modules/home-manager/omp-config.nix` links `~/.omp/agent` files to that checkout, so edits need no deploy; sync with `git pull`. The model roles are `@bonsai`, `@crack`, `@qwen38`, `@orca` and `@orca-q4`. Disable OMP's implicit `llama.cpp` provider (`disabledProviders`): it bypasses `models.yml`, including Bonsai's `replayReasoningContent: false`. Orca needs sampling in `compat.extraBody` because Strata decodes greedily otherwise. Compaction skips `snapcompact` (`methodOrder: [remote, handoff, shake, soft]`), and Bonsai compacts at 50%. `tool-loop-stop.ts` aborts a run after 8 identical consecutive tool calls because OMP's own guard only injects a message.
 
 ## Coding Standards
 

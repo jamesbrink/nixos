@@ -252,4 +252,10 @@
   age.identityPaths = [
     "/etc/ssh/ssh_host_ed25519_key"
   ];
+
+  # Links ~/.omp/agent to the omp-config checkout.
+  home-manager.users.jamesbrink = {
+    imports = [ ../../modules/home-manager/omp-config.nix ];
+    local.ompConfig.host = "halcyon";
+  };
 }

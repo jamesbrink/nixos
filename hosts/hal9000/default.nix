@@ -615,6 +615,12 @@
   #   source = "${pkgs.sunshine}/bin/sunshine";
   # };
 
+  # Links ~/.omp/agent to the omp-config checkout.
+  home-manager.users.jamesbrink = {
+    imports = [ ../../modules/home-manager/omp-config.nix ];
+    local.ompConfig.host = "hal9000";
+  };
+
   # Orca runs as an on-demand child of the existing llama-swap endpoint.
   services.strata-orca = {
     enable = true;
