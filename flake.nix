@@ -1007,6 +1007,7 @@
                 comfyui-nix.overlays.default
                 invokeai.overlays.default
                 ai-toolkit.overlays.default
+                (import ./overlays/bun.nix)
                 (import ./overlays/llama-cpp-prism.nix {
                   inherit nixpkgs;
                   src = inputs.llama-cpp-prism;
