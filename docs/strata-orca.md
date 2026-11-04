@@ -80,6 +80,31 @@ Use `omp --model orca` to return to IQ3. Selecting another model unloads the
 previous backend; the normal 600-second idle unload applies to Q4 too.
 Private local config backups were taken; credentials are not stored here.
 
+## Original Qwen3.8-Flash-Next Q2_0 (`qwen3.8-flash-next-q2_0`)
+
+`services.qwen-flash-q2` (`modules/services/qwen-flash-q2`) adds ISTA-DASLab's
+GSQ-RCO **Q2_0** of the original, non-fine-tuned Qwen3.8-Flash-Next: the same
+architecture and parameter count as Orca, but the base model and Strata's
+fastest pack (upstream's "fastest / good"; 37.6 GB of weights for RAM + VRAM).
+It runs on port 18083 from `/var/lib/strata-qwen-flash-q2_0` on the root SSD,
+through the same llama-swap endpoint, and inherits every Orca argument, guard
+and the 64K context. Only one Strata model can be resident.
+
+- **Files:** pinned as upstream v0.2.10 `setup.py` does: repository
+  `ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF` at `ed59f920`, Apache-2.0,
+  public. Shard 1 (37,623,740,192 bytes) holds the weights; shard 2
+  (28,800,138,432 bytes) is the n-gram/PLE table, so `--ple-gguf` points at
+  shard 2 (Orca keeps it in shard 1).
+- **Pack:** `strata-iq_pack` without `--compat-bf16`, as upstream's `qwen`
+  family. Upstream's AVX-512 `strata_pack.py` conversion does not apply: the
+  i9-13900K has no AVX-512.
+- **MTP and vision:** reuses `/var/lib/strata-orca/mtp/rt` (the original Qwen
+  draft head) and Orca's mmproj (same vision tower).
+- **Provisioning:** `sudo -u strata-orca strata-qwen-flash-q2-provision`
+  prints the plan; `--provision` downloads, verifies the SHA256s and packs.
+- **Status:** not yet benchmarked on HAL9000. Upstream measured Q2_0 decoding
+  roughly 1.5x faster than IQ3_XXS on an RTX 5070 with 64 GB of RAM.
+
 ## Vision (image input)
 
 `services.strata-orca.vision.enable = true` gives both Orca quantizations

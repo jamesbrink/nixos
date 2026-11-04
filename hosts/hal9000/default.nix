@@ -39,6 +39,7 @@
     ../../modules/services/mold-local-client.nix
     ../../modules/services/mold-discord-auth.nix
     ../../modules/services/orca-q4
+    ../../modules/services/qwen-flash-q2
     ../../modules/services/k3s.nix
     ../../modules/services/tftp-server.nix
     ../../modules/services/netboot-configs.nix
@@ -675,6 +676,11 @@
   # Separate Strata pack/tokenizer; matching original MTP is shared read-only.
   # Its mmap weights remain on the root SSD; switching unloads the prior model.
   services.orca-q4.enable = true;
+
+  # ISTA-DASLab's original Qwen3.8-Flash-Next Q2_0 (Strata's fastest pack, not
+  # the uncensored fine-tune). Same Orca tuning/guards and shared MTP runtime;
+  # provision with `sudo -u strata-orca strata-qwen-flash-q2-provision --provision`.
+  services.qwen-flash-q2.enable = true;
 
   services.ollama = {
     enable = true;
