@@ -184,7 +184,29 @@ The root SSD is faster-rated, but actual inference performance on it must be
 measured. Earlier benchmark results describe the original ZFS location and
 must not be presented as measurements of the new storage configuration.
 
-## Deployed 64K context and client settings
+## Deployed 128K context (2026-11-03)
+
+`contextTokens = 131072` in `hosts/hal9000/default.nix` now applies to all
+three Strata models (both Orca quantizations and `qwen-flash-q2`); set it back
+to `65536` to return to the measured 64K setup. Qwen3.8-27B (llama.cpp) has
+its own one-value switch, `qwen38ContextTokens` at the top of the same file:
+above 64K its KV cache drops from q8_0 to q4_0, because q8_0 at 128K does not
+fit the 4090. OMP `contextWindow` values in the `omp-config` repo match
+(131072); `maxTokens` stays 8192 for the Strata models.
+
+Checked after deployment on Strata v0.2.10 (one run each, not a benchmark):
+
+| Model | Result |
+| --- | --- |
+| Orca IQ3_XXS | cold start 64 s with `--max-context 131072`; a 99,122-token prompt recalled a planted fact exactly in 112 s; GPU 22.1-22.2 GiB used. The operator then ran it to about 119K tokens in OMP |
+| Qwen3.8-27B | loads with `n_ctx` 131072 over 2 slots (q4_0 KV) and answers; GPU 23,955 of 24,564 MiB used, so little room is left for desktop GPU clients |
+| Orca Q4_K_M, Flash Next Q2_0 | not yet loaded at 128K (Q2_0 was still provisioning) |
+
+`mtpWindowTokens` stays 32768. The 128K window trades GPU expert-cache slots
+for session memory, so decode speed may be lower than at 64K; the 64K
+measurements below were not repeated.
+
+## Deployed 64K context and client settings (superseded)
 
 HAL9000 now selects `services.strata-orca.contextTokens = 65536` in
 `hosts/hal9000/default.nix`. The initial 64K configuration was activated on 2026-10-05 from committed
