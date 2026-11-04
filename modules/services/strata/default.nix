@@ -65,7 +65,8 @@ let
           "--resident-budget-gib"
           (toString cfg.residentBudgetGiB)
         ]
-        # 0.1.39's engine accepts image embeddings only with --vision (#1322).
+        # The engine accepts image embeddings only with --vision (#1322); the
+        # server also adds it for a vision config, but keep it explicit.
         ++ lib.optional cfg.vision.enable "--vision";
         allowed_desktop_compute_processes = cfg.allowedDesktopComputeProcesses;
         maximum_desktop_compute_mib = cfg.maximumDesktopComputeMiB;

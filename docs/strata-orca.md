@@ -100,17 +100,18 @@ server converts to PNG with Pillow.
   starts it before the engine, so the automatic expert cache sizes itself
   around its ~1.2-1.4 GiB of VRAM. Each variant's encoder reads that variant's
   own vocabulary (`model` = its first shard).
-- **Engine:** 0.1.39 needs `--vision` in the native args to accept image
-  embeddings (upstream #1322, automatic from 0.1.41); the module adds it.
+- **Engine:** needs `--vision` in the native args to accept image embeddings
+  (upstream #1322; the server adds it automatically since 0.1.41); the module
+  still passes it explicitly.
 - **Defaults:** GPU encoder, up to 1024 tokens per image (`vision.gpu`,
   `vision.maxTokens`). A repeated image is encoded once per server lifetime.
 - **Not used:** elastic vision (`--vram-elastic`) is refused with
   bounded-mmap's resident mode, and upstream #3171 (tool-returned images
   crash with elastic vision) is open.
-- **Known limits (0.1.39):** a client that disconnects during an image encode
-  is not cancelled until the encode finishes (upstream #1999); a picture in a
-  long conversation can invalidate the cached prefix (fixed upstream in 0.1.44,
-  #2228). Vision on this abliterated fine-tune is not upstream-validated; the
+- **Known limits:** under 0.1.39 a client that disconnected during an image
+  encode was not cancelled until the encode finished (upstream #1999) and a
+  picture in a long conversation could invalidate the cached prefix (fixed in
+  0.1.44, #2228); recheck both on 0.2.10. Vision on this abliterated fine-tune is not upstream-validated; the
   publisher reports image and OCR checks passing with this mmproj.
 
 OMP marks both Orca entries `input: [text, image]` in `~/.omp/agent/models.yml`.
@@ -208,20 +209,31 @@ boundary. Existing OMP sessions must reload the model configuration.
 
 - [Orca model card](https://huggingface.co/orcarouter/Qwen3.8-Flash-Next-Uncensored-GGUF/tree/e43d00f4e2b8b40b89f75e9adeb1045ac34c8acc):
   revision `e43d00f4e2b8b40b89f75e9adeb1045ac34c8acc`, Apache-2.0 as declared by its publisher.
-- [Strata Orca compatibility](https://github.com/Niko1221/Strata/blob/6f32ec070f23ced9f50e704d854d775da52591ab/docs/ORCA.md):
+- [Strata Orca compatibility](https://github.com/Niko1221/Strata/blob/ffa80d73133ea5c548aefe57889a16e8085a938f/docs/ORCA.md):
   IQ3_XXS is the specifically validated Orca quant. Other quants are not assumed
   interchangeable; IQ3_M includes unsupported Q5_0 down matrices in the native path.
-- [Pinned Strata source](https://github.com/Niko1221/Strata/tree/6f32ec070f23ced9f50e704d854d775da52591ab):
-  `6f32ec070f23ced9f50e704d854d775da52591ab`, version 0.1.39, MIT.
+- [Pinned Strata source](https://github.com/Niko1221/Strata/tree/ffa80d73133ea5c548aefe57889a16e8085a938f):
+  `ffa80d73133ea5c548aefe57889a16e8085a938f`, release v0.2.10, MIT. Upgraded from
+  0.1.39 (`6f32ec0`) on 2026-11-03; upstream rewrote its history, so the old
+  commit is not an ancestor. The benchmarks and acceptance evidence below were
+  measured on 0.1.39 and have not been repeated on 0.2.10.
 - Pinned llama.cpp GGML/gguf-py dependency:
   `3cf03257f219afbe7334045ff7c6a06ac68c627d`, as selected by this Strata revision.
 - CUDA package versions and Python dependencies come from this repository's
   nixpkgs lock. The engine builds only for the RTX 4090's `sm_89`, with portable
   AVX2 CPU code rather than build-machine-specific instructions. This differs
   from the upstream pip environment but stays declarative and pinned.
-- A minimal packaging patch treats unavailable psutil disk counters as missing
-  telemetry. This avoids an upstream crash in the Nix sandbox; it does not alter
-  inference or skip the server tests.
+- The only packaging patch adds optional Hugging Face token-file auth to
+  `mtp_fetch` (see provisioning). The earlier psutil disk-counter patch is
+  upstream since 0.1.4x.
+- **Terminal monitor:** `strata-cli monitor --url http://127.0.0.1:18081`
+  (18082 for Q4_K_M) on HAL9000 opens upstream's seven-view TUI; `--once`
+  prints one snapshot. It reads `/metrics` of a running server only, so it
+  never loads a model. Do not reach the backend through llama-swap's
+  `/upstream/<model>/` path: that loads the model and evicts whatever is
+  resident. `strata-cli` is upstream's `strata` command, renamed because
+  `bin/strata` is the engine; `STRATA_NO_HANDOVER=1` disables its self-update
+  hand-over.
 
 The two model shards total **85,202,668,032 bytes**. The provisioning helper
 pins their revision and SHA256, resumes partial downloads, verifies the complete
@@ -319,7 +331,7 @@ concurrency queues requests rather than multiplying resident sequences.
 Primary lifecycle sources:
 [llama-swap process groups](https://github.com/mostlygeek/llama-swap/blob/f94c94ac61a142f15a4d156015bfb8c0511b3bbb/internal/process/runtime_unix.go),
 [stop-before-start router](https://github.com/mostlygeek/llama-swap/blob/f94c94ac61a142f15a4d156015bfb8c0511b3bbb/internal/router/base.go),
-and [Strata server cleanup](https://github.com/Niko1221/Strata/blob/6f32ec070f23ced9f50e704d854d775da52591ab/serve/server.py).
+and [Strata server cleanup](https://github.com/Niko1221/Strata/blob/ffa80d73133ea5c548aefe57889a16e8085a938f/serve/server.py).
 
 ## Reproducible provisioning and access prerequisite
 
