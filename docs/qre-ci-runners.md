@@ -49,8 +49,9 @@ gh api orgs/quantierra/actions/runners --jq '.runners[] | select(.name | startsw
 sudo zfs list storage-fast/qre-ci
 ```
 
-The first job on a fresh dataset builds the workspace from scratch (about
-15 min at 32 jobs); the ones after it compile only what changed.
+The first job on a fresh dataset builds the workspace from scratch (measured:
+6 min 44 s for the whole job at 32 jobs); the ones after it compile only what
+changed.
 
 ## Isolation
 
