@@ -74,9 +74,15 @@ linked from [strata-orca.md](strata-orca.md)) and carry over unchanged.
 
 ## Status (2026-11-03)
 
-- Q2_0 runs at 128K on Strata v0.2.10.
-- IQ3_XXS and UD-Q4_K_XL are new: first loads and speeds are not yet
-  measured. UD-Q4_K_XL's 77 GB of experts exceed the RAM budget, so more of
-  them are read from the SSD; expect it to be the slowest.
-- Upstream validates the ISTA files for this engine; the Unsloth file is
-  upstream-supported in budget mode.
+First checks after provisioning, 128K context, Strata v0.2.10 (single short
+runs, not a benchmark):
+
+| Model | Cold start + first answer | Decode |
+| --- | --- | --- |
+| Q2_0 | 36 s | ~124 tok/s (short reply) |
+| IQ3_XXS | 38 s | ~64 tok/s (short reply) |
+| UD-Q4_K_XL | 36 s | 10 tok/s cold, 23-26 tok/s warm on ~250-token answers |
+
+All answered an arithmetic check correctly and used about 22.1 GiB of VRAM.
+UD-Q4_K_XL's 77 GB of experts exceed the 24 GiB RAM budget, so it reads the
+most from the SSD and is the slowest. The old Orca data was deleted.
