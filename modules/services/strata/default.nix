@@ -97,6 +97,23 @@ let
       }
     )
   );
+  # Follows whichever Strata model llama-swap has loaded; the port list is
+  # collected from every Strata module through monitorPorts.
+  monitor = pkgs.writeShellApplication {
+    name = "strata-monitor";
+    runtimeInputs = [
+      package
+      pkgs.curl
+      pkgs.jq
+      pkgs.coreutils
+      pkgs.ncurses
+    ];
+    text = ''
+      export STRATA_PORTS="${lib.concatMapStringsSep " " toString cfg.monitorPorts}"
+      export STRATA_SWAP_URL="http://127.0.0.1:${toString config.services.llama-swap.port}"
+      exec ${pkgs.bash}/bin/bash ${../../../scripts/strata-monitor.sh} "$@"
+    '';
+  };
   launcher = pkgs.writeShellApplication {
     name = "strata-orca-launch";
     runtimeInputs = [
@@ -257,6 +274,12 @@ in
         description = "Most context tokens one image becomes; upstream uses 1024 on GPU and 300 on CPU";
       };
     };
+    monitorPorts = lib.mkOption {
+      type = lib.types.listOf lib.types.port;
+      internal = true;
+      default = [ ];
+      description = "Backend ports of every Strata model, for strata-monitor; each Strata module adds its own port";
+    };
     port = lib.mkOption {
       type = lib.types.port;
       default = 18081;
@@ -264,7 +287,11 @@ in
     };
   };
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ package ];
+    environment.systemPackages = [
+      package
+      monitor
+    ];
+    services.strata-orca.monitorPorts = [ cfg.port ];
     users.groups.strata-orca = { };
     users.users.strata-orca = {
       isSystemUser = true;

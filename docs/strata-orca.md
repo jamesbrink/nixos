@@ -273,9 +273,14 @@ boundary. Existing OMP sessions must reload the model configuration.
 - The only packaging patch adds optional Hugging Face token-file auth to
   `mtp_fetch` (see provisioning). The earlier psutil disk-counter patch is
   upstream since 0.1.4x.
-- **Terminal monitor:** `strata-cli monitor --url http://127.0.0.1:18081`
-  (18082 for Q4_K_M) on HAL9000 opens upstream's seven-view TUI; `--once`
-  prints one snapshot. It reads `/metrics` of a running server only, so it
+- **Terminal monitor:** run `strata-monitor` on HAL9000. It asks llama-swap
+  which Strata model is loaded, opens upstream's seven-view TUI on that
+  backend, reopens it on the new port when the model switches, and waits
+  while only llama.cpp models are loaded. `--once` prints one snapshot. The
+  ports come from `services.strata-orca.monitorPorts`, which every Strata
+  module fills with its own `port`, so new models need no helper changes.
+  Direct form: `strata-cli monitor --url http://127.0.0.1:<port>` (18081
+  IQ3_XXS, 18082 Q4_K_M, 18083 Q2_0). It reads `/metrics` of a running server only, so it
   never loads a model. Do not reach the backend through llama-swap's
   `/upstream/<model>/` path: that loads the model and evicts whatever is
   resident. `strata-cli` is upstream's `strata` command, renamed because

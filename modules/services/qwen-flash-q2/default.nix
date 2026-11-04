@@ -104,6 +104,7 @@ in
   };
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ provision ];
+    services.strata-orca.monitorPorts = [ cfg.port ];
     assertions = [
       {
         assertion = primary.enable;
