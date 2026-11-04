@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Check for files larger than 5MB
-LARGE_FILES=$(find . -type f -size +5000k | grep -vE "^\./\.(git|nix-profile)" | grep -vE "^\./(result|result-|secrets|nix-secrets|nixos-old)" || true)
+# Check for files larger than 5MB. Submodules (external/, secrets, mikrotik-terraform) carry
+# their own content and are not this repo's to police.
+LARGE_FILES=$(find . -type f -size +5000k | grep -vE "^\./\.(git|nix-profile)" | grep -vE "^\./(result|result-|secrets|nix-secrets|nixos-old|external|mikrotik-terraform)" || true)
 
 if [ -n "$LARGE_FILES" ]; then
     echo "Error: Large files detected (>5MB):"

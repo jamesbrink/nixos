@@ -53,6 +53,8 @@ in
     ../../modules/services/samba-server.nix
     ../../modules/services/internal-dns
     ../../modules/services/claude-remote-control.nix
+    # GitHub Actions runners for nyc-real-estate-rust's rust CI job (docs/qre-ci-runners.md).
+    ../../modules/services/qre-ci-runners.nix
     # ../../modules/services/netboot-server.nix  # Replaced by tftp-server.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
