@@ -7,6 +7,13 @@
   self,
   ...
 }@args:
+let
+  # Qwen3.8-27B (llama.cpp) KV pool, shared by its 2 slots. Revert to 65536
+  # for the measured 64K setup. Above 64K the KV cache drops to q4_0, since
+  # q8_0 at 128K does not fit the 4090 (64K x q8_0 + mmproj = 21.3 GB).
+  qwen38ContextTokens = 131072;
+  qwen38KvType = if qwen38ContextTokens > 65536 then "q4_0" else "q8_0";
+in
 {
   assertions = [
     {
@@ -648,13 +655,14 @@
     memoryMode = "bounded-mmap";
     residentBudgetGiB = 24;
     residentHeadroomGiB = 8;
-    # Total prompt + reasoning + answer capacity. Change this one setting to
-    # switch windows: 32768 = 32K, 65536 = 64K. 128K needs a new hardware test.
+    # Total prompt + reasoning + answer capacity for all three Strata models
+    # (both Orca quants and qwen-flash-q2). Change this one setting to switch
+    # windows: 32768 = 32K, 65536 = 64K (measured), 131072 = 128K (2026-11-03).
     # 64K passed retrieval at 59469 input tokens; it trades GPU expert-cache
     # slots for context (7426 vs 7857 at 32K in the 7-worker screening run).
     # After activation, match OMP contextWindow to this value; keep its output
     # cap at 8192 and compact before the prompt consumes the remaining room.
-    contextTokens = 65536;
+    contextTokens = 131072;
     # Matched 2026-10-05 local trials; retain native PCIe bandwidth probing.
     prefillTokens = 2048;
     kvType = "fp16";
@@ -809,8 +817,8 @@
       # (UD-Q4_K_M, q8_0 KV, prism-87268f7): 50 t/s single stream without
       # speculation; MTP draft (Q4_0, 3 tokens) gives 120-129 t/s on code and
       # 93 t/s on prose (acceptance ~80% / ~50%). The Q8_0 MTP draft and
-      # DFlash OOM at 64K; DFlash matched MTP at 32K. 4 slots + vision, or
-      # 128K ctx, do not fit: 64K x 2 slots + mmproj = 21.3 GB of ~21.9 free.
+      # DFlash OOM at 64K; DFlash matched MTP at 32K. 4 slots + vision do
+      # not fit. Context and KV type come from qwen38ContextTokens at the top.
       models."qwen3.8-27b" = {
         ttl = 600;
         concurrencyLimit = 64;
@@ -821,7 +829,7 @@
           "-md \${models}/Qwen3.8-27B/MTP/mtp-Qwen3.8-27B-Q4_0.gguf"
           "--mmproj \${models}/Qwen3.8-27B/mmproj-Qwen3.8-27B-Q8_0.gguf"
           "--image-min-tokens 1024"
-          "-c 65536 -ctk q8_0 -ctv q8_0 -np 2"
+          "-c ${toString qwen38ContextTokens} -ctk ${qwen38KvType} -ctv ${qwen38KvType} -np 2"
           "-n 32768"
           "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
         ];
