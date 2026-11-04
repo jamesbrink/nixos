@@ -19,7 +19,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-ORCA = "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs"
+STRATA = "qwen3.8-flash-next-q2_0"
 
 
 def backend(args):
@@ -112,14 +112,14 @@ def integration(binary):
         root = Path(d)
         port = unused_port()
         models = {}
-        for model in ["bonsai-2-27b", "qwen3.8-27b", ORCA]:
+        for model in ["bonsai-2-27b", "qwen3.8-27b", STRATA]:
             backend_port = unused_port()
             models[model] = {
                 "cmd": f"{sys.executable} {Path(__file__).resolve()} --backend --state {d} --model {model} --port {backend_port}"
-                + (" --stubborn" if model == ORCA else ""),
+                + (" --stubborn" if model == STRATA else ""),
                 "proxy": f"http://127.0.0.1:{backend_port}",
                 "checkEndpoint": "/health",
-                "ttl": 1 if model == ORCA else 60,
+                "ttl": 1 if model == STRATA else 60,
                 "unloadTimeout": 1,
                 "useModelName": model,
             }
@@ -168,29 +168,29 @@ def integration(binary):
             try:
                 eventually(ready, "llama-swap did not start")
                 bonsai = ask("bonsai-2-27b")
-                orca = ask(ORCA, stream=True)
+                strata_pids = ask(STRATA, stream=True)
                 assert all(not alive(pid) for pid in bonsai), (
-                    "Bonsai child survived Orca load"
+                    "Bonsai child survived Strata load"
                 )
                 qwen = ask("qwen3.8-27b")
-                assert all(not alive(pid) for pid in orca), (
-                    "Orca server/native child survived model switch"
+                assert all(not alive(pid) for pid in strata_pids), (
+                    "Strata server/native child survived model switch"
                 )
-                orca = ask(ORCA)
+                strata_pids = ask(STRATA)
                 assert all(not alive(pid) for pid in qwen), (
-                    "Qwen child survived Orca load"
+                    "Qwen child survived Strata load"
                 )
                 eventually(
-                    lambda: all(not alive(pid) for pid in orca),
-                    "Orca child survived idle TTL",
+                    lambda: all(not alive(pid) for pid in strata_pids),
+                    "Strata child survived idle TTL",
                 )
-                orca = ask(ORCA)
-                assert orca != pids("qwen3.8-27b")
+                strata_pids = ask(STRATA)
+                assert strata_pids != pids("qwen3.8-27b")
                 swap.terminate()
                 swap.wait(timeout=40)
                 eventually(
-                    lambda: all(not alive(pid) for pid in orca),
-                    "Orca child survived llama-swap shutdown",
+                    lambda: all(not alive(pid) for pid in strata_pids),
+                    "Strata child survived llama-swap shutdown",
                 )
                 print(
                     "PASS: listing, same model ID, eager readiness, streaming, exclusive switches, forced process-tree cleanup, idle TTL, reload, shutdown"

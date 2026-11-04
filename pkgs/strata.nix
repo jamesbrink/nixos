@@ -8,9 +8,6 @@
   ninja,
   python3,
   makeWrapper,
-  curl,
-  coreutils,
-  bash,
 }:
 let
   source = fetchzip {
@@ -104,15 +101,6 @@ cudaPackages.backendStdenv.mkDerivation {
         --set PYTHONDONTWRITEBYTECODE 1 \
         --add-flags "$out/share/strata/tools/$tool.py"
     done
-    makeWrapper ${bash}/bin/bash "$out/bin/strata-orca-provision" \
-      --add-flags ${../scripts/strata-orca-provision.sh} \
-      --set STRATA_SHARE "$out/share/strata" \
-      --prefix PATH : "${
-        lib.makeBinPath [
-          curl
-          coreutils
-        ]
-      }:$out/bin"
     runHook postInstall
   '';
   # strata-vision builds from the same pinned Strata and llama.cpp sources.

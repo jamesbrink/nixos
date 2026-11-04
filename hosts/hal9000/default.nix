@@ -45,8 +45,6 @@ in
     ../../modules/services/strata
     ../../modules/services/mold-local-client.nix
     ../../modules/services/mold-discord-auth.nix
-    ../../modules/services/orca-q4
-    ../../modules/services/qwen-flash-q2
     ../../modules/services/k3s.nix
     ../../modules/services/tftp-server.nix
     ../../modules/services/netboot-configs.nix
@@ -629,17 +627,28 @@ in
     local.ompConfig.host = "hal9000";
   };
 
-  # Orca runs as an on-demand child of the existing llama-swap endpoint.
-  services.strata-orca = {
+  # Strata models (Qwen3.8-Flash-Next, the original model) as on-demand
+  # children of the llama-swap endpoint. Files: modules/services/strata/
+  # catalog.nix; provision with `sudo -u strata strata-provision --provision`.
+  services.strata = {
     enable = true;
-    # Root is the Corsair MP600/ext4; storage-fast is the Crucial P3/ZFS.
-    # Keep weights, native pack, tokenizer and MTP together on this SSD.
-    # To relocate later: copy and verify the complete dataDir first, then
-    # change this path and deploy. The module derives all runtime paths.
-    # Old storage-fast weights were removed; historical reports remain there.
-    dataDir = "/var/lib/strata-orca";
-    # 64 GiB host: keep expert allocation bounded; require 36 GiB available.
-    port = 18081;
+    # Pick models from the catalog; the attribute name is the llama-swap ID.
+    models =
+      let
+        catalog = import ../../modules/services/strata/catalog.nix;
+      in
+      {
+        "qwen3.8-flash-next-iq3_xxs" = catalog.ista-iq3_xxs // {
+          port = 18081;
+        };
+        "qwen3.8-flash-next-ud-q4_k_xl" = catalog.unsloth-ud-q4_k_xl // {
+          port = 18082;
+        };
+        "qwen3.8-flash-next-q2_0" = catalog.ista-q2_0 // {
+          port = 18083;
+        };
+      };
+    # Data lives on the root SSD (Corsair MP600/ext4), /var/lib/strata.
     # Desktop GPU clients observed 2026-10-09: chrome 120, mpv 469, swayosd 12 MiB.
     allowedDesktopComputeProcesses = [
       "chrome"
@@ -652,16 +661,13 @@ in
     # Original threshold: 20480 MiB (20 GiB); restore that value here to roll back.
     minimumFreeVRAMMiB = 18432;
     vramReserveMiB = 2048;
+    # 64 GiB host: keep expert allocation bounded; require 36 GiB available.
     memoryMode = "bounded-mmap";
     residentBudgetGiB = 24;
     residentHeadroomGiB = 8;
-    # Total prompt + reasoning + answer capacity for all three Strata models
-    # (both Orca quants and qwen-flash-q2). Change this one setting to switch
-    # windows: 32768 = 32K, 65536 = 64K (measured), 131072 = 128K (2026-11-03).
-    # 64K passed retrieval at 59469 input tokens; it trades GPU expert-cache
-    # slots for context (7426 vs 7857 at 32K in the 7-worker screening run).
-    # After activation, match OMP contextWindow to this value; keep its output
-    # cap at 8192 and compact before the prompt consumes the remaining room.
+    # Total prompt + reasoning + answer capacity for every Strata model.
+    # Change this one setting to switch windows: 32768 = 32K, 65536 = 64K
+    # (measured), 131072 = 128K (2026-11-03). Match OMP contextWindow to it.
     contextTokens = 131072;
     # Matched 2026-10-05 local trials; retain native PCIe bandwidth probing.
     prefillTokens = 2048;
@@ -669,26 +675,14 @@ in
     specWindow = 4;
     mtpMaxT = 4;
     suffixDraft = 0;
-    # The draft model keeps its own 32K window; this does not cap the target
-    # at 32K. Keep it separate when changing contextTokens (64K was tested).
+    # The draft model keeps its own 32K window; this does not cap the target.
     mtpWindowTokens = 32768;
     poolWorkers = 23;
     poolAffinity = "all";
     pcieFraction = null;
-    # Image input for both quantizations: publisher mmproj (F16, revision
-    # d366e279) on a resident GPU encoder, up to 1024 tokens per image.
+    # Image input: the base model's BF16 mmproj on a GPU encoder.
     vision.enable = true;
   };
-
-  # Exact recommended Q4_K_M, alongside IQ3_XXS. Shares contextTokens above.
-  # Separate Strata pack/tokenizer; matching original MTP is shared read-only.
-  # Its mmap weights remain on the root SSD; switching unloads the prior model.
-  services.orca-q4.enable = true;
-
-  # ISTA-DASLab's original Qwen3.8-Flash-Next Q2_0 (Strata's fastest pack, not
-  # the uncensored fine-tune). Same Orca tuning/guards and shared MTP runtime;
-  # provision with `sudo -u strata-orca strata-qwen-flash-q2-provision --provision`.
-  services.qwen-flash-q2.enable = true;
 
   services.ollama = {
     enable = true;

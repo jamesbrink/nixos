@@ -16,10 +16,10 @@ expression = r"""
 let
   base = (builtins.getFlake (toString ./.)).nixosConfigurations.hal9000;
   resident = base.extendModules {
-    modules = [ ({ lib, ... }: { services.strata-orca.memoryMode = lib.mkForce "resident"; }) ];
+    modules = [ ({ lib, ... }: { services.strata.memoryMode = lib.mkForce "resident"; }) ];
   };
-  json = host: builtins.fromJSON (builtins.unsafeDiscardStringContext host.config.environment.etc."strata-orca.json".source.text);
-in { bounded = json base; resident = json resident; defaultAllowlist = base.options.services.strata-orca.allowedDesktopComputeProcesses.default; nvidiaSmi = "${base.config.hardware.nvidia.package.bin}/bin/nvidia-smi"; guardCommand = base.config.services.llama-swap.settings.models."orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs".cmd; }
+  json = host: builtins.fromJSON (builtins.unsafeDiscardStringContext host.config.environment.etc."strata/qwen3.8-flash-next-q2_0.json".source.text);
+in { bounded = json base; resident = json resident; defaultAllowlist = base.options.services.strata.allowedDesktopComputeProcesses.default; nvidiaSmi = "${base.config.hardware.nvidia.package.bin}/bin/nvidia-smi"; guardCommand = base.config.services.llama-swap.settings.models."qwen3.8-flash-next-q2_0".cmd; }
 """
 result = json.loads(
     subprocess.check_output(
@@ -41,18 +41,18 @@ if args.check_host:
         "Evaluated launcher uses wrong NVIDIA output"
     )
     listeners = subprocess.check_output(
-        ["ssh", args.check_host, "ss -H -ltn " + shlex.quote("sport = :18081")],
+        ["ssh", args.check_host, "ss -H -ltn " + shlex.quote("sport = :18083")],
         text=True,
     ).strip()
-    assert not listeners, "Orca loopback port18081 is already occupied: " + listeners
+    assert not listeners, "Strata loopback port 18083 is already occupied: " + listeners
     print(
-        "Verified target port18081 unused and evaluated launcher NVIDIA bin output: "
+        "Verified target port 18083 unused and evaluated launcher NVIDIA bin output: "
         + nvidia_smi
     )
 for mode, config in result.items():
     args = config["args"]
-    assert config["model_name"] == "orcarouter-qwen3.8-flash-next-uncensored-iq3_xxs"
-    assert config["host"] == "127.0.0.1" and config["port"] == 18081
+    assert config["model_name"] == "qwen3.8-flash-next-q2_0"
+    assert config["host"] == "127.0.0.1" and config["port"] == 18083
     assert config["allowed_desktop_compute_processes"] == [
         "chrome",
         "mpv",
@@ -60,7 +60,7 @@ for mode, config in result.items():
         "walker",
     ]
     assert config["maximum_desktop_compute_mib"] == 1024
-    assert config["minimum_free_vram_mib"] == 20480
+    assert config["minimum_free_vram_mib"] == 18432
     assert args[args.index("--vram-reserve-mib") + 1] == "2048"
     if mode == "bounded":
         assert config["memory_mode"] == "bounded-mmap"

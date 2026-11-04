@@ -8,12 +8,12 @@ expression = r"""
 let
   base = (builtins.getFlake (toString ./.)).nixosConfigurations.hal9000;
   names = [ "contextTokens" "prefillTokens" "kvType" "specWindow" "mtpMaxT" "suffixDraft" "mtpWindowTokens" "poolWorkers" "poolAffinity" "pcieFraction" ];
-  options = base.options.services.strata-orca;
+  options = base.options.services.strata;
   defaults = builtins.listToAttrs (map (name: { inherit name; value = options.${name}.default; }) names);
   host = values: base.extendModules {
-    modules = [ ({ lib, ... }: { services.strata-orca = lib.mapAttrs (_: value: lib.mkForce value) values; }) ];
+    modules = [ ({ lib, ... }: { services.strata = lib.mapAttrs (_: value: lib.mkForce value) values; }) ];
   };
-  json = h: builtins.fromJSON (builtins.unsafeDiscardStringContext h.config.environment.etc."strata-orca.json".source.text);
+  json = h: builtins.fromJSON (builtins.unsafeDiscardStringContext h.config.environment.etc."strata/qwen3.8-flash-next-q2_0.json".source.text);
   valid = {
     contextTokens = 65536; prefillTokens = 2048; kvType = "fp16";
     specWindow = 6; mtpMaxT = 4; suffixDraft = 0; mtpWindowTokens = 32768;
@@ -72,7 +72,7 @@ def flags(config):
 baseline, candidate, small = (result[key] for key in ("baseline", "candidate", "small"))
 selected = result["selectedHost"]
 h = flags(selected)
-assert h["--max-context"] == "65536" and h["--mtp-window"] == "32768"
+assert h["--max-context"] == "131072" and h["--mtp-window"] == "32768"
 assert h["--prefill"] == "2048" and h["--kv"] == "fp16"
 assert h["--spec"] == h["--mtp-max-t"] == "4" and h["--suffix-draft"] == "0"
 assert h["--pool-workers"] == "23" and h["--pool-affinity"] == "all"

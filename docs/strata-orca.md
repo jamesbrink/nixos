@@ -1,5 +1,7 @@
 # Orca Flash Next through the shared llama-swap API
 
+> **Historical.** The Orca fine-tunes were retired on 2026-11-03 in favour of the original Qwen3.8-Flash-Next files; the current setup is in [strata.md](strata.md). This page keeps the Orca provisioning, tuning and benchmark evidence the shared settings came from; module and option names in it (`services.strata-orca`, `services.orca-q4`, `services.qwen-flash-q2`) no longer exist.
+
 This adds the **OrcaRouter Qwen3.8-Flash-Next uncensored** model in IQ3_XXS and
 Q4_K_M quantizations through Strata, alongside the existing Bonsai/Qwen llama-swap stack. This is an explicit
 local compatibility workflow, not a replacement with the aligned GSQ-RCO weights

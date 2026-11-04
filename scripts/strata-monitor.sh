@@ -27,6 +27,9 @@ running_names() {
 }
 
 restore_tty() {
+  # A killed Textual app leaves mouse, focus and paste reporting on, which
+  # prints mouse moves as text: turn every such mode off explicitly.
+  printf '\e[?1000l\e[?1002l\e[?1003l\e[?1005l\e[?1006l\e[?1015l\e[?1004l\e[?2004l' >/dev/tty 2>/dev/null || true
   stty sane 2>/dev/null || true
   tput rmcup 2>/dev/null || true
   tput cnorm 2>/dev/null || true
@@ -63,6 +66,8 @@ while true; do
     sleep "$interval"
     if [ "$(current)" != "$url" ]; then
       switched=1
+      # Background jobs ignore SIGINT without job control, so TERM it;
+      # restore_tty below undoes the terminal modes it leaves behind.
       kill "$pid" 2>/dev/null || true
       break
     fi
