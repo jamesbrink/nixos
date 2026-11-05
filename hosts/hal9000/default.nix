@@ -1373,6 +1373,9 @@ in
     # Mold CLI; the service module only wires the server binary
     inputs.mold.packages.x86_64-linux.mold
     audit
+    # Quantierra dev-DB work: restore/replay from prod's pgBackRest repo if a
+    # direct ZFS send is ever unavailable (needs stanza config + S3 creds).
+    pgbackrest
     bottles
     bridge-utils
     bubblewrap # Codex sandbox expects bwrap on PATH
