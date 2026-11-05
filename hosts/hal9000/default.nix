@@ -55,6 +55,8 @@ in
     ../../modules/services/claude-remote-control.nix
     # GitHub Actions runners for nyc-real-estate-rust's rust CI job (docs/qre-ci-runners.md).
     ../../modules/services/qre-ci-runners.nix
+    # Quantierra dev database: prod copy from pgBackRest on the 20 TB disk (docs/qre-devdb.md).
+    ../../modules/services/qre-devdb.nix
     # ../../modules/services/netboot-server.nix  # Replaced by tftp-server.nix
     (import "${args.inputs.nixos-unstable}/nixos/modules/services/misc/ollama.nix")
   ];
@@ -1373,9 +1375,6 @@ in
     # Mold CLI; the service module only wires the server binary
     inputs.mold.packages.x86_64-linux.mold
     audit
-    # Quantierra dev-DB work: restore/replay from prod's pgBackRest repo if a
-    # direct ZFS send is ever unavailable (needs stanza config + S3 creds).
-    pgbackrest
     bottles
     bridge-utils
     bubblewrap # Codex sandbox expects bwrap on PATH
