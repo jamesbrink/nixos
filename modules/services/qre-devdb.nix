@@ -1,15 +1,16 @@
 # Quantierra dev database on hal9000 (docs/qre-devdb.md): a copy of prod
 # restored from prod's pgBackRest repository (S3, through a read-only IAM
-# user) into a file-backed zpool on the 20 TB disk, served from a promoted
-# ZFS clone on :5433. This is loader-dev's devpool/standby + devpool/dev
+# user) onto the external SanDisk SSD (zpool storage-ssd, imported by
+# storage-ssd-import.service in hosts/hal9000), served from a promoted ZFS
+# clone on :5433. This is loader-dev's devpool/standby + devpool/dev
 # workflow (quantierra/infra terraform/envs/dev/loader.nix) without the
 # standby: refreshes are run by hand and pull a delta from S3.
 #
-#   qre-devpool          /mnt/storage20tb/qre-devpool.img (sparse image, 5 T)
-#   qre-devpool/base     /qre-devdb/base/pg17: the pristine prod image, kept
-#                        stopped; dev is cloned from its newest snapshot
-#   qre-devpool/dev      /qre-devdb/dev/pg17: promoted clone of base@<ts>,
-#                        the dev database (qre-devdb.service, :5433)
+#   storage-ssd/qre-devdb       mountpoint=none container
+#   storage-ssd/qre-devdb/base  /qre-devdb/base/pg17: the pristine prod image,
+#                               kept stopped; dev is cloned from its newest snapshot
+#   storage-ssd/qre-devdb/dev   /qre-devdb/dev/pg17: promoted clone of base@<ts>,
+#                               the dev database (qre-devdb.service, :5433)
 #
 #   qre-devdb-status
 #   qre-devdb-restore [--to-latest]      rebuild base from S3 (a delta over the
@@ -26,8 +27,7 @@
 # read-only credentials for prod's repository and must never push WAL into
 # it); pg_cron is never preloaded (prod's jobs must not run here); the
 # postgres units only start on a data directory that has PG_VERSION (never
-# initdb); the pool, its datasets and the image are created by hand, never
-# by Nix.
+# initdb); the pool and its datasets are created by hand, never by Nix.
 {
   config,
   lib,
@@ -36,8 +36,11 @@
   ...
 }:
 let
-  pool = "qre-devpool";
-  poolImage = "/mnt/storage20tb/qre-devpool.img";
+  # Dataset prefix: <zpool>/<container>. The zpool is imported (and exported
+  # before the USB disk goes away) by this unit, declared with the pool.
+  pool = "storage-ssd/qre-devdb";
+  zpoolName = "storage-ssd";
+  poolImportUnit = "storage-ssd-import.service";
   baseDir = "/qre-devdb/base/pg17";
   devDir = "/qre-devdb/dev/pg17";
   devPort = 5433;
@@ -58,7 +61,6 @@ let
   );
   zfsPkg = config.boot.zfs.package;
   zfs = "${zfsPkg}/bin/zfs";
-  zpool = "${zfsPkg}/bin/zpool";
 
   # Prod's postgresql.conf rides along in the restore (archive_command into
   # prod's repo, hba/ident/log/cert paths that do not exist here, pg_cron).
@@ -196,12 +198,11 @@ let
     runtimeInputs = commonInputs;
     text = ''
       echo "== pool"
-      zpool list -o name,size,alloc,free,health ${pool} 2>/dev/null || echo "${pool} is not imported"
-      df -h ${dirOf poolImage} | tail -n 1
+      zpool list -o name,size,alloc,free,health ${zpoolName} 2>/dev/null || echo "${zpoolName} is not imported"
       echo "== datasets"
       zfs list -t all -r -o name,used,refer,creation,qre:prod_as_of ${pool} 2>/dev/null || true
       echo "== units"
-      for u in qre-devpool-import qre-devdb qre-devdb-base qre-devdb-restore qre-devdb-refresh; do
+      for u in ${lib.removeSuffix ".service" poolImportUnit} qre-devdb qre-devdb-base qre-devdb-restore qre-devdb-refresh; do
         printf '%-20s %s\n' "$u" "$(systemctl is-active "$u" 2>/dev/null || true)"
       done
       echo "== dev"
@@ -558,46 +559,12 @@ in
 
   networking.firewall.allowedTCPPorts = [ devPort ];
 
-  # The pool lives in a file on the USB-attached 20 TB disk, so NixOS's
-  # by-name import (boot.zfs.extraPools scans /dev/disk/by-id) cannot find
-  # it; import it after the disk is mounted, export it before the disk goes
-  # away. A missing disk or image just leaves the dev database off.
-  systemd.services.qre-devpool-import = {
-    description = "Import ${pool} (file-backed zpool on the 20 TB disk) and mount its datasets";
-    wantedBy = [ "multi-user.target" ];
-    after = [
-      "zfs-import.target"
-      "zfs-mount.service"
-    ];
-    unitConfig = {
-      RequiresMountsFor = [ (dirOf poolImage) ];
-      ConditionPathExists = poolImage;
-    };
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStop = "-${zpool} export ${pool}";
-    };
-    script = ''
-      if ! ${zpool} list -H ${pool} >/dev/null 2>&1; then
-        ${zpool} import -N -d ${poolImage} ${pool}
-      fi
-      ${zfs} list -H -r -t filesystem -o name,mountpoint,canmount,mounted ${pool} \
-        | while read -r name mountpoint canmount mounted; do
-            if [ "$canmount" = on ] && [ "$mounted" = no ] \
-              && [ "$mountpoint" != none ] && [ "$mountpoint" != legacy ]; then
-              ${zfs} mount "$name"
-            fi
-          done
-    '';
-  };
-
   systemd.services.qre-devdb = {
     description = "Quantierra dev database (prod copy on ${pool}/dev, port ${toString devPort})";
     wantedBy = [ "multi-user.target" ];
-    requires = [ "qre-devpool-import.service" ];
+    requires = [ poolImportUnit ];
     after = [
-      "qre-devpool-import.service"
+      poolImportUnit
       "network.target"
     ];
     unitConfig = {
@@ -622,9 +589,9 @@ in
   # the restore asked for, promotes, gets snapshotted, stops.
   systemd.services.qre-devdb-base = {
     description = "Quantierra dev database base copy (${pool}/base, recovery only, port ${toString basePort})";
-    requires = [ "qre-devpool-import.service" ];
+    requires = [ poolImportUnit ];
     after = [
-      "qre-devpool-import.service"
+      poolImportUnit
       "network.target"
     ];
     unitConfig = {

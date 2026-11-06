@@ -11,25 +11,26 @@ the hot standby: refreshes are run by hand.
 
 ## Layout
 
-| Thing                                                     | Where                                            | Role                                                                           |
-| --------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `qre-devpool`                                             | `/mnt/storage20tb/qre-devpool.img` (sparse, 5 T) | file-backed zpool, lz4, ashift 12                                              |
-| `qre-devpool/base`                                        | `/qre-devdb/base/pg17`                           | pristine prod image, kept stopped; refreshed from S3                           |
-| `qre-devpool/dev`                                         | `/qre-devdb/dev/pg17`                            | clone of `base@<ts>`, the dev database                                         |
-| `qre-devdb.service`                                       | `:5433`, socket `/run/qre-devdb`                 | dev PostgreSQL 17 (postgis, pg_cron, pg_partman, pg_repack)                    |
-| `qre-devdb-base.service`                                  | `:5434`, socket `/run/qre-devdb-base`            | started only by `qre-devdb-restore` to recover and promote base                |
-| `qre-devpool-import.service`                              |                                                  | imports the pool after the 20 TB disk is mounted, exports it before it goes    |
-| `/etc/pgbackrest/pgbackrest.conf` + `conf.d/secrets.conf` |                                                  | client config; secrets from agenix `hal9000/qre-devdb-pgbackrest.age`          |
-| `/run/agenix/qre-devdb-env`                               |                                                  | `DEVDB_PASSWORD`, the dev password sanitize sets (`hal9000/qre-devdb-env.age`) |
+| Thing                                                     | Where                                 | Role                                                                           |
+| --------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------ |
+| `storage-ssd`                                             | SanDisk Extreme Pro 4 TB (USB, UAS)   | zpool, lz4, ashift 12, autotrim; `hosts/hal9000/default.nix`                   |
+| `storage-ssd/qre-devdb/base`                              | `/qre-devdb/base/pg17`                | pristine prod image, kept stopped; refreshed from S3                           |
+| `storage-ssd/qre-devdb/dev`                               | `/qre-devdb/dev/pg17`                 | clone of `base@<ts>`, the dev database                                         |
+| `qre-devdb.service`                                       | `:5433`, socket `/run/qre-devdb`      | dev PostgreSQL 17 (postgis, pg_cron, pg_partman, pg_repack)                    |
+| `qre-devdb-base.service`                                  | `:5434`, socket `/run/qre-devdb-base` | started only by `qre-devdb-restore` to recover and promote base                |
+| `storage-ssd-import.service`                              |                                       | imports the pool when the SSD is present (udev on hotplug), exports on stop    |
+| `/etc/pgbackrest/pgbackrest.conf` + `conf.d/secrets.conf` |                                       | client config; secrets from agenix `hal9000/qre-devdb-pgbackrest.age`          |
+| `/run/agenix/qre-devdb-env`                               |                                       | `DEVDB_PASSWORD`, the dev password sanitize sets (`hal9000/qre-devdb-env.age`) |
 
-The pool, the image and the datasets were created by hand (never by Nix):
+The pool and the datasets were created by hand (never by Nix):
 
 ```sh
-truncate -s 5T /mnt/storage20tb/qre-devpool.img
-zpool create -o ashift=12 -O compression=lz4 -O atime=off -O xattr=sa \
-  -O acltype=posixacl -O normalization=formD -O mountpoint=none \
-  qre-devpool /mnt/storage20tb/qre-devpool.img
-zfs create -o recordsize=8K -o logbias=throughput -o mountpoint=/qre-devdb/base qre-devpool/base
+zpool create -o ashift=12 -o autotrim=on -o cachefile=none \
+  -O compression=lz4 -O atime=off -O xattr=sa -O acltype=posixacl \
+  -O mountpoint=/mnt/storage-ssd storage-ssd \
+  /dev/disk/by-id/usb-SanDisk_Extreme_Pro_55AF_323531364250343032313335-0:0
+zfs create -o mountpoint=none storage-ssd/qre-devdb
+zfs create -o recordsize=8K -o logbias=throughput -o mountpoint=/qre-devdb/base storage-ssd/qre-devdb/base
 install -d -m 0700 -o postgres -g postgres /qre-devdb/base/pg17
 ```
 
@@ -93,8 +94,10 @@ the database; removes prod's TLS certs from the data directory.
 - Prod's `postgresql.conf` in the data directory is ignored (`-c config_file`
   points at the Nix-generated one); memory is forced with `-c`, which beats
   prod's `postgresql.auto.conf` until sanitize resets it.
-- The 20 TB disk is USB with `nofail`: if it is absent, the pool is not
-  imported and the dev database stays off. Nothing else depends on it.
+- The SSD is USB: if it is absent `storage-ssd-import.service` is skipped and
+  the dev database stays off; plugging it in imports the pool and the database
+  can be started. `systemctl stop storage-ssd-import` exports it before
+  unplugging. Nothing else depends on it.
 
 ## First build (2026-11-05)
 
@@ -106,6 +109,13 @@ promoted on timeline 2 with prod data as of 2026-11-04 05:34 UTC. Snapshot
 
 ## Moving it
 
-`zfs send -R qre-devpool/base@<snap> | zfs receive otherpool/base` moves
-the copy to another disk (the external SanDisk 4 TB SSD is the candidate)
-without touching S3; point the module's paths at the new pool.
+`zfs send -R <pool>/base@<snap> | zfs receive -u -s <other>/base` moves the
+copy to another disk without touching S3; point the module's `pool` at the new
+prefix, deploy, then `qre-devdb-refresh --reuse-base` rebuilds dev there.
+
+The first build lived in a file-backed zpool `qre-devpool`
+(`/mnt/storage20tb/qre-devpool.img`, 5 T sparse, on the 20 TB USB HDD) and was
+moved to the SSD this way on 2026-11-06 (2.12 T, ~4 h). The old pool is kept
+exported as a cold fallback copy of `base@20261104T0534Z-initial`; import it with
+`zpool import -N -d /mnt/storage20tb/qre-devpool.img qre-devpool`, or reclaim
+the 2.12 T with `rm /mnt/storage20tb/qre-devpool.img`.
