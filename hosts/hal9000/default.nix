@@ -288,7 +288,49 @@ in
   # drive serial so it can't match another disk if sdX letters shuffle.
   services.udev.extraRules = ''
     ACTION=="add|change", SUBSYSTEM=="block", KERNEL=="sd[a-z]", ENV{ID_SERIAL_SHORT}=="21J3NTGF", ATTR{queue/read_ahead_kb}="2048"
+    # SanDisk Extreme Pro plugged in after boot: import its zpool (see storage-ssd-import).
+    ACTION=="add", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ENV{ID_SERIAL}=="SanDisk_Extreme_Pro_55AF_323531364250343032313335-0:0", TAG+="systemd", ENV{SYSTEMD_WANTS}+="storage-ssd-import.service"
   '';
+
+  # 4 TB SanDisk Extreme Pro (USB, UAS, 10 Gbps): zpool `storage-ssd`, mounted
+  # at /mnt/storage-ssd. Created by hand, never by activation:
+  #   zpool create -o ashift=12 -o autotrim=on -o cachefile=none \
+  #     -O compression=lz4 -O atime=off -O xattr=sa -O acltype=posixacl \
+  #     -O mountpoint=/mnt/storage-ssd storage-ssd \
+  #     /dev/disk/by-id/usb-SanDisk_Extreme_Pro_55AF_323531364250343032313335-0:0
+  # Deliberately NOT in boot.zfs.extraPools or fileSystems: both make boot wait
+  # on a disk that may be unplugged (extraPools polls 60 s, an fstab unit can
+  # drop to emergency mode). Nothing Requires this unit, so boot cannot block
+  # on it: when the disk is absent the Condition skips it; when the disk shows
+  # up later the udev rule above starts it; stopping it exports the pool, so
+  # `systemctl stop storage-ssd-import` is the "safe to unplug" step and
+  # shutdown exports it automatically (bounded by DefaultTimeoutStopSec).
+  systemd.services.storage-ssd-import = {
+    description = "Import the storage-ssd zpool (SanDisk Extreme Pro) and mount its datasets";
+    wantedBy = [ "multi-user.target" ];
+    after = [
+      "zfs-import.target"
+      "zfs-mount.service"
+    ];
+    unitConfig.ConditionPathExists = "/dev/disk/by-id/usb-SanDisk_Extreme_Pro_55AF_323531364250343032313335-0:0";
+    path = [ pkgs.zfs ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStop = "-${pkgs.zfs}/bin/zpool export storage-ssd";
+    };
+    script = ''
+      if ! zpool list -H storage-ssd >/dev/null 2>&1; then
+        zpool import -N -d /dev/disk/by-id storage-ssd
+      fi
+      zfs list -H -o name,canmount,mounted -r storage-ssd | while read -r ds canmount mounted; do
+        if [ "$canmount" = on ] && [ "$mounted" != yes ]; then
+          zfs mount "$ds"
+        fi
+      done
+      zpool status -x storage-ssd
+    '';
+  };
 
   fileSystems."/export/storage20tb" = {
     device = "/mnt/storage20tb";
