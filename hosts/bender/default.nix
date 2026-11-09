@@ -28,7 +28,6 @@
   # Time zone
   time.timeZone = "America/Phoenix";
 
-  # OpenClaw dependencies
   # Point mold CLI at hal9000's inference server
   environment.variables.MOLD_HOST = "http://hal9000.home.urandom.io:7680";
 
@@ -39,55 +38,15 @@
     host = "0.0.0.0";
   };
 
-  # Core runtime (nodejs, pnpm, bun) comes from shared-packages
-  # Channel integrations use API libraries (no native clients needed for Discord/Telegram/Slack/WhatsApp)
-  environment.systemPackages = with pkgs; [
-    # Signal channel support
-    signal-cli
-
-    # Skills dependencies
-    ffmpeg # video-frames skill, camsnap, sherpa-onnx-tts
-    uv # Python-based skills (nano-banana-pro, local-places, etc.)
-
-    # Productivity tools for OpenClaw skills
-    jq # session-logs, trello
-    ripgrep # session-logs skill (rg)
-    gh # github skill
-
-    # Email
-    himalaya # IMAP/SMTP CLI
-
-    # Audio/Voice
-    openai-whisper # local speech-to-text
-
-    # Music
-    spotify-player
-
-    # Terminal
-    alacritty
-  ];
-
-  # Homebrew packages for OpenClaw
+  # OpenClaw, Hermes and their skill dependencies were removed on 2026-11-09
+  # (archive: hal9000 /mnt/storage20tb/Backups/bender-openclaw-hermes-2026-11-09).
+  # Peekaboo stays for macOS UI automation over SSH.
   homebrew.taps = [
     "openclaw/tap" # Peekaboo's current home; steipete/tap stopped at 4.3.0
-    "steipete/tap"
-    "openhue/cli"
-    "yakitrak/yakitrak"
   ];
 
   homebrew.brews = [
-    # OpenClaw macOS skills
     "openclaw/tap/peekaboo" # macOS UI automation
-    "steipete/tap/gifgrep" # GIF search
-    "steipete/tap/imsg" # iMessage CLI (requires Full Disk Access)
-    "steipete/tap/camsnap" # IP camera snapshots
-    "steipete/tap/remindctl" # Apple Reminders
-
-    # Smart Home
-    "openhue/cli/openhue-cli" # Philips Hue lights
-
-    # Productivity
-    "yakitrak/yakitrak/obsidian-cli" # Obsidian vault
   ];
 
   # Peekaboo's Bridge daemon, started by launchd inside the GUI session.

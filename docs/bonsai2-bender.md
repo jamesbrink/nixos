@@ -3,7 +3,7 @@
 Bender serves `bonsai-2-27b` through an OpenAI-compatible endpoint at
 `http://bender:8080/v1`. `llama-swap` keeps the endpoint available and starts the
 Metal backend on the first request. It unloads the model after 600 idle seconds so
-the Mac returns unified memory to OpenClaw and normal macOS workloads.
+the Mac returns unified memory to normal macOS workloads.
 
 ## Hardware and capacity
 
