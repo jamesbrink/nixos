@@ -38,9 +38,9 @@ The runtime is intentionally different from Hal 9000:
 | Runtime     | PrismML llama.cpp fork, Metal      | Stock llama.cpp does not implement all Bonsai 2 transforms or PQ2_0 kernels.                              |
 | Packing     | PQ2_0                              | Fastest measured Apple Silicon packing for both prompt processing and decode.                             |
 | GPU offload | All layers (`--n-gpu-layers 99`)   | M4 unified memory avoids PCIe transfers.                                                                  |
-| Context     | 16,384 tokens                      | PrismML's safe automatic tier for Macs with 12–23 GB RAM.                                                 |
+| Context     | 32,768 tokens                      | Raised from PrismML's 16K tier on 2026-10-06 (`d55aa2e`); Q8 KV keeps it inside 16 GB.                    |
 | Slots       | 1                                  | Avoids dividing the small context and prevents concurrent requests from multiplying active state.         |
-| KV cache    | F16                                | Best conservative performance choice at the 16K memory-safe context.                                      |
+| KV cache    | Q8_0                               | Halves KV memory against F16 so the 32K slot fits beside the model.                                       |
 | Vision      | Q8_0 projector, 1,024 image tokens | Retains Hal's multimodal capability while bounding image prefill and applying the grounding workaround.   |
 | Speculation | Disabled                           | Bonsai 2 has no official drafter; PrismML does not recommend the older speculative path on Apple Silicon. |
 | Idle unload | 600 seconds                        | Prevents a roughly 8–10 GB model/runtime working set from remaining resident.                             |
@@ -85,7 +85,7 @@ curl --fail --silent http://bender:8080/v1/models | jq
 ```
 
 Run a bounded smoke request. `reasoning_effort: medium` is preferred on this
-16K deployment because the model's default `xhigh` reasoning can consume the
+32K deployment because the model's default `xhigh` reasoning can consume the
 output budget before returning an answer.
 
 ```bash

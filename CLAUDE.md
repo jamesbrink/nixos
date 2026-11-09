@@ -96,7 +96,7 @@ Hal9000 explicitly sets `services.llama-swap.listenAddress = "0.0.0.0"` with `op
 
 ### Bonsai 2 serving (bender)
 
-`services.bonsai2` exposes `http://bender:8080/v1` with model ID `bonsai-2-27b`. It uses the PrismML llama.cpp fork's Metal backend, official PQ2_0 weights and Q8_0 vision projector, one 16K F16-KV slot, and a ten-minute `llama-swap` idle unload. The shared overlay remains CUDA sm_89-only on Linux and selects native Metal on aarch64-darwin. See [docs/bonsai2-bender.md](docs/bonsai2-bender.md) for hardware sizing, pinned model provenance, tuning, security, and smoke commands.
+`services.bonsai2` exposes `http://bender:8080/v1` with model ID `bonsai-2-27b`. It uses the PrismML llama.cpp fork's Metal backend, official PQ2_0 weights and Q8_0 vision projector, one 32K Q8-KV slot, and a ten-minute `llama-swap` idle unload. The shared overlay remains CUDA sm_89-only on Linux and selects native Metal on aarch64-darwin. See [docs/bonsai2-bender.md](docs/bonsai2-bender.md) for hardware sizing, pinned model provenance, tuning, security, and smoke commands.
 
 ### Strata models (hal9000)
 

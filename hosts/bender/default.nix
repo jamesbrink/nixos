@@ -31,8 +31,14 @@
   # Point mold CLI at hal9000's inference server
   environment.variables.MOLD_HOST = "http://hal9000.home.urandom.io:7680";
 
+  # Links ~/.omp/agent to the omp-config checkout.
+  home-manager.users.jamesbrink = {
+    imports = [ ../../modules/home-manager/omp-config.nix ];
+    local.ompConfig.host = "bender";
+  };
+
   # Bonsai 2 runs behind llama-swap so its unified-memory allocation is released
-  # after idle periods. The base M4's 16 GB tier uses one 16K Metal slot.
+  # after idle periods. The base M4's 16 GB tier uses one 32K Q8-KV Metal slot.
   services.bonsai2 = {
     enable = true;
     host = "0.0.0.0";
