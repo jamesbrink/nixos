@@ -12,11 +12,11 @@ the rest memory-mapped from the root SSD. Every model below is the original
 All three share the llama-swap endpoint `http://hal9000:8080/v1`; only one is
 resident at a time, so switching reloads and drops the prompt cache.
 
-| llama-swap ID (OMP role) | Files | Port | Upstream rating |
-| --- | --- | --- | --- |
-| `qwen3.8-flash-next-q2_0` (`@flash-q2`, hal9000 default) | ISTA-DASLab GSQ-RCO Q2_0, 66.4 GB | 18083 | fastest, good |
-| `qwen3.8-flash-next-iq3_xxs` (`@flash-iq3`) | ISTA-DASLab GSQ-RCO IQ3_XXS, 75.8 GB | 18081 | slower, great |
-| `qwen3.8-flash-next-ud-q4_k_xl` (`@flash-q4`) | Unsloth UD-Q4_K_XL, 111.3 GB | 18082 | 4-bit, between IQ3_S and Q5 |
+| llama-swap ID (OMP role)                                 | Files                                | Port  | Upstream rating             |
+| -------------------------------------------------------- | ------------------------------------ | ----- | --------------------------- |
+| `qwen3.8-flash-next-q2_0` (`@flash-q2`, hal9000 default) | ISTA-DASLab GSQ-RCO Q2_0, 66.4 GB    | 18083 | fastest, good               |
+| `qwen3.8-flash-next-iq3_xxs` (`@flash-iq3`)              | ISTA-DASLab GSQ-RCO IQ3_XXS, 75.8 GB | 18081 | slower, great               |
+| `qwen3.8-flash-next-ud-q4_k_xl` (`@flash-q4`)            | Unsloth UD-Q4_K_XL, 111.3 GB         | 18082 | 4-bit, between IQ3_S and Q5 |
 
 ISTA's second shard (the 28.8 GB PLE table) is identical in every ISTA size;
 provisioning hard-links it instead of downloading it again.
@@ -32,8 +32,8 @@ provisioning hard-links it instead of downloading it again.
   pins them. Also lists ISTA IQ2_XS and IQ3_S.
 - `hosts/hal9000/default.nix`: picks catalog entries and ports under
   `services.strata.models`, and sets the shared tuning. `contextTokens`
-  (131072 = 128K) is the one context switch for all models; match OMP's
-  `contextWindow` in the `omp-config` repo.
+  (262144 = 256K, the model's native limit) is the one context switch for
+  all models; match OMP's `contextWindow` in the `omp-config` repo.
 
 Adding a model: add (or reuse) a catalog entry, add it to
 `services.strata.models` with a free port, deploy, then provision it. The
@@ -66,22 +66,25 @@ backend through llama-swap's `/upstream/<id>/` path: that loads the model.
 
 Bounded mmap with a 24 GiB expert budget and 8 GiB headroom; a launch needs
 36 GiB `MemAvailable` and 18 GiB free VRAM (`minimumFreeVRAMMiB`), with a
-2 GiB native VRAM reserve. Desktop CUDA clients chrome, mpv, swayosd-server
-and walker are allowed within 1024 MiB. FP16 KV, prefill 2048, 23 pool
+2304 MiB native VRAM reserve. Desktop CUDA clients chrome, mpv, swayosd-server
+and walker are allowed within 1024 MiB. INT8 KV, prefill 2048, 23 pool
 workers, MTP window 4 with a 32K draft window, suffix drafting off, GPU vision
 encoder. These settings were tuned on Orca IQ3_XXS (see the dated reports
-linked from [strata-orca.md](strata-orca.md)) and carry over unchanged.
+linked from [strata-orca.md](strata-orca.md)) and carry over unchanged,
+except KV: FP16 until 2026-11-09, then INT8 for 256K. Strata allocates K/V
+for the whole context up front out of the GPU expert cache; INT8 is about
+13.7 KB per token, so 256K INT8 takes the same VRAM as 128K FP16 did.
 
 ## Status (2026-11-03)
 
 First checks after provisioning, 128K context, Strata v0.2.10 (single short
 runs, not a benchmark):
 
-| Model | Cold start + first answer | Decode |
-| --- | --- | --- |
-| Q2_0 | 36 s | ~124 tok/s (short reply) |
-| IQ3_XXS | 38 s | ~64 tok/s (short reply) |
-| UD-Q4_K_XL | 36 s | 10 tok/s cold, 23-26 tok/s warm on ~250-token answers |
+| Model      | Cold start + first answer | Decode                                                |
+| ---------- | ------------------------- | ----------------------------------------------------- |
+| Q2_0       | 36 s                      | ~124 tok/s (short reply)                              |
+| IQ3_XXS    | 38 s                      | ~64 tok/s (short reply)                               |
+| UD-Q4_K_XL | 36 s                      | 10 tok/s cold, 23-26 tok/s warm on ~250-token answers |
 
 All answered an arithmetic check correctly and used about 22.1 GiB of VRAM.
 UD-Q4_K_XL's 77 GB of experts exceed the 24 GiB RAM budget, so it reads the

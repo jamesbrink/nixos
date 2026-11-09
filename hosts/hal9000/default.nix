@@ -703,21 +703,29 @@ in
       "walker"
     ];
     maximumDesktopComputeMiB = 1024;
-    # Admit at 18 GiB free; retain the independent 2 GiB runtime cache reserve.
+    # Admit at 18 GiB free; retain the independent runtime cache reserve.
     # Original threshold: 20480 MiB (20 GiB); restore that value here to roll back.
     minimumFreeVRAMMiB = 18432;
-    vramReserveMiB = 2048;
+    # 2048 left ~390 MiB free once the verify windows were captured, and the
+    # engine warned on every request and asked for 2240 (2026-11-09 log).
+    vramReserveMiB = 2304;
     # 64 GiB host: keep expert allocation bounded; require 36 GiB available.
     memoryMode = "bounded-mmap";
     residentBudgetGiB = 24;
     residentHeadroomGiB = 8;
     # Total prompt + reasoning + answer capacity for every Strata model.
     # Change this one setting to switch windows: 32768 = 32K, 65536 = 64K
-    # (measured), 131072 = 128K (2026-11-03). Match OMP contextWindow to it.
-    contextTokens = 131072;
+    # (measured), 131072 = 128K (2026-11-03), 262144 = 256K, the model's
+    # native limit (2026-11-09). Match OMP contextWindow to it.
+    contextTokens = 262144;
     # Matched 2026-10-05 local trials; retain native PCIe bandwidth probing.
     prefillTokens = 2048;
-    kvType = "fp16";
+    # The engine allocates K/V for the whole context up front, taken from the
+    # GPU expert cache. Upstream's default int8 is ~13.7 KB/token, so 256K
+    # int8 (~3.4 GiB) costs the same VRAM as the earlier 128K fp16 and the
+    # expert cache keeps its ~8.5K slots. fp16 came from the 32K trials, where
+    # K/V was small. Roll back: 131072 + "fp16".
+    kvType = "int8";
     specWindow = 4;
     mtpMaxT = 4;
     suffixDraft = 0;
