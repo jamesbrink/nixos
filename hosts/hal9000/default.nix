@@ -42,6 +42,7 @@ in
     ../../profiles/desktop/hyprland.nix
     ../../profiles/desktop/nixarchy.nix
     ../../profiles/keychron/default.nix
+    ../../modules/services/diffusiongemma
     ../../modules/services/strata
     ../../modules/services/mold-local-client.nix
     ../../modules/services/mold-discord-auth.nix
@@ -736,6 +737,15 @@ in
     pcieFraction = null;
     # Image input: the base model's BF16 mmproj on a GPU encoder.
     vision.enable = true;
+  };
+
+  # DiffusionGemma 26B-A4B as llama-swap model `diffusiongemma-26b-a4b-it`.
+  # Q4_K_M (16.8 GB, unsloth/diffusiongemma-26B-A4B-it-GGUF at f4183a2c,
+  # sha256 24523b6c833c...) leaves the most VRAM for context; the engine sizes
+  # the window to what is free at load and logs it as `context: MAXTOK=`.
+  services.diffusiongemma = {
+    enable = true;
+    modelFile = "/storage-fast/llm/models/diffusiongemma-26B-A4B-it/diffusiongemma-26B-A4B-it-Q4_K_M.gguf";
   };
 
   services.ollama = {

@@ -1,0 +1,20 @@
+--- a/examples/diffusion-gemma-server/diffusion-gemma-visual-server.cpp
++++ b/examples/diffusion-gemma-server/diffusion-gemma-visual-server.cpp
+@@ -9,7 +9,7 @@
+ //
+ // Protocol (synchronous, one request per line on stdin):
+ //   stdin  : a line containing a request-file path R
+-//   file R : UTF-8 JSON  {"seed": <int>, "n_blocks": <int>, "messages": [ {"role","content"}, ... ]}
++//   file R : UTF-8 JSON  {"seed": <int>, "n_blocks": <int>, "enable_thinking": <bool>, "messages": [ {"role","content"}, ... ]}
+ //            (messages are OpenAI chat-completion format; the GGUF chat template is applied here)
+ //   stdout : a stream of newline records, then "DONE":
+ //              F <block> <step> <total> <json-string>   one per denoising step (current canvas, decoded)
+@@ -318,6 +318,8 @@
+                 inputs.tools = common_chat_tools_parse_oaicompat(req.at("tools"));
+             }
+             inputs.add_generation_prompt = true;
++            // per-request thinking switch; unset keeps the template default (on)
++            inputs.enable_thinking       = req.value("enable_thinking", true);
+             const std::string prompt = common_chat_templates_apply(chat_templates.get(), inputs).prompt.str();
+             prefix = common_tokenize(vocab, prompt, /*add special*/ true, /*parse special*/ true);
+         } catch (const std::exception & e) {

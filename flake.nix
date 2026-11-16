@@ -17,6 +17,13 @@
       url = "github:PrismML-Eng/llama.cpp/prism";
       flake = false;
     };
+    # llama.cpp with DiffusionGemma support (open PR ggml-org/llama.cpp#24423,
+    # pinned to its head); source only, packaged by
+    # overlays/llama-cpp-diffusiongemma.nix.
+    llama-cpp-diffusiongemma = {
+      url = "github:danielhanchen/llama.cpp/604a809e1794852d801d2fab2ef0f1fc937c21a0";
+      flake = false;
+    };
     # Pinned nixpkgs for chromaprint 1.5.1 / kvazaar 2.3.1 on aarch64-darwin.
     # Newer versions in 25.11 have test suites that get SIGKILL'd in macOS sandbox.
     # See overlays/chromaprint-darwin.nix.
@@ -1011,6 +1018,10 @@
                 (import ./overlays/llama-cpp-prism.nix {
                   inherit nixpkgs;
                   src = inputs.llama-cpp-prism;
+                })
+                (import ./overlays/llama-cpp-diffusiongemma.nix {
+                  inherit nixpkgs;
+                  src = inputs.llama-cpp-diffusiongemma;
                 })
                 (final: prev: {
                   unstablePkgs = import nixos-unstable {
