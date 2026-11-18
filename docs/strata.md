@@ -96,6 +96,19 @@ MTP fetch tool was dropped with it: only the retired gated Orca repository
 needed it. The packs and the MTP runtime from v0.2.10 are reused as they
 are.
 
+Checked after the upgrade (2026-11-18, Q2_0 only, while a Rust CI job was
+loading the host, so the speed is not a benchmark): cold start plus first
+answer 36 s, arithmetic correct, an image recognised through the new picture
+reader, 41 tok/s on a 265-token story with route tail skip off. The engine
+now warns that 23 pool workers are more than this CPU uses well and
+recommends 15; `poolWorkers` is unchanged.
+
+A load that fails with llama-swap's "upstream command exited prematurely" is
+usually a launcher guard, whose message llama-swap does not log: under
+36 GiB `MemAvailable`, or desktop CUDA clients (headless Chrome) above
+`maximumDesktopComputeMiB`. Run the model's `cmd` from `/running` or the
+llama-swap config as the `strata` user to see the message.
+
 ## Status (2026-11-03)
 
 First checks after provisioning, 128K context, Strata v0.2.10 (single short
