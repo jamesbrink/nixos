@@ -61,16 +61,18 @@ for mode, config in result.items():
     ]
     assert config["maximum_desktop_compute_mib"] == 1024
     assert config["minimum_free_vram_mib"] == 18432
-    assert args[args.index("--vram-reserve-mib") + 1] == "2048"
+    assert args[args.index("--vram-reserve-mib") + 1] == "2304"
     if mode == "bounded":
         assert config["memory_mode"] == "bounded-mmap"
         assert args[args.index("--resident-budget-gib") + 1] == "24"
         assert "--mmap-experts" in args
         assert config["resident_headroom_gib"] == 8
         assert config["minimum_available_gib"] == 36
+        assert config["env"]["STRATA_RESIDENT_HEADROOM_GIB"] == "8"
     else:
         assert config["memory_mode"] == "resident"
         assert "--mmap-experts" not in args and "--resident-budget-gib" not in args
         assert config["resident_budget_gib"] is None
         assert config["minimum_available_gib"] == 56
+        assert "STRATA_RESIDENT_HEADROOM_GIB" not in config["env"]
 print("HAL bounded-mmap and resident module evaluations passed")

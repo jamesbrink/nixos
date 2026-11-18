@@ -7,7 +7,7 @@ import subprocess
 expression = r"""
 let
   base = (builtins.getFlake (toString ./.)).nixosConfigurations.hal9000;
-  names = [ "contextTokens" "prefillTokens" "kvType" "specWindow" "mtpMaxT" "suffixDraft" "mtpWindowTokens" "poolWorkers" "poolAffinity" "pcieFraction" ];
+  names = [ "contextTokens" "prefillTokens" "kvType" "specWindow" "mtpMaxT" "routeTailSkip" "suffixDraft" "mtpWindowTokens" "poolWorkers" "poolAffinity" "pcieFraction" ];
   options = base.options.services.strata;
   defaults = builtins.listToAttrs (map (name: { inherit name; value = options.${name}.default; }) names);
   host = values: base.extendModules {
@@ -16,7 +16,7 @@ let
   json = h: builtins.fromJSON (builtins.unsafeDiscardStringContext h.config.environment.etc."strata/qwen3.8-flash-next-q2_0.json".source.text);
   valid = {
     contextTokens = 65536; prefillTokens = 2048; kvType = "fp16";
-    specWindow = 6; mtpMaxT = 4; suffixDraft = 0; mtpWindowTokens = 32768;
+    specWindow = 6; mtpMaxT = 4; routeTailSkip = 7; suffixDraft = 0; mtpWindowTokens = 32768;
     poolWorkers = 7; poolAffinity = "all"; pcieFraction = 0.75;
   };
   small = defaults // { contextTokens = 16384; kvType = "q4_0"; pcieFraction = 0; };
@@ -37,6 +37,7 @@ in {
     (!(check "poolAffinity" "none")) (check "poolAffinity" "p-cores")
     (!(check "kvType" "q8_0")) (check "kvType" "k8v4")
     (!(check "suffixDraft" (-1))) (!(check "mtpWindowTokens" 0))
+    (check "routeTailSkip" null) (check "routeTailSkip" 0) (!(check "routeTailSkip" 9))
   ];
 }
 """
@@ -52,6 +53,7 @@ assert result["defaults"] == {
     "kvType": "int8",
     "specWindow": 4,
     "mtpMaxT": 0,
+    "routeTailSkip": None,
     "suffixDraft": 3,
     "mtpWindowTokens": 32768,
     "poolWorkers": None,
@@ -72,8 +74,8 @@ def flags(config):
 baseline, candidate, small = (result[key] for key in ("baseline", "candidate", "small"))
 selected = result["selectedHost"]
 h = flags(selected)
-assert h["--max-context"] == "131072" and h["--mtp-window"] == "32768"
-assert h["--prefill"] == "2048" and h["--kv"] == "fp16"
+assert h["--max-context"] == "262144" and h["--mtp-window"] == "32768"
+assert h["--prefill"] == "2048" and h["--kv"] == "int8"
 assert h["--spec"] == h["--mtp-max-t"] == "4" and h["--suffix-draft"] == "0"
 assert h["--pool-workers"] == "23" and h["--pool-affinity"] == "all"
 assert "--pcie-frac" not in h
@@ -81,7 +83,15 @@ assert selected["memory_mode"] == "bounded-mmap"
 assert selected["resident_budget_gib"] == 24
 assert selected["resident_headroom_gib"] == 8
 assert selected["minimum_available_gib"] == 36
-assert h["--vram-reserve-mib"] == "2048"
+assert h["--vram-reserve-mib"] == "2304"
+# Engine environment: the host computes every routed expert; the default
+# leaves the engine to decide.
+assert selected["env"] == {
+    "STRATA_RESIDENT_HEADROOM_GIB": "8",
+    "STRATA_ROUTE_TAIL_SKIP": "0",
+}
+assert "STRATA_ROUTE_TAIL_SKIP" not in baseline["env"]
+assert candidate["env"]["STRATA_ROUTE_TAIL_SKIP"] == "7"
 b = flags(baseline)
 assert b["--max-context"] == "32768" and b["--mtp-window"] == "32768"
 assert b["--prefill"] == "512" and b["--kv"] == "int8"

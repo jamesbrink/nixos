@@ -13,6 +13,15 @@ let
   visionPackage = pkgs.callPackage ../../../pkgs/strata-vision.nix { strata = package; };
   bounded = cfg.memoryMode == "bounded-mmap";
   minimumAvailableGiB = if bounded then cfg.residentBudgetGiB + cfg.residentHeadroomGiB + 4 else 56;
+  # Engine settings that are environment variables, not flags; the server
+  # passes the config's "env" to the engine.
+  engineEnv =
+    lib.optionalAttrs bounded {
+      STRATA_RESIDENT_HEADROOM_GIB = toString cfg.residentHeadroomGiB;
+    }
+    // lib.optionalAttrs (cfg.routeTailSkip != null) {
+      STRATA_ROUTE_TAIL_SKIP = toString cfg.routeTailSkip;
+    };
   # Shared by every model: the original Qwen MTP draft head and the base
   # model's vision projector (ISTA-DASLab BF16, as upstream setup uses).
   mtpDir = "${cfg.stateDir}/mtp";
@@ -130,6 +139,7 @@ let
           # The engine accepts image embeddings only with --vision (#1322); the
           # server also adds it for a vision config, but keep it explicit.
           ++ lib.optional cfg.vision.enable "--vision";
+          env = engineEnv;
           allowed_desktop_compute_processes = cfg.allowedDesktopComputeProcesses;
           maximum_desktop_compute_mib = cfg.maximumDesktopComputeMiB;
           minimum_free_vram_mib = cfg.minimumFreeVRAMMiB;
@@ -184,7 +194,6 @@ let
         test -s '${m.dataDir}/pack/native_experts.txt'
         test -s '${mtpDir}/rt/draft_vocab.bin'
         ${lib.optionalString cfg.vision.enable "test -s '${mmproj.file}'"}
-        ${lib.optionalString bounded "export STRATA_RESIDENT_HEADROOM_GIB=${toString cfg.residentHeadroomGiB}"}
         export LD_LIBRARY_PATH="/run/opengl-driver/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
         # exec preserves llama-swap's process group; the engine inherits it.
         exec ${package}/bin/strata-server --engine strata --config ${conf} --host 127.0.0.1 --port ${toString m.port}
@@ -287,6 +296,11 @@ in
       type = lib.types.ints.between 0 8;
       default = 0;
       description = "MTP verification-window cap; zero uses specWindow";
+    };
+    routeTailSkip = lib.mkOption {
+      type = lib.types.nullOr (lib.types.ints.between 0 8);
+      default = null;
+      description = "Route tail skip (STRATA_ROUTE_TAIL_SKIP): a missed expert that every token of a verify window routes at this rank or lower is skipped, trading a small change in the answers for decode speed; 0 computes every expert, null keeps the engine default (7 on CUDA)";
     };
     suffixDraft = lib.mkOption {
       type = lib.types.ints.unsigned;

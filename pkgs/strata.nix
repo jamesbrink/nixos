@@ -1,5 +1,7 @@
-# Source-built text-only Strata engine plus the terminal monitor (strata_cli);
-# never runs upstream setup/install scripts or the self-updater.
+# Source-built Strata engine, its Python server and tools, and the terminal
+# monitor (strata_cli); never runs upstream setup/install scripts or the
+# self-updater. Since 0.2.16 the tree is split into engine/ (C++) and
+# terminal/ (Python), and ggml is vendored, so nothing else is fetched.
 {
   lib,
   fetchzip,
@@ -11,13 +13,8 @@
 }:
 let
   source = fetchzip {
-    url = "https://github.com/Niko1221/Strata/archive/ffa80d73133ea5c548aefe57889a16e8085a938f.tar.gz";
-    hash = "sha256-cIBcdKRYVH78bu4sElF0XK/wedcLTK8tu12c0Alzlw8=";
-  };
-  # Must match upstream third_party/ggml/VERSION.txt.
-  llamaSource = fetchzip {
-    url = "https://github.com/ggml-org/llama.cpp/archive/3cf03257f219afbe7334045ff7c6a06ac68c627d.tar.gz";
-    hash = "sha256-SRGoXa+4ACBCB3eaG9XFYhMN1i0FyPEy9Rrer+dFGYI=";
+    url = "https://github.com/Niko1221/Strata/archive/64524fb9fc82222ddce554c0643b64f056ec8366.tar.gz";
+    hash = "sha256-g6TO9zC2jt41B5oADYrypIrXpb73/QzXmqjUuzBe9E4=";
   };
   python = python3.withPackages (
     ps: with ps; [
@@ -39,9 +36,8 @@ let
 in
 cudaPackages.backendStdenv.mkDerivation {
   pname = "strata";
-  version = "0.2.10";
+  version = "0.2.16";
   src = source;
-  patches = [ ./strata/huggingface-token-file.patch ];
   nativeBuildInputs = [
     cmake
     ninja
@@ -53,38 +49,35 @@ cudaPackages.backendStdenv.mkDerivation {
     cudaPackages.cuda_cudart
     cudaPackages.libcublas
   ];
+  cmakeDir = "../engine";
   cmakeFlags = [
     "-DSTRATA_ENABLE_CUDA=ON"
     "-DSTRATA_PORTABLE=ON"
     "-DSTRATA_BUILD_TESTS=OFF"
     "-DCMAKE_CUDA_ARCHITECTURES=89"
     "-DCMAKE_CUDA_COMPILER=${cudaPackages.cuda_nvcc}/bin/nvcc"
-    "-DSTRATA_GGML_DIR=${llamaSource}"
   ];
   buildPhase = ''
     runHook preBuild
-    # strata_kq: K-quant prompt kernels, dlopen'd from the engine's own folder
-    # only with STRATA_MMQ_KQ=1.
-    cmake --build . --target strata strata_kq --parallel "$NIX_BUILD_CORES"
+    cmake --build . --target strata --parallel "$NIX_BUILD_CORES"
     runHook postBuild
   '';
   doCheck = true;
   checkPhase = ''
     runHook preCheck
-    cd "$NIX_BUILD_TOP/source"
-    export STRATA_GGUF_PY=${llamaSource}/gguf-py
+    cd "$NIX_BUILD_TOP/source/terminal"
     export PYTHONDONTWRITEBYTECODE=1
     ${python}/bin/python -m unittest discover -s tools -p test_iq_pack.py
     ${python}/bin/python -m unittest serve.test_server
-    ${python}/bin/python ${./strata/test-mtp-auth.py}
     cd "$NIX_BUILD_TOP/source/build"
     runHook postCheck
   '';
   installPhase = ''
     runHook preInstall
     mkdir -p "$out/bin" "$out/share/strata"
-    cp strata libstrata_kq.so "$out/bin/"
-    cp -r "$NIX_BUILD_TOP/source"/{serve,tools,data,docs,strata_cli,strata_control,strata.py,LICENSE} "$out/share/strata/"
+    cp strata "$out/bin/"
+    cp -r "$NIX_BUILD_TOP/source"/terminal/{serve,tools,data,strata_cli,strata_control,strata.py} \
+      "$NIX_BUILD_TOP/source"/{docs,LICENSE} "$out/share/strata/"
     makeWrapper ${python}/bin/python "$out/bin/strata-server" \
       --set PYTHONPATH "$out/share/strata" \
       --set PYTHONDONTWRITEBYTECODE 1 \
@@ -97,14 +90,13 @@ cudaPackages.backendStdenv.mkDerivation {
       --add-flags "$out/share/strata/strata.py"
     for tool in iq_pack mtp_fetch mtp_pack mtp_rt; do
       makeWrapper ${python}/bin/python "$out/bin/strata-$tool" \
-        --set STRATA_GGUF_PY ${llamaSource}/gguf-py \
         --set PYTHONDONTWRITEBYTECODE 1 \
         --add-flags "$out/share/strata/tools/$tool.py"
     done
     runHook postInstall
   '';
-  # strata-vision builds from the same pinned Strata and llama.cpp sources.
-  passthru = { inherit source llamaSource; };
+  # strata-vision builds from the same pinned source.
+  passthru = { inherit source; };
   meta = {
     description = "Strata tiered MoE runtime with pinned Orca-compatible packing tools and terminal monitor";
     homepage = "https://github.com/Niko1221/Strata";

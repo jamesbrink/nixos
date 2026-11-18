@@ -28,8 +28,8 @@ provisioning hard-links it instead of downloading it again.
   entries, `strata-provision` and `strata-monitor`. Generated server configs
   are visible at `/etc/strata/<id>.json`.
 - `modules/services/strata/catalog.nix`: pinned files (URL with revision,
-  SHA256, size, PLE shard, pack arguments) as upstream v0.2.10 `setup.py`
-  pins them. Also lists ISTA IQ2_XS and IQ3_S.
+  SHA256, size, PLE shard, pack arguments) as upstream `setup.py` pins them
+  (unchanged from v0.2.10 to v0.2.16). Also lists ISTA IQ2_XS and IQ3_S.
 - `hosts/hal9000/default.nix`: picks catalog entries and ports under
   `services.strata.models`, and sets the shared tuning. `contextTokens`
   (262144 = 256K, the model's native limit) is the one context switch for
@@ -69,11 +69,32 @@ Bounded mmap with a 24 GiB expert budget and 8 GiB headroom; a launch needs
 2304 MiB native VRAM reserve. Desktop CUDA clients chrome, mpv, swayosd-server
 and walker are allowed within 1024 MiB. INT8 KV, prefill 2048, 23 pool
 workers, MTP window 4 with a 32K draft window, suffix drafting off, GPU vision
-encoder. These settings were tuned on Orca IQ3_XXS (see the dated reports
+encoder, route tail skip off (`routeTailSkip = 0`; see below). These settings were tuned on Orca IQ3_XXS (see the dated reports
 linked from [strata-orca.md](strata-orca.md)) and carry over unchanged,
 except KV: FP16 until 2026-11-09, then INT8 for 256K. Strata allocates K/V
 for the whole context up front out of the GPU expert cache; INT8 is about
 13.7 KB per token, so 256K INT8 takes the same VRAM as 128K FP16 did.
+
+### Route tail skip
+
+`services.strata.routeTailSkip` sets the engine's `STRATA_ROUTE_TAIL_SKIP`
+through the server config's `env`. On CUDA the engine defaults to 7: an
+expert missing from the GPU cache that every token of a verify window routes
+at rank 7 or 8 (of 8) is not computed. Upstream measures +10-20% decode on
+cards that miss experts and about 98% top-1 agreement with the full
+computation. HAL9000 sets 0, so every routed expert is computed; remove the
+line (null) for the engine default. Each load logs the state in
+`<id>/strata.log` (`STRATA_ROUTE_TAIL_SKIP ...`).
+
+## Version
+
+Strata v0.2.16 (engine 0.1.62, commit `64524fb9`) since 2026-11-18, built
+from source by `pkgs/strata.nix` and `pkgs/strata-vision.nix`. That release
+moved the tree into `engine/` and `terminal/` and vendors ggml, so the
+separate llama.cpp pin is gone. The local Hugging Face token patch for the
+MTP fetch tool was dropped with it: only the retired gated Orca repository
+needed it. The packs and the MTP runtime from v0.2.10 are reused as they
+are.
 
 ## Status (2026-11-03)
 

@@ -1,5 +1,6 @@
-# Pinned Strata-compatible Qwen3.8-Flash-Next files, as upstream Strata
-# v0.2.10 setup.py pins them (HF_REVISIONS, ISTA_FILES, UNSLOTH_SHARDS).
+# Pinned Strata-compatible Qwen3.8-Flash-Next files, as upstream Strata's
+# setup.py pins them (HF_REVISIONS, ISTA_FILES, UNSLOTH_SHARDS; the same in
+# v0.2.10 and v0.2.16).
 # A host picks entries for services.strata.models and adds a port.
 let
   ista = quant: {

@@ -730,6 +730,10 @@ in
     specWindow = 4;
     mtpMaxT = 4;
     suffixDraft = 0;
+    # Compute every routed expert. Upstream's default (7) skips cache-missed
+    # experts at route rank 7-8 for +10-20% decode and ~98% top-1 agreement;
+    # delete this line to get that back.
+    routeTailSkip = 0;
     # The draft model keeps its own 32K window; this does not cap the target.
     mtpWindowTokens = 32768;
     poolWorkers = 23;

@@ -1,5 +1,5 @@
-# Strata's image encoder (llama.cpp mtmd + an mmproj file), as upstream setup
-# builds it: tools/vision against the engine's pinned llama.cpp, CUDA sm_89.
+# Strata's image encoder for an mmproj file, as upstream setup builds it:
+# terminal/tools/vision (Strata's own vision tower on cuBLAS), CUDA sm_89.
 {
   strata,
   cudaPackages,
@@ -22,9 +22,8 @@ cudaPackages.backendStdenv.mkDerivation {
     cuda_cudart
     libcublas
   ];
-  cmakeDir = "../tools/vision";
+  cmakeDir = "../terminal/tools/vision";
   cmakeFlags = [
-    "-DLLAMA_DIR=${strata.passthru.llamaSource}"
     "-DSTRATA_VISION_CUDA=ON"
     "-DSTRATA_PORTABLE=ON"
     "-DCMAKE_CUDA_ARCHITECTURES=89"
@@ -41,7 +40,7 @@ cudaPackages.backendStdenv.mkDerivation {
     runHook postInstall
   '';
   meta = strata.meta // {
-    description = "Strata image encoder (llama.cpp mtmd) for mmproj vision projectors";
+    description = "Strata image encoder for mmproj vision projectors";
     mainProgram = "strata-vision";
   };
 }

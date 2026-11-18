@@ -198,11 +198,11 @@ fit the 4090. OMP `contextWindow` values in the `omp-config` repo match
 
 Checked after deployment on Strata v0.2.10 (one run each, not a benchmark):
 
-| Model | Result |
-| --- | --- |
-| Orca IQ3_XXS | cold start 64 s with `--max-context 131072`; a 99,122-token prompt recalled a planted fact exactly in 112 s; GPU 22.1-22.2 GiB used. The operator then ran it to about 119K tokens in OMP |
-| Qwen3.8-27B | loads with `n_ctx` 131072 over 2 slots (q4_0 KV) and answers; GPU 23,955 of 24,564 MiB used, so little room is left for desktop GPU clients |
-| Orca Q4_K_M, Flash Next Q2_0 | not yet loaded at 128K (Q2_0 was still provisioning) |
+| Model                        | Result                                                                                                                                                                                    |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Orca IQ3_XXS                 | cold start 64 s with `--max-context 131072`; a 99,122-token prompt recalled a planted fact exactly in 112 s; GPU 22.1-22.2 GiB used. The operator then ran it to about 119K tokens in OMP |
+| Qwen3.8-27B                  | loads with `n_ctx` 131072 over 2 slots (q4_0 KV) and answers; GPU 23,955 of 24,564 MiB used, so little room is left for desktop GPU clients                                               |
+| Orca Q4_K_M, Flash Next Q2_0 | not yet loaded at 128K (Q2_0 was still provisioning)                                                                                                                                      |
 
 `mtpWindowTokens` stays 32768. The 128K window trades GPU expert-cache slots
 for session memory, so decode speed may be lower than at 64K; the 64K
@@ -405,7 +405,8 @@ the compatibility pack and matching MTP runtime were produced, and real inferenc
 subsequently completed the measured screening runs linked below. The token can access
 the pinned original Qwen MTP head. Access is resolved. Independently reviewed final activation, shared-endpoint lifecycle UAT, the actual production benchmark and restored-service cold admission all completed; see the dated report for evidence and limitations.
 
-Provisioning accepts `STRATA_HF_TOKEN_FILE`; curl reads a temporary mode-0600
+(Removed with the Strata v0.2.16 upgrade on 2026-11-18, see
+[strata.md](strata.md).) Provisioning accepts `STRATA_HF_TOKEN_FILE`; curl reads a temporary mode-0600
 header file, and the MTP helper reads the token file without placing credentials
 in command arguments/logs. Its HTTP redirects strip authorization across hosts
 or HTTPS downgrades. There is no token in the inference service environment.
