@@ -87,6 +87,11 @@ in
   programs.hyprland.package = lib.mkForce pkgs.hyprland;
   programs.hyprland.portalPackage = lib.mkForce pkgs.xdg-desktop-portal-hyprland;
 
+  # No "Process crashed: ... Click to diagnose with AI" toasts. Browser
+  # automation (chrome-headless-shell) dumps core often enough to bury the
+  # notification list. Crashes stay in `coredumpctl`.
+  systemd.user.services.omarchy-crash-watch.enable = false;
+
   # Taildrop: save files sent from other tailnet devices into ~/Downloads.
   # Upstream ships this unit with /usr/bin paths and only enables it from its
   # own Tailscale installer, so it is declared here like nixarchy's other units.
