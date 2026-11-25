@@ -59,3 +59,20 @@ The units mirror quantierra/infra's loader-dev runners: a plain system user,
 the nixpkgs module's hardening, no Docker, memory capped at 36G each, and
 `IPAddressDeny` on the tailnet so a CI job can never reach loader-dev's
 database or the other hosts.
+
+## Factory overflow workers
+
+`hosts/hal9000/factory-runner.nix` runs two separate rootless Podman workers,
+`hal9000-1` and `hal9000-2`. These are Factory Rust overflow lanes, not
+GitHub Actions runners. Each has a six-CPU, 14 GiB memory cap with no
+container swap. The dedicated `factory-runner` user stores credentials in
+separate Podman volumes and shares a build cache between the lanes.
+
+Before the first start, copy the matching x86-64 Rust runner image from ECR
+into the service user's Podman store as `localhost/factory-runner:current`.
+The units never pull images or need AWS credentials. Provision each
+single-use registration token as `FACTORY_REGISTRATION_TOKEN=…` in
+`/etc/factory-runner/factory-runner-hal9000-{1,2}.env` (one file per lane,
+root-owned, mode `0600`). Start `factory-runner-hal9000-{1,2}.service`,
+verify both registrations on the Factory hub, then remove the token files.
+Keep the Podman state volumes for subsequent starts.
