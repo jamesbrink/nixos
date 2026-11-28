@@ -58,6 +58,8 @@ in
     # GitHub Actions runners for nyc-real-estate-rust's rust CI job (docs/qre-ci-runners.md).
     ../../modules/services/qre-ci-runners.nix
     ./factory-runner.nix
+    # Desk mode: one switch stops the Quantierra work above (docs/factory-desk.md).
+    ./factory-desk.nix
     # Quantierra dev database: prod copy from pgBackRest on the 20 TB disk (docs/qre-devdb.md).
     ../../modules/services/qre-devdb.nix
     # ../../modules/services/netboot-server.nix  # Replaced by tftp-server.nix

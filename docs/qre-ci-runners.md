@@ -7,7 +7,9 @@ label `qre-rust`. They take the `rust` job of
 test suite against a throwaway Postgres in `/dev/shm`, the `.sqlx/` check,
 machete, deny), which ran on loader-dev's shared 4-core lanes before
 (18-50 min a run) and runs on hal9000's 32 cores now. That repo's `docs/ci.md`
-describes the job; this page is the host side.
+describes the job; this page is the host side. When James needs the desktop,
+desk mode stops these runners after their current job (and everything else
+Quantierra runs here): [factory-desk.md](factory-desk.md).
 
 ## Hand-provisioned pieces
 
