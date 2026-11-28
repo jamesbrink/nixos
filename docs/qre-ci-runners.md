@@ -76,3 +76,25 @@ single-use registration token as `FACTORY_REGISTRATION_TOKEN=…` in
 root-owned, mode `0600`). Start `factory-runner-hal9000-{1,2}.service`,
 verify both registrations on the Factory hub, then remove the token files.
 Keep the Podman state volumes for subsequent starts.
+
+The shared card cache (a cargo target per card, often 10-30 GB each) lives on
+the `storage-ssd/factory-runner` ZFS dataset at `/mnt/storage-ssd/factory-runner`
+(lz4, 500 GB quota), not on the root disk; the Podman store (the ~11 GB image and
+container layers) stays in `/var/lib/factory-runner`. The dataset is created by
+hand like the rest of that pool (commands in `hosts/hal9000/factory-runner.nix`).
+Because storage-ssd is a USB disk imported by `storage-ssd-import.service`, the
+workers bind to that unit: they start when it imports the pool, stop before
+`systemctl stop storage-ssd-import` exports it, and refuse to start
+(`AssertPathIsMountPoint`) when the dataset is not mounted.
+
+The runner never evicts card caches itself yet, so
+`factory-runner-cache-prune.timer` runs daily at 04:30: it removes card dirs
+idle over 48 h, then the least recently used ones idle over 6 h while the
+dataset is above 350 GB, never one a running process works in. It also removes
+`remote-test.sh` targets under `/storage-fast/qre-remote/target` idle over
+48 h (never `main`, only under the target's own lock). Run it by hand with
+`systemctl start factory-runner-cache-prune`; the journal lists what it removed.
+
+Before changing worker storage, drain both lanes on the Factory hub
+(`factory workers drain hal9000-1`, same for `-2`); a drained lane exits 7 and
+stays stopped. Start the units again and `factory workers enable` each lane.
