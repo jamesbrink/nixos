@@ -12,7 +12,9 @@ def stage(repo, revision, destination):
         ["git", "-C", str(repo), "archive", revision], stdout=subprocess.PIPE
     )
     try:
-        subprocess.run(["tar", "-x", "-C", str(destination)], stdin=archive.stdout, check=True)
+        subprocess.run(
+            ["tar", "-x", "-C", str(destination)], stdin=archive.stdout, check=True
+        )
     finally:
         archive.stdout.close()
     if archive.wait() != 0:
@@ -41,10 +43,16 @@ def main():
     parser.add_argument("revision")
     parser.add_argument("destination", type=Path)
     args = parser.parse_args()
-    repo = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip())
+    repo = Path(
+        subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"], text=True
+        ).strip()
+    )
     destination = args.destination.absolute()
     if destination.exists():
-        raise SystemExit("Destination must not exist; refusing to overwrite existing staging")
+        raise SystemExit(
+            "Destination must not exist; refusing to overwrite existing staging"
+        )
     if destination == repo or repo in destination.parents:
         raise SystemExit("Destination must be outside the repository")
     stage(repo, args.revision, destination)

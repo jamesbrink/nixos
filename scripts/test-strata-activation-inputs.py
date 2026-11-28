@@ -34,17 +34,36 @@ with tempfile.TemporaryDirectory() as temporary:
         "group": grp.getgrgid(os.getgid()).gr_name,
         "mode": "0600",
     }
-    with patch.object(Path, "read_bytes", side_effect=AssertionError("No plaintext reads")), patch.object(Path, "read_text", side_effect=AssertionError("No plaintext reads")):
+    with (
+        patch.object(
+            Path, "read_bytes", side_effect=AssertionError("No plaintext reads")
+        ),
+        patch.object(
+            Path, "read_text", side_effect=AssertionError("No plaintext reads")
+        ),
+    ):
         module.verify_runtime({"fixture": value})
-        module.verify_runtime({"fixture": value | {"owner": str(os.getuid()), "group": str(os.getgid())}})
+        module.verify_runtime(
+            {"fixture": value | {"owner": str(os.getuid()), "group": str(os.getgid())}}
+        )
     assert path.stat().st_size == 0
     rejects(value | {"runtime_path": str(path.with_name("missing"))}, "Missing runtime")
     rejects(value | {"runtime_path": temporary}, "not a regular file")
     rejects(value | {"mode": "0400"}, "mode differs")
     rejects(value | {"owner": str(os.getuid() + 1)}, "owner differs")
     rejects(value | {"group": str(os.getgid() + 1)}, "group differs")
-    with patch.object(module.pwd, "getpwnam", return_value=type("Owner", (), {"pw_uid": os.getuid() + 1})()):
+    with patch.object(
+        module.pwd,
+        "getpwnam",
+        return_value=type("Owner", (), {"pw_uid": os.getuid() + 1})(),
+    ):
         rejects(value, "owner differs")
-    with patch.object(module.grp, "getgrnam", return_value=type("Group", (), {"gr_gid": os.getgid() + 1})()):
+    with patch.object(
+        module.grp,
+        "getgrnam",
+        return_value=type("Group", (), {"gr_gid": os.getgid() + 1})(),
+    ):
         rejects(value, "group differs")
-print("Empty plaintext accepted without reads; missing/type/owner/group/mode mismatches rejected")
+print(
+    "Empty plaintext accepted without reads; missing/type/owner/group/mode mismatches rejected"
+)

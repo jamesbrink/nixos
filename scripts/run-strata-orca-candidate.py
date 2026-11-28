@@ -66,7 +66,8 @@ require(
     "Candidate lowers reviewed free-VRAM floor",
 )
 require(
-    set(config.get("allowed_desktop_compute_processes", [])) <= {"chrome", "mpv", "swayosd-server", "walker"},
+    set(config.get("allowed_desktop_compute_processes", []))
+    <= {"chrome", "mpv", "swayosd-server", "walker"},
     "Candidate extends reviewed desktop allowlist",
 )
 reserve = int(native[native.index("--vram-reserve-mib") + 1])

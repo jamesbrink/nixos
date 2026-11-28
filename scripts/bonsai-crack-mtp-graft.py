@@ -36,16 +36,24 @@ def main() -> int:
     crack, bundle = gguf.GGUFReader(crack_path), gguf.GGUFReader(bundle_path)
     ct, bt = tensors(crack), tensors(bundle)
     if not set(ct) <= set(bt):
-        raise SystemExit(f"CRACK tensors missing from bundle: {sorted(set(ct) - set(bt))[:5]}")
+        raise SystemExit(
+            f"CRACK tensors missing from bundle: {sorted(set(ct) - set(bt))[:5]}"
+        )
     extra = sorted(set(bt) - set(ct))
     if not extra or not all(n.startswith("blk.64.") for n in extra):
         raise SystemExit(f"unexpected bundle-only tensors: {extra[:5]}")
     for name, t in ct.items():
         b = bt[name]
-        if t.tensor_type != b.tensor_type or list(t.shape) != list(b.shape) or t.n_bytes != b.n_bytes:
+        if (
+            t.tensor_type != b.tensor_type
+            or list(t.shape) != list(b.shape)
+            or t.n_bytes != b.n_bytes
+        ):
             raise SystemExit(f"layout mismatch for {name}")
     changed = [n for n, t in ct.items() if t.data.tobytes() != bt[n].data.tobytes()]
-    print(f"{len(ct)} shared tensors, {len(changed)} differ, {len(extra)} MTP tensors kept")
+    print(
+        f"{len(ct)} shared tensors, {len(changed)} differ, {len(extra)} MTP tensors kept"
+    )
 
     tmp = out_path + ".partial"
     shutil.copyfile(bundle_path, tmp)
@@ -60,7 +68,9 @@ def main() -> int:
             raise SystemExit(f"verification failed: {name} does not match CRACK")
     for name in extra:
         if out[name].data.tobytes() != bt[name].data.tobytes():
-            raise SystemExit(f"verification failed: {name} does not match the MTP bundle")
+            raise SystemExit(
+                f"verification failed: {name} does not match the MTP bundle"
+            )
     os.replace(tmp, out_path)
     print(f"verified; sha256 {sha256(out_path)}  {out_path}")
     return 0
