@@ -39,6 +39,7 @@ in
     ../../modules/shared-packages/devops.nix
     ../../users/regular/jamesbrink.nix
     ../../modules/container-prune.nix
+    ../../modules/keyring-autounlock
     ../../profiles/desktop/hyprland.nix
     ../../profiles/desktop/nixarchy.nix
     ../../profiles/keychron/default.nix
@@ -651,6 +652,13 @@ in
     user = "jamesbrink";
   };
 
+  # Autologin gives PAM no password, so unlock the login keyring from agenix.
+  local.keyringAutoUnlock = {
+    enable = true;
+    user = "jamesbrink";
+    passwordFile = config.age.secrets."hal9000-keyring-password".path;
+  };
+
   # systemd.user.services.sunshine = {
   #   description = "Sunshine self-hosted game stream host for Moonlight";
   #   startLimitBurst = 5;
@@ -981,6 +989,12 @@ in
       };
       "hal9000-rustdesk" = {
         file = "${secretsPath}/hal9000/rustdesk.age";
+        owner = "jamesbrink";
+        group = "users";
+        mode = "0400";
+      };
+      "hal9000-keyring-password" = {
+        file = "${secretsPath}/hal9000/keyring-password.age";
         owner = "jamesbrink";
         group = "users";
         mode = "0400";
